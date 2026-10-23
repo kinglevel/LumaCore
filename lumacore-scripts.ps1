@@ -38,11 +38,10 @@ if ($Release) {
     $BuildArgs = @()
 }
 
-if (-not (Test-Path $Bin)) {
-    Write-Host "Building lumacore-scripts ($Profile)..."
-    cargo build @BuildArgs -p lumacore-scripts 2>&1 |
-        Select-String -Pattern "(Compiling lumacore|Finished|error)"
-}
+# Build every time (a second when nothing changed): a binary left from another checkout or an
+# older source must never run.
+cargo build @BuildArgs -p lumacore-scripts 2>&1 |
+    Select-String -Pattern "(Compiling lumacore|error)"
 
 if (-not (Test-Path $Bin)) {
     Write-Error "Failed to build $Bin"

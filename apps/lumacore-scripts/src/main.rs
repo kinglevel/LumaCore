@@ -225,13 +225,10 @@ impl App {
     }
 }
 
+/// The repo the scripts live in (record 0236: the root comes from `LUMACORE_ROOT`). The entry
+/// script rebuilds the launcher before every run, so this is always the checkout it runs in.
 fn repo_root() -> io::Result<PathBuf> {
-    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    manifest_dir
-        .parent()
-        .and_then(|p| p.parent())
-        .map(|p| p.to_path_buf())
-        .ok_or_else(|| io::Error::other("failed to resolve repo root"))
+    Ok(PathBuf::from(env!("LUMACORE_ROOT")))
 }
 
 /// Run a script with the terminal handed over; its exit code.

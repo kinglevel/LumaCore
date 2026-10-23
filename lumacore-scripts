@@ -22,7 +22,7 @@ Usage:
 This launches the ratatui menu for the canonical scripts.
   Unix scripts:   scripts/unix/
   Windows scripts: scripts/win/
-The launcher builds the matching workspace binary in target/ if needed.
+The launcher (re)builds the matching workspace binary in target/ first.
 EOF
     exit 0
 fi
@@ -34,12 +34,11 @@ if [ "${1:-}" = "--release" ]; then
     shift
 fi
 
-if [ ! -x "$BIN" ]; then
-    echo "Building lumacore-scripts ($PROFILE)..."
-    # Bash 3.2 (macOS) calls an empty array unbound under `set -u`: expand it only when set.
-    cargo build ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} -p lumacore-scripts \
-        2>&1 | grep -E "^(   Compiling lumacore|    Finished|error)" || true
-fi
+# Build every time (a second when nothing changed): a binary left from another checkout or an
+# older source must never run.
+# Bash 3.2 (macOS) calls an empty array unbound under `set -u`: expand it only when set.
+cargo build ${BUILD_ARGS[@]+"${BUILD_ARGS[@]}"} -p lumacore-scripts \
+    2>&1 | grep -E "^(   Compiling lumacore|error)" || true
 
 if [ ! -x "$BIN" ]; then
     echo "Failed to build $BIN" >&2
