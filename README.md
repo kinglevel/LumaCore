@@ -18,6 +18,8 @@ desktop app, all at the same time, and several stations can join into one **Luma
 
 > [!CAUTION]
 > **THIS IS A PROOF OF CONCEPT SOFTWARE**
+>
+> LumaCore is very young and still in its infancy.
 
 > [!WARNING]
 > **LumaCore is fully vibe-coded software.** It was written with AI, and it comes with no
