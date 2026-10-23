@@ -94,3 +94,80 @@ Sources: VS Code docs, the Blender manual, JetBrains docs, DaVinci Resolve and P
 6. **The numpad gets its own key names.**
 7. **A read-only cheat sheet** of the current mode on F10-hold or `?`.
 8. **Export / import, and Copy from profile.**
+
+## 4. Cycle keys on the reference console (round 3)
+
+Sources:
+- the reference console's live tree, read-only: `Root.VirtualKeys`, `Root.KeyboardLayouts`, and the profile's keyboard shortcuts;
+- its key-definition resource file and its user manual's key pages, in the local reference corpus under `ExternalData` (outside this repo).
+
+**The model.** There are 146 virtual keys. Each is an ordered list of values, and a value has:
+- its own Press, Release, Hold, DoublePress and AfterDoublePress lines;
+- an optional modifier: the console modifier, or another key held, such as Set + Prev, or Preset + 1–9 to pick an encoder bank;
+- how it runs: typed onto the line, at once, cleared and at once, in the background, or on release;
+- `Remember`: held, the key keeps its word for several taps in a row;
+- `CycleOnRelease`, guards on the line's first or last token, and the text on the key.
+
+The values that share a modifier are that key's cycle. Three keys compute their cycle from state: Channel (the ID types in use), Time (the profile's target and the line), and If (an empty line, or If already on the line → EndIf).
+
+**The rule.**
+- The next press replaces the word the key just put on the line, while that word is still the last token at the cursor; it wraps around.
+- Anything typed in between starts over. There is no timer anywhere.
+- A row may run at once:
+  - `. .` = Zero; `+ +` / `- -` = ±10;
+  - At At = Normal;
+  - Clear: once Selection, twice Active, three times All, always shown as "Clear"; held = All.
+- A true double press is a separate, timed gesture, used only where the first press already acts: Menu → SaveShow, Preview → Preview Toggle, Help → help overlay.
+
+**The default cycles** (the console modifier's layer after "·"):
+
+| Key | Cycle |
+|---|---|
+| Edit | Edit › EditSetting · EditRecipe |
+| Assign | Assign › Label · Set |
+| Copy | Copy › Paste › Insert · Cut |
+| Delete | Delete › Remove › Release |
+| Move | Move › Exchange |
+| Select | Select › Collect |
+| SelFix | SelectFixtures › Shuffle |
+| Stomp | Stomp › Capture |
+| On | On › Call |
+| Off | Off › (Off menu) · Deactivate |
+| Pause | Pause › Park · Fix |
+| Go+ | Go+ › Unpark · Temp › Toggle |
+| Go- | Go- · Top › Kill |
+| Goto | Goto › Load · Goto › Loaded |
+| Fixture | Fixture › Selection › Collection · FixtureType › FixtureLayer › FixtureClass |
+| Group | Group › World › Filter · Tag |
+| Preset | Preset › Attribute › Gel · FeatureGroup › DataPool |
+| Cue | Cue › Part · Programmer |
+| At | At › Normal (runs) · Integrate › Extract |
+| Store | Store · Record (held: store settings) |
+| Update | Update, Please on release · Cook / Offset |
+| List | List on a tap, Locate on a hold · ListReference |
+| Dot | . › Zero (runs) · Default |
+| + | + › At +10 (runs) · Next |
+| - | - › At -10 (runs) · Previous |
+| Pool keys | Timecode › TimecodeSlot › Timer · View › ViewButton › ScreenContent · Layout › Appearance › Scribble · DMXUniverse › DMXAddress · Macro › Plugin › Quickey · Executor › SpecialExecutor › FaderMaster · Page › EncoderBar › EncoderBank · Clone › Recast |
+
+**The computer keyboard.**
+- 157 shortcuts on the user profile, with one on/off switch, F10. Shift is the console modifier.
+- Letters:
+  - S Store, U Update, E Edit, A At, Alt+A Assign;
+  - F Fixture, C Channel, G Group, P Preset, Alt+S Sequence, Alt+C Cue;
+  - T Thru, I If, L List, H Highlight, B Blind, O Off, Q Set.
+- The Ctrl layer:
+  - Ctrl+C Copy, Ctrl+M Move, Ctrl+D Delete, Ctrl+A Align, Ctrl+S Select;
+  - Ctrl+O On, Ctrl+F Full, Ctrl+T Time, Ctrl+P Pause, Ctrl+G Go+, Ctrl+Z Oops.
+- The Alt layer: Alt+F Freeze, Alt+T Stomp, Alt+G Goto.
+- The Ctrl+Alt layer: Ctrl+Alt+F SelFix, Ctrl+Alt+S Solo, Ctrl+Alt+H Help, Ctrl+Alt+G Go-.
+- Other keys:
+  - digits and `+ - . /`;
+  - Enter = Please, Backspace = Oops, Delete = Clear, Space = Go;
+  - [ / ] = fast back / forward;
+  - Ctrl / Alt / Ctrl+Alt + F1–F12 = 36 executors.
+
+**For LumaCore** (mockup `03-cycles.html`):
+- **A UiKey's Press becomes a list of rows.** Each row types or runs, under the same rule (no timer). Meow gets its own list. A double press stays the timed gesture it is today.
+- **PRG gets this map in LumaCore's words.** Words LumaCore lacks are left out (World, Gel, Part, Exchange, Collect …).
+- **Later:** hold = repeat (`Remember`), rows guarded by the line's first token, and state-computed cycles.

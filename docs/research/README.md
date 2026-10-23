@@ -23,7 +23,7 @@ Research is input, never a rule; the rules are in `docs/decisions/`. Nothing her
 
 | File | Topic | Date | Words |
 |---|---|---|---|
-| [2026-10-23-key-editor.md](keys/2026-10-23-key-editor.md) | The KBD / PRG / NAV modes and every key today; how good key editors work (visual keyboards, scopes, modifier layers); the open questions | 2026-10-23 | 1,255 |
+| [2026-10-23-key-editor.md](keys/2026-10-23-key-editor.md) | The KBD / PRG / NAV modes and every key today; how good key editors work (visual keyboards, scopes, modifier layers); the reference console's cycle keys and keyboard map; the open questions | 2026-10-23 | 2,101 |
 
 ## patch/ — the patch overhaul, round 3 (decisions §34; plan `docs/plans/active/2026-10-18-patch-round3.md`)
 
