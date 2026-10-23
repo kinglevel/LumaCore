@@ -23,6 +23,7 @@ use crate::state::{Published, StateHandle};
 
 mod consent;
 mod files;
+mod tree;
 use files::drive_shows_guard;
 
 // ████████╗██╗   ██╗██████╗ ███████╗███████╗
@@ -453,6 +454,14 @@ impl lumacore_http::ConsoleBridge for ServerConsoleBridge {
         let id = drive.to_string();
         let root = move || self.state.call_within(crate::state::HTTP_WAIT, move |ctx| ctx.state.ensure_library(&id)).map_err(|e| e.to_string());
         files::save_upload(rights, root, user, drive, folder, name, &bytes)
+    }
+
+    fn tree_window(&self, user: &str, params: &Value) -> Value {
+        tree::tree(&self.state, user, params)
+    }
+
+    fn inspector(&self, user: &str, path: &str) -> Value {
+        tree::inspector(&self.state, user, path)
     }
 
     fn tags(&self, tag: &Value, deep: bool) -> Value {

@@ -251,6 +251,17 @@ pub trait ConsoleBridge: Send + Sync {
         serde_json::json!({ "nodes": [], "members": [] })
     }
 
+    /// A Tree window's rows for a user (the `tree` feed, decisions 0292): `params` are the
+    /// window's `path`, `open` (a comma list), `search` and `follow`.
+    fn tree_window(&self, _user: &str, _params: &serde_json::Value) -> serde_json::Value {
+        serde_json::json!({ "rows": [], "path": null })
+    }
+
+    /// A Tree window's inspector of one place for a user (the `inspector` feed, decisions 0292).
+    fn inspector(&self, _user: &str, path: &str) -> serde_json::Value {
+        serde_json::json!({ "missing": "no station", "asked": path })
+    }
+
     /// A Device Sheet for a user (the `devices` feed, decisions device-sheet-window): `params` are
     /// the window's (`layer`, `programmer_only`, `selected_only`, `selection_first`, `folders`,
     /// `from`, `count`).

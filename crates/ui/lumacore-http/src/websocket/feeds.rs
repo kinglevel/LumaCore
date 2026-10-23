@@ -118,6 +118,10 @@ pub enum Feed {
     Devices,
     /// A live screen's view bar (decisions 0287).
     ViewBar,
+    /// A Tree window's rows (decisions 0292).
+    Tree,
+    /// A Tree window's inspector (decisions 0292).
+    Inspector,
 }
 
 /// Every feed a page can subscribe, once — the HTTP engine's rows in the catalog (decisions §34
@@ -300,6 +304,22 @@ pub const FEEDS: &[FeedDecl] = &[
         doc: "A Device Sheet (decisions device-sheet-window, device-grid-and-value-marks): every device in scope in tree order with its folders, the attributes in scope as columns by feature group, and for the rows `from`..`from + count` each value's readout, state, layers and source; sampled, sent when it changes.",
     },
     FeedDecl {
+        name: "tree",
+        kind: FeedKind::State,
+        open: false,
+        params: &["path", "open", "search", "follow"],
+        period_ms: 100,
+        doc: "A Tree window (decisions 0292): the rows of its open branches below Root from the one row builder `ls` and NAV read (`rows` keyed by `path`: depth, slot, name, kind, meta, open, the user's bookmark letters), `path` = the selected place (`path`: a tree path or a GUID, its parents open by themselves; `missing` says why it isn't one), NAV's filter (`search`; `hidden` counts what it hid), `open` the branches opened (comma list), `follow` the object Follow = Selected jumps to (`{path, key}`).",
+    },
+    FeedDecl {
+        name: "inspector",
+        kind: FeedKind::State,
+        open: false,
+        params: &["path"],
+        period_ms: 100,
+        doc: "A Tree window's inspector (decisions 0292): NAV's inspector of `path` (a tree path or a GUID, whole or a prefix): title, target, GUID, path, the user's bookmark letters and the rows (identity, facts, properties with their settings cell `field`, links with the path they lead to); `missing` says why a place isn't one.",
+    },
+    FeedDecl {
         name: "detail",
         kind: FeedKind::State,
         open: false,
@@ -310,7 +330,7 @@ pub const FEEDS: &[FeedDecl] = &[
 ];
 
 impl Feed {
-    pub const ALL: [Feed; 23] = [
+    pub const ALL: [Feed; 25] = [
         Feed::Render,
         Feed::Health,
         Feed::Sysmon,
@@ -334,6 +354,8 @@ impl Feed {
         Feed::Patch,
         Feed::Devices,
         Feed::ViewBar,
+        Feed::Tree,
+        Feed::Inspector,
     ];
 
     /// Its declaration in the catalog.
@@ -367,6 +389,8 @@ impl Feed {
             Feed::Patch => "patch",
             Feed::Devices => "devices",
             Feed::ViewBar => "viewbar",
+            Feed::Tree => "tree",
+            Feed::Inspector => "inspector",
         }
     }
 
@@ -942,6 +966,14 @@ impl Conn {
             Feed::Sequence => Some(BuildSpec::Sequence { user: user.clone(), sequence: v["sequence"].clone() }),
             Feed::Tags => Some(BuildSpec::Tags { tag: v["tag"].clone(), deep: v["deep"].as_bool().unwrap_or(false) }),
             Feed::Patch => Some(BuildSpec::Patch { user: user.clone() }),
+            Feed::Tree => Some(BuildSpec::Tree {
+                user: user.clone(),
+                path: text("path").unwrap_or_default(),
+                open: text("open").unwrap_or_default(),
+                search: text("search").unwrap_or_default(),
+                follow: v["follow"].as_bool().unwrap_or(false),
+            }),
+            Feed::Inspector => Some(BuildSpec::Inspector { user: user.clone(), path: text("path").unwrap_or_default() }),
             Feed::ViewBar => Some(BuildSpec::ViewBar {
                 user: user.clone(),
                 screen: v["screen"].as_u64().unwrap_or(0) as u32,

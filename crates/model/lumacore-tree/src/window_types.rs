@@ -612,6 +612,46 @@ pub(crate) fn builtin_window_types() -> BTreeMap<u32, WindowType> {
         })
         .bar_min(260, 160)
         .bar(true, &["action", "profile", "columns", "font_size", "show_empty"]),
+        // The Tree window (decisions 0292): NAV's tree and inspector in the web and the app. Where it
+        // stands, what is open and the filter are the window's own view state (`Set Self …`).
+        WindowType::new(
+            15,
+            "tree",
+            "Tree",
+            "Tools",
+            "list-tree",
+            "The show's tree and an inspector, as the terminal's NAV shows them: point at a path or a GUID, copy it, change a value, follow what you select.",
+        )
+        .keywords(&["tree", "nav", "navigator", "inspector", "path", "guid", "browse", "explorer", "properties"])
+        .settings({
+            let choice = |words: &[(&str, &str)]| SettingKind::Enum { options: words.iter().map(|(w, l)| (json!(w), (*l).into())).collect() };
+            let mut s = section(
+                "Display",
+                vec![
+                    SettingDef::new("follow", "Follow", choice(&[("None", "None"), ("Selected", "Selected")]), json!("Selected"))
+                        .hint("Selected = jump to what you select or tap (the last fixture of your selection, a pool object); None = stay. My NAV (your terminal's NAV cursor) is planned"),
+                    SettingDef::new("show", "Show", choice(&[("All", "All"), ("Changed", "Changed only")]), json!("All"))
+                        .hint("Changed only = the properties that differ from their declared default (●)"),
+                    SettingDef::new("split", "Split", SettingKind::Int { min: 20, max: 80, named: Vec::new() }, json!(45))
+                        .hint("the tree's share of the width in %; the inspector takes the rest"),
+                ],
+            );
+            s.extend(section(
+                "Place",
+                vec![
+                    SettingDef::new("path", "Path", SettingKind::Text { max_len: 400 }, json!(""))
+                        .hint("where the window stands: a tree path or a GUID (whole or its first 8 digits); empty = Root.ShowData"),
+                    SettingDef::new("open", "Open", SettingKind::Text { max_len: 4000 }, json!("Root.ShowData"))
+                        .hint("the branches you opened, a comma list (a new window: ShowData); the path's own parents open by themselves"),
+                    SettingDef::new("search", "Search", SettingKind::Text { max_len: 200 }, json!(""))
+                        .hint("NAV's filter over the open branches: a number is a slot, words a name"),
+                ],
+            ));
+            s
+        })
+        .chips(&[("search", "× Search “{Self.Search}”", "Self.Search", "Set Self \"Search\" \"\"")])
+        .bar_min(320, 200)
+        .bar(true, &["follow", "show"]),
         WindowType {
             hidden: true,
             ..WindowType::new(
@@ -890,6 +930,21 @@ mod tests {
             json!(110)
         );
         assert!(groups.setting("size").unwrap().coerce(&json!(57)).is_err());
+    }
+
+    /// The Tree window (decisions 0292): Follow = Selected by default, its place, open branches
+    /// and filter as plain settings, Follow and Show in its bar.
+    #[test]
+    fn the_tree_window_follows_the_selection() {
+        let types = builtin_window_types();
+        let tree = types.values().find(|t| t.matches("Tree")).expect("the Tree window type");
+        assert_eq!(tree.name, "tree");
+        assert_eq!(tree.setting("follow").unwrap().default, json!("Selected"));
+        assert_eq!(tree.setting("follow").unwrap().coerce(&json!("none")).unwrap(), json!("None"));
+        for key in ["path", "open", "search", "show", "split"] {
+            assert!(tree.setting(key).is_some(), "{key}");
+        }
+        assert!(tree.setting("split").unwrap().coerce(&json!(95)).is_ok_and(|v| v == json!(80)), "clamped");
     }
 
     #[test]

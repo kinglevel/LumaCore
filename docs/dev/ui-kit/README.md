@@ -41,7 +41,9 @@ The custom elements the kit registers (`customElements.define` in each file; ver
 | `<luma-surface>` | `surface.js` | The lock / login surface |
 | `<luma-tags-pool>` | `tagspool.js` | The Tags pool window (`tags` feed) |
 | `<luma-tiles>` | `tiles.js` | A tile grid (the Menu, Shutdown, Backup tiles) |
-| `<luma-tree>` | `tree.js` | A tree sidebar (the Patch dialog's MVR tree) |
+| `<luma-tree>` | `tree.js` | A tree sidebar (the Patch dialog's MVR tree); host mode: the station's rows, virtual (the Tree window) |
+| `<luma-pathbar>` | `pathbar.js` | Where a window stands in the show's tree: crumbs, or a field for a path or a GUID (the Tree window) |
+| `<luma-tree-window>`, `<luma-inspector>` | `treewindow.js` | The Tree window (`tree` and `inspector` feeds): NAV's tree and inspector, settings cells, copies, the row menu |
 | `<luma-vlist>` | `vlist.js` | A virtual list (the System Monitor) |
 | `<luma-window-bar>` | `windowbar.js` | A window's bar from `/api/window-types` and the `windows` feed |
 

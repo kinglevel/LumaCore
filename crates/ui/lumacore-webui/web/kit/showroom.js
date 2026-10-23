@@ -31,6 +31,7 @@ import { openAttrBoard } from './attrboard.js';
 import './detail.js';
 import * as marks from './marks.js';
 import './devicegrid.js';
+import './treewindow.js';
 
 const PALETTE = [
   ['Background', 'bg'], ['Surface', 'surface'], ['Raised', 'raised'], ['Line', 'line'], ['Text', 'text'],
@@ -513,6 +514,56 @@ export function buildShowroom() {
   tpWrap.append(tpFrame, tpOut);
   root.append(section('luma-tags-pool — the Tags pool window: the tree, the picked tag\'s members Direct | Deep, Run action, the ≡ menu', tpWrap));
   requestAnimationFrame(() => tp.update(tpData(tpDeep), { action: 'Select', counts: true }));
+
+  // luma-pathbar and luma-tree-window (decisions 0292): NAV's tree and inspector as a window —
+  // the path bar's crumbs and its field, the tree in host mode, the inspector's copy buttons and
+  // settings cells. Demo feed data; every gesture shows the line it would run (or the copy).
+  const twOut = div('lc-sr-note lc-selectable', 'Tap a crumb, the bar\'s empty space, a row, a value, ↺ or a copy button: what it does shows here.');
+  const pb = document.createElement('luma-pathbar');
+  pb.addEventListener('jump', e => { twOut.textContent = `› Set Self "Path" "${e.detail.path}"`; pb.update({ path: e.detail.path }); });
+  pb.addEventListener('go', e => { twOut.textContent = `› Set Self "Path" "${e.detail.text}"`; });
+  const pbFrame = div('lc-sr-pathbar');
+  pbFrame.style.cssText = 'width:min(560px,100%)';
+  pbFrame.append(pb);
+  const G1 = 'Root.ShowData.DataPools.1.Groups.1';
+  const twRow = (path, depth, extra = {}) => ({ path, depth, kind: 'node', name: path.split('.').pop(), branch: true, open: true, meta: '', ...extra });
+  const twGroup = (no, name, extra = {}) => ({ path: `Root.ShowData.DataPools.1.Groups.${no}`, depth: 4, kind: 'object', no, name, quoted: true, type: 'Group', object: 'Group', target: `Group ${no}`, branch: false, guid: `demo-${no}`, ...extra });
+  const twTree = {
+    path: G1, hidden: 0, cut: 0, follow: null,
+    rows: [twRow('Root.ShowData', 0, { meta: '1371 fixtures · 4 users' }), twRow('Root.ShowData.Devices', 1, { open: false, meta: '1371 fixtures' }),
+      twRow('Root.ShowData.DataPools', 1, { meta: '77 groups' }),
+      { path: 'Root.ShowData.DataPools.1', depth: 2, kind: 'object', no: 1, name: 'Default', quoted: true, type: 'DataPool', object: 'DataPool', target: 'DataPool 1', branch: true, open: true },
+      twRow('Root.ShowData.DataPools.1.Groups', 3, { meta: '77 groups' }),
+      twGroup(1, 'Photon', { marks: 'a' }), twGroup(2, 'Icarus'), twGroup(3, 'Blinder'), twGroup(4, 'LedBar')],
+  };
+  const twField = (name, value, input, changed) => ({ name, key: name, value, input, line: `Set Group 1 "${name}" {value}`, changed, ...(changed ? { reset: `Reset Group 1 "${name}"` } : {}) });
+  const twInsp = {
+    title: 'Group 1 "Photon"', path: G1, target: 'Group 1', guid: '2fe94d0c-f976-429d-ad96-95e2134e4a18', name: 'Photon', marks: 'a',
+    rows: [
+      { section: 'identity', name: 'Slot', value: '1' }, { section: 'identity', name: 'Kind', value: 'Group' },
+      { section: 'identity', name: 'GUID', value: '2fe94d0c-f976-429d-ad96-95e2134e4a18' }, { section: 'identity', name: 'Path', value: G1 },
+      { section: 'info', name: 'Fixtures', value: '6' },
+      { section: 'property', name: 'Mode', value: 'Scaling', field: twField('Mode', 'Scaling', { type: 'choice', options: ['None', 'Positive', 'Negative', 'Scaling', 'Additive'] }, true) },
+      { section: 'property', name: 'PreserveGrid', value: 'On', field: twField('PreserveGrid', 'On', { type: 'toggle' }, false) },
+      { section: 'property', name: 'Name', value: 'Photon', field: twField('Name', 'Photon', { type: 'text', max_len: 64 }, true) },
+      { section: 'link', name: 'Links to', value: 'Fixture 6 "ACME PHOTON HYBRID"', link: 'Root.ShowData.Devices.Dmx.Patch.Fixtures.6' },
+      { section: 'link', name: 'Links to', value: 'missing · 7c1f0e2a', missing: true },
+    ],
+  };
+  const twFrame = div('lc-sr-tree-window');
+  twFrame.style.cssText = 'height:440px;display:flex;flex-direction:column;border:1px solid var(--lc-line)';
+  const tw = document.createElement('luma-tree-window');
+  tw.addEventListener('run', e => { e.stopPropagation(); twOut.textContent = `› ${e.detail.line}`; });
+  twFrame.append(tw);
+  const twWrap = div('lc-sr-col');
+  twWrap.append(pbFrame, twFrame, twOut);
+  root.append(section('luma-pathbar and luma-tree-window — the Tree window: crumbs or a typed path / GUID, the tree, the inspector (copy, settings cells, links)', twWrap));
+  requestAnimationFrame(() => {
+    pb.update({ path: 'Root.ShowData.DataPools.1.Groups.1' });
+    tw.configure({ follow: 'Selected', show: 'All', split: 45, path: G1, open: '', search: '', level: 'Admin' });
+    tw.showTree(twTree);
+    tw.showInspector(twInsp);
+  });
 
   // Window bar (12c): pinned settings + the type's actions, chips, `…` overflow.
   const wbTypes = {

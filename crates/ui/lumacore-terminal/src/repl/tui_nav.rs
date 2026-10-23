@@ -33,7 +33,6 @@ use super::TuiApp;
 use super::clipboard;
 use crate::core::AppState;
 use crate::core::app_state::ShortcutMode;
-use crate::core::navigation::Navigation;
 
 // ████████╗██╗   ██╗██████╗ ███████╗███████╗
 // ╚══██╔══╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔════╝
@@ -625,7 +624,7 @@ impl TuiApp {
             self.nav.say(format!("no bookmark {letter}"));
             return;
         };
-        match path_of_guid(state, guid) {
+        match lumacore_views::tree_window::path_of_guid(state, guid) {
             Some(path) => self.nav_follow(state, &path),
             None => self.nav.say(format!("bookmark {letter}: missing — its object is gone")),
         }
@@ -692,7 +691,7 @@ impl TuiApp {
 /// The rows below `path`, and below every open one, with the filter applied to the objects.
 fn collect(state: &AppState, path: &str, depth: usize, expanded: &BTreeSet<String>, filter: &str, out: &mut Vec<Entry>, hidden: &mut usize) {
     for row in tree_rows::rows(state, path) {
-        let hit = !filter.is_empty() && matches_filter(&row, filter);
+        let hit = !filter.is_empty() && lumacore_views::tree_window::matches(&row, filter);
         if !filter.is_empty() && row.kind != RowKind::Node && !hit {
             *hidden += 1;
             continue;
@@ -704,15 +703,6 @@ fn collect(state: &AppState, path: &str, depth: usize, expanded: &BTreeSet<Strin
             collect(state, &below, depth + 1, expanded, filter, out, hidden);
         }
     }
-}
-
-/// A row matches a filter by its slot (a number) or its name and text (any case).
-fn matches_filter(row: &TreeRow, filter: &str) -> bool {
-    if let Ok(n) = filter.parse::<u32>() {
-        return row.slot == Some(n);
-    }
-    let f = filter.to_lowercase();
-    row.name.to_lowercase().contains(&f) || row.text().to_lowercase().contains(&f)
 }
 
 fn parent_of(path: &str) -> &str {
@@ -728,14 +718,6 @@ fn target_of(state: &AppState, path: &str) -> Option<(String, u32)> {
         Some(dp) if dp != state.selected_datapool() => (format!("DataPool {dp} {}", object.keyword), no),
         _ => (object.keyword.to_string(), no),
     })
-}
-
-/// Where an object is in the tree now, by its GUID.
-fn path_of_guid(state: &AppState, guid: uuid::Uuid) -> Option<String> {
-    let walk = state.root.show_data.walk_identity();
-    let o = walk.objects.iter().find(|o| o.guid == guid)?;
-    let path = format!("{}.{}", crate::core::tree_path::Node::ShowData.path(), o.path);
-    state.resolve_target(&path).ok().map(|segments| crate::core::tree_path::dot(&segments))
 }
 
 /// Marked objects as one range line (the one range rule): `Group 1 Thru 3 + 7`, kinds in the

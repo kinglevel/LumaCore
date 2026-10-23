@@ -23,7 +23,8 @@ these functions; no client builds its own rows, and nothing here changes the sho
   its folders, the attributes in scope by feature group, each shown value's readout, state and
   layers), the windows' live state (`window_state`: `StationSelf`, `screen_view`), the NAV
   inspector (`inspector::view`: a tree path's identity, facts, declared properties with their
-  `Set` / `Reset` lines and links).
+  `Set` / `Reset` lines, settings cells and links), the Tree window (`tree_window`: `tree`, `inspector`,
+  `place`, `path_of_guid`, `matches`, `follow_target`).
 - **Doesn't own:** the menu table (`lumacore_objects::menu_defs`, rows in the catalog), the objects
   and their properties (`lumacore-objects`), the window types and their rules
   (`lumacore_tree::window_types`), the feeds and their transport (`lumacore-http`, the server's
@@ -41,6 +42,8 @@ these functions; no client builds its own rows, and nothing here changes the sho
   `windows` feeds.
 - `devices::view` (with `devices::{Params, Layer}`) — the `devices` feed, sampled per window for the
   rows it shows (decisions device-sheet-window).
+- `tree_window::{tree, inspector}` — the `tree` and `inspector` feeds of the Tree window (decisions
+  0292), built on the state thread as the user; `place` reads a typed path or a GUID (prefix).
 - `inspector::view` — the TUI's NAV inspector for one tree path (decisions 0291); it reads the
   settings `EditSetting` reads, with the line's datapool in place only while it reads.
 

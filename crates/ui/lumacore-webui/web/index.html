@@ -1287,6 +1287,8 @@ const TAB_KINDS = {
   sysmon:   { label: 'System Monitor', ico: 'scroll-text', build: buildSysmonPanel },
   dmx:      { label: 'DMX', ico: 'grid-3x3', build: buildDmxPanel },
   devices:  { label: 'Device Sheet', ico: 'columns-3', build: buildDevicePanel },
+  // NAV's tree and inspector as a window (decisions 0292).
+  tree:     { label: 'Tree', ico: 'list-tree', build: buildTreePanel },
   realtime: { label: 'Realtime', ico: 'activity', build: buildRealtimePanel },
   // The kit's Showroom (decisions §30): every element in every state.
   showroom: { label: 'Showroom', ico: 'showroom', build: () => LumaKit.showroom() },
@@ -3778,6 +3780,36 @@ function subDevices(v) {
   v.sub?.close();
   v.key = key;
   v.sub = feeds().sub('devices', params, { batch: m => { if (m.data) { v.data = m.data; v.el.show(m.data, v.cfg); } } });
+}
+// The Tree window (decisions 0292): <luma-tree-window> on the `tree` and `inspector` feeds — the
+// window's settings are the feeds' parameters (Path, Open, Search, Follow); every gesture is a line
+// carrying the window's number (`Self`).
+const treeViews = new Map(); // window no → { el, tree, insp, tkey, ikey }
+function buildTreePanel(win) {
+  for (const [no, v] of treeViews) if (!layout.windows[no]) { v.tree?.close(); v.insp?.close(); treeViews.delete(no); }
+  const cfg = winSettings(win);
+  let v = treeViews.get(win.no);
+  if (!v) {
+    const el = document.createElement('luma-tree-window');
+    el.addEventListener('run', e => { e.stopPropagation(); wsCommand(e.detail.line, win.no); });
+    v = { el, tree: null, insp: null, tkey: null, ikey: null };
+    treeViews.set(win.no, v);
+  }
+  v.el.configure({ follow: cfg.follow, show: cfg.show, split: cfg.split, path: cfg.path || '', open: cfg.open || '', search: cfg.search || '', level: myLevel() });
+  const tp = { path: cfg.path || '', open: cfg.open || '', search: cfg.search || '', follow: cfg.follow === 'Selected' };
+  const tkey = JSON.stringify(tp);
+  if (v.tkey !== tkey) {
+    v.tree?.close();
+    v.tkey = tkey;
+    v.tree = feeds().sub('tree', tp, { batch: m => { if (m.data) v.el.showTree(m.data); } });
+  }
+  const ikey = cfg.path || '';
+  if (v.ikey !== ikey) {
+    v.insp?.close();
+    v.ikey = ikey;
+    v.insp = feeds().sub('inspector', { path: ikey }, { batch: m => { if (m.data) v.el.showInspector(m.data); } });
+  }
+  return v.el;
 }
 const seqPop = { ctl: null, sub: null };
 function openSequenceSheet(guid) {

@@ -21,6 +21,7 @@ pub mod patch;
 pub mod pools;
 pub mod sequence;
 pub mod tags;
+pub mod tree_window;
 pub mod view_bar;
 pub mod window_state;
 

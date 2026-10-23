@@ -62,6 +62,10 @@ pub enum BuildSpec {
     Patch { user: String },
     Attributes { user: String, profile: Value },
     Detail { kind: String, no: u32 },
+    /// A Tree window's rows (decisions 0292): its place, open branches, filter and Follow.
+    Tree { user: String, path: String, open: String, search: String, follow: bool },
+    /// A Tree window's inspector (decisions 0292).
+    Inspector { user: String, path: String },
 }
 
 impl BuildSpec {
@@ -87,6 +91,8 @@ impl BuildSpec {
             Self::Patch { user } => format!("patch|{}", user.to_lowercase()),
             Self::Attributes { user, profile } => format!("attributes|{}|{profile}", user.to_lowercase()),
             Self::Detail { kind, no } => format!("detail|{kind}|{no}"),
+            Self::Tree { user, path, open, search, follow } => format!("tree|{}|{path}|{open}|{search}|{follow}", user.to_lowercase()),
+            Self::Inspector { user, path } => format!("inspector|{}|{path}", user.to_lowercase()),
         }
     }
 
@@ -109,6 +115,8 @@ impl BuildSpec {
             Self::Attributes { .. } | Self::Detail { .. } | Self::Sequence { .. } | Self::Tags { .. } => [r.show, 0, 0],
             // Who holds the Devices draft decides draft or live; Paste counts the clipboard.
             Self::Patch { .. } => [r.show, r.claims, r.clipboard],
+            // The tree and the inspector read the show as the user (bookmarks, usage are show data).
+            Self::Tree { .. } | Self::Inspector { .. } => [r.show, 0, 0],
         }
     }
 
@@ -118,6 +126,7 @@ impl BuildSpec {
             Self::Files { .. } => Some(Keyed { list: "files", key: "name" }),
             Self::Pools { .. } => Some(Keyed { list: "cells", key: "no" }),
             Self::PoolEditor { .. } => Some(Keyed { list: "members", key: "fixture" }),
+            Self::Tree { .. } => Some(Keyed { list: "rows", key: "path" }),
             _ => None,
         }
     }
@@ -169,6 +178,10 @@ impl BuildSpec {
                 console.attribute_board(user, profile).unwrap_or_else(|| json!({ "missing": profile }))
             }
             Self::Detail { kind, no } => console.detail_view(kind, *no).unwrap_or_else(|| json!({ "missing": no })),
+            Self::Tree { user, path, open, search, follow } => {
+                console.tree_window(user, &json!({ "path": path, "open": open, "search": search, "follow": follow }))
+            }
+            Self::Inspector { user, path } => console.inspector(user, path),
         }
     }
 }

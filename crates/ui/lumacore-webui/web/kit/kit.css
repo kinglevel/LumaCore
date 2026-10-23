@@ -2149,6 +2149,72 @@ luma-tags-pool { display: block; height: 100%; min-height: 0; container-type: in
 .lc-tp-grid luma-grid { flex: 1; min-height: 0; }
 .lc-tp-empty { padding: 16px 8px; color: var(--lc-text-dim); }
 @container (max-width: 600px) { .lc-tp { grid-template-columns: 1fr; grid-template-rows: 2fr 3fr; } }
+/* <luma-tree> host mode (the Tree window, decisions 0292): a node's name in the kind colour, a
+   search hit lit, the gaps of a long list drawn in sight only. */
+.lc-tree-row.dir .lc-tree-name { color: var(--lc-info); }
+.lc-tree-row.hit .lc-tree-name { color: var(--lc-accent); }
+.lc-tree-gap { flex: none; }
+.lc-tree.host .lc-tree-row { min-height: var(--lc-row); }
+@media (any-pointer: coarse) { .lc-tree.host .lc-tree-row { min-height: var(--lc-hit); } }
+/* <luma-pathbar> — crumbs, or the field to type or paste a path or a GUID (decisions 0292). */
+luma-pathbar { display: block; min-width: 0; }
+.lc-pathbar { display: flex; align-items: center; gap: 4px; min-height: var(--lc-hit); padding: 0 4px 0 8px; border-bottom: 1px solid var(--lc-line);
+  font-family: var(--lc-mono); font-size: var(--lc-fs-small); color: var(--lc-text-dim); cursor: text; min-width: 0; }
+.lc-pathbar-crumbs { flex: 1; min-width: 0; display: flex; align-items: center; gap: 2px; overflow: hidden; white-space: nowrap; }
+.lc-pathbar-crumb { flex: none; border: 0; background: none; color: var(--lc-text); font: inherit; padding: 2px 4px; border-radius: var(--lc-radius-sm); cursor: pointer; }
+.lc-pathbar-crumb:hover, .lc-pathbar-crumb:focus-visible { background: var(--lc-raised); color: var(--lc-strong); outline: none; }
+.lc-pathbar-crumb[aria-current] { color: var(--lc-strong); }
+.lc-pathbar-sep { flex: none; color: var(--lc-text-dim); }
+.lc-pathbar-edit { flex: none; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: none;
+  color: var(--lc-text-dim); border-radius: var(--lc-radius-sm); cursor: pointer; }
+.lc-pathbar-edit:hover { background: var(--lc-raised); color: var(--lc-text); }
+@media (any-pointer: coarse) { .lc-pathbar-edit, .lc-pathbar-crumb { min-width: var(--lc-hit); min-height: var(--lc-hit); } }
+.lc-pathbar.editing { padding: 4px 8px; }
+.lc-pathbar-in { flex: 1; min-width: 0; min-height: 32px; padding: 0 8px; border: 1px solid var(--lc-accent); border-radius: var(--lc-radius-sm);
+  background: var(--lc-bg); color: var(--lc-strong); font-family: var(--lc-mono); font-size: var(--lc-fs-small); outline: none; }
+/* <luma-tree-window> — the path bar over the tree (left) and the inspector (right, Self.Split);
+   a phone draws the tree only and the inspector as its sheet. */
+luma-tree-window { display: block; height: 100%; min-height: 0; container-type: inline-size; }
+.lc-tw { display: flex; flex-direction: column; height: 100%; min-height: 0; background: var(--lc-surface); }
+.lc-tw-body { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, var(--lc-tw-split, 45%)) minmax(0, 1fr); }
+.lc-tw-tree { min-height: 0; min-width: 0; display: flex; flex-direction: column; padding: 6px 0 0 6px; border-right: 1px solid var(--lc-line); }
+.lc-tw-tree luma-tree { flex: 1; min-height: 0; }
+.lc-tw-note { padding: 4px 8px; font-size: var(--lc-fs-small); color: var(--lc-text-dim); }
+.lc-tw-insp { min-height: 0; min-width: 0; overflow: auto; scrollbar-width: thin; }
+.lc-tw.phone .lc-tw-body { grid-template-columns: minmax(0, 1fr); }
+.lc-tw.phone .lc-tw-insp { display: none; }
+.lc-tw.phone .lc-tw-tree { border-right: 0; }
+@container (max-width: 520px) { .lc-tw-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
+  .lc-tw-tree { border-right: 0; border-bottom: 1px solid var(--lc-line); } }
+/* <luma-inspector> — identity (copy buttons), facts, the properties as settings cells, the links. */
+luma-inspector { display: block; min-width: 0; }
+.lc-insp { padding: 6px 0 12px; }
+.lc-insp-title { display: flex; align-items: center; gap: 8px; padding: 4px 12px 8px; }
+.lc-insp-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--lc-fs-md); color: var(--lc-strong); font-weight: 600; }
+.lc-insp-kind { flex: none; font-size: var(--lc-fs-small); color: var(--lc-info); border: 1px solid var(--lc-line); border-radius: var(--lc-radius-sm); padding: 0 6px; }
+.lc-insp-sec { display: flex; align-items: center; gap: 8px; padding: 10px 12px 4px; font-size: var(--lc-fs-small); color: var(--lc-text-dim);
+  text-transform: uppercase; letter-spacing: .08em; }
+.lc-insp-sec i { flex: 1; height: 1px; background: var(--lc-line); }
+.lc-insp-row { display: grid; grid-template-columns: minmax(64px, 110px) minmax(0, 1fr) auto; align-items: center; gap: 6px; min-height: 30px; padding: 0 8px 0 12px; }
+.lc-insp-row:hover { background: var(--lc-hover); }
+.lc-insp-k { color: var(--lc-text-dim); font-size: var(--lc-fs-small); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lc-insp-v { color: var(--lc-strong); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lc-insp-v.mono { font-family: var(--lc-mono); font-size: var(--lc-fs-small); }
+.lc-insp-copy { width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border: 0; background: none;
+  color: var(--lc-text-dim); border-radius: var(--lc-radius-sm); cursor: pointer; }
+.lc-insp-copy:hover, .lc-insp-copy:focus-visible { background: var(--lc-raised); color: var(--lc-strong); outline: none; }
+@media (any-pointer: coarse) { .lc-insp-copy { width: var(--lc-hit); height: var(--lc-hit); } .lc-insp-row { min-height: var(--lc-hit); } }
+.lc-insp-link { justify-self: start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 0; background: none; padding: 0;
+  font: inherit; color: var(--lc-info); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; text-align: left; }
+@media (any-pointer: coarse) { button.lc-insp-link { min-height: var(--lc-hit); } }
+.lc-insp-link.missing { color: var(--lc-alert); text-decoration: none; cursor: default; }
+.lc-insp-props { padding: 4px 12px; }
+.lc-insp-note, .lc-insp-empty { padding: 8px 12px; color: var(--lc-text-dim); }
+.lc-insp-empty { padding: 24px 12px; }
+/* A value that changed under the inspector (another station, a line) lights for a moment. */
+.lc-flash { animation: lc-insp-flash 1.5s ease-out; }
+@keyframes lc-insp-flash { from { background: var(--lc-sel-fill); } to { background: transparent; } }
+.lc-tw-sheet luma-inspector { display: block; }
 /* <luma-dmxmap> — the DMX map zoomed out (decisions §34 round 3, 12, 18; `dmx-map.html` v2): a
    row per universe (name, usage bar, a bar of 512 slots), blocks by fixture type, free runs
    dashed, parked runs striped red; the conflict list below. The bars scroll sideways inside on a

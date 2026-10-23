@@ -35,6 +35,8 @@ import * as split from './split.js';
 import './pool.js';
 import './tree.js';
 import './tagspool.js';
+import './pathbar.js';
+import './treewindow.js';
 import * as marks from './marks.js';
 import './devicegrid.js';
 import * as statusStrip from './statusstrip.js';

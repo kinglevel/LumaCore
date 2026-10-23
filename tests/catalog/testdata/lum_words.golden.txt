@@ -153,6 +153,7 @@ Call — verb
 Cancel — value
 cat — fence
 cd — fence
+Changed — value
 Changes — value
 Channel — value
 CID — property
@@ -422,6 +423,7 @@ OopsConfirmation — property
 OopsProgrammer — property
 OopsSelection — property
 OopsViews — property
+Open — property
 Order — property
 Osc — object ids:1
 OutDelay — property
@@ -582,7 +584,7 @@ Toggle — verb · value
 Top — verb (hold)
 Total — property
 Tracking — property
-tree — fence flags:d=
+tree — value · fence flags:d=
 UIEngine — object
 UIKey — object ids:1
 Ultra — value

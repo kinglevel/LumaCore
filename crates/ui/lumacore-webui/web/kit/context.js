@@ -32,6 +32,8 @@
 //     and returns what puts the list back when the sheet closes),
 //     valueDialog(kind) (optional: the host opens the value dialog for an item's `value` kind —
 //     'number', 'address' — and returns true; else the plain ask),
+//     extra: [{ icon, label, hint, off, fn }] (optional: the host's own entries on top — the Tree
+//     window's Copy GUID / path / target / Set line, Open in the terminal's NAV; decisions 0292),
 //   })
 //   closeContext() · contextOpen()
 
@@ -92,6 +94,9 @@ export function openContext(s) {
   const plural = s.count === 1 ? m.object : m.plural;
   const phone = phoneMode();
   items.push(`<div class="lc-cm-head"${phone ? ' data-head' : ''}>${phone ? '<i class="lc-grab" aria-hidden="true"></i>' : ''}<b>${esc(`${s.count} ${plural} · ${s.rows}`)}</b>${s.note ? `<small>${esc(s.note)}</small>` : ''}${phone ? '<button type="button" class="lc-close lc-cm-x" data-x aria-label="Close"><luma-icon name="x"></luma-icon></button>' : ''}</div>`);
+  // The host's own entries first (each a gesture of the page: a copy, a line it runs).
+  (s.extra || []).forEach((x, i) => row(`x:${i}`, x.icon, x.label, x.off || '', x.hint ? `<span class="lc-cm-val">${esc(x.hint)}</span>` : ''));
+  if ((s.extra || []).length && (m.common || []).length) items.push('<div class="lc-cm-sep"></div>');
   const common = (m.common || []).filter(c => c.id !== 'delete');
   for (const c of common) row(`c:${c.id}`, c.icon, c.label, why(c.rights, c.claim));
   // A phone: the object's own lines come before Set, which folds to one line.
@@ -171,7 +176,8 @@ export function openContext(s) {
     const [kind, id] = [k.slice(0, 1), k.slice(2)];
     const host = spec;
     closeContext();
-    if (kind === 'c') pickCommon(host, m.common.find(c => c.id === id), fill);
+    if (kind === 'x') host.extra[+id]?.fn?.();
+    else if (kind === 'c') pickCommon(host, m.common.find(c => c.id === id), fill);
     else if (kind === 'o') pickLine(host, m.own[+id], fill);
     else if (kind === 's') pickSet(host, m.set.find(p => p.name === id), fill);
   });

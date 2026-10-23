@@ -76,11 +76,15 @@ pub struct Row {
     pub link: Option<String>,
     /// A link whose GUID no longer exists.
     pub missing: bool,
+    /// A property's settings cell as `EditSetting` sends it (`lumacore_wire::SettingField` as
+    /// JSON: input, value, its `Set` line with `{value}`, owner first, and its `Reset` line): the
+    /// Tree window draws it as a `<luma-settings>` cell.
+    pub field: Option<serde_json::Value>,
 }
 
 impl Row {
     fn fact(section: Section, name: &str, value: impl Into<String>) -> Self {
-        Row { section, name: name.to_string(), value: value.into(), kind: String::new(), set: None, changed: false, reset: None, link: None, missing: false }
+        Row { section, name: name.to_string(), value: value.into(), kind: String::new(), set: None, changed: false, reset: None, link: None, missing: false, field: None }
     }
 }
 
@@ -220,7 +224,19 @@ fn properties(state: &mut AppState, object: &'static lumacore_objects::objects::
             let changed = props.get(&f.name).and_then(|p| p.reset_value()).is_some_and(|d| !same_value(&f.value, d));
             let set = f.readonly.is_empty().then(|| line.replace("{value}", ""));
             let reset = (changed && f.readonly.is_empty()).then(|| line.replacen("Set ", "Reset ", 1).replace(" {value}", ""));
-            Row { section: Section::Property, kind: f.input.label().to_string(), value: f.value, name: f.name, set, changed, reset, link: None, missing: false }
+            // The cell: the same field, its lines owner first, ● and ↺ from the declared default.
+            let mut cell = serde_json::to_value(&f).unwrap_or(serde_json::Value::Null);
+            if let Some(o) = cell.as_object_mut() {
+                o.insert("line".into(), line.clone().into());
+                o.insert("key".into(), f.name.clone().into());
+                o.remove("section");
+                o.insert("changed".into(), changed.into());
+                match &reset {
+                    Some(r) => o.insert("reset".into(), r.clone().into()),
+                    None => o.remove("reset"),
+                };
+            }
+            Row { section: Section::Property, kind: f.input.label().to_string(), value: f.value, name: f.name, set, changed, reset, link: None, missing: false, field: Some(cell) }
         })
         .collect()
 }

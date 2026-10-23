@@ -2334,6 +2334,11 @@ Options:
 | "Profile" | as its type declares or Selected | Playback | station | My profile = the views of the profile you log in with |
 | "FeatureGroup" | as its type declares or Selected | Playback | station | Follows the encoder bar's feature group; pin one, or All for every preset |
 | "Tags" | as its type declares | Playback | station | the tag chips lit on top (tag GUIDs); a preset must carry every one |
+| "Follow" | as its type declares or None/Selected | Playback | station | Selected = jump to what you select or tap (the last fixture of your selection, a pool object); None = stay. My NAV (your terminal's NAV cursor) is planned |
+| "Show" | as its type declares or All/Changed | Playback | station | Changed only = the properties that differ from their declared default (●) |
+| "Split" | as its type declares | Playback | station | the tree's share of the width in %; the inspector takes the rest |
+| "Path" | as its type declares | Playback | station | where the window stands: a tree path or a GUID (whole or its first 8 digits); empty = Root.ShowData |
+| "Open" | as its type declares | Playback | station | the branches you opened, a comma list (a new window: ShowData); the path's own parents open by themselves |
 
 
 ## WindowPreset
