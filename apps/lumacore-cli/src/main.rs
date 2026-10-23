@@ -612,6 +612,7 @@ fn to_remote_shell_key(code: KeyCode, modifiers: KeyModifiers) -> Option<RemoteS
         code,
         modifiers: bits,
         repeat: None, // plain terminals don't report auto-repeat
+        base: None,   // a terminal sends the key's character, never where it sits
     })
 }
 

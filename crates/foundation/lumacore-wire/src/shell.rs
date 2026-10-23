@@ -248,6 +248,12 @@ pub struct RemoteShellKey {
     /// don't). `None` falls back to timing heuristics.
     #[serde(default)]
     pub repeat: Option<bool>,
+    /// The letter or digit where the key sits, sent with Alt or Ctrl held: a Mac's Option types
+    /// another character (Option+A = `å`, Option+E a dead key), and a binding names the key
+    /// (`Alt-A`, decisions 0295). The station presses that binding when there is one, else the
+    /// character types.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub base: Option<char>,
 }
 
 /// Where a session's navigation keys go. Typing always goes to the command line;

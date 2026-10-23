@@ -320,7 +320,9 @@ password (accepted only while Admin has none).
 - **To the browser.** Binary frames: 4-byte little-endian viewport id
   (0 = untagged), then ANSI for that xterm.js. Text frames: JSON control
   messages `{"type":"ui","event":…}` and `{"type":"status","status":…}`.
-- **From the browser** (text): `key` (DOM KeyboardEvent), `key_hold` /
+- **From the browser** (text): `key` (DOM KeyboardEvent; with Alt or Ctrl held its `base`, the
+  letter or digit where the key sits — a Mac's Option types another character or a dead key, and
+  the station presses the binding at `base` when there is one, decisions 0295), `key_hold` /
   `key_up` (a keyboard key held past the profile's hold time / released, with
   `held`: the bound UI key's Hold / Release / ReleaseAfterHold, §17, §29),
   `focus`, `live_screen`, `tap` (view button, pool button), `command` (a UI

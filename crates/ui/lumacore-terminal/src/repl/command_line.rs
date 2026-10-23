@@ -156,7 +156,8 @@ impl RemoteCommandLine {
         key: RemoteShellKey,
     ) -> Vec<UiEvent> {
         self.with_client(client, state, |app, state| {
-            app.handle_key_with_repeat(super::tui_types::to_crossterm(&key), key.repeat, state);
+            let event = pressed(app, state, &key);
+            app.handle_key_with_repeat(event, key.repeat, state);
             app.take_ui_events(state)
         })
     }
@@ -331,7 +332,7 @@ impl RemoteCommandLine {
         gesture: &str,
     ) -> Vec<UiEvent> {
         self.with_client(client, state, |app, state| {
-            let key = super::tui_types::to_crossterm(&key);
+            let key = pressed(app, state, &key);
             if let Some((id, meow)) = app.bound_key(state, &key) {
                 app.run_key_action(state, &id, gesture, meow);
             }
@@ -714,4 +715,21 @@ fn ansi_color_code(color: Color, background: bool) -> Option<String> {
             b
         )),
     }
+}
+
+/// The key a client's event presses (decisions 0295): with Alt or Ctrl held, the key where it sits
+/// (`base`) when that one is bound — a Mac's Option+A types `å`, Option+E is a dead key — else
+/// the key as typed, so Option still types its characters and AltGr its signs.
+pub(super) fn pressed(app: &mut TuiApp, state: &AppState, key: &RemoteShellKey) -> crossterm::event::KeyEvent {
+    use lumacore_wire::shell::modifiers as wire;
+    let typed = super::tui_types::to_crossterm(key);
+    if let Some(b) = key.base
+        && key.modifiers & (wire::ALT | wire::CTRL) != 0
+    {
+        let placed = crossterm::event::KeyEvent::new(crossterm::event::KeyCode::Char(b), typed.modifiers);
+        if app.bound_key(state, &placed).is_some() {
+            return placed;
+        }
+    }
+    typed
 }

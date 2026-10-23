@@ -1182,8 +1182,17 @@ document.addEventListener('click', e => {
 // Every key goes to the server as a DOM key event, whichever panel has focus.
 // The server's session decides: typing → command line, navigation keys →
 // focused panel (returned as `ui` events) or the terminal.
+// The letter or digit where a key sits, with Alt or Ctrl held (decisions 0295): a Mac's Option
+// types another character (Option+A = å, Option+E a dead key) and a binding names the key — the
+// station presses that binding when there is one, else the character types. Never for AltGr.
+function keyBase(e) {
+  if (!(e.altKey || e.ctrlKey) || e.getModifierState?.('AltGraph')) return undefined;
+  const m = /^(?:Key([A-Z])|Digit(\d))$/.exec(e.code || '');
+  return m ? (m[1] || m[2]).toLowerCase() : undefined;
+}
 function shouldForward(e) {
   if (e.isComposing || e.metaKey) return false;                 // IME, Cmd shortcuts (copy/paste/quit)
+  if (e.key === 'Dead' && keyBase(e)) return true;               // Option+E on a Mac: the key where it sits
   if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Dead', 'Unidentified'].includes(e.key)) return false;
   if (LumaKit.dialog.dialogOpen() || document.querySelector('.mo-overlay.open, #picker-overlay.open, .lc-kp-scrim, .lc-pick-scrim, .lc-set-scrim')) return false;
   if (!document.getElementById('ctx').hidden) return false;
@@ -1217,22 +1226,26 @@ function forwardKey(e) {
   const mods = { ctrl: e.ctrlKey, alt: e.altKey, shift: e.shiftKey };
   // A latched Meow (🐾) holds the profile's Meow modifier for this one key.
   if (uiKeys.meowLatched) { mods[uiKeys.meowKey.toLowerCase()] = true; setMeowLatch(false); }
-  wsSend({ type: 'key', key: e.key, ...mods, repeat: e.repeat });
-  if (!e.repeat) keyDown(e.key, mods);
+  const base = keyBase(e);
+  wsSend({ type: 'key', key: e.key, base, ...mods, repeat: e.repeat });
+  if (!e.repeat) keyDown(e, mods, base);
 }
 // Keyboard keys bound to UI keys get Hold / Release / ReleaseAfterHold too
 // (decisions §17, §29): `key_hold` after the profile's hold time while the
 // key is still down, `key_up` when it comes up. The station runs the bound
 // key's line for the gesture (nothing when it has none).
+// Kept by the key's place (`e.code`): Option+A comes up as `a` when Option is let go first.
 const keysDown = new Map();
-function keyDown(key, mods) {
-  clearTimeout(keysDown.get(key)?.timer);
-  const down = { mods, held: false };
+function keyDown(e, mods, base) {
+  const at = e.code || e.key;
+  const key = e.key;
+  clearTimeout(keysDown.get(at)?.timer);
+  const down = { key, base, mods, held: false };
   down.timer = setTimeout(() => {
     down.held = true;
-    wsSend({ type: 'key_hold', key, ...mods });
+    wsSend({ type: 'key_hold', key, base, ...mods });
   }, uiKeys.hold);
-  keysDown.set(key, down);
+  keysDown.set(at, down);
 }
 document.addEventListener('keyup', e => {
   // Print Screen often only reaches the page as keyup (Windows): send it
@@ -1241,16 +1254,17 @@ document.addEventListener('keyup', e => {
     wsSend({ type: 'key', key: e.key, ctrl: e.ctrlKey, alt: e.altKey, shift: e.shiftKey, repeat: false });
     return;
   }
-  const down = keysDown.get(e.key);
+  const at = e.code || e.key;
+  const down = keysDown.get(at);
   if (!down) return;
   clearTimeout(down.timer);
-  keysDown.delete(e.key);
-  wsSend({ type: 'key_up', key: e.key, ...down.mods, held: down.held });
+  keysDown.delete(at);
+  wsSend({ type: 'key_up', key: down.key, base: down.base, ...down.mods, held: down.held });
 }, true);
 window.addEventListener('blur', () => {
-  for (const [key, down] of keysDown) {
+  for (const [, down] of keysDown) {
     clearTimeout(down.timer);
-    wsSend({ type: 'key_up', key, ...down.mods, held: down.held });
+    wsSend({ type: 'key_up', key: down.key, base: down.base, ...down.mods, held: down.held });
   }
   keysDown.clear();
 });

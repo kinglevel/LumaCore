@@ -189,6 +189,31 @@ fn prg_keys_cycle_their_word_in_place_and_a_run_completes_the_line() {
     assert_eq!(app.get_input(), "e");
 }
 
+/// A Mac's Option types another character (Option+A = `å`, Option+E a dead key): the page sends
+/// the key where it sits as `base`, and a binding there wins (decisions 0295); with none, the
+/// character types as before.
+#[test]
+fn a_macs_option_key_presses_the_binding_where_it_sits() {
+    let mut state = crate::core::demo::fresh_state();
+    state.user = "Admin".into();
+    state.shortcut_mode = crate::core::app_state::ShortcutMode::Programmer;
+    let mut app = TuiApp::new(&state);
+    let option = |ch: char, base: Option<char>| lumacore_wire::RemoteShellKey {
+        code: lumacore_wire::RemoteShellCode::Char(ch),
+        modifiers: lumacore_wire::shell::modifiers::ALT,
+        repeat: None,
+        base,
+    };
+    let key = command_line::pressed(&mut app, &state, &option('å', Some('a')));
+    assert_eq!(key.code, KeyCode::Char('a'));
+    app.handle_key(key, &mut state);
+    let key = command_line::pressed(&mut app, &state, &option('å', Some('a')));
+    app.handle_key(key, &mut state);
+    assert_eq!(app.get_input(), "Label ", "Alt+A cycles Assign › Label");
+    // Nothing bound at Alt-Q: Option+Q stays the character it typed.
+    assert_eq!(command_line::pressed(&mut app, &state, &option('œ', Some('q'))).code, KeyCode::Char('œ'));
+}
+
 #[test]
 fn meow_f9_toggles_the_normal_theme_of_the_device() {
     let mut state = AppState::new();
@@ -201,6 +226,7 @@ fn meow_f9_toggles_the_normal_theme_of_the_device() {
         code: lumacore_wire::RemoteShellCode::F(9),
         modifiers: lumacore_wire::shell::modifiers::SHIFT,
         repeat: None,
+        base: None,
     });
     assert_eq!(web.modifiers, KeyModifiers::SHIFT);
     app.handle_key(web, &mut state);

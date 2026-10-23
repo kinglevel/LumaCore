@@ -147,6 +147,7 @@ pub fn parse_key_name(name: &str) -> Option<(KeyCode, KeyModifiers)> {
         code,
         modifiers,
         repeat: None,
+        base: None,
     });
     Some((event.code, event.modifiers))
 }

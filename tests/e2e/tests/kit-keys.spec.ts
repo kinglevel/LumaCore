@@ -70,3 +70,28 @@ test('editing E\'s cycle is one Bind + Set UIKey line; Unbind brings LumaCore\'s
   await expect(e).toHaveClass(/\blumacore\b/);
   await expect(e.locator('.lc-km-cyc')).toHaveText('2');
 });
+
+// A Mac's Option types another character: Safari sends Option+A as `å` (code KeyA) and Option+E as
+// a dead key. The page sends the key where it sits; the station presses the PRG binding there.
+test('a Mac\'s Option+A and Option+E reach Assign › Label and Edit in PRG', async ({ page }) => {
+  await server.open(page);
+  await connected(page);
+  await kbdMode(page);
+  await page.evaluate(() => (window as any).wsCommand('Shortcuts Programmer'));
+  await expect(page.locator('#cb-mode .cb-text')).toHaveText('PRG');
+  const option = (key: string, code: string) => page.evaluate(([key, code]) => {
+    for (const type of ['keydown', 'keyup']) document.dispatchEvent(new KeyboardEvent(type, { key, code, altKey: true, bubbles: true }));
+  }, [key, code]);
+  const bar = page.locator('#cb-line .xterm-rows');
+  await option('å', 'KeyA');
+  // (The station's grey hint of the next word may follow.)
+  await expect.poll(async () => (await bar.innerText()).trimEnd()).toMatch(/> Assign\b/);
+  await option('å', 'KeyA');
+  await expect.poll(async () => (await bar.innerText()).trimEnd()).toMatch(/> Label\b/);
+  // Option+E is a dead key on a Mac: it still presses Alt+E (bound here to a press that types).
+  await page.evaluate(() => (window as any).wsCommand('Bind "Alt-E" `Edit` /Shortcuts "PRG"; Set UIKey "user.prg.alt-e" "Types" 1'));
+  await option('Dead', 'KeyE');
+  await expect.poll(async () => (await bar.innerText()).trimEnd()).toMatch(/> Label Edit\b/);
+  await page.evaluate(() => (window as any).wsCommand('Unbind "Alt-E" /Shortcuts "PRG"'));
+  await page.evaluate(() => (window as any).wsCommand('Shortcuts Keyboard'));
+});

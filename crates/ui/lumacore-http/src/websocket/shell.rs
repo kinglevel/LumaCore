@@ -226,12 +226,13 @@ fn packet_line(packet: &ShellClientPacket) -> Vec<u8> {
     line
 }
 
-fn key(code: RemoteShellCode, modifiers: u8, repeat: Option<bool>) -> ShellClientPacket {
+fn key(code: RemoteShellCode, modifiers: u8, repeat: Option<bool>, base: Option<char>) -> ShellClientPacket {
     ShellClientPacket::Key {
         key: RemoteShellKey {
             code,
             modifiers,
             repeat,
+            base,
         },
     }
 }
@@ -377,9 +378,19 @@ fn browser_packet(v: &Value) -> Browser {
 }
 
 /// Convert a browser KeyboardEvent (`key` = DOM key name) into a key packet.
-/// None for keys the shell has no code for (modifier-only etc.).
+/// None for keys the shell has no code for (modifier-only etc.). `base` is the
+/// letter or digit where the key sits, sent with Alt or Ctrl held (decisions
+/// 0295): a Mac's Option+E is a dead key — it is that letter.
 fn dom_key(v: &Value) -> Option<ShellClientPacket> {
-    let name = v["key"].as_str().unwrap_or("");
+    let base = v["base"].as_str().and_then(|b| {
+        let mut c = b.chars();
+        c.next().filter(|_| c.next().is_none())
+    });
+    let name = match v["key"].as_str().unwrap_or("") {
+        "Dead" if base.is_some() => base.map(String::from).unwrap_or_default(),
+        n => n.to_string(),
+    };
+    let name = name.as_str();
     let mut mods = modifier_bits(v);
     let code = match name {
         "Enter" => RemoteShellCode::Enter,
@@ -416,7 +427,7 @@ fn dom_key(v: &Value) -> Option<ShellClientPacket> {
             }
         }
     };
-    Some(key(code, mods, v["repeat"].as_bool()))
+    Some(key(code, mods, v["repeat"].as_bool(), base))
 }
 
 /// Convert an xterm.js `onData` string into one or more key packet JSON values.
@@ -426,7 +437,7 @@ fn xterm_to_keys(input: &str) -> Vec<ShellClientPacket> {
 
     while !remaining.is_empty() {
         let (code, modifiers, consumed) = parse_next_key(remaining);
-        out.push(key(code, modifiers, None));
+        out.push(key(code, modifiers, None, None));
         remaining = &remaining[consumed..];
     }
 
