@@ -340,8 +340,12 @@ Clone it, point your AI at it and start. A good way to work:
    docs/decisions/."*
 2. Edit the suggestion like a manual: add your ideas, cut what doesn't fit.
 3. Ask: *"Review my design so it follows the repo's rules."*
-4. When you're happy, it becomes a decision record and a roadmap line. Then ask the AI to build it.
-5. Run it, test it, and open a pull request.
+4. Ask: *"Make a mockup before you build anything."* The AI draws it with the web UI's own kit,
+   so it looks like the real thing, and keeps each round in
+   [`docs/dev/ui-kit/mockups/`](docs/dev/ui-kit/mockups/README.md). Change it round by round
+   until it's right: fixing a picture is far cheaper than fixing code.
+5. When you're happy, it becomes a decision record and a roadmap line. Then ask the AI to build it.
+6. Run it, test it, and open a pull request.
 
 More in [vibecode-workflow.md](docs/dev/build/vibecode-workflow.md) and
 [CONTRIBUTING.md](CONTRIBUTING.md).
