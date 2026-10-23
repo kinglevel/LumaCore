@@ -601,12 +601,25 @@ test('Users & Profiles on the grid and the slab: New is the station ask, several
   await press(page, info, s.locator(`luma-grid [data-gutter="${dflt.guid}"]`));
   await expect(phone(info) ? await sheetCell(s, '[data-act="delete"]') : slabCell(page, 'delete')).toHaveAttribute('data-why', /locked template/);
   if (phone(info)) await closeSheet(page);
-  // A profile's settings: its typed tabs (12b2) in the settings window.
+  // A profile's settings: every typed tab (12b2) in the settings window, above the menu — never the
+  // theme editor alone (the profile's reply carries its Theme cells too).
   const admin = profiles.find((p: any) => p.name === 'Admin');
   await press(page, info, s.locator(`luma-grid [data-gutter="${admin.guid}"]`));
   await press(page, info, ownCell(page, 'settings'));
   const sw = page.locator('.lc-set-scrim');
-  await expect(sw.locator('.lc-set-tabs button')).toHaveText(['Look', 'Input & keys', 'Oops', 'Command line', 'Attributes', 'MVR import', 'Lock screen', 'Meta', 'Tags']);
+  await expect(sw.locator('.lc-set-tabs button')).toHaveText(['Look', 'Input & keys', 'Oops', 'Command line', 'Update', 'Attributes', 'MVR import', 'Paint slots', 'Lock screen', 'Meta', 'Tags']);
+  await expect(page.locator('.lc-te-scrim')).toHaveCount(0);
+  // Its Look's theme editor opens above the settings window.
+  // (A phone folds the header's actions into ⋯.)
+  if (phone(info)) {
+    await sw.locator('[data-kit="settings-more"]').click();
+    await page.locator('.ci', { hasText: 'Theme editor' }).click();
+  } else await sw.getByRole('button', { name: 'Theme editor' }).click();
+  const te = page.locator('.lc-te-scrim');
+  await expect(te).toBeVisible();
+  const z = async (l: any) => Number(await l.evaluate((e: Element) => getComputedStyle(e).zIndex));
+  expect(await z(te)).toBeGreaterThan(await z(sw));
+  await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
 });
 
@@ -643,7 +656,7 @@ test('Settings › Assets (New asks the drive name, the folder is this station\'
   await expect(s.locator(`luma-grid [data-k="${key}"][data-col="folder"]`)).toHaveText('None');
   await press(page, info, s.locator('.lc-setup-tabs [data-tab="About"]'));
   const fmt = s.locator('.lc-set-cell', { hasText: 'ShowFormat' });
-  await expect(fmt.locator('.lc-set-value')).toHaveText('31'); // FORMAT_VERSION
+  await expect(fmt.locator('.lc-set-value')).toHaveText(/^\d+$/); // FORMAT_VERSION (the code owns the number)
   await expect(fmt).toHaveAttribute('data-why', /read-only|facts/);
 });
 

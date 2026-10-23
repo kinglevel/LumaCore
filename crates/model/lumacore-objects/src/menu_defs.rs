@@ -150,13 +150,16 @@ static PROFILE_DETAIL: Detail = Detail {
             name: "Settings",
             label: "Settings",
             path: "Settings",
-            sub: "Look · Lock screen · Input & keys · Oops · Command line",
+            sub: "Look · Paint slots · Lock screen · Input & keys · Oops · Command line · Update · MVR import",
             parts: &[
                 part("Look", "Look", "Theme", PartContent::Settings("Look")),
+                part("PaintSlots", "Paint slots", "Theme.Paint", PartContent::Settings("Paint slots")),
                 part("LockScreen", "Lock screen", "LockScreen", PartContent::Settings("Lock screen")),
                 part("Input", "Input & keys", "Preferences", PartContent::Settings("Input & keys")),
                 part("Oops", "Oops", "Preferences.Oops", PartContent::Settings("Oops")),
                 part("CommandLine", "Command line", "Preferences", PartContent::Settings("Command line")),
+                part("Update", "Update", "Preferences.Update", PartContent::Settings("Update")),
+                part("MvrImport", "MVR import", "Preferences.Mvr", PartContent::Settings("MVR import")),
             ],
         },
         DetailGroup {

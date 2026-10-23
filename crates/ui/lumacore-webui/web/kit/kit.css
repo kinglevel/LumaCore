@@ -2117,6 +2117,9 @@ luma-tree { display: block; min-height: 0; }
   cursor: pointer; padding: 0; position: relative; }
 .lc-tree-box[data-state="on"] { background: var(--lc-accent); border-color: var(--lc-accent); }
 .lc-tree-box.gap { border-color: transparent; background: none; }
+@media (any-pointer: coarse) { .lc-tree-box { width: var(--lc-hit); height: var(--lc-hit); }
+  .lc-tree-box[data-state="on"]::after { left: calc(50% - 4px); top: calc(50% - 8px); }
+  .lc-tree-box[data-state="part"]::after { top: calc(50% - 1px); left: 25%; right: 25%; } }
 .lc-tree-name.tone-alert, .lc-tree-count.tone-alert { color: var(--lc-alert); }
 /* A dialog's tree (the Update ask, decisions 0293): the kit's tree in pick mode, in a box. */
 .lc-dlg-details[data-kit="lines"] { flex: none; }
@@ -2586,7 +2589,9 @@ luma-status-strip.narrow .lc-ss-m .l { display: inline; }
 }
 
 /* ── The theme editor (kit/themeeditor.js; the approved ThemeBg board, archive §30 "12g") ── */
-.lc-te-scrim { z-index: 60; }
+/* Above the setup menus and the settings window it opens from (the profile's Look), under the
+   context menus, dialogs and pickers. */
+.lc-te-scrim { z-index: 100006; }
 .lc-te-scrim.picking { display: none; }
 .lc-te { width: min(1180px, 100%); max-height: calc(100% - 8px); overflow: auto; display: grid; gap: 14px; padding: 16px 18px; color: var(--lc-text);
   background: var(--lc-bg); border: 1px solid var(--lc-line); border-radius: var(--lc-radius-sm); }
@@ -2678,6 +2683,8 @@ luma-rules-window { display: flex; flex-direction: column; flex: 1 1 0; min-heig
 .lc-rules-count { color: var(--lc-text-dim); font-size: var(--lc-fs-note); }
 .lc-rules-which { margin-left: auto; display: flex; align-items: center; gap: 6px; min-width: 0; flex: 0 1 380px; }
 .lc-rules-which .lc-dlg-input { height: 40px; flex: 1; min-width: 0; }
+/* Touch: the field inside its borders still meets the hit size (a dialog input's 52 px). */
+@media (any-pointer: coarse) { .lc-rules-which .lc-dlg-input { height: calc(var(--lc-hit) + 8px); } }
 .lc-rules-which .lc-dlg-input .lc-ico { width: 16px; height: 16px; color: var(--lc-text-dim); }
 .lc-rules-answer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 10px; border-radius: var(--lc-radius-sm);
   background: color-mix(in srgb, var(--lc-accent) 12%, var(--lc-surface)); border: 1px solid color-mix(in srgb, var(--lc-accent) 45%, transparent); font-size: var(--lc-fs-note); }

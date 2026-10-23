@@ -951,6 +951,8 @@ macro_rules! look_props {
             apply: Some(profile_write),
             may: Some(profile_may),
             view: Some(profile_json),
+            // A profile's Theme, Paint and LockScreen live with the profile (decisions 0147).
+            home: Some(props::Home::User),
             ..props::Props::BASE
         }
     };
@@ -1085,7 +1087,7 @@ pub static LOCK_SCREEN: ObjectDef = look_object!(
 );
 
 /// The Users & Profiles window's tab of a profile setting (decisions §30
-/// "12b2": Look · Lock screen · Input & keys · Oops · Command line).
+/// "12b2": Look · Paint slots · Lock screen · Input & keys · Oops · Command line · Update · MVR import).
 pub fn profile_section(name: &str) -> &'static str {
     // tidy: not-keywords (profile setting names, grouped into tabs)
     match name {

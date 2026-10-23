@@ -4399,9 +4399,12 @@ function openObjectSettings(ev) {
   // An open setup menu shows its settings tab / bound cells itself (12d).
   if (setupFields(ev)) return;
   // A profile's Theme (`Theme`, `EditSetting [UserProfile n] Theme`): the theme editor (archive
-  // §30 "12g", the ThemeBg board). Its own fields answer it while it is open.
-  const base = (ev.fields || []).find(f => f.name === 'Base' && /Theme "Base"/.test(f.line || ''));
-  if (base) { openThemeEditor(ev, base); return; }
+  // §30 "12g", the ThemeBg board). Its own fields answer it while it is open. Only a reply that
+  // is the Theme alone: the whole profile (`EditSetting UserProfile n`) carries its Theme cells
+  // too and opens in the settings window, its Look tab offering the editor.
+  const fields = ev.fields || [];
+  const base = fields.find(f => f.name === 'Base' && /Theme "Base"/.test(f.line || ''));
+  if (base && fields.every(f => !f.line || /\bTheme (Paint )?"/.test(f.line))) { openThemeEditor(ev, base); return; }
   // A kit dialog waiting for an object's fields (the Import MVR dialog's Options step takes the
   // profile's "MVR import" section): it says so by preventing the event.
   if (!document.dispatchEvent(new CustomEvent('lc-fields', { detail: ev, cancelable: true }))) return;
@@ -4432,10 +4435,13 @@ function openObjectSettings(ev) {
     return;
   }
   const win = (ev.fields || [])[0]?.line?.match(/^Set Window (\S+) /)?.[1];
+  // A whole profile: its Look offers the theme editor, which opens above this window.
+  const themeOwner = base?.line?.match(/^Set (.+?) Theme "Base"/)?.[1];
   LumaKit.settings.openSettings({
     title: ev.title, icon: win ? 'app-window' : 'settings', fields: ev.fields || [],
     delete_line: win ? `Delete Window ${win}` : null,
-  }, { run: line => { wsCommand(line); if (!/^Delete /.test(line)) setTimeout(() => wsCommand(win ? `EditSetting Window ${win}` : `EditSetting ${ev.title}`), 60); } });
+    actions: themeOwner ? [{ label: 'Theme editor', line: `EditSetting ${themeOwner} Theme` }] : undefined,
+  }, { run: line => { wsCommand(line); if (!/^(Delete|EditSetting) /.test(line)) setTimeout(() => wsCommand(win ? `EditSetting Window ${win}` : `EditSetting ${ev.title}`), 60); } });
 }
 
 // ── The screen's events (the `screen` feed, decisions §30 "12d") ──────────
