@@ -525,7 +525,7 @@ pub static IMAGE: ObjectDef = ObjectDef {
     ],
     delete_ask: None,
     complete: Some(image_complete),
-    props: Some(&crate::props::Props { lists: &[&NAME_PROP], apply: Some(image_write), may: None, ..crate::props::Props::BASE }),
+    props: Some(&crate::props::Props { lists: &[&NAME_PROP, &crate::props::META_PAINT], apply: Some(image_write), may: None, ..crate::props::Props::BASE }),
     tree: Some(TreeDef {
         door: None,
         datapool: None,
@@ -839,9 +839,12 @@ macro_rules! colour {
 }
 
 /// A profile's writable look (§30 "12a2"): users of the profile and Admins.
-pub static PROFILE_PROPS: [props::Property; 41] = [
+pub static PROFILE_PROPS: [props::Property; 43] = [
     props::Property { name: "Name", access: crate::props::Access::Field("meta.name"), kind: TEXT, rights: crate::commands::registry::Rights::Admin, doc: "display name", ..crate::props::Property::BASE },
     props::Property { name: "Note", access: crate::props::Access::Field("meta.note"), kind: TEXT, rights: GUEST, doc: "operator note", ..crate::props::Property::BASE },
+    crate::props::Property { rights: GUEST, ..crate::props::META_PAINT[0] },
+    // The paint picker opens on the mode last used (decisions 0294).
+    props::Property { name: "PaintMode", access: crate::props::Access::Field("settings.preferences.paint_mode"), kind: props::PropKind::Choice(&["Palette", "Free", "Theme"]), rights: GUEST, section: "Look", default: Some("Palette"), doc: "the mode the paint picker opens on: the one you used last", ..crate::props::Property::BASE },
     // The behaviour (decisions §30 "12b2": every preference a declared prop,
     // so the Users & Profiles window and EditSetting get them typed).
     props::Property { name: "MeowKey", access: crate::props::Access::Field("settings.preferences.meow_key"), kind: props::PropKind::Choice(&["Shift", "Alt", "Ctrl"]), rights: GUEST, doc: "the held key that acts as Meow", ..crate::props::Property::BASE },
@@ -926,7 +929,7 @@ pub static LOCK_SCREEN_PROPS: [props::Property; 4] = [
 
 
 /// The profile a Theme / LockScreen line means: the `UserProfile <x>` in front, else your own.
-fn look_profile(state: &AppState) -> String {
+pub(crate) fn look_profile(state: &AppState) -> String {
     crate::commands::attributes::scoped_profile()
         .or_else(|| state.root.show_data.profile_id_for_user(state.effective_user_name()))
         .map(|n| n.to_string())
@@ -958,7 +961,12 @@ static THEME_SETTINGS: props::Props = props::Props {
     within: Some(|_, _| Ok(Box::new(()))),
     ..look_props!(&[&THEME_PROPS])
 };
-static PAINT_SETTINGS: props::Props = look_props!(&[&PAINT_PROPS]);
+// The 14 screen colours, then the paint slots (decisions 0294): LumaCore's declared, a theme's own
+// under their names.
+static PAINT_SETTINGS: props::Props = props::Props {
+    open: Some(&crate::commands::paint_slots::OPEN_SLOT),
+    ..look_props!(&[&PAINT_PROPS, &crate::commands::paint_slots::SLOT_PROPS])
+};
 static LOCK_SCREEN_SETTINGS: props::Props = look_props!(&[&LOCK_SCREEN_PROPS]);
 
 /// `EditSetting Theme [Paint]` / `EditSetting LockScreen` (and the word typed alone): the
@@ -1039,7 +1047,12 @@ macro_rules! look_object {
 
 pub static THEME: ObjectDef = look_object!(
     "Theme",
-    &[(Verb::EditSetting, crate::commands::typed::typed::<EditTheme>)],
+    &[
+        (Verb::EditSetting, crate::commands::typed::typed::<EditTheme>),
+        // `Store Theme Paint "Haze"`: a paint slot of your theme's own (decisions 0294; the line
+        // binds from the Paint on).
+        (Verb::Store, crate::commands::typed::typed::<crate::commands::paint_slots::StorePaintSlot>),
+    ],
     &[&PAINT.decl],
     THEME_SETTINGS,
     "Set [UserProfile <n>] Theme \"<Property>\" <value> | Reset [UserProfile <n>] Theme",
@@ -1053,9 +1066,11 @@ pub static PAINT: ObjectDef = look_object!(
     &[(Verb::EditSetting, crate::commands::typed::typed::<EditPaint>)],
     &[],
     PAINT_SETTINGS,
-    "Set [UserProfile <n>] Theme Paint \"<Colour>\" \"#rrggbb\" | Reset … Theme Paint",
-    "A theme's screen colours, sRGB (decisions §33 62); none set = the base's.",
-    &["Set Theme Paint \"Accent\" \"#9a7a08\"", "Reset Theme Paint \"Accent\""]
+    "Set [UserProfile <n>] Theme Paint \"<Colour|Slot>\" \"#rrggbb\" | Store … Theme Paint \"<Slot>\" [\"#rrggbb\"] | Reset … Theme Paint [\"<Colour|Slot>\"]",
+    "A theme's screen colours, sRGB (decisions §33 62; none set = the base's), and its paint slots \
+     (decisions 0294): LumaCore's Dimmer … Special 4 and the ones it adds — what an object painted \
+     Theme \"<slot>\" shows each viewer in their own theme.",
+    &["Set Theme Paint \"Accent\" \"#9a7a08\"", "Reset Theme Paint \"Accent\"", "Set Theme Paint \"Position\" \"#3a62b8\"", "Store Theme Paint \"Haze\" \"#8fa3b8\"", "Reset Theme Paint \"Haze\""]
 );
 
 pub static LOCK_SCREEN: ObjectDef = look_object!(

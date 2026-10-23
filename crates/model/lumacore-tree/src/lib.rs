@@ -19,6 +19,7 @@ pub use lumacore_base::keybindings;
 pub mod media;
 pub mod merge;
 pub use lumacore_base::node;
+pub use lumacore_base::paint;
 pub mod output_ops;
 pub mod programmer;
 pub use lumacore_runtime as runtime;
@@ -55,7 +56,7 @@ pub use lumacore_base::replication::{PendingReplicationOp, ReplicationJournal, R
 pub use lumacore_base::value::{Absolute, Value, next_stamp};
 pub use node::{IconRef, NodeMeta, TreeNode};
 pub use output_ops::{LineError, LineOps};
-pub use programmer::{MvrImportPreset, MvrLost, MvrMatch, MvrMissing, MvrRotation, MvrTake};
+pub use programmer::{PAINT_RECENT_MAX, MvrImportPreset, MvrLost, MvrMatch, MvrMissing, MvrRotation, MvrTake};
 pub use programmer::{OopsConfirmation, OopsSettings, Programmer, ProgrammerValues, SelectionState};
 pub use programmer::{
     ClearState, ProgValue, ScreenConfig, ScreenContent, Selected, StoredView, USER_COLORS, USER_COLOR_NAMES, DEFAULT_PROFILE, User,

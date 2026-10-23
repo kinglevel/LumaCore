@@ -501,6 +501,9 @@ pub enum FieldInput {
     Link,
     /// A colour `#rrggbb`; empty = the theme's.
     Colour,
+    /// An object's Paint (decisions 0294): drawn by the kit's paint picker (`<luma-paint>`, on the
+    /// `paint` feed) — `#rrggbb`, a palette word, `Theme "<slot>"` or `none`.
+    Paint,
     /// An ordered list of ids (the window bar's items): `items` are what may
     /// be in it; `{value}` takes the ids `"a,b,c"`.
     List { items: Vec<ListItem> },
@@ -549,6 +552,7 @@ impl FieldInput {
             FieldInput::Choice { options } => options.join("/"),
             FieldInput::Link => "name or number".into(),
             FieldInput::Colour => "#rrggbb or Theme".into(),
+            FieldInput::Paint => "#rrggbb, a palette colour, Theme \"<slot>\" or none".into(),
             FieldInput::List { .. } => "\"a,b,c\"".into(),
             FieldInput::Tags { .. } => "tag paths".into(),
         }

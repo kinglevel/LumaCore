@@ -45,12 +45,14 @@ pub fn view(show: &ShowData, draft: Option<(&str, &DevicesData, &Marks, Option<&
     let mvr = &devices.metadata.mvr;
     let tag_names: BTreeMap<Uuid, String> =
         lumacore_tree::tags::tag::all(&show.tags).into_iter().map(|(_, t)| (t.meta.identity.guid, t.name().to_string())).collect();
-    let mut fixtures = fixture_rows(devices, &tag_names);
+    // Each row wears its fixture's colour as this viewer sees it (decisions 0294).
+    let paint = lumacore_objects::paint::Painter::new(show, user);
+    let mut fixtures = fixture_rows(devices, &tag_names, &paint);
     // The holder's draft: a gold dot on every cell that differs from the live rig (§34 round 3,
     // 10), by fixture GUID.
     if mine {
         let live: BTreeMap<String, Value> =
-            fixture_rows(&show.devices, &tag_names).into_iter().map(|r| (r["guid"].to_string(), r)).collect();
+            fixture_rows(&show.devices, &tag_names, &paint).into_iter().map(|r| (r["guid"].to_string(), r)).collect();
         for r in &mut fixtures {
             let was = live.get(&r["guid"].to_string());
             let changed: Vec<&str> = SHOWN.iter().copied().filter(|k| was.is_none_or(|w| w[*k] != r[*k])).collect();
@@ -217,7 +219,7 @@ pub fn tree_order(devices: &DevicesData) -> Vec<&lumacore_tree::fixtures::Fixtur
     all
 }
 
-fn fixture_rows(devices: &DevicesData, tag_names: &BTreeMap<Uuid, String>) -> Vec<Value> {
+fn fixture_rows(devices: &DevicesData, tag_names: &BTreeMap<Uuid, String>, paint: &lumacore_objects::paint::Painter) -> Vec<Value> {
     let patch = &devices.dmx.patch;
     let mvr = &devices.metadata.mvr;
     let universe_no: BTreeMap<Uuid, u32> = patch.universes.iter().map(|(n, u)| (u.meta.identity.guid, *n)).collect();
@@ -254,9 +256,13 @@ fn fixture_rows(devices: &DevicesData, tag_names: &BTreeMap<Uuid, String>) -> Ve
             let tone = if parked { "alert" } else if gone { "warn" } else { "" };
             let [px, py, pz] = f.mvr.matrix.position_m();
             let [rx, ry, rz] = f.mvr.matrix.rotation_deg();
+            let shown = paint.of(&f.meta);
             json!({
                 "no": no, "guid": f.meta.identity.guid,
                 "name": f.meta.identity.name.clone().unwrap_or_default(),
+                "paint": shown.hex,
+                "paint_from": shown.from_text(),
+                "paint_word": f.meta.annotation.paint.as_ref().map_or_else(|| "none".to_string(), |p| p.word()),
                 "note": f.meta.annotation.note,
                 "fixture_type": ft.map(|t| t.meta.identity.name.clone().unwrap_or_default()).unwrap_or_default(),
                 "mode": mode.unwrap_or_default(),

@@ -214,11 +214,10 @@ impl SettingDef {
                 if matches!(text.as_str(), "" | "none" | "theme") {
                     return Ok(json!(""));
                 }
-                let hex = text.trim_start_matches('#');
-                if (hex.len() == 6 || hex.len() == 3) && hex.chars().all(|c| c.is_ascii_hexdigit()) {
-                    Ok(json!(format!("#{hex}")))
-                } else {
-                    Err(format!("{}: expected a colour #rrggbb (or Theme)", self.key))
+                // The one hex reading (lumacore_base::paint); `Theme` is this setting's own word.
+                match lumacore_base::paint::hex_rgb(&text) {
+                    Some(rgb) => Ok(json!(lumacore_base::paint::hex_of(rgb))),
+                    None => Err(format!("{}: expected a colour #rrggbb (or Theme)", self.key)),
                 }
             }
             SettingKind::List => match value {

@@ -133,7 +133,7 @@ fn view_zero_clears_and_deleting_a_view_clears_its_buttons() {
 fn an_object_in_another_datapool_is_named_owner_first() {
     let (state, _, _) = rig();
     let mine = crate::pools::user_datapool(&state.root.show_data, "Admin");
-    let held = Held { kind: ButtonKind::Group, no: 3, datapool: Some(mine + 1), name: "x".into(), guid: Uuid::nil() };
+    let held = Held { kind: ButtonKind::Group, no: 3, datapool: Some(mine + 1), name: "x".into(), guid: Uuid::nil(), paint: None, tags: Vec::new() };
     assert_eq!(object_line(&state, &held), format!("DataPool {} Group 3", mine + 1));
     let held = Held { datapool: Some(mine), ..held };
     assert_eq!(object_line(&state, &held), "Group 3");

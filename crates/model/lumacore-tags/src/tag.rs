@@ -43,8 +43,16 @@ pub struct Tag {
     /// What a tap on the tag runs in the Tags pool window (decisions §12 "Tags hardened" 9).
     #[serde(default, skip_serializing_if = "TagAction::is_default")]
     pub action: TagAction,
+    /// Which painted tag colours an object without its own Paint: the highest wins, ties by the
+    /// tag tree's order (decisions object-paint-palette-free-theme-links).
+    #[serde(default, skip_serializing_if = "is_zero")]
+    pub priority: i32,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub children: TagTree,
+}
+
+fn is_zero(n: &i32) -> bool {
+    *n == 0
 }
 
 /// A tag's tap action: the window's default, or its own. Go+ / Off / Toggle come with playback
@@ -82,7 +90,7 @@ pub struct Member {
 impl Tag {
     /// A new tag with a fresh GUID and no children.
     pub fn new(name: Option<String>) -> Self {
-        Self { meta: NodeMeta::new(name), action: TagAction::default(), children: TagTree::new() }
+        Self { meta: NodeMeta::new(name), action: TagAction::default(), priority: 0, children: TagTree::new() }
     }
 
     /// Its name, or "" when it has none.
@@ -447,7 +455,7 @@ impl Identified for Tag {
 
 impl Walk for Tag {
     fn walk(&self, w: &mut Walker) {
-        let Self { meta, action: _, children } = self;
+        let Self { meta, action: _, priority: _, children } = self;
         meta.walk_links(w);
         w.pool("Children", children);
     }

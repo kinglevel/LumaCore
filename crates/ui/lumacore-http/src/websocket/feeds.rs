@@ -122,6 +122,10 @@ pub enum Feed {
     Tree,
     /// A Tree window's inspector (decisions 0292).
     Inspector,
+    /// The paint picker's palette, slots and recent colours (decisions 0294).
+    Paint,
+    /// The Rules window's rules (decisions 0294).
+    Rules,
 }
 
 /// Every feed a page can subscribe, once — the HTTP engine's rows in the catalog (decisions §34
@@ -327,10 +331,26 @@ pub const FEEDS: &[FeedDecl] = &[
         period_ms: 100,
         doc: "A Users & Profiles detail's lists: a profile's Content (keys, window presets, images, icons, screens) or a user's work and usage.",
     },
+    FeedDecl {
+        name: "paint",
+        kind: FeedKind::State,
+        open: false,
+        params: &["profile"],
+        period_ms: 100,
+        doc: "The paint picker and the theme editor's Paint tab (decisions 0294): the palette (12 hues in four tones, the named tone, the greys), the theme paint slots of `profile` (default your own: colour, LumaCore's, changed, added, each slot's Set and Reset line), your recent colours, the mode the picker opens on and the lines to add a slot, reset them and keep the mode.",
+    },
+    FeedDecl {
+        name: "rules",
+        kind: FeedKind::State,
+        open: false,
+        params: &["profile", "which"],
+        period_ms: 100,
+        doc: "The Rules window (decisions 0294): the AttributeRule list of the show (no `profile`) or a profile's own, in order — pattern, feature group in its colour, family, feature, keyword or family match, standard or learned — `which` an attribute name: the rule that places it (`hit`), its group and why; the lines a drag, a cell and the slab run.",
+    },
 ];
 
 impl Feed {
-    pub const ALL: [Feed; 25] = [
+    pub const ALL: [Feed; 27] = [
         Feed::Render,
         Feed::Health,
         Feed::Sysmon,
@@ -356,6 +376,8 @@ impl Feed {
         Feed::ViewBar,
         Feed::Tree,
         Feed::Inspector,
+        Feed::Paint,
+        Feed::Rules,
     ];
 
     /// Its declaration in the catalog.
@@ -391,6 +413,8 @@ impl Feed {
             Feed::ViewBar => "viewbar",
             Feed::Tree => "tree",
             Feed::Inspector => "inspector",
+            Feed::Paint => "paint",
+            Feed::Rules => "rules",
         }
     }
 
@@ -964,7 +988,7 @@ impl Conn {
             }),
             Feed::Oops => Some(BuildSpec::Oops { user: user.clone() }),
             Feed::Sequence => Some(BuildSpec::Sequence { user: user.clone(), sequence: v["sequence"].clone() }),
-            Feed::Tags => Some(BuildSpec::Tags { tag: v["tag"].clone(), deep: v["deep"].as_bool().unwrap_or(false) }),
+            Feed::Tags => Some(BuildSpec::Tags { user: user.clone(), tag: v["tag"].clone(), deep: v["deep"].as_bool().unwrap_or(false) }),
             Feed::Patch => Some(BuildSpec::Patch { user: user.clone() }),
             Feed::Tree => Some(BuildSpec::Tree {
                 user: user.clone(),
@@ -974,6 +998,8 @@ impl Conn {
                 follow: v["follow"].as_bool().unwrap_or(false),
             }),
             Feed::Inspector => Some(BuildSpec::Inspector { user: user.clone(), path: text("path").unwrap_or_default() }),
+            Feed::Paint => Some(BuildSpec::Paint { user: user.clone(), profile: v["profile"].clone() }),
+            Feed::Rules => Some(BuildSpec::Rules { user: user.clone(), profile: v["profile"].clone(), which: text("which").unwrap_or_default() }),
             Feed::ViewBar => Some(BuildSpec::ViewBar {
                 user: user.clone(),
                 screen: v["screen"].as_u64().unwrap_or(0) as u32,

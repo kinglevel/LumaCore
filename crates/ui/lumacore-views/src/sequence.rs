@@ -101,13 +101,21 @@ pub fn view(show: &ShowData, user: &str, which: &Value) -> Value {
     let state = show.playbacks.live.sequences.get(&seq.meta.identity.guid);
     let running = state.is_some();
     let current = state.map(|s| s.current_cue);
-    let mut cues = vec![row(show, &owner, no, "0", Some(lumacore_tree::CUE_ZERO), &seq.cue_zero, None)];
+    // Each cue row wears its colour as this viewer sees it (decisions 0294).
+    let paint = lumacore_objects::paint::Painter::new(show, user);
+    let painted = |mut r: Value, cue: &CueObject| {
+        let shown = paint.of(&cue.meta);
+        r["paint"] = shown.hex.clone().map_or(Value::Null, Value::from);
+        r["paint_from"] = json!(shown.from_text());
+        r
+    };
+    let mut cues = vec![painted(row(show, &owner, no, "0", Some(lumacore_tree::CUE_ZERO), &seq.cue_zero, None), &seq.cue_zero)];
     cues[0]["fixed"] = json!("CueZero");
     cues[0]["name"] = json!(seq.cue_zero.meta.name().filter(|n| !n.is_empty()).unwrap_or("CueZero"));
     for (&key, cue) in &seq.cues {
-        cues.push(row(show, &owner, no, &cue_label(key), Some(key), cue, current));
+        cues.push(painted(row(show, &owner, no, &cue_label(key), Some(key), cue, current), cue));
     }
-    let mut off = row(show, &owner, no, "OffCue", None, &seq.off_cue, None);
+    let mut off = painted(row(show, &owner, no, "OffCue", None, &seq.off_cue, None), &seq.off_cue);
     off["fixed"] = json!("OffCue");
     cues.push(off);
     json!({
@@ -121,7 +129,7 @@ pub fn view(show: &ShowData, user: &str, which: &Value) -> Value {
         "feature_groups": show.feature_groups.values().map(|g| json!({
             "name": g.meta.identity.name,
             "word": format!("FeatureGroup \"{}\"", g.meta.name().unwrap_or_default()),
-            "color": g.meta.annotation.paint.map(|[r, gr, b, _]| format!("#{r:02x}{gr:02x}{b:02x}")),
+            "color": crate::attribute_board::group_colour(&paint, g),
         })).collect::<Vec<_>>(),
         "paths": FadePath::ALL.iter().map(|p| p.word()).collect::<Vec<_>>(),
         "cues": cues,

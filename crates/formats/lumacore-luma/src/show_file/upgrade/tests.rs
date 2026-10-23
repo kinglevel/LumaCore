@@ -110,6 +110,31 @@ fn a_cue_value_from_a_preset_keeps_only_its_link() {
 }
 
 #[test]
+fn paints_become_hex_and_feature_groups_follow_their_slots() {
+    let mut show = json!({
+        "datapools": { "1": { "groups": { "3": { "meta": { "name": "Blinder", "paint": [47, 168, 184, 255] }, "fixtures": [] } } } },
+        "tags": { "1": { "meta": { "name": "Wash", "paint": [1, 2, 3, 255] } } },
+        "feature_groups": { "1": { "meta": { "name": "Gobo", "paint": [0xd6, 0xa0, 0x5a, 255] }, "features": [] } },
+        "attributes": { "groups": {
+            "1": { "meta": { "name": "Position", "paint": [0x4d, 0x8f, 0xd6, 255] }, "features": [] },
+            "2": { "meta": { "name": "Dimmer", "paint": [1, 1, 1, 255] }, "features": [] },
+            "3": { "meta": { "name": "Prism", "paint": [0xe6, 0xb4, 0x22, 255] }, "features": [] },
+        } },
+    });
+    let notes = paint_is_hex_or_a_theme_link(&mut show);
+    assert_eq!(show["datapools"]["1"]["groups"]["3"]["meta"]["paint"], json!("#2fa8b8"));
+    assert_eq!(show["tags"]["1"]["meta"]["paint"], json!("#010203"));
+    let fg = &show["attributes"]["groups"];
+    assert_eq!(fg["1"]["meta"]["paint"], json!({ "Theme": "Position" }), "on LumaCore's colour: the slot");
+    assert_eq!(fg["2"]["meta"]["paint"], json!("#010101"), "a colour of its own stays");
+    assert_eq!(fg["3"]["meta"]["paint"], json!("#e6b422"), "no slot of its name: the colour stays");
+    assert_eq!(show["feature_groups"]["1"]["meta"]["paint"], json!({ "Theme": "Gobo" }), "the show's own feature groups too");
+    assert_eq!(notes, vec!["6 paints are now written #rrggbb".to_string(), "2 feature groups now follow the theme's paint slot of their names".to_string()]);
+    let again = paint_is_hex_or_a_theme_link(&mut show);
+    assert!(again.is_empty(), "a second run changes nothing: {again:?}");
+}
+
+#[test]
 fn a_show_of_this_format_is_left_alone() {
     let mut show = json!({ "show_settings": { "format_version": lumacore_tree::FORMAT_VERSION } });
     assert_eq!(upgrade(&mut show).unwrap(), None);

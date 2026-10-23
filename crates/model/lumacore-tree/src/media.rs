@@ -147,6 +147,86 @@ pub struct Theme {
     pub adjust: ThemeAdjust,
     #[serde(default)]
     pub palette: ThemePalette,
+    /// The paint slots changed from LumaCore's ([`PAINT_SLOTS`]) and the ones added, in the order
+    /// added (decisions object-paint-palette-free-theme-links). An object painted `Theme "<slot>"`
+    /// shows the viewer's colour of that slot.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub slots: Vec<PaintSlot>,
+}
+
+/// LumaCore's paint slots and their colours (the built-in templates' feature-group colours, then
+/// the specials). Every theme has them; a theme changes their colour and adds its own.
+pub const PAINT_SLOTS: [(&str, &str); 15] = [
+    ("Dimmer", "#e6b422"),
+    ("Position", "#4d8fd6"),
+    ("Gobo", "#d6a05a"),
+    ("Color", "#ff5c8a"),
+    ("Beam", "#6fd6c8"),
+    ("Focus", "#8ab0c0"),
+    ("Shutter", "#f3ecd3"),
+    ("FX", "#b07be6"),
+    ("Control", "#9a9a9a"),
+    ("Shapers", "#c08a5a"),
+    ("Video", "#3fbf4a"),
+    ("Special 1", "#d0453c"),
+    ("Special 2", "#2fa8b8"),
+    ("Special 3", "#c04ab0"),
+    ("Special 4", "#8fbf3a"),
+];
+
+/// A theme's own colour for a paint slot: a changed built-in one, or one it added.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PaintSlot {
+    pub name: String,
+    /// `#rrggbb`.
+    pub colour: String,
+}
+
+/// One paint slot as a theme shows it.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct SlotView {
+    pub name: String,
+    /// The theme's colour, `#rrggbb`.
+    pub colour: String,
+    /// LumaCore's colour (None = a slot the theme added).
+    pub default: Option<&'static str>,
+    /// Changed from LumaCore's.
+    pub changed: bool,
+}
+
+impl Theme {
+    /// The theme's colour of slot `name` (any case); None = the theme has no such slot.
+    pub fn slot(&self, name: &str) -> Option<&str> {
+        self.slots
+            .iter()
+            .find(|s| s.name.eq_ignore_ascii_case(name))
+            .map(|s| s.colour.as_str())
+            .or_else(|| PAINT_SLOTS.iter().find(|(n, _)| n.eq_ignore_ascii_case(name)).map(|(_, c)| *c))
+    }
+
+    /// Every slot the theme has: LumaCore's in their order, then the added ones.
+    pub fn slot_views(&self) -> Vec<SlotView> {
+        let own = |name: &str| self.slots.iter().find(|s| s.name.eq_ignore_ascii_case(name));
+        let mut out: Vec<SlotView> = PAINT_SLOTS
+            .iter()
+            .map(|(name, default)| {
+                let colour = own(name).map_or(*default, |s| s.colour.as_str()).to_string();
+                SlotView { name: name.to_string(), changed: !colour.eq_ignore_ascii_case(default), colour, default: Some(default) }
+            })
+            .collect();
+        out.extend(
+            self.slots
+                .iter()
+                .filter(|s| !is_builtin_slot(&s.name))
+                .map(|s| SlotView { name: s.name.clone(), colour: s.colour.clone(), default: None, changed: true }),
+        );
+        out
+    }
+}
+
+/// One of LumaCore's own paint slots (any case).
+pub fn is_builtin_slot(name: &str) -> bool {
+    PAINT_SLOTS.iter().any(|(n, _)| n.eq_ignore_ascii_case(name))
 }
 
 fn default_preset() -> String {
@@ -159,6 +239,7 @@ impl Default for Theme {
             preset: default_preset(),
             adjust: ThemeAdjust::default(),
             palette: ThemePalette::default(),
+            slots: Vec::new(),
         }
     }
 }

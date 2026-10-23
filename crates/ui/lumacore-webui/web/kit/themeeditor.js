@@ -9,6 +9,9 @@
 //   Colours   the 14 palette colours: swatch, hex, ↺ when changed; a tap edits (a colour pick)
 //   Pick      tap an element on screen to find which colour it uses
 //   Preview   the kit's look in the colours shown; Hold: normal theme shows the factory preset
+//   Paint     (a tab, decisions 0294) the theme's paint slots on the `paint` feed as a <luma-grid>:
+//             each row tinted with its colour, Your colour opens the paint picker (the slot's
+//             own line), Add a slot (`Store … Theme Paint "<name>"`), Reset to LumaCore
 //
 // Every change is a line from the station's own fields (`Set [UserProfile n] Theme "Brightness"
 // 20`, `… Theme Paint "Accent" "#9a7a08"`, `Reset … Theme [Paint]`); the station answers with
@@ -18,6 +21,9 @@
 //   ctl.update(fields) · ctl.close()
 
 import { token } from './theme.js';
+import { openPaint } from './paint.js';
+import { openDialog } from './dialog.js';
+import './grid.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const FILE_BUTTONS = [
@@ -47,6 +53,8 @@ export const COLOURS = [
   ['Blind', 'Blind', 'blind', 'blind'], ['Park', 'Park', 'park', 'park'],
 ];
 const BASES = ['Dark', 'Daylight', 'Night'];
+/** The editor's tabs: the look (base, adjusters, colours) and the paint slots (decisions 0294). */
+const TABS = ['Look', 'Paint'];
 
 /** WCAG contrast of two `rgb(…)` / `#rrggbb` colours. */
 export function contrast(a, b) {
@@ -97,6 +105,83 @@ export function openThemeEditor(spec, cb = {}) {
   // A field's own reset line, else the decided forms: an adjuster to 0, a colour `Reset … Theme Paint "<Colour>"`.
   const resetLine = name => field(name)?.reset || (COLOURS.some(c => c[0] === name) ? `Reset ${owner()} Paint "${name}"` : line(name, 0));
   const preview = look => { shown = look; cb.preview?.(look); paintReadout(); };
+  let tab = 'Look';
+
+  // ── The Paint tab (decisions 0294, round 4's second board): the theme's paint slots on the
+  // `paint` feed of this profile, as a <luma-grid> — each row tinted with its colour, a tap on
+  // Your colour opens the paint picker (Palette / Free: a slot holds a colour) and runs the slot's
+  // own line; Add a slot asks a name; Reset to LumaCore runs the feed's `reset_all`. ──
+  const paintTab = (() => {
+    let sub = null, data = null, grid = null, picking = false;
+    const profile = () => Number(/^UserProfile (\d+)\b/.exec(owner())?.[1]) || null;
+    const slots = () => data?.slots || [];
+    const COLS = [
+      { id: 'name', label: 'Slot', width: 150, frozen: true },
+      { id: 'colour', label: 'Your colour', kind: 'paint', prop: 'Paint', width: 170 },
+      { id: 'default', label: 'LumaCore default', width: 150 },
+      { id: 'kind', label: 'Kind', width: 100 },
+    ];
+    const rows = () => slots().map((s, i) => ({
+      key: s.name, no: i + 1, name: s.name, colour: s.colour, default: s.default || '—',
+      kind: s.added ? 'yours' : 'built in', paint: s.colour, changed: s.changed ? ['colour'] : [],
+    }));
+    const count = () => {
+      const n = slots().length, ch = slots().filter(s => s.changed || s.added).length;
+      return `${n} slot${n === 1 ? '' : 's'}${ch ? ` · ${ch} changed` : ''}`;
+    };
+    const draw = () => {
+      grid?.update({ key: 'ThemePaint', object: 'Theme Paint', id: 'no', row_key: 'key', bar: false, columns: COLS, rows: rows(), level: 'Admin' });
+      const c = box.querySelector('[data-paint-count]');
+      if (c) c.textContent = data ? count() : 'waiting for the station…';
+      const r = box.querySelector('[data-paint-reset]');
+      if (r) r.disabled = !data?.reset_all;
+    };
+    const pick = async key => {
+      const s = slots().find(x => x.name === key);
+      if (!s || picking) return;
+      picking = true;
+      await openPaint({ object: 'Theme Paint', name: s.name, line: s.line, value: s.colour, slot: true, profile: profile() }, { run });
+      picking = false;
+      grid?.none();
+    };
+    const addSlot = async () => {
+      const got = await openDialog({
+        title: 'Add a paint slot', text: 'A slot of your own: objects link to it with Paint Theme "<name>".',
+        inputs: [{ name: 'v', label: 'Name', value: '', kind: 'text' }],
+        buttons: [{ label: 'Please', value: 'set', kind: 'please' }, { label: 'Cancel', value: null }], primary: 0, cancel: 1,
+      });
+      const name = got?.value && got.inputs?.v?.trim().replace(/[";]/g, '');
+      if (!name || !data?.add) return;
+      run(data.add.replace('{name}', `"${name}"`).replace('{value}', '').trim());
+    };
+    return {
+      html: () => `<section class="lc-te-card lc-te-paint" data-kit="theme-paint">
+          <div class="lc-te-paintbar"><span class="lc-te-cap"><span>Paint slots — objects link to them with <b>Paint Theme "Position"</b></span><span data-paint-count></span></span>
+            <button type="button" class="lc-te-btn" data-paint-add><luma-icon name="plus"></luma-icon>Add a slot</button>
+            <button type="button" class="lc-te-btn danger" data-paint-reset>Reset to LumaCore</button></div>
+          <div class="lc-te-paintgrid" data-paint-grid></div>
+        </section>`,
+      mount() {
+        if (!grid) {
+          grid = document.createElement('luma-grid');
+          // A tap on Your colour is the picker; the grid's edit card and menu would build an object line.
+          grid.addEventListener('select', e => { const d = e.detail; if (d.count === 1 && d.cells === 1 && d.column === 'colour') pick(d.rows[0]); });
+          grid.addEventListener('edit', e => { grid.card?.close(); if (e.detail.rows?.length === 1) pick(e.detail.rows[0]); });
+          grid.addEventListener('context', e => { e.preventDefault(); });
+          grid.addEventListener('line', e => { e.stopPropagation(); if (/^(Set|Reset) GridColumns /.test(e.detail.line)) run(e.detail.line); });
+        }
+        box.querySelector('[data-paint-grid]').append(grid);
+        if (!sub) {
+          const p = profile();
+          sub = window.feeds?.()?.sub('paint', p ? { profile: p } : {}, { batch: m => { if (m.data) { data = m.data; draw(); } } }) || null;
+        }
+        draw();
+      },
+      add: addSlot,
+      reset: () => { if (data?.reset_all) run(data.reset_all); },
+      close() { sub?.close(); sub = null; },
+    };
+  })();
 
   const current = () => {
     const look = lookOf(fields);
@@ -151,9 +236,20 @@ export function openThemeEditor(spec, cb = {}) {
   function render() {
     const look = lookOf(fields).theme;
     const base = look.preset;
+    const tabs = `<span class="lc-te-seg" role="group" aria-label="Tab">${TABS.map(t => `<button type="button" data-te-tab="${t}" class="${t === tab ? 'on' : ''}" aria-pressed="${t === tab}">${t}</button>`).join('')}</span>`;
+    if (tab === 'Paint') {
+      box.innerHTML = `
+        <div class="lc-te-head">
+          <h2>${esc(spec.title || 'Theme')}</h2>${tabs}
+          <button type="button" class="lc-close" data-close aria-label="Close"><luma-icon name="x"></luma-icon></button>
+        </div>
+        ${paintTab.html()}`;
+      paintTab.mount();
+      return;
+    }
     box.innerHTML = `
       <div class="lc-te-head">
-        <h2>${esc(spec.title || 'Theme')}</h2>
+        <h2>${esc(spec.title || 'Theme')}</h2>${tabs}
         <span class="lc-te-seg" role="group" aria-label="Base">${BASES.map(b => `<button type="button" data-base="${b}" class="${b === base ? 'on' : ''}" aria-pressed="${b === base}">${b}</button>`).join('')}</span>
         <button type="button" class="lc-te-btn${showA ? ' on' : ''}" data-ab aria-pressed="${showA}" title="A = the theme as it was when you opened this · B = now">A | B</button>
         ${FILE_BUTTONS}
@@ -215,6 +311,9 @@ export function openThemeEditor(spec, cb = {}) {
     const t = e.target.closest('button, [data-reset]');
     if (!t) return;
     if (t.dataset.close != null) return ctl.close();
+    if (t.dataset.teTab) { tab = t.dataset.teTab; return render(); }
+    if (t.dataset.paintAdd != null) return paintTab.add();
+    if (t.dataset.paintReset != null) return paintTab.reset();
     if (t.dataset.base) return run(line('Base', t.dataset.base));
     if (t.dataset.ab != null) { showA = !showA; preview(showA ? opened : null); return render(); }
     if (t.dataset.import != null) return importJson();
@@ -310,7 +409,8 @@ export function openThemeEditor(spec, cb = {}) {
     window.addEventListener('keydown', onEsc, true);
   }
 
-  const onKey = e => { if (e.key === 'Escape' && !picking) { e.stopPropagation(); ctl.close(); } };
+  // Esc closes the editor, not while a dialog or the paint picker over it has the keys.
+  const onKey = e => { if (e.key === 'Escape' && !picking && !document.querySelector('[data-kit="dialog"], [data-kit="paint-picker"]')) { e.stopPropagation(); ctl.close(); } };
   document.addEventListener('keydown', onKey, true);
 
   const ctl = {
@@ -320,6 +420,7 @@ export function openThemeEditor(spec, cb = {}) {
       if (!drag) { if (!showA) preview(null); render(); }
     },
     close() {
+      paintTab.close();
       document.removeEventListener('keydown', onKey, true);
       scrim.remove();
       cb.preview?.(null);

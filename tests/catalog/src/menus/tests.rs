@@ -70,7 +70,8 @@ fn every_menu_publishes_its_tabs_columns_and_slab() {
                 let g = &t["content"]["grid"];
                 for c in g["columns"].as_array().unwrap() {
                     assert!(
-                        ["text", "int", "bool", "list"].contains(&c["kind"].as_str().unwrap()),
+                        // `paint`: a Paint property's column (decisions 0294).
+                        ["text", "int", "bool", "list", "paint"].contains(&c["kind"].as_str().unwrap()),
                         "{c}"
                     );
                     // A per-network column (`expand`) is the station row's NIC.

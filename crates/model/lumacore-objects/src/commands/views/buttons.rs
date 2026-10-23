@@ -44,6 +44,9 @@ pub struct Held {
     pub datapool: Option<u32>,
     pub name: String,
     pub guid: Uuid,
+    /// Its Paint and its tags (the view bar wears its colour, decisions 0294).
+    pub paint: Option<lumacore_base::Paint>,
+    pub tags: Vec<Uuid>,
 }
 
 /// One button of a screen's bar (the `viewbar` feed): its slot and what it holds; `held` is None
@@ -247,6 +250,8 @@ pub fn held(show: &ShowData, profile: &UserProfile, button: ViewButton) -> Optio
         datapool,
         name: meta.name().map_or_else(|| format!("{} {no}", button.kind.keyword()), str::to_string),
         guid: g,
+        paint: meta.annotation.paint.clone(),
+        tags: meta.annotation.tags.clone(),
     };
     if button.kind == ButtonKind::View {
         return profile.content.views.iter().find(|(_, v)| v.meta.identity.guid == g).map(|(n, v)| found(*n, None, &v.meta));

@@ -38,8 +38,10 @@ pub(crate) fn icon_word(meta: &lumacore_base::NodeMeta) -> Option<String> {
     }
 }
 
-pub(crate) fn hex(c: Option<[u8; 4]>) -> Value {
-    c.map_or(Value::Null, |[r, g, b, _]| json!(format!("#{r:02x}{g:02x}{b:02x}")))
+/// A feature group's colour as `paint`'s viewer sees it (decisions 0294: its own Paint, else the
+/// theme slot of its name), `#rrggbb` or null.
+pub(crate) fn group_colour(paint: &lumacore_objects::paint::Painter, g: &lumacore_tree::fixtures::attribute_def::FeatureGroup) -> Value {
+    paint.of_or(&g.meta, Some(&lumacore_objects::commands::attributes::group_paint(g))).hex.map_or(Value::Null, Value::from)
 }
 
 // ██╗   ██╗██╗███████╗██╗    ██╗███████╗
@@ -60,6 +62,7 @@ pub fn view(show: &ShowData, user: &str, target: BoardTarget) -> Option<Value> {
         }
     };
     let used = attribute_resolver::used_attributes(show);
+    let paint = lumacore_objects::paint::Painter::new(show, user);
     // Which patched fixture types use each attribute.
     let mut types: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     let mut by_name: BTreeMap<String, Vec<String>> = BTreeMap::new();
@@ -126,7 +129,7 @@ pub fn view(show: &ShowData, user: &str, target: BoardTarget) -> Option<Value> {
             json!({
                 "no": no,
                 "name": g.meta.identity.name,
-                "color": hex(g.meta.annotation.paint),
+                "color": group_colour(&paint, g),
                 "icon": icon_word(&g.meta),
                 "members": m.into_iter().map(|(_, n)| n).collect::<Vec<_>>(),
             })

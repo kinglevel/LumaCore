@@ -61,6 +61,15 @@
 //     toggleFilter(), setColumnSet(name), columnSet(), select(keys)
 //   extending it (`LumaGrid` is exported; decisions device-grid-and-value-marks): a subclass
 //   draws its own cells (`cellHtml`) and rows above the header (`headTop`) and keeps the rest.
+//   paint (decisions 0294): a row with `paint` (`#rrggbb`, the colour this viewer sees, resolved
+//   by the station) is tinted (`lc-painted`, `--lc-row-paint`; kit.css mixes it into the surface).
+//   A column of `kind: 'paint'` draws a swatch in the row's resolved `paint` (the word may be a
+//   theme link only the station resolves) and the word itself (`#rrggbb`, `Theme "Position"`,
+//   `none`); it edits through the edit card like any other property. `marks[key].hit` frames a
+//   row the host points at (the Rules window's "Which rule?").
+//   lift: a host that sets `el.lift = true` gets `lift { keys, key, x, y }` · `liftmove { x, y }` ·
+//   `drop { keys, x, y, cancelled }` for a drag on a selected row; `el.lift = 'any'` lifts any row
+//   it presses (a list that only reorders: the Rules window).
 
 import { hold, holdTime, drag } from './pointer.js';
 import { openMenu } from './menu.js';
@@ -133,8 +142,12 @@ const SETS = ['Condensed', 'Full', 'Extended'];
 const SET_PRIORITY = { Condensed: 1, Full: 2, Extended: 9 };
 const cellKey = (k, c) => `${k}\u0001${c}`;
 
+/** A paint as the station sends it: `#rrggbb`, else nothing (never a client-resolved colour). */
+export const paintOf = v => (/^#[0-9a-f]{6}$/i.test(String(v ?? '')) ? String(v) : '');
+
 /** A cell's text: words for on/off, the unit after a number. */
 export function cellText(col, v) {
+  if (col.kind === 'paint') return v === undefined || v === null || v === '' ? 'none' : String(v);
   if (v === undefined || v === null || v === '') return '—';
   if (col.kind === 'bool') {
     const [on, off] = col.options?.length === 2 ? col.options : ['Yes', 'No'];
@@ -595,6 +608,8 @@ export class LumaGrid extends HTMLElement {
   cellHtml(_c, _r, _k, _j) { return null; }
   /** Rows above the header row (HTML on the same column tracks), '' for none. */
   headTop(_cols) { return ''; }
+  /** The row's tint (`#rrggbb` or ''): its `paint` (decisions 0294); a subclass may draw it elsewhere. */
+  rowPaint(r) { return paintOf(r?.paint); }
 
   renderHead(cols) {
     const sel = this.selection();
@@ -801,7 +816,7 @@ export class LumaGrid extends HTMLElement {
     const whole = this.selRows.has(k);
     const touched = whole || this.selCells.has(k);
     const exp = folded.length && this.expanded.has(k);
-    const cls = ['lc-grid-row', touched ? 'touched' : '', whole ? 'whole' : '', m.invalid ? 'invalid' : '', m.warn ? 'warn' : '', this.cut.has(k) ? 'cut' : '', exp ? 'expanded' : '', this.previewWay?.has(k) ? 'lc-way' : ''].filter(Boolean).join(' ');
+    const cls = ['lc-grid-row', this.rowPaint(r) ? 'lc-painted' : '', touched ? 'touched' : '', whole ? 'whole' : '', m.invalid ? 'invalid' : '', m.warn ? 'warn' : '', m.hit ? 'lc-hit' : '', this.cut.has(k) ? 'cut' : '', exp ? 'expanded' : '', this.previewWay?.has(k) ? 'lc-way' : ''].filter(Boolean).join(' ');
     const focus = this.focus?.key === k ? this.focus.col : null;
     const cell = (c, j) => {
       const own = this.cellHtml(c, r, k, j);
@@ -826,13 +841,16 @@ export class LumaGrid extends HTMLElement {
       // A data cell is narrow: the new value, old → new on hover (the gutter shows both).
       const text = pv ? `<span class="lc-gc-new${pv.bad ? ' bad' : ''}" title="${esc(`${pv.from} → ${pv.to}`)}">${esc(pv.to)}</span>`
         : esc(cellText(c, pend ?? v));
+      // A paint column: the row's resolved colour as a swatch, the word as text (decisions 0294).
+      const sw = c.kind === 'paint' ? paintOf(r.paint) || paintOf(v) : '';
+      const paintDot = c.kind === 'paint' ? `<i class="lc-dot lc-sw${sw ? '' : ' none'}"${sw ? ` style="--lc-sw:${sw}"` : ''}></i>` : '';
       // A claim area's draft: a gold dot on the cells that differ from the live rig.
       // Violet: a cell someone else's live edit brought into the draft (yours wins).
       const mine = r.changed?.includes(f) ? '<i class="lc-dot accent lc-gc-mine" title="Your draft edit"></i>'
         : r.live_changed?.[f] ? `<i class="lc-dot lc-gc-mine lc-gc-theirs" title="${esc(`${r.live_changed[f]} changed it live`)}"></i>` : '';
       return `<div class="lc-gc${ro ? ' ro' : ' ed'}${locked || lockWhy ? ' locked' : ''}${on ? ' on' : ''}${focus === c.id ? ' focus' : ''}${c.frozen ? ' frozen' : ''}${c.kind === 'int' ? ' num' : ''}${tone ? ` t-${esc(tone)}` : ''}${flash}${state}"
           data-k="${esc(k)}" data-col="${esc(c.id)}"${this.stick(c)} title="${esc(tip || locked || lockWhy || (j === 0 && (m.invalid || m.warn)) || '')}">
-          ${pend != null ? '<i class="lc-dot lc-gc-wait"></i>' : tone ? `<i class="lc-dot ${esc(tone)}"></i>` : ''}${r.color && j === 0 ? `<i class="lc-dot" style="background:${esc(r.color)}"></i>` : ''}
+          ${pend != null ? '<i class="lc-dot lc-gc-wait"></i>' : tone ? `<i class="lc-dot ${esc(tone)}"></i>` : ''}${r.color && j === 0 ? `<i class="lc-dot" style="background:${esc(r.color)}"></i>` : ''}${paintDot}
           <span class="lc-gc-text">${text}</span>${mine}${c.kind === 'list' && !ro ? '<luma-icon name="chevron-down" class="lc-gc-kind"></luma-icon>' : ''}
         </div>`;
     };
@@ -842,7 +860,7 @@ export class LumaGrid extends HTMLElement {
       + `<button type="button" data-up="${esc(k)}" aria-label="Move up"${ri <= 0 ? ' disabled' : ''}><luma-icon name="arrow-up"></luma-icon></button>`
       + `<button type="button" data-down="${esc(k)}" aria-label="Move down"${ri >= this.spec.rows.length - 1 ? ' disabled' : ''}><luma-icon name="arrow-down"></luma-icon></button></div>` : '';
     const foldBtn = folded.length ? `<button type="button" class="lc-gc-fold" data-fold="${esc(k)}" aria-label="${exp ? 'Fold' : 'More columns'}" aria-expanded="${!!exp}"><luma-icon name="${exp ? 'chevron-down' : 'chevron-right'}"></luma-icon></button>` : '';
-    return `<div class="${cls}" data-row="${esc(k)}" style="height:${this.rowHeight(r, folded)}px">
+    return `<div class="${cls}" data-row="${esc(k)}"${r.paint_from ? ` data-paint-from="${esc(r.paint_from)}"` : ''} style="${this.rowPaint(r) ? `--lc-row-paint:${this.rowPaint(r)};` : ''}height:${this.rowHeight(r, folded)}px">
         <div class="lc-grid-line">
           ${grip}<div class="lc-gc gutter${whole ? ' on' : ''}" data-gutter="${esc(k)}">${this.previewMap?.get(k)?.['#gutter'] ? `<span class="lc-gc-old">${esc(this.gutterNo(r, i))}</span><span class="lc-gc-new">${esc(this.previewMap.get(k)['#gutter'].to)}</span>` : esc(this.gutterNo(r, i))}</div>
           ${cols.map(cell).join('')}
@@ -863,7 +881,7 @@ export class LumaGrid extends HTMLElement {
       const k = this.keyOf(r);
       const on = this.touched().has(k);
       const tone = title?.tone ? r[title.tone] : null;
-      return `<div class="lc-grid-card${on ? ' on' : ''}" data-k="${esc(k)}" data-card="${esc(k)}">
+      return `<div class="lc-grid-card${on ? ' on' : ''}${this.rowPaint(r) ? ' lc-painted' : ''}" data-k="${esc(k)}" data-card="${esc(k)}" style="${this.rowPaint(r) ? `--lc-row-paint:${this.rowPaint(r)};` : ''}">
         <div class="lc-grid-card-title">${tone ? `<i class="lc-dot ${esc(tone)}"></i>` : ''}<span>${esc(title ? cellText(title, r[title.field ?? title.id]) : this.idOf(r))}</span></div>
         ${rest.map(c => `<div class="lc-grid-card-row"><small>${esc(c.label)}</small><span${c.tone ? ` class="t-${esc(r[c.tone] || '')}"` : ''}>${esc(cellText(c, r[c.field ?? c.id]))}</span></div>`).join('')}
       </div>`;
@@ -984,8 +1002,8 @@ export class LumaGrid extends HTMLElement {
     sc.addEventListener('pointerup', e => this.onUp(e, false));
     sc.addEventListener('pointercancel', e => this.onUp(e, true));
     // A lasso in progress keeps the page from scrolling under the finger
-    // (hold-then-drag in Scroll mode); two fingers in lasso mode scroll here.
-    sc.addEventListener('touchmove', e => { if (this.g?.lasso || this.g?.two) e.preventDefault(); }, { passive: false });
+    // or a lifted row (hold-then-drag in Scroll mode); two fingers in lasso mode scroll here.
+    sc.addEventListener('touchmove', e => { if (this.g?.lasso || this.g?.two || this.g?.lift) e.preventDefault(); }, { passive: false });
     // A captured pointer makes the scroller the target: hit-test the point.
     const at = e => this.hit(document.elementFromPoint(e.clientX, e.clientY) || e.target);
     sc.addEventListener('dblclick', e => {
@@ -1057,7 +1075,12 @@ export class LumaGrid extends HTMLElement {
     }
     if (e.pointerId !== g.id) return;
     const dist = Math.hypot(e.clientX - g.x, e.clientY - g.y);
-    if (g.lift) { this.dispatchEvent(new CustomEvent('liftmove', { detail: { x: e.clientX, y: e.clientY }, bubbles: true })); return; }
+    if (g.lift) {
+      g.last = { x: e.clientX, y: e.clientY };
+      this.dispatchEvent(new CustomEvent('liftmove', { detail: { x: e.clientX, y: e.clientY }, bubbles: true }));
+      this.autoScroll();
+      return;
+    }
     if (!g.lasso) {
       if (dist <= START_PX) return;
       // A drag on a selected row lifts the selection (the host said so: a drop on a node of the
@@ -1071,11 +1094,11 @@ export class LumaGrid extends HTMLElement {
     this.autoScroll();
   }
   /** Whether a press lifts: the host wants lifts and the row is selected. */
-  liftable(g) { return !!this.lift && g.h?.key != null && !g.h.new && !g.h.fold && this.selRows.has(g.h.key); }
+  liftable(g) { return !!this.lift && g.h?.key != null && !g.h.new && !g.h.fold && (this.lift === 'any' || this.selRows.has(g.h.key)); }
   startLift(g) {
     clearTimeout(g.timer);
     g.lift = true;
-    this.dispatchEvent(new CustomEvent('lift', { detail: { keys: [...this.selRows], x: g.x, y: g.y }, bubbles: true }));
+    this.dispatchEvent(new CustomEvent('lift', { detail: { keys: [...this.selRows], key: g.h.key, x: g.x, y: g.y }, bubbles: true }));
   }
   onUp(e, cancelled) {
     const t = this.touches.get(e.pointerId);
@@ -1125,21 +1148,26 @@ export class LumaGrid extends HTMLElement {
     this.lassoEl.hidden = false;
     this.g.rect = { x, y, w: Math.abs(a.x - b.x), h: Math.abs(a.y - b.y) };
   }
-  /** Edges scroll while a lasso is out. */
+  /** Edges scroll while a lasso or a lifted row is out (a lifted row the faster the further past
+   *  the edge: a long list's top is a reach away). */
   autoScroll() {
     if (this.scrollRaf) return;
     const step = () => {
       this.scrollRaf = 0;
       const g = this.g;
-      if (!g?.lasso || !g.last) return;
+      if (!(g?.lasso || g?.lift) || !g.last) return;
       const r = this.scroller.getBoundingClientRect();
       const edge = 32;
-      const vy = g.last.y < r.top + edge ? -12 : g.last.y > r.bottom - edge ? 12 : 0;
-      const vx = g.last.x < r.left + edge ? -12 : g.last.x > r.right - edge ? 12 : 0;
+      const speed = past => (g.lift ? Math.max(12, Math.min(80, 12 + past)) : 12);
+      // A lifted row carried off to the side (onto a tree beside the grid) scrolls nothing.
+      if (g.lift && (g.last.x < r.left || g.last.x > r.right)) return;
+      const vy = g.last.y < r.top + edge ? -speed(r.top - g.last.y) : g.last.y > r.bottom - edge ? speed(g.last.y - r.bottom) : 0;
+      const vx = g.lift ? 0 : g.last.x < r.left + edge ? -12 : g.last.x > r.right - edge ? 12 : 0;
       if (!vx && !vy) return;
       this.scroller.scrollTop += vy;
       this.scroller.scrollLeft += vx;
-      this.drawLasso(g.p, this.local(g.last.x, g.last.y));
+      if (g.lift) this.dispatchEvent(new CustomEvent('liftmove', { detail: { x: g.last.x, y: g.last.y }, bubbles: true }));
+      else this.drawLasso(g.p, this.local(g.last.x, g.last.y));
       this.scrollRaf = requestAnimationFrame(step);
     };
     this.scrollRaf = requestAnimationFrame(step);

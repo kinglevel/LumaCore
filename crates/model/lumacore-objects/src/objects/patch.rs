@@ -15,6 +15,7 @@ pub mod devices_meta;
 mod universe_ask;
 /// `Info DataPool <n>`: its pools and their counts (decisions 0291).
 mod dp_info;
+mod dp_props;
 /// The Patch setup dialog's menu row (decisions §34 "34g4 patch hardened" 9).
 pub mod menu;
 /// `DMX`: a universe's slots, the object (decisions §33 48, round 3 19).
@@ -697,7 +698,7 @@ pub static DATAPOOL: ObjectDef = ObjectDef {
     ],
     delete_ask: None,
     complete: Some(datapool_complete),
-    props: None,
+    props: Some(&dp_props::DATAPOOL_PROPS),
     tree: None,
 };
 

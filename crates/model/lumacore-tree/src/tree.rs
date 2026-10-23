@@ -34,7 +34,7 @@ use uuid::Uuid;
 
 /// The show format this build writes and reads (decisions §20). Only
 /// forward: no migrations; bump it when the file format changes.
-pub const FORMAT_VERSION: u32 = 36;
+pub const FORMAT_VERSION: u32 = 37;
 
 /// The show's LumaSession memory (`ShowData.LumaSession`, the
 /// stations that output).

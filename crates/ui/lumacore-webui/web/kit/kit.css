@@ -2645,3 +2645,126 @@ luma-status-strip.narrow .lc-ss-m .l { display: inline; }
 .lc-te-term .d { color: var(--lc-text-dim); }
 .lc-te-normal { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; border: 1px solid var(--lc-line); border-radius: var(--lc-radius-sm); padding: 10px 14px; font-size: var(--lc-fs-note); color: var(--lc-text-dim); }
 .lc-te-pickhint { position: fixed; top: calc(8px + var(--lc-safe-top)); left: 50%; transform: translateX(-50%); z-index: 61; pointer-events: none; padding: 8px 14px; border-radius: var(--lc-radius-sm); background: var(--lc-accent); color: var(--lc-on-accent); font-size: var(--lc-fs-note); font-weight: 600; }
+
+/* Paint in lists, trees, sheets; the Rules window (decisions 0294) */
+/* A colour that comes as data from the station rides an inline custom property (--lc-row-paint,
+   --lc-name-paint, --lc-tree-sw, --lc-sw); this section mixes it. Selection, focus and the edit
+   boxes keep their own looks over a tint. */
+.lc-grid-row.lc-painted { --lc-row-tint: color-mix(in srgb, var(--lc-row-paint) 18%, var(--lc-surface)); background: var(--lc-row-tint); }
+.lc-grid-row.lc-painted .lc-gc.gutter:not(.on), .lc-grid-row.lc-painted .lc-gc.ro.frozen:not(.on) { background: var(--lc-row-tint); }
+.lc-grid-row.lc-painted.whole .lc-gc.gutter { background: color-mix(in srgb, var(--lc-accent) 22%, var(--lc-surface)); }
+.lc-grid-row.lc-painted .lc-gc.frozen:not(.ro) { box-shadow: 0 0 0 3px var(--lc-row-tint); }
+.lc-grid-card.lc-painted { background: color-mix(in srgb, var(--lc-row-paint) 18%, var(--lc-cell)); }
+.lc-dot.lc-sw { background: var(--lc-sw); }
+.lc-dot.lc-sw.none { background: none; box-shadow: inset 0 0 0 1px var(--lc-line); }
+/* A row the host points at (the Rules window's answer). */
+.lc-grid-row.lc-hit .lc-grid-line { box-shadow: inset 0 0 0 2px var(--lc-accent); }
+.lc-grid-row.lc-hit .lc-gc.gutter { color: var(--lc-accent); font-weight: 600; }
+/* The tree's swatch (the Tree window, NAV, the tag tree): the colour this viewer sees. */
+.lc-tree-sw { background: var(--lc-tree-sw, transparent); }
+.lc-tree-sw.none { box-shadow: inset 0 0 0 1px var(--lc-line); }
+.lc-insp-v .lc-tree-sw { display: inline-block; margin-right: 6px; vertical-align: -1px; }
+/* The Device Sheet: the fixture's paint as a bar on its name. */
+.lc-gc.ro.frozen.lc-dg-name.lc-painted { box-shadow: inset 4px 0 0 var(--lc-name-paint); }
+/* The cue sheet: a painted cue's row tinted (the running cue keeps its selection fill). */
+.lc-cs-row.lc-painted:not(.run) .lc-cs-c { background: color-mix(in srgb, var(--lc-row-paint) 18%, var(--lc-surface)); }
+.lc-cs-row.lc-painted.alt:not(.run) .lc-cs-c { background: color-mix(in srgb, var(--lc-row-paint) 18%, var(--lc-alt-row)); }
+
+/* The Rules window: the head (caption, counts, Which rule?), the answer, the slab over the grid. */
+luma-rules-window { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; height: 100%; }
+.lc-rules { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; padding: 6px; background: var(--lc-surface); }
+.lc-rules-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lc-rules-cap { color: var(--lc-text); font-weight: 600; }
+.lc-rules-count { color: var(--lc-text-dim); font-size: var(--lc-fs-note); }
+.lc-rules-which { margin-left: auto; display: flex; align-items: center; gap: 6px; min-width: 0; flex: 0 1 380px; }
+.lc-rules-which .lc-dlg-input { height: 40px; flex: 1; min-width: 0; }
+.lc-rules-which .lc-dlg-input .lc-ico { width: 16px; height: 16px; color: var(--lc-text-dim); }
+.lc-rules-answer { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 10px; border-radius: var(--lc-radius-sm);
+  background: color-mix(in srgb, var(--lc-accent) 12%, var(--lc-surface)); border: 1px solid color-mix(in srgb, var(--lc-accent) 45%, transparent); font-size: var(--lc-fs-note); }
+.lc-rules-answer[hidden] { display: none; }
+.lc-rules-answer b { font-family: var(--lc-mono); color: var(--lc-text); }
+.lc-rules-answer span { color: var(--lc-text); }
+.lc-rules-answer span + span::before { content: '·'; margin-right: 10px; color: var(--lc-text-dim); }
+.lc-rules-answer .why { color: var(--lc-text-dim); }
+.lc-rules-answer small { color: var(--lc-text-dim); font-size: var(--lc-fs-small); }
+.lc-rules-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 6px; }
+.lc-rules-body luma-grid { flex: 1; min-height: 0; }
+.lc-rules [data-col="pattern"] .lc-gc-text { font-family: var(--lc-mono); }
+.lc-rules .lc-grid-row.lc-drop .lc-grid-line { box-shadow: inset 0 3px 0 var(--lc-accent); }
+@media (max-width: 600px) { .lc-rules-which { margin-left: 0; flex-basis: 100%; } }
+
+/* <luma-paint> (decisions 0294) */
+/*
+   The paint picker (kit/paint.js; the round 4 board): a standard dialog card with the Palette /
+   Free / Theme modes, Recent, Examples, Hex, the preview and the Line. Every colour it shows is
+   the station's (or computed from it) and arrives as `--c` / `--obj` / `--pk-hue` / `--pk-spectrum`
+   on the element; the counts (`--pk-hues`, `--pk-tones`, `--pk-greys`) come from the feed too. A
+   phone upright gets the one sheet look: from the bottom, the palette turned to a row per hue. */
+luma-paint { display: flex; width: min(760px, 100%); max-height: 100%; min-height: 0; }
+.lc-pk { width: 100%; }
+.lc-pk-scrim.sheet { align-items: flex-end; padding: var(--lc-safe-top) 0 0; }
+.lc-pk-scrim.sheet luma-paint { width: 100%; }
+.lc-pk-scrim.sheet .lc-pk { border-radius: var(--lc-radius) var(--lc-radius) 0 0; border-bottom: none; padding-bottom: var(--lc-safe-bottom); }
+.lc-pk .lc-dlg-body { gap: 12px; }
+.lc-pk-modes { justify-content: flex-start; }
+.lc-pk-note { margin: 0; font-size: var(--lc-fs-note); color: var(--lc-text-dim); }
+.lc-pk-pal { display: grid; gap: 4px; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr);
+  grid-template-rows: auto repeat(var(--pk-tones, 4), max(36px, var(--lc-hit))); }
+.lc-pk-pal button, .lc-pk-greys button { min-height: 0; padding: 0; cursor: pointer; border-radius: var(--lc-radius-sm);
+  border: 1px solid color-mix(in srgb, var(--lc-black) 35%, transparent); background: var(--c); }
+.lc-pk-pal button.on, .lc-pk-greys button.on, .lc-pk-theme button.on { box-shadow: 0 0 0 2px var(--lc-bg), 0 0 0 4px var(--lc-accent); position: relative; z-index: 1; }
+.lc-pk-nm { align-self: end; padding: 0 0 2px; text-align: center; font-size: var(--lc-fs-small); color: var(--lc-text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lc-pk-greys { display: grid; gap: 4px; margin-top: 4px; grid-template-columns: repeat(var(--pk-greys, 8), minmax(0, 1fr)) minmax(0, 4fr);
+  grid-auto-rows: max(36px, var(--lc-hit)); }
+.lc-pk-greys.bare { grid-template-columns: repeat(var(--pk-greys, 8), minmax(0, 1fr)); }
+.lc-pk-greys .none { background: var(--lc-surface); color: var(--lc-text-dim); border: 1px dashed var(--lc-line); font-size: var(--lc-fs-small); padding: 0 6px; }
+.lc-pk.phone .lc-pk-pal { grid-auto-flow: row; grid-template-rows: none; grid-auto-rows: var(--lc-hit);
+  grid-template-columns: minmax(56px, auto) repeat(var(--pk-tones, 4), minmax(0, 1fr)); }
+.lc-pk.phone .lc-pk-nm { align-self: center; text-align: left; }
+.lc-pk.phone .lc-pk-greys { grid-template-columns: repeat(var(--pk-greys, 8), minmax(0, 1fr)); grid-auto-rows: var(--lc-hit); }
+.lc-pk.phone .lc-pk-greys .none { grid-column: 1 / -1; }
+.lc-pk-free { display: grid; grid-template-columns: minmax(0, 1fr) 40px; gap: 10px; }
+.lc-pk-sv { position: relative; height: 220px; border-radius: var(--lc-radius); cursor: crosshair; touch-action: none;
+  background: linear-gradient(to top, var(--lc-black), transparent), linear-gradient(to right, var(--lc-white), var(--pk-hue)); }
+.lc-pk-hue { position: relative; height: 220px; border-radius: var(--lc-radius); cursor: pointer; touch-action: none;
+  background: linear-gradient(to bottom, var(--pk-spectrum)); }
+.lc-pk-knob { position: absolute; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--lc-white); box-shadow: 0 0 0 1px var(--lc-black);
+  transform: translate(-50%, -50%); pointer-events: none; background: var(--c); }
+.lc-pk-bar { position: absolute; left: -3px; right: -3px; height: 6px; border-radius: 3px; border: 2px solid var(--lc-white); box-shadow: 0 0 0 1px var(--lc-black);
+  transform: translateY(-50%); pointer-events: none; }
+.lc-pk-theme { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--lc-chip-min), 1fr)); gap: 6px; }
+.lc-pk-theme button { min-height: max(52px, var(--lc-hit)); border-radius: var(--lc-radius); border: 1px solid var(--lc-line); cursor: pointer; display: flex;
+  align-items: flex-end; justify-content: space-between; gap: 6px; padding: 6px 8px; color: var(--lc-text); font-size: var(--lc-fs-small);
+  background: color-mix(in srgb, var(--c) 42%, var(--lc-raised)); text-align: left; }
+.lc-pk-theme button i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); flex: none; }
+.lc-pk-recent { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: var(--lc-fs-small); color: var(--lc-text-dim); }
+.lc-pk-recent [data-recent] { display: flex; flex-wrap: wrap; gap: 4px; }
+.lc-pk-recent button { width: var(--lc-hit); height: var(--lc-hit); padding: 0; border-radius: var(--lc-radius-sm); border: 1px solid var(--lc-line); background: var(--c); cursor: pointer; }
+.lc-pk-row { display: flex; gap: 10px; align-items: flex-end; }
+.lc-pk-row .lc-dlg-field { flex: 1; min-width: 0; }
+.lc-pk-prev { width: 112px; height: 64px; flex: none; border-radius: var(--lc-radius-sm); padding: 4px 6px; display: flex; flex-direction: column;
+  font-size: var(--lc-fs-small); background: color-mix(in srgb, var(--obj) 42%, var(--lc-raised)); color: var(--lc-text); overflow: hidden; }
+.lc-pk-prev small, .lc-pk-ex small { color: var(--lc-text-dim); font-size: var(--lc-fs-small); }
+.lc-pk-ex[hidden] { display: none; }
+.lc-pk-ex { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--lc-chip-min), 1fr)); gap: 8px; }
+.lc-pk-ex > div { border: 1px solid var(--lc-line); border-radius: var(--lc-radius); background: var(--lc-bg); padding: 6px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.lc-pk-ex .cell { height: 46px; border-radius: var(--lc-radius-sm); padding: 3px 6px; font-size: var(--lc-fs-small); display: flex; flex-direction: column;
+  background: color-mix(in srgb, var(--obj) 42%, var(--lc-raised)); }
+.lc-pk-ex .row { height: 30px; border-radius: 3px; display: flex; align-items: center; gap: 8px; padding: 0 8px; font-size: var(--lc-fs-small);
+  background: color-mix(in srgb, var(--obj) 18%, var(--lc-surface)); }
+.lc-pk-ex .tree { height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 8px; font-size: var(--lc-fs-small); }
+.lc-pk-ex .tree i { width: 10px; height: 10px; border-radius: 2px; background: var(--obj); flex: none; }
+.lc-pk-ex .name { height: 30px; display: flex; align-items: center; padding: 0 8px; font-size: var(--lc-fs-small); box-shadow: inset 4px 0 0 var(--obj); background: var(--lc-surface); }
+.lc-pk-ex .vb { height: 40px; border-radius: var(--lc-radius-sm); display: flex; align-items: center; justify-content: center; font-size: var(--lc-fs-small);
+  background: color-mix(in srgb, var(--obj) 42%, var(--lc-raised)); }
+.lc-pk-ex span, .lc-pk-ex .cell, .lc-pk-ex .name, .lc-pk-ex .vb { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* A paint cell in <luma-settings> and the edit card: its swatch (none: dashed, the pool's own). */
+.lc-set-value i.lc-set-sw, .lc-set-row i.lc-set-sw { width: 28px; height: 18px; flex: none; border-radius: 3px; border: 1px solid var(--lc-line); background: var(--c); }
+.lc-set-value i.lc-set-sw.none, .lc-set-row i.lc-set-sw.none { background: none; border-style: dashed; }
+/* The theme editor's Paint tab: the slots' grid under its bar. */
+.lc-te-paint { gap: 10px; }
+.lc-te-paintbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.lc-te-paintbar .lc-te-cap { flex: 1; min-width: 0; justify-content: flex-start; gap: 14px; }
+.lc-te-paintbar .lc-te-cap b { font-family: var(--lc-mono); font-weight: 400; }
+.lc-te-paintgrid { height: min(62dvh, 660px); min-height: 240px; border: 1px solid var(--lc-line); border-radius: var(--lc-radius-sm); overflow: hidden; }
+.lc-te-btn:disabled { opacity: .45; cursor: default; }

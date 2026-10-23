@@ -56,6 +56,7 @@ What is being built now, next and later — one line per item, each with a link 
 - LumaSession and network: join by address, patch version negotiation, Invite's user, `Time` pings by host, PTP on Linux, CORS / TLS, per-client overlays ([vision](../../visions/notes/ideas-2026-10.md#lumasession-and-network))
 - Patch and DMX: live Pan / Tilt offsets, a DMX tester, input limits, discovery paging, lost sources, TRU, the parameter budget, a GDTF fuzz target ([vision](../../visions/notes/ideas-2026-10.md#patch-and-dmx))
 - Control input: an OSC address space of our own ([vision](../../visions/notes/ideas-2026-10.md#control-input-osc))
+- Object paint's next round: a gradient and "by fixture type" across a selection, tinted rows in the station-wide menus (Network, DMX Protocols: built once for every viewer), the pool cell drawing its icon beside the paint ([record](../decisions/0294-object-paint-palette-free-theme-links.md))
 - UI leftovers: readouts, shortcut mode per screen, encoder bar modes, echoes, keyboard tabbing, the frontend review findings ([vision](../../visions/notes/ideas-2026-10.md#ui-leftovers))
 - Developer scripts: a second station in the launcher, remote hosts, the Windows twins ([vision](../../visions/notes/ideas-2026-10.md#developer-scripts))
 - Playback words from the R1 report: relations / virtual dimmer, Go- / Goto timings, the window scroll report ([report](../research/r1-bugreport/luma-bugreport-R1.md))

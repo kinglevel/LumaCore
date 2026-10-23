@@ -654,6 +654,34 @@ pub(crate) fn builtin_window_types() -> BTreeMap<u32, WindowType> {
         .chips(&[("search", "× Search “{Self.Search}”", "Self.Search", "Set Self \"Search\" \"\"")])
         .bar_min(320, 200)
         .bar(true, &["follow", "show"]),
+        // The Rules window (decisions 0294): the attribute rules in order, which feature group each
+        // places into, and which rule places a name.
+        WindowType::new(
+            16,
+            "rules",
+            "Rules",
+            "Tools",
+            "list-ordered",
+            "The attribute rules in order (the first match wins): each one's pattern and feature group, drag to reorder, and which rule places an attribute.",
+        )
+        .keywords(&["rule", "rules", "attribute", "attributes", "feature", "group", "pattern", "resolver", "learned"])
+        .settings(section(
+            "Display",
+            vec![
+                SettingDef::new(
+                    "layer",
+                    "Layer",
+                    SettingKind::Enum { options: vec![(json!("Show"), "The show's".into()), (json!("Mine"), "My profile's".into())] },
+                    json!("Show"),
+                )
+                .hint("whose rules: the show's, or your profile's own grouping"),
+                SettingDef::new("which", "Which rule?", SettingKind::Text { max_len: 120 }, json!(""))
+                    .hint("an attribute name: the rule that places it is marked"),
+            ],
+        ))
+        .chips(&[("which", "× Which “{Self.Which}”", "Self.Which", "Set Self \"Which\" \"\"")])
+        .bar_min(320, 200)
+        .bar(true, &["layer"]),
         WindowType {
             hidden: true,
             ..WindowType::new(

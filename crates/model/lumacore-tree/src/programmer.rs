@@ -1097,6 +1097,21 @@ pub struct UserPreferences {
     /// The Update ask's choices as last used (decisions 0293): Content and its two switches.
     #[serde(default)]
     pub update: UpdateChoices,
+    /// The paint picker's mode as last used (decisions object-paint-palette-free-theme-links):
+    /// `Palette`, `Free` or `Theme`.
+    #[serde(default = "default_paint_mode")]
+    pub paint_mode: String,
+    /// The colours this profile painted with last, newest first (`#rrggbb`, at most
+    /// [`PAINT_RECENT_MAX`]); the station keeps it as Paint lines run.
+    #[serde(default)]
+    pub paint_recent: Vec<String>,
+}
+
+/// How many recent colours a profile keeps for the paint picker.
+pub const PAINT_RECENT_MAX: usize = 8;
+
+fn default_paint_mode() -> String {
+    "Palette".to_string()
 }
 
 /// What the Update ask starts with (decisions 0293): the Content (`OnlyExisting` → `/Merge`,
@@ -1397,6 +1412,8 @@ impl Default for UserPreferences {
             notification_mode: default_notification_mode(),
             mvr: MvrImportPreset::default(),
             update: UpdateChoices::default(),
+            paint_mode: default_paint_mode(),
+            paint_recent: Vec::new(),
         }
     }
 }

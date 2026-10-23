@@ -64,6 +64,8 @@ pub struct PoolContext<'a> {
     pub profile: Option<u32>,
     /// What the window narrows its pool to (the Presets window, decisions 0288).
     pub filter: PoolFilter,
+    /// The viewer's colours (decisions 0294): every cell's colour comes from here.
+    pub paint: &'a crate::paint::Painter,
 }
 
 /// A window's narrowing of its pool (the Presets window): the feature group its presets must
@@ -90,8 +92,11 @@ pub struct PoolCell {
     pub no: u32,
     pub guid: Uuid,
     pub name: Option<String>,
-    /// `#rrggbbaa` from `NodeMeta.color`.
+    /// The colour it shows this viewer, `#rrggbb` (decisions 0294: its Paint, its tags, else
+    /// None = the pool's own colour).
     pub color: Option<String>,
+    /// Where the colour comes from (`own paint`, `Theme Position`, `tag Wash · 10`, `the pool`).
+    pub paint_from: String,
     pub icon: Option<Value>,
     /// Another user holding it (claimed / open in an editor) — the red lock.
     pub owner: Option<String>,
@@ -142,14 +147,13 @@ pub struct CellBar {
 impl PoolCell {
     /// The generic part of a cell from an object's meta.
     pub fn of(no: u32, meta: &NodeMeta, ctx: &PoolContext) -> Self {
+        let shown = ctx.paint.of(meta);
         Self {
             no,
             guid: meta.identity.guid,
             name: meta.identity.name.clone(),
-            color: meta
-                .annotation
-                .paint
-                .map(|[r, g, b, a]| format!("#{r:02x}{g:02x}{b:02x}{a:02x}")),
+            color: shown.hex.clone(),
+            paint_from: shown.from_text(),
             icon: meta
                 .annotation
                 .icon

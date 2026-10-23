@@ -132,7 +132,9 @@ class LumaCueSheet extends HTMLElement {
       const open = this.open === c.cue;
       const cls = `${c.run ? ' run' : c.current ? ' cur' : ''}${c.fixed ? ' fixed' : ''}${open ? ' open' : ''}${i % 2 ? ' alt' : ''}`;
       const info = [`${c.values} value${c.values === 1 ? '' : 's'}`, c.parts > 1 ? `${c.parts} parts` : ''].filter(Boolean).join(' · ');
-      html += `<div class="lc-cs-row${cls}" data-row="${esc(c.cue)}">`
+      // A painted cue is tinted (decisions 0294): the colour this viewer sees, from the station.
+      const paint = /^#[0-9a-f]{6}$/i.test(String(c.paint ?? '')) ? c.paint : '';
+      html += `<div class="lc-cs-row${cls}${paint ? ' lc-painted' : ''}" data-row="${esc(c.cue)}"${paint ? ` style="--lc-row-paint:${paint}"` : ''}${c.paint_from ? ` data-paint-from="${esc(c.paint_from)}" title="Colour from ${esc(c.paint_from)}"` : ''}>`
         + `<div class="lc-cs-c"><button type="button" class="lc-cs-exp" data-exp="${esc(c.cue)}" aria-expanded="${open}" aria-label="${open ? 'Fold' : 'Open'} cue ${esc(c.cue)}">${open ? '−' : '+'}</button></div>`
         // CueZero is Cue 0, OffCue "Off"; their names say what they are.
         + `<div class="lc-cs-c n">${esc(c.fixed === 'OffCue' ? 'Off' : c.cue)}</div><div class="lc-cs-c name">${esc(c.fixed || c.name)}</div><div class="lc-cs-c">${esc(c.fixed ? '' : c.trig)}</div>`

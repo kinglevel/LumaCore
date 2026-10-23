@@ -45,6 +45,23 @@ fn another_object_after_a_path_is_a_slot() {
 }
 
 #[test]
+fn a_one_of_a_kind_object_as_a_value_takes_a_name() {
+    // decisions 0294: `named-one = OBJECT QUOTED`, a theme paint slot.
+    let line = typed("Set Group 3 \"Paint\" Theme \"Position\"");
+    assert!(line.is_clean(), "{:?}", line.diags);
+    let l = lum(&line);
+    let Some(Slot::Value(Value::Target(t))) = l.slots.last() else { panic!("{:?}", l.slots) };
+    let Item::Path(segments) = &t.items[0].1 else { panic!() };
+    let ranges = &segments[0].ids.as_ref().expect("the slot's name").ranges;
+    assert!(matches!(&ranges[0].1, Range::One(Id::Name(n)) if n.node == "Position"));
+    assert_eq!(printed("set group 3 \"Paint\" theme \"Special 1\""), "Set Group 3 \"Paint\" Theme \"Special 1\"");
+    // In front of the line it stays a target and its property: `Set Theme "Base" Night`.
+    let own = typed("Set Theme \"Base\" Night");
+    let Item::Path(segments) = &lum(&own).target.as_ref().unwrap().items[0].1 else { panic!() };
+    assert!(segments[0].ids.is_none());
+}
+
+#[test]
 fn ids_follow_the_one_range_rule() {
     let line = typed("Group 1 Thru 4 + 7 - 3");
     let Item::Path(segments) = &lum(&line).target.as_ref().unwrap().items[0].1 else { panic!() };

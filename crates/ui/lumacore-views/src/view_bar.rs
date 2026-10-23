@@ -30,11 +30,14 @@ use lumacore_objects::commands::views::buttons;
 // PART: VIEWS
 
 /// The bar of the user's profile screen `screen` (the profile's number of a live screen):
-/// `{screen, profile, buttons: [{slot, kind, no, name, datapool, missing}]}`.
+/// `{screen, profile, buttons: [{slot, kind, no, name, datapool, paint, missing}]}` (`paint`: its
+/// colour, `#rrggbb`, or null = the kind's).
 pub fn view(show: &ShowData, user: &str, screen: u32) -> Value {
     let Some(profile) = show.profile_for_user(user) else {
         return json!({ "screen": screen, "buttons": [] });
     };
+    // Each button wears its object's colour as this viewer sees it (decisions 0294).
+    let paint = lumacore_objects::paint::Painter::new(show, user);
     let rows: Vec<Value> = buttons::bar(show, profile, screen)
         .into_iter()
         .map(|b| match b.held {
@@ -44,6 +47,7 @@ pub fn view(show: &ShowData, user: &str, screen: u32) -> Value {
                 "no": h.no,
                 "name": h.name,
                 "datapool": h.datapool,
+                "paint": paint.of_parts(h.paint.as_ref(), &h.tags).hex,
             }),
             None => json!({ "slot": b.slot, "kind": b.kind.keyword(), "missing": true }),
         })

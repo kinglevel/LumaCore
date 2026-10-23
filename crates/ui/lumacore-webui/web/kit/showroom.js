@@ -6,6 +6,7 @@
 
 import { PRESETS, preset, setPreset, applyLook } from './theme.js';
 import { openThemeEditor, ADJUST, COLOURS } from './themeeditor.js';
+import { openPaint } from './paint.js';
 import { iconNames } from './icon.js';
 import { hold } from './pointer.js';
 import { openMenu } from './menu.js';
@@ -32,6 +33,7 @@ import './detail.js';
 import * as marks from './marks.js';
 import './devicegrid.js';
 import './treewindow.js';
+import './ruleswindow.js';
 
 const PALETTE = [
   ['Background', 'bg'], ['Surface', 'surface'], ['Raised', 'raised'], ['Line', 'line'], ['Text', 'text'],
@@ -269,6 +271,25 @@ export function buildShowroom() {
   });
   teBox.append(teBtn);
   root.append(section('The theme editor — base, adjusters, the 14 colours, pick on screen, A | B, import / export', teBox));
+
+  // <luma-paint> (decisions 0294): the paint picker on the live `paint` feed (the station's palette,
+  // your slots and recent colours — never a palette of the page's own), opened in each mode; its
+  // Please and mode lines are toasts here.
+  const pkBox = div('lc-sr-row');
+  for (const [mode, value] of [['Palette', ''], ['Free', ''], ['Theme', 'Theme "Position"']]) {
+    const b = document.createElement('luma-button');
+    b.setAttribute('icon', 'palette');
+    b.setAttribute('label', `Paint · ${mode}`);
+    b.addEventListener('click', () => openPaint({ object: 'Group 3', name: 'Blinder', no: 3, mode, line: 'Set Group 3 "Paint" {value}', value },
+      { run: line => toast(line) }));
+    pkBox.append(b);
+  }
+  const slotBtn = document.createElement('luma-button');
+  slotBtn.setAttribute('icon', 'palette');
+  slotBtn.setAttribute('label', 'Paint · a theme slot');
+  slotBtn.addEventListener('click', () => openPaint({ object: 'Theme Paint', name: 'Position', slot: true, line: 'Set Theme Paint "Position" {value}', value: '' }, { run: line => toast(line) }));
+  pkBox.append(slotBtn);
+  root.append(section('luma-paint — the paint picker on the live paint feed: Palette (the station\'s hues and tones, greys, none), Free (square + hue strip), Theme (your slots), Recent, Examples, Hex, the Line', pkBox));
 
   // Avatars (12a3)
   const avatars = div('lc-sr-row lc-sr-dark');
@@ -565,6 +586,28 @@ export function buildShowroom() {
     tw.showInspector(twInsp);
   });
 
+  // luma-rules-window (decisions 0294): the attribute rules in order, a row tinted in its feature
+  // group's colour (here the theme's pool tokens stand in for the station's resolved paints),
+  // Which rule? framing the row that places a name. Every gesture shows the line it would run.
+  const rwOut = div('lc-sr-note lc-selectable', 'Ask which rule places a name, drag a row onto another, edit a pattern, Delete: the line shows here.');
+  const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const rwRow = (no, pattern, group, family, kind, paint, hit = false) => ({ no, guid: `rule-${no}`, pattern, group, family, feature: '', match: 'family', kind, paint, colour: paint, hit });
+  const rwFrame = div('lc-sr-rules-window');
+  rwFrame.style.cssText = 'height:420px;display:flex;flex-direction:column;border:1px solid var(--lc-line)';
+  const rw = document.createElement('luma-rules-window');
+  rw.addEventListener('run', e => { e.stopPropagation(); rwOut.textContent = `› ${e.detail.line}`; });
+  rwFrame.append(rw);
+  const rwWrap = div('lc-sr-col');
+  rwWrap.append(rwFrame, rwOut);
+  requestAnimationFrame(() => rw.show({
+    title: 'Show', count: { standard: 4, learned: 1 }, groups: ['Dimmer', 'Position', 'Control', 'Shutter'],
+    rows: [rwRow(1, 'Dimmer*', 'Dimmer', 'dimmer', 'standard', tok('--lc-pool-presets') || ''), rwRow(2, 'Pan*', 'Position', 'pantilt', 'standard', tok('--lc-pool-groups')),
+      rwRow(3, 'Tilt*', 'Position', 'pantilt', 'standard', tok('--lc-pool-groups')), rwRow(4, '*Reset*', 'Control', 'control', 'standard', null),
+      rwRow(5, 'Shutter{n}StrobeBurst', 'Shutter', '—', 'learned', tok('--lc-pool-sequences'), true)],
+    which: { name: 'Shutter2StrobeBurst', rule: 5, group: 'Shutter', why: 'the learned rule Shutter{n}StrobeBurst', how: 'learned' },
+    lines: { move: 'Move AttributeRule {from} At {to}', pattern: 'Set AttributeRule {no} "Pattern" {value}', group: 'Set AttributeRule {no} "FeatureGroup" {value}', delete: 'Delete AttributeRule {no}', store: 'Store AttributeRule {pattern} FeatureGroup {group}', info: 'Info AttributeRule {name}' },
+  }, { level: 'Admin' }));
+
   // Window bar (12c): pinned settings + the type's actions, chips, `…` overflow.
   const wbTypes = {
     sysmon: { name: 'sysmon', bar_min: { width_px: 200, height_px: 100 },
@@ -848,6 +891,8 @@ export function buildShowroom() {
 
   // 12d: the grid, the edit card, the slab, the power toggle, kind badges, the setup frame.
   build12d(root, { section, div, btn });
+  // After 12d: its slab stays the first one in the Showroom (kit-12d reads the first).
+  root.append(section('luma-rules-window — the Rules window: the attribute rules in order (first match wins), Which rule?, drag to reorder, the slab', rwWrap));
   return root;
 }
 

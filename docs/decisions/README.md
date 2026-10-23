@@ -4,7 +4,7 @@ Built by `scripts/unix/docs_check --index` from every record's frontmatter; do n
 One file per binding decision; a reversal is a new record that supersedes the old one.
 The log these came from is frozen at `docs/archive/decisions-2026-10.md`; `source` cites its section and lines.
 
-Records: 215.
+Records: 216.
 
 ## attributes
 
@@ -478,6 +478,7 @@ Records: 215.
 | [0290](0290-meow-license-consent-on-every-login.md) | Meow License consent on every login | built | [E-USER-010, a_login_waits_for_the_meow_license_and_consent_finishes_it, each_holder_waits_on_its_own_and_its_token_with_it, login-sysmon.spec.ts] | [] | [session 2026-10-23, "Meow consent A is good" — docs/dev/ui-kit/mockups/2026-10-23-meow-consent/01-consent.html, approved] |
 | [0291](0291-nav-mode-ls-rows-and-an-inspector.md) | NAV mode is ls's rows and an inspector | built | [nav_rows_are_ls_rows, every_object_opens, every_row_opens_by_its_path, fixture_101_has_identity_facts_properties_and_links, a_bookmark_survives_renumbering, ls_draws_the_last_glyph_on_the_last_row, copy.spec.ts] | [] | [session 2026-10-23, "all looks good i think" — docs/dev/ui-kit/mockups/2026-10-23-nav-mode/01-nav.html (round 1, layout A) and 02-inspector.html (round 2); research into four families of tools: file managers, dashboards, data explorers, inspectors] |
 | [0292](0292-tree-window-nav-in-the-web-and-app.md) | The Tree window is NAV's tree and inspector | built | [the_tree_opens_down_to_the_place, a_place_is_a_path_or_a_guid, group_1s_inspector_has_settings_cells, follow_goes_to_the_newest_pick, the_tree_window_follows_the_selection, kit-tree-window.spec.ts] | [] | [session 2026-10-23, "looks good, implement" — docs/dev/ui-kit/mockups/2026-10-23-tree-window/01-tree-window.html (round 1, every question as recommended)] |
+| [0294](0294-object-paint-palette-free-theme-links.md) | "Object paint: palette, free and theme links; colour from tags" | built | [lumacore-base paint tests, paints_become_hex_and_feature_groups_follow_their_slots, commands::paint_slots tests, the_colour_order_is_own_then_tag_priority_then_parent_then_pool, lumacore-views paint and rules tests, a_one_of_a_kind_object_as_a_value_takes_a_name, kit-paint.spec.ts, kit-rules.spec.ts] | [nodemeta-colour-icon] | [session 2026-10-23, object paint rounds 1–4 — docs/dev/ui-kit/mockups/2026-10-23-paint/ (04 approved: "looks good, implement")] |
 
 ## undo
 

@@ -64,6 +64,9 @@ pub struct TreeRow {
     /// Something is below it.
     pub branch: bool,
     pub guid: Option<uuid::Uuid>,
+    /// A show object's colour as the acting user sees it (decisions 0294), `#rrggbb`; None = its
+    /// pool's or none.
+    pub paint: Option<String>,
 }
 
 /// Names shorter than this are padded so the metas line up (`ls`'s column).
@@ -82,7 +85,16 @@ const NAME_COLUMN: usize = 20;
 pub fn rows(state: &AppState, dot_path: &str) -> Vec<TreeRow> {
     let mut out = node_rows(state, dot_path);
     if let Some(children) = crate::vfs::dynamic_children_at(dot_path, &state.root) {
+        let start = out.len();
         out.extend(children.iter().map(|c| object_row(dot_path, c)));
+        // Show objects wear their colour (decisions 0294): one walk for the rows that have one.
+        if out[start..].iter().any(|r| r.guid.is_some()) && dot_path.starts_with(&Node::ShowData.path()) {
+            let index = crate::paint::Index::of(&state.root.show_data);
+            let painter = crate::paint::Painter::new(&state.root.show_data, state.effective_user_name());
+            for r in &mut out[start..] {
+                r.paint = r.guid.and_then(|g| painter.of_guid(&index, g)).and_then(|s| s.hex);
+            }
+        }
     }
     out
 }
@@ -109,6 +121,7 @@ pub fn node_rows(state: &AppState, dot_path: &str) -> Vec<TreeRow> {
                 type_name: "",
                 branch,
                 guid: None,
+                paint: None,
             }
         })
         .collect()
@@ -144,6 +157,7 @@ fn object_row(parent: &str, c: &DynChild) -> TreeRow {
         slot: (kind == RowKind::Object).then_some(c.id),
         type_name: if kind == RowKind::Object { c.node_type } else { "" },
         guid: c.guid,
+        paint: None,
         kind,
         segment,
         name,

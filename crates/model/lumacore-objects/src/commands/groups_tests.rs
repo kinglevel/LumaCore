@@ -549,13 +549,13 @@ fn a_group_takes_a_colour_and_an_icon() {
     let out = run(&mut state, "Set Group 1 \"Paint\" \"#3C8F3C\"");
     assert!(out.contains("Paint = #3c8f3c"), "{out}");
     let meta = |s: &AppState| s.root.show_data.datapools[&1].groups[&1].meta.clone();
-    assert_eq!(meta(&state).annotation.paint, Some([0x3c, 0x8f, 0x3c, 255]));
+    assert_eq!(meta(&state).annotation.paint, Some(lumacore_base::Paint::Rgb([0x3c, 0x8f, 0x3c])));
     assert!(run(&mut state, "Set Group 1 \"Icon\" \"star\"").contains("Icon = star"));
     assert!(matches!(meta(&state).annotation.icon, Some(lumacore_tree::node::IconRef::Builtin(ref n)) if n == "star"));
     let settings = run(&mut state, "EditSetting Group 1");
     assert!(settings.contains("#3c8f3c") && settings.contains("Set Group 1 \"Paint\""), "{settings}");
-    let bad = run(&mut state, "Set Group 1 \"Paint\" \"red\"");
-    assert!(bad.contains("not a colour"), "{bad}");
+    let bad = run(&mut state, "Set Group 1 \"Paint\" \"reddish\"");
+    assert!(bad.contains("isn't a paint") && bad.contains("E-SET-003"), "{bad}");
     run(&mut state, "Oops");
     assert!(meta(&state).annotation.icon.is_none(), "Oops takes the icon back");
     run(&mut state, "Set Group 1 \"Paint\" none");

@@ -710,15 +710,6 @@ pub fn clear_new(state: &mut AppState, t: Target) -> usize {
 
 // ─── FeatureGroup ────────────────────────────────────────────────────────────
 
-fn color_word(word: &str) -> Option<[u8; 4]> {
-    let h = unquote(word).trim_start_matches('#');
-    if h.len() != 6 {
-        return None;
-    }
-    let b = |i: usize| u8::from_str_radix(&h[i..i + 2], 16).ok();
-    Some([b(0)?, b(2)?, b(4)?, 255])
-}
-
 fn renumber_groups(l: &mut dyn AttributeLayer, list: Vec<FeatureGroup>) {
     *l.groups_mut() = list
         .into_iter()
@@ -776,7 +767,8 @@ fn group_label(state: &mut AppState, t: Target, args: &[&str]) -> DispatchResult
     out(render_success(&format!("FeatureGroup \"{old}\" is now \"{name}\".")))
 }
 
-/// `Set [UserProfile] FeatureGroup <g> Color "#hex" | Icon "name" | Sort Name|Family|MainFirst | Merge <other> | Split Family`.
+/// `Set [UserProfile] FeatureGroup <g> Icon "name" | Sort Name|Family|MainFirst | Merge <other> | Split Family` (its
+/// Paint is the one Paint property, decisions 0294).
 fn group_set(state: &mut AppState, t: Target, args: &[&str]) -> DispatchResult {
     ensure_seeded(state, t);
     let words = plain(args);
@@ -795,13 +787,6 @@ fn group_set(state: &mut AppState, t: Target, args: &[&str]) -> DispatchResult {
         let value = rest.get(i + 1).copied().unwrap_or("");
         i += 2;
         match prop.as_str() {
-            "color" | "colour" => {
-                let Some(c) = color_word(value) else {
-                    return out(render_code("Color is \"#rrggbb\".", "E-CMD-008"));
-                };
-                with_layer(state, t, |l, _| l.groups_mut().get_mut(&id).unwrap().meta.annotation.paint = Some(c));
-                done.push(format!("colour {}", unquote(value)));
-            }
             "icon" => {
                 let icon = unquote(value).to_string();
                 with_layer(state, t, |l, _| l.groups_mut().get_mut(&id).unwrap().meta.annotation.icon = Some(IconRef::Builtin(icon.clone())));
@@ -920,7 +905,8 @@ fn group_set(state: &mut AppState, t: Target, args: &[&str]) -> DispatchResult {
                         if n == id {
                             for (root, names) in fams.iter().skip(1) {
                                 let mut ng = FeatureGroup { meta: NodeMeta::new(Some(root.clone())), features: Vec::new() };
-                                ng.meta.annotation.paint = base.meta.annotation.paint;
+                                // The new group keeps the look of the one it split from.
+                                ng.meta.annotation.paint = Some(group_paint(&base));
                                 ng.meta.annotation.icon = base.meta.annotation.icon.clone();
                                 made.push((ng.meta.identity.guid, names.clone()));
                                 out_list.push(ng);
@@ -1054,7 +1040,7 @@ fn group_info(state: &mut AppState, t: Target, args: &[&str]) -> DispatchResult 
         id,
         grp.meta.name().unwrap_or_default(),
         if grp.features.is_empty() { "—".into() } else { grp.features.join(", ") },
-        grp.meta.annotation.paint.map(|c| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2])).unwrap_or_else(|| "—".into()),
+        group_paint(grp).word(),
         match &grp.meta.annotation.icon {
             Some(IconRef::Builtin(i)) => i.as_str(),
             _ => "—",
@@ -1184,8 +1170,37 @@ macro_rules! group_prop {
     };
 }
 
+/// A feature group's Paint (decisions 0294): its own, else the theme slot of its name.
+pub fn group_paint(g: &FeatureGroup) -> lumacore_base::Paint {
+    g.meta.annotation.paint.clone().unwrap_or_else(|| lumacore_base::Paint::Theme(g.meta.name().unwrap_or_default().to_string()))
+}
+
+/// `Set FeatureGroup "FX" "Paint" …`: the one Paint parser; `none` = the theme slot of its name.
+fn set_group_paint(state: &mut AppState, key: &str, _: &str, value: &str) -> Result<String, String> {
+    let t = scoped();
+    may(state, t)?;
+    let paint = lumacore_base::Paint::parse(value).map_err(|e| render_code(format!("FeatureGroup \"Paint\": {e}."), "E-SET-003"))?;
+    // The row is the group's number (the keyed rows found it).
+    let (id, name) = key.parse::<u32>().ok().and_then(|id| layer(&state.root.show_data, t).groups().get(&id).map(|g| (id, g.meta.name().unwrap_or_default().to_string()))).ok_or_else(|| render_code(format!("No FeatureGroup {key}."), "E-CMD-007"))?;
+    with_layer(state, t, |l, _| l.groups_mut().get_mut(&id).expect("a found group").meta.annotation.paint = paint.clone());
+    let shown = paint.map_or_else(|| format!("none (Theme \"{name}\")"), |p| p.word());
+    Ok(format!("FeatureGroup \"{name}\" Paint = {shown}"))
+}
+
+fn get_group_paint(state: &AppState, key: &str, _: &str) -> String {
+    let l = layer(&state.root.show_data, scoped());
+    key.parse::<u32>().ok().and_then(|id| l.groups().get(&id)).and_then(|g| g.meta.annotation.paint.as_ref()).map(|p| p.word()).unwrap_or_default()
+}
+
 static FEATURE_GROUP_PROPS: [crate::props::Property; 2] = [
-    group_prop!("Paint", "Color", "its colour on the encoder bar and in the sheet, #rrggbb"),
+    crate::props::Property {
+        name: "Paint",
+        kind: crate::props::PropKind::Paint,
+        section: "FeatureGroup",
+        doc: "its colour on the encoder bar, the sheets and the preset pool: #rrggbb, a palette colour, Theme \"<slot>\", or none = the theme slot of its name",
+        access: crate::props::Access::Named { get: get_group_paint, set: set_group_paint },
+        ..crate::props::Property::BASE
+    },
     group_prop!("Icon", "Icon", "its icon on the encoder bar"),
 ];
 
@@ -1790,9 +1805,93 @@ pub static ATTRIBUTE_RULE: ObjectDef = ObjectDef {
     ],
     delete_ask: None,
     complete: None,
-    props: None,
+    props: Some(&RULE_SETTINGS),
     tree: None,
 };
+
+// ── AttributeRule properties (the Rules window's cells, decisions 0294) ──
+
+/// A rule of the scoped layer (the show's, or `UserProfile x`'s), by its number.
+static RULE_SETTINGS: crate::props::Props = crate::props::Props {
+    lists: &[&RULE_PROPS],
+    keyed: Some(crate::props::Keyed {
+        rows: |s| layer(&s.root.show_data, scoped()).rules().keys().map(u32::to_string).collect(),
+        row: |s, w| {
+            let n = unquote(w).parse::<u32>().ok()?;
+            layer(&s.root.show_data, scoped()).rules().contains_key(&n).then(|| n.to_string())
+        },
+    }),
+    label: Some(|_, k| format!("AttributeRule {k}")),
+    ..crate::props::Props::BASE
+};
+
+macro_rules! rule_prop {
+    ($name:literal, $doc:literal) => {
+        crate::props::Property {
+            name: $name,
+            rights: crate::commands::registry::Rights::Setup,
+            section: "AttributeRule",
+            doc: $doc,
+            access: crate::props::Access::Named { get: rule_get, set: rule_set },
+            ..crate::props::Property::BASE
+        }
+    };
+}
+
+static RULE_PROPS: [crate::props::Property; 3] = [
+    rule_prop!("Pattern", "the names it places: * = any characters, {n} = digits, case-insensitive, whole name (a change makes it learned)"),
+    rule_prop!("FeatureGroup", "the feature group it places into, by name or number (a change makes it learned)"),
+    rule_prop!("Feature", "the feature inside the group, or none"),
+];
+
+fn rule_get(state: &AppState, key: &str, name: &str) -> String {
+    let l = layer(&state.root.show_data, scoped());
+    let Some(r) = key.parse::<u32>().ok().and_then(|n| l.rules().get(&n)) else { return String::new() };
+    // tidy: not-keywords (the rule's own property names)
+    match name {
+        "Pattern" => r.pattern.clone(),
+        "FeatureGroup" => group_name(l, Some(r.group)),
+        _ => r.feature.clone().unwrap_or_default(),
+    }
+}
+
+/// A rule's cell: the pattern, its feature group or its feature. A user's change is their own
+/// choice: the rule becomes learned (it beats the standard table).
+fn rule_set(state: &mut AppState, key: &str, name: &str, value: &str) -> Result<String, String> {
+    let t = scoped();
+    may(state, t)?;
+    ensure_seeded(state, t);
+    let n: u32 = key.parse().map_err(|_| render_code("Name a rule by its number (List AttributeRule).", "E-CMD-007"))?;
+    let value = unquote(value.trim()).to_string();
+    let group = match name {
+        // The group by name or number, as the FeatureGroup rows read it.
+        "FeatureGroup" => {
+            let row = FEATURE_GROUP_SETTINGS.keyed.as_ref().and_then(|k| (k.row)(state, &value)).and_then(|n| n.parse::<u32>().ok());
+            let l = layer(&state.root.show_data, t);
+            let g = row.and_then(|n| l.groups().get(&n)).ok_or_else(|| render_code(format!("No FeatureGroup \"{value}\" in this layer."), "E-CMD-007"))?;
+            Some((g.meta.identity.guid, g.meta.name().unwrap_or_default().to_string()))
+        }
+        _ => None,
+    };
+    if name == "Pattern" && value.is_empty() {
+        return Err(render_code("A rule needs a pattern (Delete AttributeRule removes it).", "E-CMD-008"));
+    }
+    let shown = group.as_ref().map_or_else(|| value.clone(), |(_, n)| n.clone());
+    with_layer(state, t, |l, _| {
+        let Some(r) = l.rules_mut().get_mut(&n) else { return Err(render_code(format!("No AttributeRule {n}."), "E-CMD-007")) };
+        match (name, group) {
+            ("Pattern", _) => r.pattern = value.clone(),
+            (_, Some((g, _))) => r.group = g,
+            _ => r.feature = Some(value.clone()).filter(|v| !v.is_empty() && !v.eq_ignore_ascii_case("none")),
+        }
+        if name != "Feature" {
+            r.learned = true;
+            r.class = None;
+        }
+        Ok(())
+    })?;
+    Ok(format!("AttributeRule {n} {name} = {shown}"))
+}
 
 // ─── EncoderBar (a profile's layouts) ────────────────────────────────────────
 

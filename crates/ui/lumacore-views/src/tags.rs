@@ -35,12 +35,20 @@ use uuid::Uuid;
 // PART: VIEWS
 
 /// The members grid's columns (read-only: a member changes through its own EditSetting).
-static COLUMNS: &[Col] = &[frozen(ro("no", "No", 64, 1)), ro("kind", "Kind", 120, 1), ro("name", "Name", 200, 1), ro("via", "Tagged", 140, 2)];
+static COLUMNS: &[Col] = &[frozen(ro("no", "No", 64, 1)), ro("kind", "Kind", 120, 1), ro("name", "Name", 200, 1), ro("via", "Tagged", 140, 2), ro("paint_from", "Colour from", 150, 3)];
 
 /// The Tags window's view. `which` = the picked tag's GUID (the window's `Tag` setting; empty =
-/// none picked), `deep` = members of the tags under it too.
-pub fn view(show: &ShowData, which: &Value, deep: bool) -> Value {
+/// none picked), `deep` = members of the tags under it too. Colours are `user`'s (decisions 0294).
+pub fn view(show: &ShowData, user: &str, which: &Value, deep: bool) -> Value {
     let walk = show.walk_identity();
+    let paint = lumacore_objects::paint::Painter::new(show, user);
+    // The tags each object carries (its colour comes from the painted one with the highest Priority).
+    let mut tags_of: BTreeMap<Uuid, Vec<Uuid>> = BTreeMap::new();
+    for l in walk.links.iter().filter(|l| l.kind == "Tag") {
+        if let Some(from) = l.from {
+            tags_of.entry(from).or_default().push(l.target);
+        }
+    }
     // Who carries each tag directly, in the walk's order.
     let mut carried: BTreeMap<Uuid, Vec<Uuid>> = BTreeMap::new();
     for l in walk.links.iter().filter(|l| l.kind == "Tag") {
@@ -59,7 +67,7 @@ pub fn view(show: &ShowData, which: &Value, deep: bool) -> Value {
         .map(|(path, t)| {
             json!({
                 "path": path.to_string(), "guid": t.meta.identity.guid, "name": t.name(),
-                "colour": crate::attribute_board::hex(t.meta.annotation.paint),
+                "colour": paint.tag(t.meta.identity.guid),
                 "count": count(t), "badge": badge(t.action),
             })
         })
@@ -80,7 +88,11 @@ pub fn view(show: &ShowData, which: &Value, deep: bool) -> Value {
                 continue;
             }
             let Some(o) = objects.get(from) else { continue };
-            members.push(member(show, o, through.map(|(_, t)| t.name())));
+            let mut row = member(show, o, through.map(|(_, t)| t.name()));
+            let shown = paint.of_parts(o.paint.as_ref(), tags_of.get(from).map_or(&[][..], Vec::as_slice));
+            row["paint"] = shown.hex.clone().map_or(Value::Null, Value::from);
+            row["paint_from"] = json!(shown.from_text());
+            members.push(row);
         }
     }
     let mut kinds: Vec<(String, usize)> = Vec::new();

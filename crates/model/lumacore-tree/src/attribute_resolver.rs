@@ -157,13 +157,13 @@ pub fn matches(pattern: &str, name: &str) -> bool {
     go(&p, &n)
 }
 
-fn color_of(hex: &str) -> Option<[u8; 4]> {
-    let h = hex.trim_start_matches('#');
-    if h.len() != 6 {
-        return None;
+/// A template group's Paint (decisions object-paint-palette-free-theme-links): the theme slot of
+/// its name when LumaCore has one (each viewer's own colour), else the template's colour.
+fn group_paint(name: &str, hex: &str) -> Option<lumacore_base::Paint> {
+    if crate::media::is_builtin_slot(name) {
+        return Some(lumacore_base::Paint::Theme(name.to_string()));
     }
-    let b = |i: usize| u8::from_str_radix(&h[i..i + 2], 16).ok();
-    Some([b(0)?, b(2)?, b(4)?, 255])
+    lumacore_base::paint::hex_rgb(hex).map(lumacore_base::Paint::Rgb)
 }
 
 fn unit_of(name: Option<&str>) -> PhysicalUnit {
@@ -379,7 +379,7 @@ pub fn seed_layer<L: AttributeLayer + ?Sized>(layer: &mut L, ctx: &Ctx, template
                 FeatureGroup {
                     meta: NodeMeta {
                         identity: Identity { guid: by_name.get(&g.name.to_lowercase()).copied().unwrap_or_else(Uuid::new_v4), name: Some(g.name.clone()) },
-                        annotation: Annotation { paint: color_of(&g.color), icon: Some(IconRef::Builtin(g.icon.clone())), ..Default::default() },
+                        annotation: Annotation { paint: group_paint(&g.name, &g.color), icon: Some(IconRef::Builtin(g.icon.clone())), ..Default::default() },
                     },
                     features: g.features.clone(),
                 },
@@ -472,6 +472,8 @@ pub struct Resolved {
     pub group: Uuid,
     pub feature: Option<String>,
     pub placement: Placement,
+    /// The rule that placed it (its GUID), when a rule did (the Rules window's Which rule?).
+    pub rule: Option<Uuid>,
 }
 
 /// A rule class's group: the first rule of that class (it follows the user's
@@ -501,10 +503,11 @@ pub fn resolve(show: &ShowData, attr: &FileAttribute) -> Resolved {
 pub fn resolve_in<L: AttributeLayer + ?Sized>(layer: &L, ctx: &Ctx, attr: &FileAttribute) -> Resolved {
     let std = standard();
     let file_feature = attr.feature.clone();
-    let done = |group: Uuid, feature: Option<String>, how: PlaceHow, why: String| Resolved {
+    let done = |group: Uuid, feature: Option<String>, how: PlaceHow, why: String, rule: Option<Uuid>| Resolved {
         group,
         feature,
         placement: Placement { how, why, file_feature: file_feature.clone() },
+        rule,
     };
     // A vendor name with spaces ("Pan Invert", "Reset all") is not a GDTF
     // name: it skips the exact and family steps and goes by keyword.
@@ -517,7 +520,7 @@ pub fn resolve_in<L: AttributeLayer + ?Sized>(layer: &L, ctx: &Ctx, attr: &FileA
         .filter(|r| r.learned)
         .find(|r| matches(&r.pattern, &attr.name))
     {
-        return done(r.group, r.feature.clone(), PlaceHow::Family, format!("learned rule {}", r.pattern));
+        return done(r.group, r.feature.clone(), PlaceHow::Family, format!("learned rule {}", r.pattern), Some(r.meta.identity.guid));
     }
     // Exact: a standard name keeps its standard class; a family rule may
     // only refine it (Beam → Shutter / Effects, Control → StrobeMode).
@@ -528,11 +531,11 @@ pub fn resolve_in<L: AttributeLayer + ?Sized>(layer: &L, ctx: &Ctx, attr: &FileA
                 .filter(|c| std.refine.get(class).is_some_and(|ok| ok.contains(c)));
             let class = refined.unwrap_or(class);
             if let Some((g, f)) = by_class(layer, class) {
-                return done(g, f, PlaceHow::Exact, format!("standard name ({})", s.feature));
+                return done(g, f, PlaceHow::Exact, format!("standard name ({})", s.feature), None);
             }
         }
     if let Some(r) = family {
-        return done(r.group, r.feature.clone(), PlaceHow::Family, format!("family {}", r.pattern));
+        return done(r.group, r.feature.clone(), PlaceHow::Family, format!("family {}", r.pattern), Some(r.meta.identity.guid));
     }
     // Parent: its main attribute's group.
     let main = attr
@@ -542,7 +545,7 @@ pub fn resolve_in<L: AttributeLayer + ?Sized>(layer: &L, ctx: &Ctx, attr: &FileA
         .or_else(|| ctx.main.get(&attr.name).cloned());
     if let Some(m) = main.as_deref()
         && let Some(p) = layer.place_of(m) {
-            return done(p.group, p.feature, PlaceHow::Parent, format!("its main attribute {m}"));
+            return done(p.group, p.feature, PlaceHow::Parent, format!("its main attribute {m}"), None);
         }
     // Context: a member of its activation group the layer knows.
     let ag = attr.activation_group.clone().or_else(|| ctx.activation.get(&attr.name).cloned());
@@ -553,22 +556,22 @@ pub fn resolve_in<L: AttributeLayer + ?Sized>(layer: &L, ctx: &Ctx, attr: &FileA
             .filter(|(n, a)| a.eq_ignore_ascii_case(ag) && **n != attr.name)
             .find_map(|(n, _)| layer.place_of(n).map(|p| (n.clone(), p)));
         if let Some((n, p)) = sibling {
-            return done(p.group, p.feature, PlaceHow::Context, format!("activation group {ag} ({n})"));
+            return done(p.group, p.feature, PlaceHow::Context, format!("activation group {ag} ({n})"), None);
         }
     }
     // Hint: a keyword, then the file's Feature through the template classes.
     if let Some(r) = first_rule(layer, &attr.name, RuleKind::Keyword) {
         let word = r.pattern.trim_matches('*');
-        return done(r.group, r.feature.clone(), PlaceHow::Hint, format!("keyword \"{word}\""));
+        return done(r.group, r.feature.clone(), PlaceHow::Hint, format!("keyword \"{word}\""), Some(r.meta.identity.guid));
     }
     if let Some(ff) = attr.feature.as_deref()
         && let Some((g, f)) = std.std_class.get(ff).and_then(|c| by_class(layer, c)) {
-            return done(g, f, PlaceHow::Hint, format!("the file says {ff}"));
+            return done(g, f, PlaceHow::Hint, format!("the file says {ff}"), None);
         }
     let (g, f) = by_class(layer, &std.fallback)
         .or_else(|| layer.groups().values().next().map(|g| (g.meta.identity.guid, None)))
         .unwrap_or((Uuid::nil(), None));
-    done(g, f, PlaceHow::Guess, "nothing matched".to_string())
+    done(g, f, PlaceHow::Guess, "nothing matched".to_string(), None)
 }
 
 /// Every attribute name the patched fixtures use, with what their files say.

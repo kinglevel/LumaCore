@@ -131,13 +131,16 @@ fn the_cells_filter_by_feature_group_and_tag_and_fit_the_selection() {
     run(&mut s, "Fixture 101 At 10");
     run(&mut s, "Fixture 102 At 20");
     run(&mut s, "Store Preset 902 \"Pair\"");
-    let groups = super::pool::groups_of(&s.root.show_data, &preset(&s, 902));
+    let painter = crate::paint::Painter::new(&s.root.show_data, s.effective_user_name());
+    let groups = super::pool::groups_of(&s.root.show_data, &painter, &preset(&s, 902));
     let dimmer = groups.first().map(|(g, _)| g.clone()).expect("the Dimmer belongs to a feature group");
     let user = s.effective_user_name().to_string();
     let cells = |s: &AppState, feature: Option<&str>, tags: Vec<uuid::Uuid>| {
         let referenced = Default::default();
         let claims = Default::default();
+        let paint = crate::paint::Painter::new(&s.root.show_data, &user);
         let ctx = crate::pools::PoolContext {
+            paint: &paint,
             show: &s.root.show_data,
             user: &user,
             datapool: s.selected_datapool(),

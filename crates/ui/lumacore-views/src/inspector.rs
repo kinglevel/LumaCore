@@ -171,6 +171,18 @@ fn object_view(state: &mut AppState, dot_path: &str, object: &'static lumacore_o
         Row::fact(Section::Identity, "Path", dot_path),
     ];
     rows.extend(facts(state, object, no, dot_path));
+    // The colour it shows the acting user and where it comes from (decisions 0294).
+    if let Some(g) = guid {
+        let index = lumacore_objects::paint::Index::of(&state.root.show_data);
+        let painter = lumacore_objects::paint::Painter::new(&state.root.show_data, state.effective_user_name());
+        if let Some(shown) = painter.of_guid(&index, g) {
+            let value = match &shown.hex {
+                Some(hex) => format!("{hex} · {}", shown.from_text()),
+                None => shown.from_text(),
+            };
+            rows.push(Row::fact(Section::Info, "Colour from", value));
+        }
+    }
     rows.extend(properties(state, object, datapool, no, &owner));
     if let Some(guid) = guid {
         rows.extend(links(state, guid));

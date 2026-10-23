@@ -39,7 +39,7 @@ fn run(state: &mut AppState, line: &str) -> String {
 /// the branch merges at 0 (decision 33). 345 since the count became exact (2026-10-15: two
 /// helper calls, `store_typed::<P>` and `delete_typed::<P>`, had been counted as typed — the
 /// shown 343 was 345 raw handlers).
-const SHIM_AT_MOST: usize = 338;
+const SHIM_AT_MOST: usize = 337;
 
 fn typed_uses() -> usize {
     let mut n = 0;

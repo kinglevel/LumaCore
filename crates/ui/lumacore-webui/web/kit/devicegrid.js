@@ -18,7 +18,7 @@
 //     feed for their cells)
 //   A small pane draws the hybrid miniature (decisions §30 "12e round 5"); a phone draws Channel.
 
-import { LumaGrid, rowsWord } from './grid.js';
+import { LumaGrid, rowsWord, paintOf } from './grid.js';
 import { valueParts, nameBar } from './marks.js';
 import { openKeypad } from './keypad.js';
 import { objectMenus, openContext } from './context.js';
@@ -121,12 +121,18 @@ export class LumaDeviceGrid extends LumaGrid {
     return `<div class="lc-grid-hrow lc-dg-groups">${out.join('')}</div>`;
   }
 
+  /** A device's paint is its name cell's bar, never a tint over its values (the marks own those). */
+  rowPaint() { return ''; }
+
   cellHtml(c, r, k, j) {
     const focus = this.focus?.key === k && this.focus.col === c.id ? ' focus' : '';
     const on = this.cellOn(k, c.id) ? ' on' : '';
     if (c.id === 'name') {
       const folder = r.kind === 'folder';
-      return `<div class="lc-gc ro frozen lc-dg-name${folder ? ' folder' : ''}${on}${focus}" data-k="${esc(k)}" data-col="name"${this.stick(c)} title="${esc(r.id)}">`
+      // The fixture's paint as a bar along the name's left edge (decisions 0294); the row stays untinted.
+      const paint = paintOf(r.paint);
+      const st = this.stick(c).replace(/^ style="/, '').replace(/"$/, '');
+      return `<div class="lc-gc ro frozen lc-dg-name${folder ? ' folder' : ''}${paint ? ' lc-painted' : ''}${on}${focus}" data-k="${esc(k)}" data-col="name"${st || paint ? ` style="${st}${paint ? `${st ? ';' : ''}--lc-name-paint:${paint}` : ''}"` : ''} title="${esc(r.id)}">`
         + `${nameBar(r.bar)}<span class="lc-dg-indent" style="width:${(r.depth || 0) * 14}px"></span>`
         + `${folder ? '<luma-icon name="folder-open" class="lc-dg-fold"></luma-icon>' : ''}`
         + `<span class="lc-gc-text">${esc(r.name || r.id)}</span>${folder ? `<small>${esc(r.count)}</small>` : ''}</div>`;

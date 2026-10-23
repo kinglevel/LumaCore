@@ -234,7 +234,7 @@ pub fn values_of(kind: PropKind) -> Vec<String> {
         PropKind::Link { .. } | PropKind::OwnLink { .. } => {
             ["1", "999", "\"Missing\"", "none"].map(String::from).to_vec()
         }
-        PropKind::Rgba => ["#3c8f3c", "#FFFFFF", "none", "#12", "red"].map(String::from).to_vec(),
+        PropKind::Paint => ["#3c8f3c", "#FFFFFF", "none", "#12", "red", "Blue", "Theme \"Position\""].map(String::from).to_vec(),
         PropKind::Icon => ["star", "grid-3x3", "none", "\"two words\""].map(String::from).to_vec(),
         PropKind::Colour => ["\"#9a7a08\"", "#FFFFFF", "none", "#12345", "red"].map(String::from).to_vec(),
     }

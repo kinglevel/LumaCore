@@ -6,7 +6,8 @@
 // cells — each cell takes its field's input: a toggle flips, a choice opens
 // the pick list, a number the keypad (named numbers like Fit as choices), a
 // link the pick list (with the follow row), a colour or a text the standard
-// dialog. Every change runs the field's command line at once (no OK): the
+// dialog, an object's Paint (input `paint`, decisions 0294) the paint picker
+// (kit/paint.js: its swatch and word in the cell, empty = `none`). Every change runs the field's command line at once (no OK): the
 // station answers with fresh fields and `update` redraws in place, keeping
 // the tab.
 //
@@ -47,6 +48,7 @@ import { openPick } from './popup.js';
 import { openDialog } from './dialog.js';
 import { drag } from './pointer.js';
 import { openMenu } from './menu.js';
+import { openPaint } from './paint.js';
 
 import { toast } from './toast.js';
 import './tree.js';
@@ -63,10 +65,11 @@ export function kindOf(input) {
   if (t === 'toggle' || t === 'bool') return 'toggle';
   if (t === 'choice' || t === 'link' || t === 'list') return 'list';
   if (t === 'colour') return 'colour';
+  if (t === 'paint') return 'paint';
   return 'text';
 }
-const BADGE = { text: 'Aa', number: '123', toggle: 'I/O', list: '≡', colour: '#' };
-const BADGE_TITLE = { text: 'Text', number: 'Number', toggle: 'Switch (on / off)', list: 'A list to pick from', colour: 'Colour' };
+const BADGE = { text: 'Aa', number: '123', toggle: 'I/O', list: '≡', colour: '#', paint: '#' };
+const BADGE_TITLE = { text: 'Text', number: 'Number', toggle: 'Switch (on / off)', list: 'A list to pick from', colour: 'Colour', paint: 'Paint: a colour, a palette word or a theme link (the paint picker)' };
 /** The kind badge (neutral outline; greyed when read-only). */
 export function kindBadge(kind, ro = false) {
   return `<b class="lc-kind${ro ? ' ro' : ''}" data-kind="${kind}" title="${BADGE_TITLE[kind] || ''}">${esc(BADGE[kind] || 'Aa')}</b>`;
@@ -118,6 +121,7 @@ export async function askField(f) {
     const typed = await openKeypad({ title: f.name, value: named.includes(f.value) ? '' : f.value, min: f.input.min, max: f.input.max });
     return typed?.text || null;
   }
+  if (t === 'paint') return null; // the paint picker runs its own line (LumaSettings.paint)
   if (t === 'link' && f.pick) {
     const got = await openPick({ title: f.name, pick: f.pick, value: f.value });
     if (!got) return null;
@@ -201,10 +205,19 @@ class LumaSettings extends HTMLElement {
   async tap(f) {
     const why = this.why(f);
     if (why) { toast(why); return; }
+    if (f.input?.type === 'paint') { this.paint(f); return; }
     const got = await askField(f);
     if (got == null) return;
     if (typeof got === 'object') { this.run(got.add); return this.run(f.line.replace('{value}', got.value)); }
     this.run(f.line.replace('{value}', valueWord(f, got)));
+  }
+
+  /** An object's Paint (decisions 0294): the kit's picker; its Please runs the field's line once. */
+  paint(f) {
+    const object = /^Set (.+?) "Paint"/i.exec(f.line || '')?.[1] || this.spec.title || '';
+    const own = (this.spec.fields || []).find(x => x.key === 'Name' || x.name === 'Name')?.value;
+    const name = (own && own !== '—' ? own : '') || /"([^"]+)"/.exec(this.spec.heading || this.spec.title || '')?.[1] || '';
+    openPaint({ object, name, no: /(\d+)$/.exec(object)?.[1] ?? '', line: f.line, value: f.value }, { run: l => this.run(l) });
   }
 
   run(line) {
@@ -226,7 +239,13 @@ class LumaSettings extends HTMLElement {
     const pinned = pinnable && ids(bar.value).includes(f.key);
     const side = pinnable || (!ro && f.changed);
     const on = /^(yes|on|true)$/i.test(f.value);
-    const value = `${f.input?.type === 'colour' && f.value !== 'Theme' ? `<i style="background:${esc(f.value)}"></i>` : ''}${esc(f.value) || (f.input?.type === 'colour' ? 'Theme' : '—')}`;
+    // A paint (decisions 0294): its swatch (a colour as the station sends it) and its word; empty is
+    // `none` — only a window's or the theme's colour reads "Theme" when empty.
+    const paint = f.input?.type === 'paint';
+    const sw = paint ? [f.colour, f.value].find(c => /^#[0-9a-f]{6}$/i.test(c || '')) || '' : '';
+    const value = paint
+      ? `<i class="lc-set-sw${sw ? '' : ' none'}"${sw ? ` style="--c:${esc(sw)}"` : ''}></i>${esc(f.value) || 'none'}`
+      : `${f.input?.type === 'colour' && f.value !== 'Theme' ? `<i style="background:${esc(f.value)}"></i>` : ''}${esc(f.value) || (f.input?.type === 'colour' ? 'Theme' : '—')}`;
     const steps = kind === 'number' && !ro && !(f.input?.named || []).includes(f.value);
     return `<div class="lc-set-cell k-${kind}${pinned ? ' pinned' : ''}${side ? ' sided' : ''}${ro ? ' ro' : ''}${steps ? ' steps' : ''}" data-kind="${kind}" ${f.key ? `data-setting="${esc(f.key)}"` : ''} ${ro ? `data-why="${esc(why)}"` : ''}>
         <button type="button" class="lc-set-tap" data-i="${i}" title="${esc(why || f.hint)}">
@@ -407,7 +426,7 @@ export function openSettings(spec, { run }) {
     el.dispatchEvent(new CustomEvent('closed', { bubbles: false }));
   };
   const onKey = e => {
-    if (e.key === 'Escape' && !document.querySelector('.lc-kp-scrim, .lc-pick-scrim, [data-kit="dialog"]')) { e.preventDefault(); e.stopPropagation(); close(); }
+    if (e.key === 'Escape' && !document.querySelector('.lc-kp-scrim, .lc-pick-scrim, [data-kit="dialog"], [data-kit="paint-picker"]')) { e.preventDefault(); e.stopPropagation(); close(); }
   };
   document.addEventListener('keydown', onKey, true);
   el.addEventListener('run', e => run(e.detail.line));

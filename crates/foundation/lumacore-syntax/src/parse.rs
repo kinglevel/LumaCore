@@ -463,6 +463,21 @@ impl<'a> Parser<'a> {
         Some(Target { items })
     }
 
+    /// A one-of-a-kind object as a value takes one quoted name after it (decisions 0294: `Set
+    /// Group 3 "Paint" Theme "Position"`, a theme paint slot): `value = OBJECT QUOTED`.
+    fn named_one(&mut self, target: &mut Target) {
+        let [(None, Item::Path(segments))] = target.items.as_mut_slice() else { return };
+        let [segment] = segments.as_mut_slice() else { return };
+        let counted = self.vocab.word(segment.object.node).object.as_ref().is_some_and(|o| o.counted);
+        let Some(t) = self.here() else { return };
+        if counted || segment.ids.is_some() || !matches!(t.kind, TokenKind::Quoted { .. }) {
+            return;
+        }
+        self.pos += 1;
+        let name = Spanned::new(unquote(self.text(t)).to_string(), t.span);
+        segment.ids = Some(Ids { ranges: vec![(None, Range::One(Id::Name(name)))] });
+    }
+
     fn starts_ids(&self, t: Token) -> bool {
         matches!(t.kind, TokenKind::Number | TokenKind::Quoted { .. }) || self.is_keyword(t, "Thru")
     }
@@ -676,7 +691,11 @@ impl<'a> Parser<'a> {
                     }
                 }
             }
-            TokenKind::Word if self.object(t).is_some() || self.is_keyword(t, "Self") => self.target().map(Value::Target),
+            TokenKind::Word if self.object(t).is_some() || self.is_keyword(t, "Self") => {
+                let mut target = self.target()?;
+                self.named_one(&mut target);
+                Some(Value::Target(target))
+            }
             TokenKind::Dotted if !is_read(self.text(t)) => self.target().map(Value::Target),
             _ => self.single_value(),
         }

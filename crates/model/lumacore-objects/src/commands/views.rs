@@ -538,9 +538,34 @@ pub static VIEW: ObjectDef = ObjectDef {
     ],
     delete_ask: None,
     complete: Some(view_complete),
-    props: None,
+    props: Some(&VIEW_PROPS),
     tree: None,
 };
+
+/// Your profile's views by number: their Paint (decisions 0294; the Views pool and the view bar
+/// wear it).
+static VIEW_PROPS: crate::props::Props = crate::props::Props {
+    lists: &[&VIEW_PAINT],
+    keyed: Some(crate::props::Keyed {
+        rows: |s| s.root.show_data.profile_for_user(s.effective_user_name()).map_or_else(Vec::new, |p| p.content.views.keys().map(u32::to_string).collect()),
+        row: |s, w| {
+            let n = w.trim_matches('"').parse::<u32>().ok()?;
+            s.root.show_data.profile_for_user(s.effective_user_name())?.content.views.contains_key(&n).then(|| n.to_string())
+        },
+    }),
+    label: Some(|_, k| format!("View {k}")),
+    ..crate::props::Props::BASE
+};
+static VIEW_PAINT: [crate::props::Property; 1] = [crate::keyed_paint!(view_meta, view_meta_mut, "View")];
+
+fn view_meta<'a>(s: &'a AppState, k: &str) -> Option<&'a lumacore_base::NodeMeta> {
+    s.root.show_data.profile_for_user(s.effective_user_name())?.content.views.get(&k.parse().ok()?).map(|v| &v.meta)
+}
+
+fn view_meta_mut<'a>(s: &'a mut AppState, k: &str) -> Option<&'a mut lumacore_base::NodeMeta> {
+    let user = s.effective_user_name().to_string();
+    s.root.show_data.profile_for_user_mut(&user)?.content.views.get_mut(&k.parse().ok()?).map(|v| &mut v.meta)
+}
 
 fn viewbutton_call(state: &mut AppState, args: &[&str]) -> DispatchResult {
     out(cmd_viewbutton(state, args))

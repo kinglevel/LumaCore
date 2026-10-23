@@ -61,9 +61,11 @@ pub fn view(
         .filter(|n| *n > 0)
         .unwrap_or_else(|| user_datapool(show, user));
     let referenced = referenced(show);
+    let paint = lumacore_objects::paint::Painter::new(show, user);
     let ctx = PoolContext {
         show,
         user,
+        paint: &paint,
         datapool,
         claims,
         referenced: &referenced,
@@ -104,9 +106,11 @@ pub fn detail(
         .filter(|n| *n > 0)
         .unwrap_or_else(|| user_datapool(show, user));
     let referenced = HashSet::new();
+    let paint = lumacore_objects::paint::Painter::new(show, user);
     let ctx = PoolContext {
         show,
         user,
+        paint: &paint,
         datapool,
         claims,
         referenced: &referenced,

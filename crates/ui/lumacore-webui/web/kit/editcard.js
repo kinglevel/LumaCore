@@ -10,7 +10,8 @@
 // Per-row fields (Name) are read-only with several rows; fields above the
 // viewer's level are greyed with the reason. No OK — × (or Esc) closes. On a
 // phone (container < 600 px) the card is full screen, tabs on top, one
-// column; the pickers are the kit's own (keypad, pick list, dialog).
+// column; the pickers are the kit's own (keypad, pick list, dialog; a `paint` column the
+// paint picker, kit/paint.js, whose Please runs `Set Group 1 Thru 3 + 5 "Paint" Blue`).
 //
 //   openEditCard({ object, columns, rows, focus, level, id, row_key, hidden,
 //     open }, { run(line), closed() }) → { update(rows), close(), typed(ch),
@@ -22,11 +23,14 @@ import { openDialog } from './dialog.js';
 import { kindOf, kindBadge, homeMark } from './settings.js';
 import { needs, rowsWord, valueText, cellText } from './grid.js';
 import { toast } from './toast.js';
+import { openPaint } from './paint.js';
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const isOn = v => v === true || /^(yes|on|true)$/i.test(String(v));
 
 let current = null;
+/** A paint cell's swatch: the row's colour as the station resolved it (decisions 0294). */
+const paintSwatch = c => (/^#[0-9a-f]{6}$/i.test(c || '') ? `<i class="lc-set-sw" style="--c:${esc(c)}"></i>` : '<i class="lc-set-sw none"></i>');
 
 /** What the selected rows hold in `col`: the rows that have it, the shared
  *  value or the mixed range. */
@@ -93,7 +97,7 @@ export function openEditCard(spec, { run, closed } = {}) {
             return `<div class="lc-set-cell k-${kind}${w ? ' ro' : ''}${c.id === focus ? ' focus' : ''}${st.mixed ? ' mixed' : ''}" data-field="${esc(c.id)}" data-kind="${kind}">
               <button type="button" class="lc-set-tap" data-i="${i}" title="${esc(w)}">
                 <span class="lc-set-label">${kindBadge(kind, !!w)}<span class="lc-set-fname">${esc(c.label)}</span>${homeMark(c.home, spec.home)}${w && c.prop ? '<luma-icon name="lock" class="lc-set-lock"></luma-icon>' : ''}</span>
-                <span class="lc-set-row">${kind === 'toggle' && !st.mixed ? `<i class="lc-switch${isOn(st.value) ? ' on' : ''}" aria-hidden="true"></i>` : ''}<span class="lc-set-value${st.mixed ? ' lc-mixed' : ''}">${esc(st.shown)}</span>${st.mixed ? `<small class="lc-set-range">${esc(st.range)}</small>` : ''}${kind === 'list' && !w ? '<luma-icon name="chevron-down" class="lc-set-drop"></luma-icon>' : ''}</span>
+                <span class="lc-set-row">${kind === 'paint' && !st.mixed ? paintSwatch(st.have[0]?.paint) : ''}${kind === 'toggle' && !st.mixed ? `<i class="lc-switch${isOn(st.value) ? ' on' : ''}" aria-hidden="true"></i>` : ''}<span class="lc-set-value${st.mixed ? ' lc-mixed' : ''}">${esc(st.shown)}</span>${st.mixed ? `<small class="lc-set-range">${esc(st.range)}</small>` : ''}${kind === 'list' && !w ? '<luma-icon name="chevron-down" class="lc-set-drop"></luma-icon>' : ''}</span>
               </button>
               ${skipped && st.have.length ? `<small class="lc-card-skip">${st.have.length} of ${rows.length} have it</small>` : ''}
             </div>`;
@@ -143,22 +147,36 @@ export function openEditCard(spec, { run, closed } = {}) {
     if (w) { toast(w); draw(); return; }
     const st = fieldState(col, rows);
     if (!st.have.length) { toast(`None of these rows has ${col.label}`); return; }
+    const words = [...new Set(st.have.map(objectOf))];
+    // The property is quoted (§33 58); a keyed path (`Network "Rig" "Interface"`) comes quoted already.
+    const prop = /^[A-Za-z0-9_]+$/.test(col.prop) ? `"${col.prop}"` : col.prop;
+    const skipped = rows.filter(r => !st.have.includes(r));
+    const skipNote = skipped.length ? `   (skipped ${skipped.map(r => `${objectOf(r)} ${idOf(r)}`).join(', ')} — no ${col.label})` : '';
+    if (col.kind === 'paint') {
+      if (!scrim.isConnected) return; // closed before its editor opened (a host took the edit)
+      // A Paint (decisions 0294): the kit's picker; its Please runs the one line for every row.
+      const targets = words.map(o => `${o} ${rowsWord(st.have.filter(r => objectOf(r) === o).map(idOf))}`);
+      const template = targets.map(t => `Set ${t} ${prop} {value}`).join('; ');
+      const one = st.have.length === 1 ? st.have[0] : null;
+      const word = await openPaint({ object: targets.join(' + '), name: one?.name || '', no: one ? idOf(one) : '', line: template, value: st.mixed ? '' : String(st.value ?? '') },
+        { run: l => run?.(l) });
+      if (word == null || !current) return;
+      last = `${template.split('{value}').join(word)}${skipNote}`;
+      draw();
+      return;
+    }
     const v = await ask(col, st, typed);
     if (v == null || !current) return;
     // One line for every row that has the field (grouped by object word when
     // a grid mixes them); the others are named.
-    const words = [...new Set(st.have.map(objectOf))];
-    // The property is quoted (§33 58); a keyed path (`Network "Rig" "Interface"`) comes quoted already.
-    const prop = /^[A-Za-z0-9_]+$/.test(col.prop) ? `"${col.prop}"` : col.prop;
     const line = words.map(o => `Set ${o} ${rowsWord(st.have.filter(r => objectOf(r) === o).map(idOf))} ${prop} ${valueText(col, v)}`).join('; ');
-    const skipped = rows.filter(r => !st.have.includes(r));
-    last = `${line}${skipped.length ? `   (skipped ${skipped.map(r => `${objectOf(r)} ${idOf(r)}`).join(', ')} — no ${col.label})` : ''}`;
+    last = `${line}${skipNote}`;
     run?.(line);
     draw();
   };
 
   const onKey = e => {
-    if (e.key === 'Escape' && !document.querySelector('.lc-kp-scrim, .lc-pick-scrim, [data-kit="dialog"]')) { e.preventDefault(); e.stopPropagation(); close(); }
+    if (e.key === 'Escape' && !document.querySelector('.lc-kp-scrim, .lc-pick-scrim, [data-kit="dialog"], [data-kit="paint-picker"]')) { e.preventDefault(); e.stopPropagation(); close(); }
   };
   document.addEventListener('keydown', onKey, true);
   scrim.addEventListener('pointerdown', e => { if (e.target === scrim) close(); });

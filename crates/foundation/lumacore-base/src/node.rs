@@ -89,9 +89,10 @@ pub struct Annotation {
     /// Free-text note.
     #[serde(default)]
     pub note: Option<String>,
-    /// RGBA colour (a pool button's, a tree row's).
+    /// Its colour on screen: a colour or a theme slot link (decisions
+    /// object-paint-palette-free-theme-links); None = its tags', then its pool's.
     #[serde(default)]
-    pub paint: Option<[u8; 4]>,
+    pub paint: Option<crate::paint::Paint>,
     /// A standard icon or a picture of the show's Images pool.
     #[serde(default)]
     pub icon: Option<IconRef>,

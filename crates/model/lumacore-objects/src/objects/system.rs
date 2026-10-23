@@ -420,6 +420,7 @@ fn profile_presets(
 ) -> DispatchResult {
     crate::commands::attributes::on_profile(state, verb, args)
         .or_else(|| crate::commands::window_presets::on_profile(state, verb, args))
+        .or_else(|| crate::commands::paint_slots::on_profile(state, verb, args))
         .unwrap_or_else(|| rest(state, args))
 }
 

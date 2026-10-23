@@ -37,12 +37,14 @@ fn fields(state: &AppState, object: Uuid, target: &str) -> Vec<SettingField> {
     let walk = state.root.show_data.walk_identity();
     let carried: Vec<Uuid> = walk.links.iter().filter(|l| l.kind == "Tag" && l.from == Some(object)).map(|l| l.target).collect();
     let tags = &state.root.show_data.tags;
+    // Each tag's colour as this viewer sees it (decisions 0294).
+    let painter = lumacore_objects::paint::Painter::new(&state.root.show_data, state.effective_user_name());
     let nodes: Vec<TagNode> = tree::all(tags)
         .into_iter()
         .map(|(path, t)| TagNode {
             path: path.to_string(),
             name: t.meta.identity.name.clone().unwrap_or_default(),
-            colour: t.meta.annotation.paint.map(|c| format!("#{:02x}{:02x}{:02x}", c[0], c[1], c[2])).unwrap_or_default(),
+            colour: painter.tag(t.meta.identity.guid).unwrap_or_default(),
             state: if carried.contains(&t.meta.identity.guid) { "on" } else { "off" }.to_string(),
             count: tree::members(&walk, &[t.meta.identity.guid]).len(),
         })

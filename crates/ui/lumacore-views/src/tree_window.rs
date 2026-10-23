@@ -268,6 +268,8 @@ fn row_json(state: &AppState, r: &TreeRow, depth: usize, open: bool, hit: bool, 
         "guid": r.guid.map(|g| g.to_string()), "object": object_word(state, &r.path),
         "target": object_word(state, &r.path).zip(r.slot).map(|(o, n)| format!("{o} {n}")),
         "marks": r.guid.and_then(|g| marks.get(&g)).cloned().unwrap_or_default(),
+        // Its colour as the viewer sees it (decisions 0294): the swatch.
+        "paint": r.paint,
     })
 }
 

@@ -37,10 +37,12 @@ import './tree.js';
 import './tagspool.js';
 import './pathbar.js';
 import './treewindow.js';
+import './ruleswindow.js';
 import * as marks from './marks.js';
 import './devicegrid.js';
 import * as statusStrip from './statusstrip.js';
 import * as themeEditor from './themeeditor.js';
+import * as paint from './paint.js';
 import * as context from './context.js';
 import * as value from './value.js';
 import * as insert from './insert.js';
@@ -66,5 +68,5 @@ const ready = Promise.all([
   document.fonts?.ready?.catch(() => {}) ?? Promise.resolve(),
 ]);
 
-window.LumaKit = { theme, pointer, icon, marks, statusStrip, themeEditor, menu, dialog, keyboard, keypad, popup, settings, windowBar, suggest, toast, clipboard, mini, split, context, value, insert, mvrimport, editPatch, tools, groupEditor, presetEditor, attrBoard, oops, cueSheet, grid, slab, setup, editCard, feeds: { FeedClient, SampleRing, drawLoop, applyDiff }, showroom: buildShowroom, ready };
+window.LumaKit = { theme, pointer, icon, marks, statusStrip, themeEditor, paint, menu, dialog, keyboard, keypad, popup, settings, windowBar, suggest, toast, clipboard, mini, split, context, value, insert, mvrimport, editPatch, tools, groupEditor, presetEditor, attrBoard, oops, cueSheet, grid, slab, setup, editCard, feeds: { FeedClient, SampleRing, drawLoop, applyDiff }, showroom: buildShowroom, ready };
 ready.then(() => window.dispatchEvent(new Event('lumakit')));

@@ -18,14 +18,16 @@ use crate::DispatchResult;
 macro_rules! playback_object {
     (@pool) => { None };
     (@pool $pool:expr) => { Some($pool) };
+    (@props) => { None };
+    (@props $props:expr) => { Some($props) };
     ($static:ident, $label:literal, $node:ident, [$($alias:literal),*], $desc:literal, default: $default:ident,
-     call: $call:literal, store: $store:literal, tree: $tree:expr) => {
+     call: $call:literal, store: $store:literal, tree: $tree:expr $(, props: $props:expr)?) => {
         playback_object!($static, $label, $node, [$($alias),*], $desc, default: $default, call: $call, store: $store, tree: $tree,
-            extra: (Doc::new($label, $desc), None, Undo::ReadOnly));
+            extra: (Doc::new($label, $desc), None, Undo::ReadOnly) $(, props: $props)?);
     };
     ($static:ident, $label:literal, $node:ident, [$($alias:literal),*], $desc:literal, default: $default:ident,
      call: $call:literal, store: $store:literal, tree: $tree:expr,
-     extra: ($doc:expr, $family:expr, $undo:expr) $(, pool: $pool:expr)?) => {
+     extra: ($doc:expr, $family:expr, $undo:expr) $(, pool: $pool:expr)? $(, props: $props:expr)?) => {
         pub static $static: ObjectDef = {
             fn list_h(state: &mut AppState, args: &[&str]) -> DispatchResult {
                 out(list::tree(state, crate::tree_path::Node::$node, args))
@@ -57,7 +59,7 @@ macro_rules! playback_object {
                 verbs: VERBS,
                 delete_ask: None,
                 complete: None,
-                props: None,
+                props: playback_object!(@props $($props)?),
                 tree: $tree,
             }
         };
@@ -371,7 +373,7 @@ playback_object!(EXECUTOR, "Executor", Executors, ["executors", "exec"], "A play
         related: &["sequence", "assign", "flash"],
         alias_depth: AliasDepth::Base,
         hidden: false,
-    }, Some(CommandFamily::Playback), PROGRAMMER_SHOWDATA));
+    }, Some(CommandFamily::Playback), PROGRAMMER_SHOWDATA), props: &EXECUTOR_PROPS);
 playback_object!(MACRO, "Macro", Macros, ["macros"], "A macro", default: Go, call: true, store: true, tree: None,
     extra: (Doc {
         display: "Macro",
@@ -383,7 +385,44 @@ playback_object!(MACRO, "Macro", Macros, ["macros"], "A macro", default: Go, cal
         related: &["store", "edit", "delete"],
         alias_depth: AliasDepth::Base,
         hidden: false,
-    }, Some(CommandFamily::Selection), PROGRAMMER_SHOWDATA), pool: &MACRO_POOL);
+    }, Some(CommandFamily::Selection), PROGRAMMER_SHOWDATA), pool: &MACRO_POOL, props: &MACRO_PROPS);
+
+/// An executor's and an effect's NodeMeta (decisions 0294: every show object can be painted).
+static EXECUTOR_PROPS: crate::props::Props = crate::props::Props {
+    meta: crate::props::MetaLevel::Node,
+    apply: Some(|root, _, id, edit| crate::props::edit_json(root.show_data.playback.executors.get_mut(&id).ok_or("no such executor")?, edit)),
+    ..crate::props::Props::BASE
+};
+static EFFECT_PROPS: crate::props::Props = crate::props::Props {
+    meta: crate::props::MetaLevel::Node,
+    apply: Some(|root, _, id, edit| crate::props::edit_json(root.show_data.playback.effects.get_mut(&id).ok_or("no such effect")?, edit)),
+    ..crate::props::Props::BASE
+};
+
+/// A macro of your DataPool, by number: its Paint (decisions 0294; the Macros pool wears it).
+static MACRO_PROPS: crate::props::Props = crate::props::Props {
+    lists: &[&MACRO_PAINT],
+    keyed: Some(crate::props::Keyed {
+        rows: |s| s.root.show_data.datapools.get(&s.selected_datapool()).map_or_else(Vec::new, |d| d.macros.keys().map(u32::to_string).collect()),
+        row: |s, w| {
+            let n = w.trim_matches('"').parse::<u32>().ok()?;
+            s.root.show_data.datapools.get(&s.selected_datapool())?.macros.contains_key(&n).then(|| n.to_string())
+        },
+    }),
+    label: Some(|_, k| format!("Macro {k}")),
+    ..crate::props::Props::BASE
+};
+static MACRO_PAINT: [crate::props::Property; 1] = [crate::keyed_paint!(macro_meta, macro_meta_mut, "Macro")];
+
+fn macro_meta<'a>(s: &'a AppState, k: &str) -> Option<&'a lumacore_base::NodeMeta> {
+    s.root.show_data.datapools.get(&s.selected_datapool())?.macros.get(&k.parse().ok()?).map(|m| &m.meta)
+}
+
+fn macro_meta_mut<'a>(s: &'a mut AppState, k: &str) -> Option<&'a mut lumacore_base::NodeMeta> {
+    let dp = s.selected_datapool();
+    let pool = s.root.show_data.datapools.get_mut(&dp)?;
+    pool.macros.get_mut(&k.parse().ok()?).map(|m| &mut m.meta)
+}
 
 /// The Macros pool (decisions 0287): one cell per macro of the DataPool, its line count as a
 /// badge; tap = the window's action (Go is the macro's default verb).
@@ -411,7 +450,7 @@ fn macro_cells(ctx: &crate::pools::PoolContext) -> Vec<crate::pools::PoolCell> {
         .collect()
 }
 playback_object!(EFFECT, "Effect", Effects, ["effects"], "An effect", default: Info, call: false, store: true,
-    tree: Some(TreeDef { datapool: None, door: None, name: None, node: crate::tree_path::Node::Effects, children: effects, object: effect_view }));
+    tree: Some(TreeDef { datapool: None, door: None, name: None, node: crate::tree_path::Node::Effects, children: effects, object: effect_view }), props: &EFFECT_PROPS);
 pub static MASTER: ObjectDef = ObjectDef {
     decl: crate::objects::ObjectDecl {
         keyword: "Master",
@@ -535,7 +574,7 @@ pub static CUE: ObjectDef = ObjectDef {
     delete_ask: None,
     complete: None,
     props: Some(&crate::props::Props {
-        lists: &[&pb::CUE_TIMING],
+        lists: &[&pb::CUE_TIMING, &pb::CUE_PAINT],
         keyed: Some(crate::props::Keyed {
             rows: pb::cue_rows,
             row: pb::cue_row,

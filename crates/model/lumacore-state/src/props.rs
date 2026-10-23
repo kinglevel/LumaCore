@@ -36,9 +36,10 @@ pub enum PropKind {
     Choice(&'static [&'static str]),
     /// A colour `#rrggbb`; `none` clears it.
     Colour,
-    /// An object's own colour (`NodeMeta.color`, decisions §30 "12e"):
-    /// written `#rrggbb`, kept as RGBA bytes; `none` = the pool type's colour.
-    Rgba,
+    /// An object's Paint (`NodeMeta.paint`, decisions 0294): `#rrggbb`, a palette word, a theme
+    /// slot link `Theme "<slot>"`, or `none` = its tags', then its pool's colour. Read by the one
+    /// parser, `lumacore_base::Paint::parse`.
+    Paint,
     /// An object's icon (`NodeMeta.icon`): a standard icon's name; `none`
     /// clears it.
     Icon,
@@ -158,7 +159,7 @@ impl Property {
     /// The value `Reset` writes (None = it has no default).
     pub fn reset_value(&self) -> Option<&'static str> {
         self.default.or(match self.kind {
-            PropKind::Text | PropKind::Colour | PropKind::Rgba | PropKind::Icon | PropKind::OwnLink { .. } => Some(""),
+            PropKind::Text | PropKind::Colour | PropKind::Paint | PropKind::Icon | PropKind::OwnLink { .. } => Some(""),
             PropKind::Link { optional: true, .. } => Some("none"),
             PropKind::OnOff | PropKind::Switch => Some("Off"),
             _ => None,
@@ -245,6 +246,10 @@ pub struct Props {
     /// Every property of this object lives here whatever it declares (a profile's: User, decisions
     /// §39); None = each property's own `home`.
     pub home: Option<Home>,
+    /// Properties its rows name themselves (a theme's own paint slots, decisions 0294): a quoted
+    /// name no declaration has is this template under that name — an [`Access::Named`] whose
+    /// write says when the row has no such name.
+    pub open: Option<&'static Property>,
 }
 
 impl Props {
@@ -274,6 +279,7 @@ impl Props {
         view: None,
         live: &[],
         home: None,
+        open: None,
     };
 
     /// Whether `name` is edited live under the Devices draft.
@@ -296,11 +302,27 @@ impl Props {
         self.all().chain(self.scoped.iter().flat_map(|l| l.iter()))
     }
 
-    /// The property named `name` (quotes ignored, any case), owner-scoped ones too.
+    /// The property named `name` (quotes ignored, any case), owner-scoped ones too; else, for an
+    /// object whose rows name their own (`open`), that template under `name`.
     pub fn get(&self, name: &str) -> Option<&'static Property> {
         let name = name.trim_matches('"');
-        self.every().find(|p| p.name.eq_ignore_ascii_case(name))
+        self.every().find(|p| p.name.eq_ignore_ascii_case(name)).or_else(|| self.open.and_then(|t| open_named(t, name)))
     }
+}
+
+/// The template `t` under `name`, made once per name (a name the data gives a property: a theme's
+/// own paint slot). Only a plain name: up to 32 characters, no quotes, not empty.
+fn open_named(t: &'static Property, name: &str) -> Option<&'static Property> {
+    use std::collections::HashMap;
+    use std::sync::{Mutex, OnceLock};
+    static MADE: OnceLock<Mutex<HashMap<(usize, String), &'static Property>>> = OnceLock::new();
+    let name = name.trim();
+    if name.is_empty() || name.chars().count() > 32 || name.contains(['"', ';', '`', '/']) {
+        return None;
+    }
+    let key = (t as *const Property as usize, name.to_ascii_lowercase());
+    let mut made = MADE.get_or_init(Default::default).lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    Some(*made.entry(key).or_insert_with(|| Box::leak(Box::new(Property { name: Box::leak(name.to_string().into_boxed_str()), ..*t }))))
 }
 
 /// The level a property needs on `obj`: the object's `Set` level, raised by the property's own.
@@ -361,9 +383,9 @@ pub const ANNOTATION_PROPS: [Property; 5] = [
     Property {
         name: "Paint",
         access: Access::Field("meta.paint"),
-        kind: PropKind::Rgba,
+        kind: PropKind::Paint,
         rights: Rights::Guest,
-        doc: "its colour in pools (none = the pool's own)",
+        doc: "its colour on screen: #rrggbb, a palette colour, Theme \"<slot>\" (the viewer's theme), or none = its tags', then the pool's",
         ..Property::BASE
     },
     Property {
@@ -376,6 +398,10 @@ pub const ANNOTATION_PROPS: [Property; 5] = [
     },
 ];
 
+/// The Paint alone (decisions 0294), for an object that declares its own meta properties (an
+/// image, a profile): the one Paint property of the Annotation.
+pub const META_PAINT: [Property; 1] = [ANNOTATION_PROPS[3]];
+
 impl MetaLevel {
     /// The properties the level brings, in order.
     pub fn props(self) -> &'static [&'static [Property]] {
@@ -387,14 +413,12 @@ impl MetaLevel {
     }
 }
 
-/// A stored value as people read and type it: an RGBA colour as `#rrggbb`,
-/// an icon by its name.
+/// A stored value as people read and type it: a Paint as its word (`#rrggbb`,
+/// `Theme "Position"`), an icon by its name.
 pub fn shown(kind: PropKind, raw: &Value) -> Option<String> {
     match (kind, raw) {
-        (PropKind::Rgba, Value::Array(c)) if c.len() >= 3 => {
-            let b = |i: usize| c[i].as_u64().unwrap_or(0) as u8;
-            Some(format!("#{:02x}{:02x}{:02x}", b(0), b(1), b(2)))
-        }
+        (PropKind::Paint, Value::Null) => Some("none".to_string()),
+        (PropKind::Paint, v) => serde_json::from_value::<lumacore_base::Paint>(v.clone()).ok().map(|p| p.word()),
         (PropKind::Icon, Value::Object(m)) => m.get("Builtin").and_then(Value::as_str).map(str::to_string),
         _ => None,
     }
@@ -425,28 +449,20 @@ pub fn parse(kind: PropKind, raw: &str, root: &mut lumacore_tree::Root) -> Resul
             Some(g) => Value::String(g.to_string()),
             None => Value::Null,
         }),
-        PropKind::Text | PropKind::Colour | PropKind::Rgba | PropKind::Icon | PropKind::OwnLink { .. }
+        PropKind::Text | PropKind::Colour | PropKind::Icon | PropKind::OwnLink { .. }
             if raw.is_empty() || raw.eq_ignore_ascii_case("none") =>
         {
             Ok(Value::Null)
         }
         PropKind::OwnLink { .. } | PropKind::Declared => Ok(Value::String(raw.to_string())),
-        PropKind::Colour => {
-            let hex = raw.trim_start_matches('#');
-            if hex.len() == 6 && hex.bytes().all(|b| b.is_ascii_hexdigit()) {
-                Ok(Value::String(format!("#{}", hex.to_ascii_lowercase())))
-            } else {
-                Err(format!("'{raw}' is not a colour #rrggbb"))
-            }
-        }
-        PropKind::Rgba => {
-            let hex = raw.trim_start_matches('#');
-            let byte = |i: usize| hex.get(i..i + 2).and_then(|h| u8::from_str_radix(h, 16).ok());
-            match (hex.len(), byte(0), byte(2), byte(4)) {
-                (6, Some(r), Some(g), Some(b)) => Ok(serde_json::json!([r, g, b, 255])),
-                _ => Err(format!("'{raw}' is not a colour #rrggbb")),
-            }
-        }
+        PropKind::Colour => match lumacore_base::paint::hex_rgb(raw) {
+            Some(rgb) => Ok(Value::String(lumacore_base::paint::hex_of(rgb))),
+            None => Err(format!("'{raw}' is not a colour #rrggbb")),
+        },
+        PropKind::Paint => match lumacore_base::Paint::parse(raw)? {
+            Some(p) => serde_json::to_value(p).map_err(|e| e.to_string()),
+            None => Ok(Value::Null),
+        },
         PropKind::Icon => {
             if raw.chars().all(|c| c.is_ascii_alphanumeric() || c == '-') {
                 Ok(serde_json::json!({ "Builtin": raw.to_ascii_lowercase() }))
@@ -479,7 +495,8 @@ pub fn field_input(kind: PropKind) -> lumacore_wire::FieldInput {
         PropKind::OnOff | PropKind::Switch => FieldInput::Toggle,
         PropKind::Int { min, max } => FieldInput::Number { min, max, named: Vec::new() },
         PropKind::Choice(options) => FieldInput::Choice { options: options.iter().map(|o| o.to_string()).collect() },
-        PropKind::Colour | PropKind::Rgba => FieldInput::Colour,
+        PropKind::Colour => FieldInput::Colour,
+        PropKind::Paint => FieldInput::Paint,
         PropKind::Icon => FieldInput::Text { max_len: 0 },
         PropKind::Link { .. } | PropKind::OwnLink { .. } => FieldInput::Link,
         PropKind::Declared => FieldInput::Text { max_len: 0 },
@@ -493,7 +510,8 @@ pub fn kind_label(kind: PropKind) -> String {
         PropKind::Switch => "On/Off/Toggle".to_string(),
         PropKind::Int { min, max } => format!("{min}–{max}"),
         PropKind::Choice(options) => options.join("/"),
-        PropKind::Colour | PropKind::Rgba => "#rrggbb".to_string(),
+        PropKind::Colour => "#rrggbb".to_string(),
+        PropKind::Paint => "#rrggbb, a palette colour, Theme \"<slot>\" or none".to_string(),
         PropKind::Icon => "icon name".to_string(),
         PropKind::Link { kind, .. } | PropKind::OwnLink { kind, .. } => format!("{kind} name or number"),
         PropKind::Declared => "as its type declares".to_string(),

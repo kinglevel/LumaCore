@@ -27,6 +27,8 @@ pub fn lum_vocab() -> Vocabulary {
         "Clone",
         // Drives (§38): the file words that take /Drive.
         "Export",
+        // Presets in cues (decisions 0293) and the Meow License (0290).
+        "Update", "Recast", "Extract", "Login", "Consent", "Logout",
     ] {
         v.verb(verb, VerbDef::default());
     }
@@ -39,6 +41,8 @@ pub fn lum_vocab() -> Vocabulary {
         "Auto", "UUID", "FID", "FixtureName", "Offer", "Take", "None", "Mark", "Ignore", "Recreate", "Parent",
         // The id types a line can set (decisions §40 7, 10) and what the pool-XML reader takes (§40 13).
         "Generic", "Media", "Fog", "Groups",
+        // The palette's colour words (decisions 0294).
+        "Red", "Orange", "Amber", "Yellow", "Lime", "Green", "Teal", "Cyan", "Sky", "Blue", "Violet", "Magenta", "Black", "White",
     ] {
         v.value(value);
     }
@@ -185,6 +189,11 @@ pub fn lum_vocab() -> Vocabulary {
         // The id type an untyped CustomId gets (§40 9) and the pool-XML reader's pool (§40 13).
         ("IdType", true),
         ("DataPool", true),
+        // Update's content and cue choices (decisions 0293).
+        ("Add", false),
+        ("Original", false),
+        ("Active", false),
+        ("Shield", false),
     ] {
         v.option(option, value);
     }

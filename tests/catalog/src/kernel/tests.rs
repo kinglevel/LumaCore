@@ -231,6 +231,43 @@ fn an_older_show_upgrades_step_by_step_to_today() {
         adjust.insert("tint".into(), 0.into());
     }
 
+    // Before format 37 a paint was RGBA bytes and a feature group carried its template's colour
+    // (decisions 0294): every meta's paint goes back to bytes, a feature group's slot link to its
+    // slot's colour.
+    fn old_paints(v: &mut serde_json::Value, in_groups: bool, painted: &mut usize) {
+        let bytes = |hex: &str| lumacore_base::paint::hex_rgb(hex).map(|[r, g, b]| serde_json::json!([r, g, b, 255]));
+        match v {
+            serde_json::Value::Object(map) => {
+                if let Some(meta) = map.get_mut("meta").and_then(serde_json::Value::as_object_mut) {
+                    let old = match meta.get("paint") {
+                        Some(serde_json::Value::String(h)) => bytes(h),
+                        Some(serde_json::Value::Object(o)) if in_groups => o.get("Theme").and_then(|s| s.as_str()).and_then(|s| {
+                            lumacore_tree::media::PAINT_SLOTS.iter().find(|(n, _)| *n == s).and_then(|(_, c)| bytes(c))
+                        }),
+                        _ => None,
+                    };
+                    if let Some(b) = old {
+                        meta.insert("paint".into(), b);
+                        *painted += 1;
+                    }
+                }
+                let members = matches!(map.get("features"), None) && in_groups;
+                for (k, child) in map.iter_mut() {
+                    if k != "meta" {
+                        // A groups map's members are feature groups (when they have `features`).
+                        let group = (k == "groups" || k == "feature_groups") || (members && child.get("features").is_some());
+                        old_paints(child, group, painted);
+                    }
+                }
+            }
+            serde_json::Value::Array(items) => items.iter_mut().for_each(|i| old_paints(i, false, painted)),
+            _ => {}
+        }
+    }
+    let mut painted = 0;
+    old_paints(&mut old, false, &mut painted);
+    assert!(painted > 0, "the rig's feature groups link their slots");
+
     let (show, upgraded) = lumacore_luma::show_file::parse_show_upgraded(&old.to_string()).expect("the older show loads");
     let upgraded = upgraded.expect("it was upgraded");
     assert_eq!((upgraded.from, upgraded.to), (lumacore_luma::show_file::OLDEST_FORMAT, lumacore_tree::FORMAT_VERSION));

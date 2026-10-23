@@ -993,6 +993,33 @@ pub fn cue_row(state: &AppState, w: &str) -> Option<String> {
     (s.cues.contains_key(&key) || key == lumacore_tree::CUE_ZERO || key == OFF_CUE).then(|| w.trim_matches('"').to_string())
 }
 
+/// A cue's meta (its row `k`: `3`, `1.5`, `0`, `OffCue`) in the scoping or selected sequence.
+pub fn cue_meta<'a>(state: &'a AppState, k: &str) -> Option<&'a lumacore_base::NodeMeta> {
+    let key = cue_ref(k)?;
+    let (dp, seq) = cue_sequence(state)?;
+    let s = state.root.show_data.datapools.get(&dp)?.sequences.get(&seq)?;
+    match key {
+        lumacore_tree::CUE_ZERO => Some(&s.cue_zero.meta),
+        OFF_CUE => Some(&s.off_cue.meta),
+        k => s.cues.get(&k).map(|c| &c.meta),
+    }
+}
+
+/// A cue's meta to change.
+pub fn cue_meta_mut<'a>(state: &'a mut AppState, k: &str) -> Option<&'a mut lumacore_base::NodeMeta> {
+    let key = cue_ref(k)?;
+    let (dp, seq) = cue_sequence(state)?;
+    let s = state.root.show_data.sequence_mut(dp, seq)?;
+    match key {
+        lumacore_tree::CUE_ZERO => Some(&mut s.cue_zero.meta),
+        OFF_CUE => Some(&mut s.off_cue.meta),
+        k => s.cues.get_mut(&k).map(|c| &mut c.meta),
+    }
+}
+
+/// A cue's Paint (decisions 0294): its row in the cue sheet wears it.
+pub static CUE_PAINT: [crate::props::Property; 1] = [crate::keyed_paint!(cue_meta, cue_meta_mut, "Cue")];
+
 /// One timing property of a cue (or, under a feature group, of that group in the cue).
 fn cue_write(state: &mut AppState, key: &str, prop: &str, value: &str, group: Option<&str>) -> Result<String, String> {
     let (_, seq) = cue_sequence(state).ok_or_else(|| render_code("No sequence selected — Select Sequence <n>, or name it (Sequence <n> Cue …).", "E-PLAY-003"))?;

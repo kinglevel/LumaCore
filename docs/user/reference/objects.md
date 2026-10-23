@@ -44,7 +44,7 @@ Options:
 | "Note" | text | Setup | show | operator note |
 | "Locked" | On/Off | Setup | show | protect from edits |
 | "Hidden" | On/Off | Setup | show | hide from operator views |
-| "Paint" | #rrggbb | Setup | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Setup | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Setup | show | a standard icon's name |
 | "Network" | Network name or number | Setup | show | the network the line uses (created if the show has none by that name) |
 | "Mode" | Output/Input | Setup | show | Output (its local universes go out) or Input (the protocol's universes come in); Assign's order sets it too |
@@ -182,6 +182,12 @@ Options:
 - `/Learned`: Only the rules learned here
 - `/Keyword`: A keyword rule (the word anywhere in the name)
 
+| Property | Value | Rights | Home | |
+|---|---|---|---|---|
+| "Pattern" | text | Setup | show | the names it places: * = any characters, {n} = digits, case-insensitive, whole name (a change makes it learned) |
+| "FeatureGroup" | text | Setup | show | the feature group it places into, by name or number (a change makes it learned) |
+| "Feature" | text | Setup | show | the feature inside the group, or none |
+
 
 ## AttributeTemplate
 
@@ -301,6 +307,7 @@ Options:
 | "OutFade" | as its type declares | Program | show | fade out, seconds |
 | "Delay" | as its type declares | Program | show | delay in, seconds |
 | "OutDelay" | as its type declares | Program | show | delay out, seconds |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 
 
 ## CurvePreset
@@ -334,7 +341,7 @@ Options:
 | "Note" | text | Program | show | operator note |
 | "Locked" | On/Off | Program | show | protect from edits |
 | "Hidden" | On/Off | Program | show | hide from operator views |
-| "Paint" | #rrggbb | Program | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Program | show | a standard icon's name |
 
 
@@ -358,6 +365,10 @@ DataPool "Busk" Group 1
 ```
 
 Related: `group`, `preset`, `macro`
+
+| Property | Value | Rights | Home | |
+|---|---|---|---|---|
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 
 
 ## DeskLock
@@ -459,6 +470,15 @@ aliases `effects` · verbs List · default verb Info (`Effect <ids>` = `Info Eff
 
 An effect
 
+| Property | Value | Rights | Home | |
+|---|---|---|---|---|
+| "Name" | text | Program | show | display name |
+| "Note" | text | Program | show | operator note |
+| "Locked" | On/Off | Program | show | protect from edits |
+| "Hidden" | On/Off | Program | show | hide from operator views |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
+| "Icon" | icon name | Program | show | a standard icon's name |
+
 
 ## EffectEngine
 
@@ -530,6 +550,15 @@ Executor 1 Assign Sequence 1
 
 Related: `sequence`, `assign`, `flash`
 
+| Property | Value | Rights | Home | |
+|---|---|---|---|---|
+| "Name" | text | Program | show | display name |
+| "Note" | text | Program | show | operator note |
+| "Locked" | On/Off | Program | show | protect from edits |
+| "Hidden" | On/Off | Program | show | hide from operator views |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
+| "Icon" | icon name | Program | show | a standard icon's name |
+
 
 ## FeatureGroup
 
@@ -558,7 +587,7 @@ Related: `attribute`, `attributerule`, `encoderbar`, `cue`
 
 | Property | Value | Rights | Home | |
 |---|---|---|---|---|
-| "Paint" | text | Setup | show | its colour on the encoder bar and in the sheet, #rrggbb |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Setup | show | its colour on the encoder bar, the sheets and the preset pool: #rrggbb, a palette colour, Theme "<slot>", or none = the theme slot of its name |
 | "Icon" | text | Setup | show | its icon on the encoder bar |
 | "Fade" | as its type declares | Setup | show | fade in, seconds (Reset = the cue's) |
 | "OutFade" | as its type declares | Setup | show | fade out, seconds |
@@ -605,7 +634,7 @@ Options:
 | "Note" | text | Program | show | operator note |
 | "Locked" | On/Off | Program | show | protect from edits |
 | "Hidden" | On/Off | Program | show | hide from operator views |
-| "Paint" | #rrggbb | Program | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Program | show | a standard icon's name |
 | "MasterReact" | Grand/Group/None | Program | show | which masters act on it: Grand (group + grand), Group (Additive group masters skip the grand master), None (no master, no Solo) |
 | "Address" | as its type declares | Program | show | its first DMX address, universe.address (re-patch, Live Patch) |
@@ -646,7 +675,7 @@ Options:
 | "Note" | text | Setup | show | operator note |
 | "Locked" | On/Off | Setup | show | protect from edits |
 | "Hidden" | On/Off | Setup | show | hide from operator views |
-| "Paint" | #rrggbb | Setup | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Setup | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Setup | show | a standard icon's name |
 
 
@@ -765,7 +794,7 @@ Options:
 | "Note" | text | Program | show | operator note |
 | "Locked" | On/Off | Program | show | protect from edits |
 | "Hidden" | On/Off | Program | show | hide from operator views |
-| "Paint" | #rrggbb | Program | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Program | show | a standard icon's name |
 | "Mode" | None/Positive/Negative/Scaling/Additive | Program | show | how the group's master acts on its members' intensity (GroupMasterMode) |
 | "PreserveGrid" | On/Off | Program | show | recall keeps the stored grid gaps and offset (PreserveGridPositions) |
@@ -885,6 +914,7 @@ Options:
 | Property | Value | Rights | Home | |
 |---|---|---|---|---|
 | "Name" | text | Program | show | display name |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 
 
 ## Interface
@@ -989,6 +1019,10 @@ Edit Macro 1
 ```
 
 Related: `store`, `edit`, `delete`
+
+| Property | Value | Rights | Home | |
+|---|---|---|---|---|
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 
 
 ## Master
@@ -1165,7 +1199,7 @@ Options:
 | "Note" | text | Program | show | operator note |
 | "Locked" | On/Off | Program | show | protect from edits |
 | "Hidden" | On/Off | Program | show | hide from operator views |
-| "Paint" | #rrggbb | Program | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Program | show | a standard icon's name |
 
 
@@ -1202,7 +1236,7 @@ Options:
 | "Note" | text | Program | show | operator note |
 | "Locked" | On/Off | Program | show | protect from edits |
 | "Hidden" | On/Off | Program | show | hide from operator views |
-| "Paint" | #rrggbb | Program | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Program | show | a standard icon's name |
 
 
@@ -1263,7 +1297,7 @@ Options:
 | "Note" | text | Setup | show | operator note |
 | "Locked" | On/Off | Setup | show | protect from edits |
 | "Hidden" | On/Off | Setup | show | hide from operator views |
-| "Paint" | #rrggbb | Setup | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Setup | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Setup | show | a standard icon's name |
 | "Interface" | text or None | Setup | show | the station's interface for the network (a name, address or subnet; its row in the station table); None = its lines never send here |
 
@@ -1320,7 +1354,7 @@ Options:
 | "Note" | text | Setup | show | operator note |
 | "Locked" | On/Off | Setup | show | protect from edits |
 | "Hidden" | On/Off | Setup | show | hide from operator views |
-| "Paint" | #rrggbb | Setup | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Setup | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Setup | show | a standard icon's name |
 | "Network" | Network name or number | Setup | show | the network the line uses (created if the show has none by that name) |
 | "Mode" | Output/Input | Setup | show | Output (its local universes go out) or Input (the protocol's universes come in); Assign's order sets it too |
@@ -1335,16 +1369,19 @@ Options:
 verbs EditSetting · default verb EditSetting (`Paint` = `EditSetting Paint`) · rights Playback: EditSetting
 
 ```
-Set [UserProfile <n>] Theme Paint "<Colour>" "#rrggbb" | Reset … Theme Paint
+Set [UserProfile <n>] Theme Paint "<Colour|Slot>" "#rrggbb" | Store … Theme Paint "<Slot>" ["#rrggbb"] | Reset … Theme Paint ["<Colour|Slot>"]
 ```
 
-A theme's screen colours, sRGB (decisions §33 62); none set = the base's.
+A theme's screen colours, sRGB (decisions §33 62; none set = the base's), and its paint slots (decisions 0294): LumaCore's Dimmer … Special 4 and the ones it adds — what an object painted Theme "<slot>" shows each viewer in their own theme.
 
 Examples:
 
 ```
 Set Theme Paint "Accent" "#9a7a08"
 Reset Theme Paint "Accent"
+Set Theme Paint "Position" "#3a62b8"
+Store Theme Paint "Haze" "#8fa3b8"
+Reset Theme Paint "Haze"
 ```
 
 Related: `userprofile`, `theme`, `lockscreen`, `paint`
@@ -1365,6 +1402,21 @@ Related: `userprofile`, `theme`, `lockscreen`, `paint`
 | "Programmer" | #rrggbb | Guest | show | palette colour Programmer (#rrggbb; none = the preset's) |
 | "Blind" | #rrggbb | Guest | show | palette colour Blind (#rrggbb; none = the preset's) |
 | "Park" | #rrggbb | Guest | show | palette colour Park (#rrggbb; none = the preset's) |
+| "Dimmer" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Position" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Gobo" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Color" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Beam" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Focus" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Shutter" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "FX" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Control" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Shapers" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Video" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Special 1" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Special 2" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Special 3" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Special 4" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
 
 
 ## PoolXml
@@ -1418,7 +1470,7 @@ Options:
 | "Note" | text | Program | show | operator note |
 | "Locked" | On/Off | Program | show | protect from edits |
 | "Hidden" | On/Off | Program | show | hide from operator views |
-| "Paint" | #rrggbb | Program | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Program | show | a standard icon's name |
 
 
@@ -1541,7 +1593,7 @@ Options:
 | "Note" | text | Setup | show | operator note |
 | "Locked" | On/Off | Setup | show | protect from edits |
 | "Hidden" | On/Off | Setup | show | hide from operator views |
-| "Paint" | #rrggbb | Setup | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Setup | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Setup | show | a standard icon's name |
 | "Network" | Network name or number | Setup | show | the network the line uses (created if the show has none by that name) |
 | "Mode" | Output/Input | Setup | show | Output (its local universes go out) or Input (the protocol's universes come in); Assign's order sets it too |
@@ -1683,7 +1735,7 @@ Options:
 | "Note" | text | Program | show | operator note |
 | "Locked" | On/Off | Program | show | protect from edits |
 | "Hidden" | On/Off | Program | show | hide from operator views |
-| "Paint" | #rrggbb | Program | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Program | show | a standard icon's name |
 | "Tracking" | On/Off | Program | show | values track into later cues |
 | "CueZeroMode" | Off/AllUsedAttributes/OnlyUsedDimmers | Program | show | what CueZero is filled with: nothing, every used attribute's default, or the used dimmers' |
@@ -1862,12 +1914,13 @@ Options:
 | "Action" | Default/Select | Program | show | what Run action does in the Tags window: the window's default, or Select (its fixtures) |
 | "Name" | text | Program | show | display name, unique among its siblings |
 | "Note" | text | Program | show | operator note |
-| "Paint" | #rrggbb | Program | show | its colour in the tree |
+| "Priority" | -1000–1000 | Program | show | an object without a Paint of its own takes the colour of its painted tag with the highest Priority (equal: the first in the tag tree) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour, and the colour of what it tags that has no Paint of its own: #rrggbb, a palette colour, Theme "<slot>", or none (its parent's) |
 
 
 ## Theme
 
-verbs EditSetting · default verb EditSetting (`Theme` = `EditSetting Theme`) · rights Playback: EditSetting
+verbs EditSetting, Store · default verb EditSetting (`Theme` = `EditSetting Theme`) · rights Playback: EditSetting · Admin: Store
 
 ```
 Set [UserProfile <n>] Theme "<Property>" <value> | Reset [UserProfile <n>] Theme
@@ -1935,7 +1988,7 @@ Options:
 | "Note" | text | Program | show | operator note |
 | "Locked" | On/Off | Program | show | protect from edits |
 | "Hidden" | On/Off | Program | show | hide from operator views |
-| "Paint" | #rrggbb | Program | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Program | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Program | show | a standard icon's name |
 
 
@@ -1991,7 +2044,7 @@ Options:
 | "Note" | text | Setup | show | operator note |
 | "Locked" | On/Off | Setup | show | protect from edits |
 | "Hidden" | On/Off | Setup | show | hide from operator views |
-| "Paint" | #rrggbb | Setup | show | its colour in pools (none = the pool's own) |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Setup | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 | "Icon" | icon name | Setup | show | a standard icon's name |
 | "MergeMode" | Off/Prio/HTP/LowTP | Setup | show | how DMX input merges in: Off, Prio (input priority of the line), HTP, LowTP |
 
@@ -2083,6 +2136,8 @@ Options:
 |---|---|---|---|---|
 | "Name" | text | Admin | show | display name |
 | "Note" | text | Guest | show | operator note |
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Guest | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
+| "PaintMode" | Palette/Free/Theme | Guest | show | the mode the paint picker opens on: the one you used last |
 | "MeowKey" | Shift/Alt/Ctrl | Guest | show | the held key that acts as Meow |
 | "HoldTime" | 100–3000 | Guest | show | press and hold, ms |
 | "DoublePress" | 100–1000 | Guest | show | a second press within this many ms is a double press |
@@ -2185,6 +2240,10 @@ Options:
 - `/Screen <screen> (/s)` (Store, Call): The screen it is on
 - `/Overwrite (/o)` (Store): Replace what is there
 - `/Clear` (Store): Clear it
+
+| Property | Value | Rights | Home | |
+|---|---|---|---|---|
+| "Paint" | #rrggbb, a palette colour, Theme "<slot>" or none | Playback | show | its colour on screen: #rrggbb, a palette colour, Theme "<slot>" (the viewer's theme), or none = its tags', then the pool's |
 
 
 ## ViewBar
@@ -2352,6 +2411,7 @@ Options:
 | "Split" | as its type declares | Playback | station | the tree's share of the width in %; the inspector takes the rest |
 | "Path" | as its type declares | Playback | station | where the window stands: a tree path or a GUID (whole or its first 8 digits); empty = Root.ShowData |
 | "Open" | as its type declares | Playback | station | the branches you opened, a comma list (a new window: ShowData); the path's own parents open by themselves |
+| "Which" | as its type declares | Playback | station | an attribute name: the rule that places it is marked |
 
 
 ## WindowPreset

@@ -51,7 +51,8 @@ range         = id [ "Thru" [ id ] ] | "Thru" [ id ] ;
 id            = NUMBER | QUOTED ;
 set-op        = "+" | "-" ;
 slot          = HELPER [ value ] | value ;     (* which slots, in which order: the signature *)
-value         = NUMBER | relative | spread | WORD | QUOTED | LINE | SELF-READ | target ;
+value         = NUMBER | relative | spread | WORD | QUOTED | LINE | SELF-READ | target | named-one ;
+named-one     = OBJECT QUOTED ;                (* a one-of-a-kind object and a name: Theme "Position", a theme paint slot *)
 relative      = ( "+" | "-" | "*" | "/" ) NUMBER ;
 spread        = NUMBER "Thru" NUMBER ;
 if-early      = "If" target "EndIf" ;          (* printed as `if` at the end *)
@@ -671,6 +672,35 @@ property back.
 A tree property is writable only when its object declares it; everything else is read-only
 and `Set` says why. The writable properties per object are in the
 [object reference](../reference/objects.md).
+
+### Paint
+
+Every show object has a `"Paint"` (decisions 0294): its colour on screen. A Paint is `#rrggbb`, a
+palette word — `Red`, `Orange`, `Amber`, `Yellow`, `Lime`, `Green`, `Teal`, `Cyan`, `Sky`,
+`Blue`, `Violet`, `Magenta`, `Black`, `White`, stored as its hex — or a link to a paint slot of
+the viewer's theme, written `Theme "<slot>"`: a one-of-a-kind object and a quoted name as a value
+(`named-one` in the grammar). `none` clears it: the object then shows its painted tag with the
+highest `"Priority"`, else its pool's colour. Each viewer sees a theme link in their own theme; a
+slot their theme lacks falls back the same way. A feature group's Paint is the slot of its name
+until it is set.
+
+```lum
+Set Group 3 "Paint" "#3f73c8"
+Set Group 3 "Paint" Blue
+Set Group 3 "Paint" Theme "Position"
+Set Group 3 "Paint" none
+Set Group 1 Thru 2 + 7 "Paint" Blue
+Set Tag "Position" "Paint" Theme "Position"
+Set Tag "Position" "Priority" 20
+Set FeatureGroup "FX" "Paint" Violet
+Set Theme Paint "Position" "#3a62b8"
+Store Theme Paint "Haze" "#8fa3b8"
+Reset Theme Paint "Haze"
+```
+
+A theme's paint slots sit beside its screen colours in `Theme Paint`: LumaCore's (Dimmer,
+Position, Gobo, Color, Beam, Focus, Shutter, FX, Control, Shapers, Video, Special 1–4) and the
+ones `Store` adds; `Reset` puts LumaCore's colour back and removes an added one.
 
 ### Assign
 

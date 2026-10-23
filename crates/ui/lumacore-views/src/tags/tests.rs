@@ -45,13 +45,13 @@ fn rig() -> (ShowData, [Uuid; 4]) {
 fn the_pane_lists_a_tags_members_direct_or_deep() {
     let (show, [all, _, _, _]) = rig();
     let pools = usize::from(!show.datapools.is_empty());
-    let direct = view(&show, &json!(all.to_string()), false);
+    let direct = view(&show, "Admin", &json!(all.to_string()), false);
     let paths: Vec<&str> = direct["nodes"].as_array().unwrap().iter().map(|n| n["path"].as_str().unwrap()).collect();
     assert_eq!(paths, ["1", "1.1", "1.1.1", "2"]);
     assert_eq!(direct["members"].as_array().unwrap().len(), 0, "{direct}");
     assert_eq!(direct["tag"]["lines"]["select"], "Tag 1");
 
-    let deep = view(&show, &json!(all.to_string()), true);
+    let deep = view(&show, "Admin", &json!(all.to_string()), true);
     let members = deep["members"].as_array().unwrap();
     assert_eq!(members.len(), 1 + pools, "{deep}");
     let busking = members.iter().find(|m| m["kind"] == "Tag").expect("the tag Busking carries Right");
@@ -65,8 +65,8 @@ fn the_pane_lists_a_tags_members_direct_or_deep() {
 #[test]
 fn a_tag_that_is_gone_is_missing() {
     let (show, _) = rig();
-    assert_eq!(view(&show, &json!(""), true)["missing"], false);
-    let gone = view(&show, &json!(Uuid::new_v4().to_string()), true);
+    assert_eq!(view(&show, "Admin", &json!(""), true)["missing"], false);
+    let gone = view(&show, "Admin", &json!(Uuid::new_v4().to_string()), true);
     assert_eq!((gone["missing"].as_bool(), gone["tag"].is_null()), (Some(true), true));
     assert_eq!(gone["nodes"].as_array().unwrap().len(), 4);
 }

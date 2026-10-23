@@ -309,6 +309,8 @@ pub fn view(
 
     let type_name: HashMap<Uuid, String> =
         patch.fixture_types.values().map(|t| (t.meta.identity.guid, t.meta.identity.name.clone().unwrap_or_default())).collect();
+    // The fixture's colour on its name cell, as this viewer sees it (decisions 0294).
+    let paint = lumacore_objects::paint::Painter::new(show, user);
     let rows: Vec<serde_json::Value> = rows
         .iter()
         .map(|(f, folder, d)| {
@@ -324,6 +326,7 @@ pub fn view(
                 "id": f.handle(),
                 "fid": f.mvr.fid,
                 "name": f.meta.identity.name.clone().unwrap_or_default(),
+                "paint": paint.of(&f.meta).hex,
                 "type": type_name.get(&f.mvr.fixture_type).cloned().unwrap_or_default(),
                 "id_type": f.mvr.id_type.name(),
                 "cid": f.mvr.cid,

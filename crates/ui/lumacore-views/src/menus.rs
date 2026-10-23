@@ -110,7 +110,8 @@ fn prop_kind(k: PropKind, words: (&str, &str), named: &[&str]) -> Value {
         PropKind::Int { min, max } => json!({"kind": "int", "min": min, "max": max, "options": named}),
         PropKind::Choice(o) => json!({"kind": "list", "options": o}),
         PropKind::Link { .. } | PropKind::OwnLink { .. } => json!({"kind": "list", "options": []}),
-        PropKind::Text | PropKind::Colour | PropKind::Rgba | PropKind::Icon | PropKind::Declared => json!({"kind": "text"}),
+        PropKind::Text | PropKind::Colour | PropKind::Icon | PropKind::Declared => json!({"kind": "text"}),
+        PropKind::Paint => json!({"kind": "paint"}),
     }
 }
 

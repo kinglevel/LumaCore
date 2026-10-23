@@ -154,6 +154,8 @@ pub struct ObjectEntry {
     pub parent: Option<Uuid>,
     /// Its display name, when it has one.
     pub name: Option<String>,
+    /// Its own Paint (decisions 0294: a list of objects shows each one's colour).
+    pub paint: Option<crate::paint::Paint>,
 }
 
 /// One stored link the walker found.
@@ -205,6 +207,7 @@ impl Walker {
             path,
             parent: self.owners.last().copied(),
             name: obj.meta().identity.name.clone(),
+            paint: obj.meta().annotation.paint.clone(),
         });
         self.path.push(segment);
         self.owners.push(guid);

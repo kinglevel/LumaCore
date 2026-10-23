@@ -18,6 +18,7 @@ pub mod identity;
 pub mod inbound;
 pub mod keybindings;
 pub mod node;
+pub mod paint;
 pub mod replication;
 pub mod threads;
 pub mod undo;
@@ -35,6 +36,7 @@ pub use keybindings::{
     resolve_bindings_with_source, vanilla_keybindings,
 };
 pub use node::{Annotation, IconRef, Identity, Meta, NodeMeta, TreeNode};
+pub use paint::Paint;
 pub use replication::{PendingReplicationOp, ReplicationJournal, ReplicationOp};
 pub use undo::{
     DEFAULT_MAX_BYTES, DEFAULT_MAX_FRAMES, LocalSnapshot, LocalSubtree, OopsCategory, OopsKind, ShowSubtree, SubtreeSnapshot, UndoFrame,

@@ -560,7 +560,7 @@ fn edit_setting_lists_settings_and_asks_the_ui() {
     ));
     assert!(run(&mut state, "EditSetting Fixture 999").contains("E-CMD-007"));
     assert!(
-        run(&mut state, "EditSetting Executor 1").contains("E-CMD-015"),
+        run(&mut state, "EditSetting Timecode 1").contains("E-CMD-015"),
         "an object without properties"
     );
     assert!(run(&mut state, "EditSetting").contains("E-CMD-006"));

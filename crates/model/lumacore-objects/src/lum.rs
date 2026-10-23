@@ -146,6 +146,8 @@ fn props() -> Vec<(&'static str, Vec<&'static str>)> {
     let mut out = Vec::new();
     let kind_words = |k: &PropKind| match k {
         PropKind::Choice(words) => words.to_vec(),
+        // The palette's colour words (decisions 0294): `Set Group 3 "Paint" Blue`.
+        PropKind::Paint => lumacore_base::paint::NAMED.iter().map(|(n, _)| *n).collect(),
         _ => Vec::new(),
     };
     for p in crate::objects::all().filter_map(|o| o.props).flat_map(|p| p.every()) {

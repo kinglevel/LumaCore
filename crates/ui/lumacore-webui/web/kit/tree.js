@@ -17,7 +17,8 @@
 //
 // Host mode (the Tree window, decisions 0292: NAV's rows from the station): the host sends the
 // rows it shows, already opened and filtered — each { path, name, depth, no, count, badge,
-// branch, open, hit, dir } — and keeps what is open and the search itself: a fold is the event
+// branch, open, hit, dir, colour (the object's paint as this viewer sees it, decisions 0294; a row
+// without one keeps an empty swatch so the names line up) } — and keeps what is open and the search itself: a fold is the event
 // `fold { path, open }`, the search box `search { query }` (typing settles first) and
 // `searchenter { query }` (Enter). Many rows draw only the part in sight (virtual); the scroll
 // stays across updates; `reveal` scrolls a path into sight once each time it changes; a hold or
@@ -84,7 +85,7 @@ class LumaTree extends HTMLElement {
     return `<div class="lc-tree-row${sel ? ' sel' : ''}${n.hit ? ' hit' : ''}${n.dir ? ' dir' : ''}" role="treeitem" aria-level="${depth + 1}" ${hasKids ? `aria-expanded="${!!open}"` : ''} ${sel ? 'aria-selected="true"' : ''} data-path="${esc(n.path)}" style="--lc-tree-depth:${depth}">
       ${fold}${box}
       ${s.numbers === false ? '' : `<span class="lc-tree-no">${esc(no)}</span>`}
-      ${n.colour ? `<i class="lc-tree-sw" style="background:${esc(n.colour)}"></i>` : ''}
+      ${n.colour ? `<i class="lc-tree-sw" style="--lc-tree-sw:${esc(n.colour)}"${n.paint_from ? ` title="Colour from ${esc(n.paint_from)}"` : ''}></i>` : s.host ? '<i class="lc-tree-sw none"></i>' : ''}
       <span class="lc-tree-name${n.tone ? ` tone-${esc(n.tone)}` : ''}">${esc(n.name) || '<i>no name</i>'}</span>
       ${n.id ? `<span class="lc-tree-id">${esc(n.id)}</span>` : ''}
       ${n.badge ? `<span class="lc-tree-badge"${s.host ? ` title="Bookmark ${esc(n.badge)}"` : ''}>${esc(n.badge)}</span>` : ''}

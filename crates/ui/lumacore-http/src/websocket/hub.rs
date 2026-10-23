@@ -58,7 +58,7 @@ pub enum BuildSpec {
     ViewBar { user: String, screen: u32 },
     Oops { user: String },
     Sequence { user: String, sequence: Value },
-    Tags { tag: Value, deep: bool },
+    Tags { user: String, tag: Value, deep: bool },
     Patch { user: String },
     Attributes { user: String, profile: Value },
     Detail { kind: String, no: u32 },
@@ -66,6 +66,10 @@ pub enum BuildSpec {
     Tree { user: String, path: String, open: String, search: String, follow: bool },
     /// A Tree window's inspector (decisions 0292).
     Inspector { user: String, path: String },
+    /// The paint picker and the theme editor's Paint tab (decisions 0294).
+    Paint { user: String, profile: Value },
+    /// The Rules window (decisions 0294).
+    Rules { user: String, profile: Value, which: String },
 }
 
 impl BuildSpec {
@@ -87,12 +91,14 @@ impl BuildSpec {
             Self::ViewBar { user, screen } => format!("viewbar|{}|{screen}", user.to_lowercase()),
             Self::Oops { user } => format!("oops|{}", user.to_lowercase()),
             Self::Sequence { user, sequence } => format!("sequence|{}|{sequence}", user.to_lowercase()),
-            Self::Tags { tag, deep } => format!("tags|{tag}|{deep}"),
+            Self::Tags { user, tag, deep } => format!("tags|{user}|{tag}|{deep}"),
             Self::Patch { user } => format!("patch|{}", user.to_lowercase()),
             Self::Attributes { user, profile } => format!("attributes|{}|{profile}", user.to_lowercase()),
             Self::Detail { kind, no } => format!("detail|{kind}|{no}"),
             Self::Tree { user, path, open, search, follow } => format!("tree|{}|{path}|{open}|{search}|{follow}", user.to_lowercase()),
             Self::Inspector { user, path } => format!("inspector|{}|{path}", user.to_lowercase()),
+            Self::Paint { user, profile } => format!("paint|{}|{profile}", user.to_lowercase()),
+            Self::Rules { user, profile, which } => format!("rules|{}|{profile}|{which}", user.to_lowercase()),
         }
     }
 
@@ -117,6 +123,8 @@ impl BuildSpec {
             Self::Patch { .. } => [r.show, r.claims, r.clipboard],
             // The tree and the inspector read the show as the user (bookmarks, usage are show data).
             Self::Tree { .. } | Self::Inspector { .. } => [r.show, 0, 0],
+            // The palette is fixed; the slots, recent colours and rules are show data.
+            Self::Paint { .. } | Self::Rules { .. } => [r.show, 0, 0],
         }
     }
 
@@ -172,7 +180,7 @@ impl BuildSpec {
             Self::ViewBar { user, screen } => super::feeds::viewbar_data(state, user, *screen),
             Self::Oops { user } => state.console.oops(user),
             Self::Sequence { user, sequence } => console.sequence_sheet(user, sequence),
-            Self::Tags { tag, deep } => console.tags(tag, *deep),
+            Self::Tags { user, tag, deep } => console.tags(user, tag, *deep),
             Self::Patch { user } => console.patch(user),
             Self::Attributes { user, profile } => {
                 console.attribute_board(user, profile).unwrap_or_else(|| json!({ "missing": profile }))
@@ -182,6 +190,8 @@ impl BuildSpec {
                 console.tree_window(user, &json!({ "path": path, "open": open, "search": search, "follow": follow }))
             }
             Self::Inspector { user, path } => console.inspector(user, path),
+            Self::Paint { user, profile } => console.paint(user, profile),
+            Self::Rules { user, profile, which } => console.rules(user, profile, which),
         }
     }
 }

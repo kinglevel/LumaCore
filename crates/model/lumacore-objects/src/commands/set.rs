@@ -168,6 +168,14 @@ impl SetProperty {
             Value::Target(t) if !matches!(prop.kind, PropKind::Link { .. }) => match t.items.as_slice() {
                 [(None, Item::Path(segments))] => match segments.as_slice() {
                     [only] if only.ids.is_none() => Some(crate::lum::vocabulary().word(only.object.node).name.clone()),
+                    // A Paint's theme slot link (decisions 0294): `Theme "Position"`, as the one
+                    // Paint parser reads it.
+                    [only] if matches!(prop.kind, PropKind::Paint) => match only.ids.as_ref().map(|i| i.ranges.as_slice()) {
+                        Some([(None, lumacore_syntax::ast::Range::One(lumacore_syntax::ast::Id::Name(n)))]) => {
+                            Some(format!("{} \"{}\"", crate::lum::vocabulary().word(only.object.node).name, n.node))
+                        }
+                        _ => None,
+                    },
                     _ => None,
                 },
                 _ => None,
@@ -485,8 +493,33 @@ fn invalid(what: &str, e: String, prop: &Property) -> String {
 }
 
 /// Set one property of one row: the object's own write, else read-only / may / level, the
-/// value check and the write. Ok = the success text; Err = a coded refusal.
+/// value check and the write. Ok = the success text; Err = a coded refusal. A colour painted is
+/// remembered on the painter's profile (the paint picker's recent colours, decisions 0294).
 pub fn write(state: &mut AppState, obj: &ObjectDef, props: &Props, row: &Row, prop: &'static Property, raw: &str) -> Result<String, String> {
+    let done = write_one(state, obj, props, row, prop, raw);
+    if done.is_ok()
+        && matches!(prop.kind, PropKind::Paint)
+        && let Ok(Some(lumacore_base::Paint::Rgb(rgb))) = lumacore_base::Paint::parse(raw)
+    {
+        remember_paint(state, &lumacore_base::paint::hex_of(rgb));
+    }
+    done
+}
+
+/// Put a colour first in the user's profile's recent colours.
+fn remember_paint(state: &mut AppState, hex: &str) {
+    let user = state.effective_user_name().to_string();
+    let Some(profile) = state.root.show_data.profile_for_user_mut(&user) else { return };
+    let recent = &mut profile.settings.preferences.paint_recent;
+    if recent.first().is_some_and(|c| c == hex) {
+        return;
+    }
+    recent.retain(|c| c != hex);
+    recent.insert(0, hex.to_string());
+    recent.truncate(lumacore_tree::PAINT_RECENT_MAX);
+}
+
+fn write_one(state: &mut AppState, obj: &ObjectDef, props: &Props, row: &Row, prop: &'static Property, raw: &str) -> Result<String, String> {
     if prop.name == "Name" {
         crate::resolve::check_name(crate::tokens::unquote(raw))?;
     }

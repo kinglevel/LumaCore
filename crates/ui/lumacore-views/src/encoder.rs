@@ -88,10 +88,6 @@ fn mode_label(m: EncoderMode) -> &'static str {
     }
 }
 
-fn colour(c: Option<[u8; 4]>) -> Value {
-    c.map_or(Value::Null, |[r, g, b, _]| json!(format!("#{r:02x}{g:02x}{b:02x}")))
-}
-
 /// Percent text: `48%`, `48.5%`.
 fn pct(v: f64) -> String {
     let r = (v * 10.0).round() / 10.0;
@@ -177,6 +173,7 @@ fn attributes(
         return json!({ "strip": [], "encoders": [], "note": "No encoder bar layout: Store UserProfile EncoderBar." });
     };
     let selected = show.programmer_of(user).map_or(0, |p| p.selected_fixtures.len());
+    let paint = lumacore_objects::paint::Painter::new(show, user);
     let strip: Vec<Value> = layout
         .buttons
         .iter()
@@ -190,7 +187,7 @@ fn attributes(
             json!({
                 "no": i + 1,
                 "name": g.map_or("?", |g| g.meta.name().unwrap_or_default()),
-                "color": colour(g.and_then(|g| g.meta.annotation.paint)),
+                "color": g.map_or(Value::Null, |g| crate::attribute_board::group_colour(&paint, g)),
                 "icon": g.and_then(|g| crate::attribute_board::icon_word(&g.meta)),
                 "programmed": programmed,
                 "mini": first.map_or(Value::Null, |v| json!({ "kind": "levels", "values": v.levels })),
@@ -295,6 +292,7 @@ fn cue_timing(show: &ShowData, user: &str, group: u32, page: u32) -> Value {
         None => json!({ "text": format!("[{}s]", trim(cue_value)), "value": cue_value, "inherited": true }),
     };
     let base = format!("Set Sequence {seq_no} Cue {label}");
+    let paint = lumacore_objects::paint::Painter::new(show, user);
     let mut list = vec![json!({
         "label": format!("Cue {label}"),
         "sub": cue.meta.identity.name,
@@ -311,7 +309,7 @@ fn cue_timing(show: &ShowData, user: &str, group: u32, page: u32) -> Value {
         list.push(json!({
             "label": g.meta.identity.name,
             "sub": "feature group",
-            "color": colour(g.meta.annotation.paint),
+            "color": crate::attribute_board::group_colour(&paint, g),
             "in": { "delay": field(t.delay_in, part.delay_in), "fade": field(t.fade_in, part.fade_in) },
             "out": { "delay": field(t.delay_out, part.delay_out), "fade": field(t.fade_out, part.fade_out) },
             "lines": {

@@ -6,7 +6,7 @@ status: built
 date: 2026-10-14
 built_in: 12e part 2
 supersedes: []
-superseded_by: —
+superseded_by: object-paint-palette-free-theme-links
 confirmed_by: [a_group_takes_a_colour_and_an_icon]
 source: [archive §30 L5490–5496, archive §30 L5619–5625]
 ---

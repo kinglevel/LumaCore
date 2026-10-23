@@ -7,13 +7,14 @@
 // FILE: props
 
 //! A tag's own properties (decisions §12 "Tags hardened" 9): its Action (what Run action does
-//! in the Tags pool window) and its NodeMeta — Name, Note, Paint — on EditSetting's Meta tab. A
-//! tag's number is a path that moves, so a row is the tag's GUID (the resolver's member).
+//! in the Tags pool window), its Priority (which painted tag colours an object, decisions 0294)
+//! and its NodeMeta — Name, Note, Paint — on EditSetting's Meta tab. A tag's number is a path that
+//! moves, so a row is the tag's GUID (the resolver's member).
 //!
 //! Owns:          PROPS (the Tag object's properties).
 //! Doesn't own:   the one Set handler and EditSetting (lumacore-objects), the tree (lumacore-tags).
 //! Entry points:  PROPS.
-//! Decisions:     §12 "Tags hardened", §33 58.
+//! Decisions:     §12 "Tags hardened", §33 58, docs/decisions/0294-object-paint-palette-free-theme-links.
 
 use lumacore_objects::AppState;
 use lumacore_objects::errors::render_code;
@@ -31,7 +32,7 @@ use lumacore_tags::tag::{self as tree, Tag, TagAction, TagPath};
 /// The Tag object's properties, keyed by the tag's GUID.
 pub static PROPS: Props = Props { lists: &[&TAG_PROPS], label: Some(label), ..Props::BASE };
 
-static TAG_PROPS: [Property; 4] = [
+static TAG_PROPS: [Property; 5] = [
     Property {
         name: "Action",
         kind: PropKind::Choice(&["Default", "Select"]),
@@ -56,10 +57,19 @@ static TAG_PROPS: [Property; 4] = [
         ..Property::BASE
     },
     Property {
+        name: "Priority",
+        kind: PropKind::Int { min: -1000, max: 1000 },
+        section: "Tag",
+        doc: "an object without a Paint of its own takes the colour of its painted tag with the highest Priority (equal: the first in the tag tree)",
+        default: Some("0"),
+        access: Access::Keyed { get: get_priority, set: set_priority },
+        ..Property::BASE
+    },
+    Property {
         name: "Paint",
-        kind: PropKind::Rgba,
+        kind: PropKind::Paint,
         section: "Meta",
-        doc: "its colour in the tree",
+        doc: "its colour, and the colour of what it tags that has no Paint of its own: #rrggbb, a palette colour, Theme \"<slot>\", or none (its parent's)",
         access: Access::Keyed { get: get_paint, set: set_paint },
         ..Property::BASE
     },
@@ -113,21 +123,25 @@ fn set_note(state: &mut AppState, key: &str, value: &str) -> Result<String, Stri
 }
 
 fn get_paint(state: &AppState, key: &str) -> String {
-    at(state, key).and_then(|(_, t)| t.meta.annotation.paint).map(|[r, g, b, _]| format!("#{r:02x}{g:02x}{b:02x}")).unwrap_or_default()
+    at(state, key).and_then(|(_, t)| t.meta.annotation.paint.as_ref().map(|p| p.word())).unwrap_or_default()
 }
 
+/// The one Paint parser (decisions 0294): a colour, a palette word, a theme slot link or none.
 fn set_paint(state: &mut AppState, key: &str, value: &str) -> Result<String, String> {
-    let text = value.trim().trim_start_matches('#');
-    let colour = match text.to_ascii_lowercase().as_str() {
-        "" | "none" => None,
-        hex if hex.len() == 6 && hex.chars().all(|c| c.is_ascii_hexdigit()) => {
-            let byte = |i: usize| u8::from_str_radix(&hex[i..i + 2], 16).unwrap_or(0);
-            Some([byte(0), byte(2), byte(4), 255])
-        }
-        _ => return Err(render_code(format!("Paint takes a colour #rrggbb (or none), not {value}."), "E-CMD-008")),
-    };
-    edit(state, key, |t| t.meta.annotation.paint = colour)?;
-    Ok(format!("{}: Paint {}", label(state, key), if colour.is_some() { value.trim() } else { "none" }))
+    let paint = lumacore_tree::paint::Paint::parse(value).map_err(|e| render_code(format!("{} \"Paint\": {e}.", label(state, key)), "E-SET-003"))?;
+    let shown = paint.as_ref().map_or_else(|| "none".to_string(), |p| p.word());
+    edit(state, key, |t| t.meta.annotation.paint = paint)?;
+    Ok(format!("{}: Paint {shown}", label(state, key)))
+}
+
+fn get_priority(state: &AppState, key: &str) -> String {
+    at(state, key).map(|(_, t)| t.priority.to_string()).unwrap_or_default()
+}
+
+fn set_priority(state: &mut AppState, key: &str, value: &str) -> Result<String, String> {
+    let n: i32 = value.trim().parse().map_err(|_| render_code(format!("Priority is a whole number, not {value}."), "E-CMD-008"))?;
+    edit(state, key, |t| t.priority = n)?;
+    Ok(format!("{}: Priority {n}", label(state, key)))
 }
 
 // ██╗  ██╗███████╗██╗     ██████╗ ███████╗██████╗ ███████╗

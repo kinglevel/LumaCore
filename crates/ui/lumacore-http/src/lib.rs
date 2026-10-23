@@ -247,7 +247,7 @@ pub trait ConsoleBridge: Send + Sync {
     }
 
     /// The Tags pool window (the `tags` feed, decisions §12 "Tags hardened").
-    fn tags(&self, _tag: &serde_json::Value, _deep: bool) -> serde_json::Value {
+    fn tags(&self, _user: &str, _tag: &serde_json::Value, _deep: bool) -> serde_json::Value {
         serde_json::json!({ "nodes": [], "members": [] })
     }
 
@@ -260,6 +260,18 @@ pub trait ConsoleBridge: Send + Sync {
     /// A Tree window's inspector of one place for a user (the `inspector` feed, decisions 0292).
     fn inspector(&self, _user: &str, path: &str) -> serde_json::Value {
         serde_json::json!({ "missing": "no station", "asked": path })
+    }
+
+    /// The paint picker's palette, a theme's slots and the user's recent colours (the `paint`
+    /// feed, decisions 0294): `profile` = whose theme (a number; none = the user's).
+    fn paint(&self, _user: &str, _profile: &serde_json::Value) -> serde_json::Value {
+        serde_json::json!({ "slots": [], "recent": [] })
+    }
+
+    /// The Rules window's rows (the `rules` feed, decisions 0294): `profile` = whose layer (none
+    /// = the show's, `mine`, a number), `which` an attribute name to look up.
+    fn rules(&self, _user: &str, _profile: &serde_json::Value, _which: &str) -> serde_json::Value {
+        serde_json::json!({ "rows": [] })
     }
 
     /// A Device Sheet for a user (the `devices` feed, decisions device-sheet-window): `params` are

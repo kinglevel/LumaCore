@@ -1289,6 +1289,8 @@ const TAB_KINDS = {
   devices:  { label: 'Device Sheet', ico: 'columns-3', build: buildDevicePanel },
   // NAV's tree and inspector as a window (decisions 0292).
   tree:     { label: 'Tree', ico: 'list-tree', build: buildTreePanel },
+  // The attribute rules in order (decisions 0294).
+  rules:    { label: 'Rules', ico: 'list-ordered', build: buildRulesPanel },
   realtime: { label: 'Realtime', ico: 'activity', build: buildRealtimePanel },
   // The kit's Showroom (decisions §30): every element in every state.
   showroom: { label: 'Showroom', ico: 'showroom', build: () => LumaKit.showroom() },
@@ -3811,6 +3813,30 @@ function buildTreePanel(win) {
   }
   return v.el;
 }
+// The Rules window (decisions 0294): <luma-rules-window> on the `rules` feed — the window's Layer
+// (Show | Mine) and Which settings are the feed's parameters; every gesture is a line carrying the
+// window's number (`Self`).
+const rulesViews = new Map(); // window no → { el, sub, key, data }
+function buildRulesPanel(win) {
+  for (const [no, v] of rulesViews) if (!layout.windows[no]) { v.sub?.close(); rulesViews.delete(no); }
+  const cfg = winSettings(win);
+  let v = rulesViews.get(win.no);
+  if (!v) {
+    const el = document.createElement('luma-rules-window');
+    el.addEventListener('run', e => { e.stopPropagation(); wsCommand(e.detail.line, win.no); });
+    v = { el, sub: null, key: null, data: null };
+    rulesViews.set(win.no, v);
+  }
+  v.cfg = { level: myLevel(), which: cfg.which || '' };
+  const params = { profile: cfg.layer === 'Mine' ? 'mine' : undefined, which: cfg.which || '' };
+  const key = JSON.stringify(params);
+  if (v.key !== key) {
+    v.sub?.close();
+    v.key = key;
+    v.sub = feeds().sub('rules', params, { batch: m => { if (m.data) { v.data = m.data; v.el.show(m.data, v.cfg); } } });
+  } else if (v.data) v.el.show(v.data, v.cfg);
+  return v.el;
+}
 const seqPop = { ctl: null, sub: null };
 function openSequenceSheet(guid) {
   seqPop.ctl?.close();
@@ -4304,7 +4330,10 @@ function renderViewBar() {
     const btn = document.createElement('button');
     btn.className = 'vbtn' + (b ? ' filled' : '') + (b?.missing ? ' gone' : '') + (n === activeSlot ? ' on' : '');
     btn.dataset.slot = n;
-    if (b) btn.style.setProperty('--vb-kind', `var(--lc-pool-${BAR_KIND[b.kind]}, var(--lc-pool-default))`);
+    // The object's paint as this viewer sees it (decisions 0294), else its kind's colour.
+    const paint = /^#[0-9a-f]{6}$/i.test(String(b?.paint ?? '')) ? b.paint : '';
+    if (b) btn.style.setProperty('--vb-kind', paint || `var(--lc-pool-${BAR_KIND[b.kind]}, var(--lc-pool-default))`);
+    if (paint) btn.dataset.paint = paint;
     btn.innerHTML = `<div class="vbtn-num">${viewBar.screen}.${n}${b ? LumaKit.icon(BAR_ICON[b.kind] || 'circle') : ''}</div><div class="vbtn-name"></div>`;
     btn.querySelector('.vbtn-name').textContent = b ? buttonName(b) : '';
     btn.title = b ? `ViewButton ${viewBar.screen}.${n}: ${b.kind} ${b.no ?? ''} ${b.name ?? ''}`.trim() : `ViewButton ${viewBar.screen}.${n}: empty`;

@@ -65,6 +65,9 @@ static FIXTURES: Grid = Grid {
         set("RotZ", section("Position", unit("°", col("rot_z", "Rot Z", "rot_z", 70, 3)))),
         set("MasterReact", col("master_react", "Master react", "master_react", 100, 2)),
         ro("tags", "Tags", 140, 2),
+        // Its own Paint and where the colour its row wears comes from (decisions 0294).
+        set("Paint", col("paint_word", "Paint", "paint_word", 110, 3)),
+        ro("paint_from", "Colour from", 150, 3),
         draft(ro("group", "MVR node", 120, 2)),
         set("Note", col("note", "Note", "note", 160, 2)),
     ],

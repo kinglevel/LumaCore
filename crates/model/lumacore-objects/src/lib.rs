@@ -58,6 +58,7 @@ pub use lumacore_state::{
     gesture,
     look,
     oops,
+    paint,
     parser,
     passwords,
     patch_draft,

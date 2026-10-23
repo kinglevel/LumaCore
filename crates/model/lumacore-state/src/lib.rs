@@ -29,6 +29,7 @@ pub mod gesture;
 pub mod identifying;
 pub mod look;
 pub mod oops;
+pub mod paint;
 pub mod parser;
 pub mod passwords;
 pub mod patch_draft;

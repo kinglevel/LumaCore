@@ -119,6 +119,13 @@ impl TuiLook {
     }
 }
 
+/// An object's colour as the station resolved it for this user (decisions 0294: its Paint, its
+/// tags', its theme slot), `#rrggbb` → a terminal colour drawn as it is. The one door a show
+/// object's colour takes into the TUI; None = no colour of its own.
+pub(super) fn object_paint(hex: Option<&str>) -> Option<Color> {
+    lumacore_base::paint::hex_rgb(hex?).map(|[r, g, b]| Color::Rgb(r, g, b))
+}
+
 fn lift(c: Rgb, amount: f64) -> Rgb {
     let f = |v: u8| (f64::from(v) + (255.0 - f64::from(v)) * amount).round() as u8;
     (f(c.0), f(c.1), f(c.2))

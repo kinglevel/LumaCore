@@ -156,6 +156,10 @@ impl TuiApp {
                 }
             }
             RowKind::Object => {
+                // A show object's colour as a mark before its slot (decisions 0294).
+                if let Some(c) = super::super::tui_look::object_paint(row.paint.as_deref()) {
+                    spans.push(Span::styled("■ ", Style::default().fg(c)));
+                }
                 spans.push(Span::styled(row.slot.map(|s| s.to_string()).unwrap_or_default(), Style::default().fg(role::STRONG).add_modifier(Modifier::BOLD)));
                 if !row.name.is_empty() {
                     let name = if row.quoted { format!("  \"{}\"", row.name) } else { format!("  {}", row.name) };

@@ -253,7 +253,8 @@ $ ls Root.Resources.WindowTypes
   | ├── 12  "Macros"  (WindowType)
   | ├── 13  "Views"  (WindowType)
   | ├── 14  "Presets"  (WindowType)
-  | └── 15  "Tree"  (WindowType)
+  | ├── 15  "Tree"  (WindowType)
+  | └── 16  "Rules"  (WindowType)
   @ / · scope Root · claim None · context Fixture · repl Fixture
 $ cd Root.Resources.UIKeys
   | /Resources/UIKeys
@@ -1689,7 +1690,7 @@ $ tree Root -d 2
   | │   ├── Health
   | │   └── Claims/  (1)
   | ├── Resources/
-  | │   ├── WindowTypes/  (14)
+  | │   ├── WindowTypes/  (15)
   | │   └── UIKeys/  (13)
   | ├── Diagnostics
   | ├── StationSettings

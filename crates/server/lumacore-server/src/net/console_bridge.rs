@@ -465,9 +465,20 @@ impl lumacore_http::ConsoleBridge for ServerConsoleBridge {
         tree::inspector(&self.state, user, path)
     }
 
-    fn tags(&self, tag: &Value, deep: bool) -> Value {
+    fn paint(&self, user: &str, profile: &Value) -> Value {
         let show = self.published.show.load();
-        lumacore_views::tags::view(&show, tag, deep)
+        lumacore_views::paint::view(&show, user, profile.as_u64().and_then(|n| u32::try_from(n).ok()))
+    }
+
+    fn rules(&self, user: &str, profile: &Value, which: &str) -> Value {
+        let show = self.published.show.load();
+        let target = lumacore_objects::attribute_board::BoardTarget::parse(&show, user, profile);
+        lumacore_views::rules::view(&show, user, target, which)
+    }
+
+    fn tags(&self, user: &str, tag: &Value, deep: bool) -> Value {
+        let show = self.published.show.load();
+        lumacore_views::tags::view(&show, user, tag, deep)
     }
 
     fn resolve_datapool(&self, user: &str, datapool: &Value) -> Option<u32> {

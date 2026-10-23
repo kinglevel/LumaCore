@@ -48,6 +48,9 @@ pub static STEPS: &[Step] = &[
     Step { from: 34, run: nav_bookmarks_and_log },
     // 35 → 36: a cue value is plain steps or a preset link (decisions 0293).
     Step { from: 35, run: cue_values_link_presets },
+    // 36 → 37: a Paint is `#rrggbb` or a theme slot link; feature groups follow their slot
+    // (decisions object-paint-palette-free-theme-links).
+    Step { from: 36, run: paint_is_hex_or_a_theme_link },
 ];
 
 /// What an upgrade did: the format it came from, this build's, and each step's notes.
@@ -240,6 +243,84 @@ fn cue_values_link_presets(show: &mut Value) -> Vec<String> {
             if sequences == 1 { "" } else { "s" }
         )]
     }
+}
+
+/// 36 → 37: every meta's `paint` was RGBA bytes and becomes `"#rrggbb"`; a feature group whose
+/// colour is still its template's (LumaCore's colour of the slot of its name) links that theme slot
+/// instead, so it follows each viewer's theme (decisions object-paint-palette-free-theme-links).
+/// A tag's Priority, a theme's slots and the picker's mode and recent colours are new and read as
+/// their defaults.
+fn paint_is_hex_or_a_theme_link(show: &mut Value) -> Vec<String> {
+    let (mut painted, mut linked) = (0, 0);
+    hex_paints(show, &mut painted, &mut linked);
+    let mut notes = Vec::new();
+    if painted > 0 {
+        notes.push(format!("{painted} paint{} now written #rrggbb", if painted == 1 { " is" } else { "s are" }));
+    }
+    if linked > 0 {
+        notes.push(format!(
+            "{linked} feature group{} now follow{} the theme's paint slot of {}",
+            if linked == 1 { "" } else { "s" },
+            if linked == 1 { "s" } else { "" },
+            if linked == 1 { "its name" } else { "their names" }
+        ));
+    }
+    notes
+}
+
+/// Walk the JSON: a meta's RGBA paint becomes hex; a feature group (a `groups` member with
+/// `features`) still on its template colour becomes its slot's link.
+fn hex_paints(v: &mut Value, painted: &mut usize, linked: &mut usize) {
+    match v {
+        Value::Object(map) => {
+            if let Some(meta) = map.get_mut("meta").and_then(Value::as_object_mut)
+                && let Some(hex) = bytes_hex(meta.get("paint"))
+            {
+                meta.insert("paint".into(), json!(hex));
+                *painted += 1;
+            }
+            // The show's feature groups (`feature_groups`) and a profile's own (`attributes.groups`).
+            for key in ["feature_groups", "groups"] {
+                let Some(groups) = map.get_mut(key).and_then(Value::as_object_mut) else { continue };
+                for g in groups.values_mut().filter(|g| g.get("features").is_some()) {
+                    let Some(meta) = g.get_mut("meta").and_then(Value::as_object_mut) else { continue };
+                    let hex = match bytes_hex(meta.get("paint")) {
+                        Some(h) => {
+                            *painted += 1;
+                            h
+                        }
+                        None => meta.get("paint").and_then(Value::as_str).unwrap_or_default().to_string(),
+                    };
+                    let name = meta.get("name").and_then(Value::as_str).unwrap_or_default();
+                    let slot = lumacore_tree::media::PAINT_SLOTS.iter().find(|(n, c)| n.eq_ignore_ascii_case(name) && c.eq_ignore_ascii_case(&hex));
+                    match slot {
+                        Some((n, _)) => {
+                            meta.insert("paint".into(), json!({ "Theme": n }));
+                            *linked += 1;
+                        }
+                        None if !hex.is_empty() => {
+                            meta.insert("paint".into(), json!(hex));
+                        }
+                        None => {}
+                    }
+                }
+            }
+            for (key, child) in map.iter_mut() {
+                if key != "meta" {
+                    hex_paints(child, painted, linked);
+                }
+            }
+        }
+        Value::Array(items) => items.iter_mut().for_each(|i| hex_paints(i, painted, linked)),
+        _ => {}
+    }
+}
+
+/// RGBA bytes (format 36's paint) as `#rrggbb`; None = not bytes.
+fn bytes_hex(paint: Option<&Value>) -> Option<String> {
+    let bytes = paint?.as_array().filter(|a| a.len() >= 3)?;
+    let b = |i: usize| bytes[i].as_u64().unwrap_or(0).min(255) as u8;
+    Some(lumacore_base::paint::hex_of([b(0), b(1), b(2)]))
 }
 
 // ██╗  ██╗███████╗██╗     ██████╗ ███████╗██████╗ ███████╗

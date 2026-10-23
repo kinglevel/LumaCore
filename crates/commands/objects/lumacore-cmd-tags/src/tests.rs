@@ -42,7 +42,7 @@ fn rig() -> AppState {
     s.root.show_data = demo();
     s.root.show_data.after_load();
     for line in [
-        "Store Tag \"All\"",
+        "Store Tag 1 \"All\"",
         "Store Tag 1 Tag \"Lx1\"",
         "Store Tag 1.1 Tag \"Right\"",
         "Store Tag 1 Tag \"Lx2\"",
@@ -114,7 +114,7 @@ fn thru_walks_one_parents_children() {
 #[test]
 fn move_nests_with_the_guid_kept() {
     let mut s = rig();
-    run(&mut s, "Store Tag \"Busking\"");
+    run(&mut s, "Store Tag 2 \"Busking\"");
     run(&mut s, "Assign Tag 1.2 At Fixture 104");
     // Nesting asks first (§34 "34g4 part 3c hardened" 3).
     let out = run(&mut s, "Move Tag 1.2 At Tag 2");
@@ -135,12 +135,13 @@ fn move_at_root_lifts_a_tag_to_the_top() {
     let mut s = rig();
     run(&mut s, "Assign Tag 1.1 At Fixture 101");
     let out = run(&mut s, "Move Tag 1.1 At Root");
-    assert!(!out.starts_with("ASK") && out.contains("1.1 → 2"), "{out}");
+    // The rig's own tags end at 901: the top level's next number follows them.
+    assert!(!out.starts_with("ASK") && out.contains("1.1 → 902"), "{out}");
     let tags = &s.root.show_data.tags;
     let p = |t: &str| lumacore_tags::TagPath::parse(t).unwrap();
-    assert_eq!(lumacore_tags::tag::find(tags, &p("2")).unwrap().name(), "Lx1");
-    assert_eq!(lumacore_tags::tag::find(tags, &p("2.1")).unwrap().name(), "Right", "its child came along");
-    let out = run(&mut s, "Tag 2");
+    assert_eq!(lumacore_tags::tag::find(tags, &p("902")).unwrap().name(), "Lx1");
+    assert_eq!(lumacore_tags::tag::find(tags, &p("902.1")).unwrap().name(), "Right", "its child came along");
+    let out = run(&mut s, "Tag 902");
     assert!(out.starts_with("1 fixture"), "{out}");
 }
 
@@ -220,9 +221,55 @@ fn a_tag_has_its_own_settings() {
     assert_eq!(lx2.action, lumacore_tags::TagAction::SelectFixtures);
     assert!(s.root.show_data.tags[&1].children[&1].action.is_default(), "only the named tag");
     run(&mut s, "Set Tag 1.2 \"Paint\" \"#336699\"");
-    assert_eq!(s.root.show_data.tags[&1].children[&2].meta.annotation.paint, Some([0x33, 0x66, 0x99, 255]));
+    assert_eq!(s.root.show_data.tags[&1].children[&2].meta.annotation.paint, Some(lumacore_tree::paint::Paint::Rgb([0x33, 0x66, 0x99])));
+    run(&mut s, "Set Tag 1.2 \"Paint\" Theme \"Position\"");
+    assert_eq!(s.root.show_data.tags[&1].children[&2].meta.annotation.paint, Some(lumacore_tree::paint::Paint::Theme("Position".into())));
+    run(&mut s, "Set Tag 1.2 \"Priority\" 20");
+    assert_eq!(s.root.show_data.tags[&1].children[&2].priority, 20);
+    assert!(run(&mut s, "Set Tag 1.2 \"Paint\" \"Bluish\"").contains("E-SET-003"));
     let out = run(&mut s, "Set Tag 1.2 \"Name\" \"Lx1\"");
     assert!(out.contains("E-TAG-003"), "{out}");
     run(&mut s, "Set Tag 1.2 \"Name\" \"Floor\"");
     assert_eq!(s.root.show_data.tags[&1].children[&2].name(), "Floor");
+}
+
+/// Own Paint → the painted tag with the highest Priority (ties: the tag tree's order) → a tag
+/// without a Paint takes its parent's → the pool's colour; tags link theme slots too.
+#[test]
+fn the_colour_order_is_own_then_tag_priority_then_parent_then_pool() {
+    let mut s = lumacore_objects::demo::fresh_state();
+    for line in [
+        "Store Tag 910 \"Front\"",
+        "Store Tag 911 \"Side\"",
+        "Store Tag 910 Tag \"Low\"",
+        "Set Tag 910 \"Paint\" Red",
+        "Set Tag 911 \"Paint\" Theme \"Gobo\"",
+        "Set Tag 911 \"Priority\" 20",
+        "Assign Tag 910 + 911 At Group 3",
+        "Assign Tag 910 At Group 4",
+        "Assign Tag 910.1 At Group 5",
+    ] {
+        let out = run(&mut s, line);
+        assert!(!out.contains("E-"), "{line}: {out}");
+    }
+    let dp = s.selected_datapool();
+    let meta = |s: &AppState, n: u32| s.root.show_data.datapools[&dp].groups[&n].meta.clone();
+    let p = lumacore_objects::paint::Painter::new(&s.root.show_data, "Admin");
+    let three = p.of(&meta(&s, 3));
+    assert_eq!(three.hex.as_deref(), lumacore_tree::media::PAINT_SLOTS.iter().find(|(n, _)| *n == "Gobo").map(|(_, c)| *c), "Side · 20 beats Front · 0");
+    assert_eq!(three.from, lumacore_objects::paint::From::Tag { name: "Side".into(), priority: 20 });
+    assert_eq!(three.from_text(), "tag Side · 20");
+    assert_eq!(p.of(&meta(&s, 4)).hex, lumacore_tree::paint::Paint::parse("Red").unwrap().map(|p| p.word()), "one painted tag");
+    let low = p.of(&meta(&s, 5));
+    assert_eq!((low.hex.clone(), low.from_text()), (lumacore_tree::paint::Paint::parse("Red").unwrap().map(|p| p.word()), "tag Low · 0".to_string()), "the parent's colour");
+    // A tie goes to the first in the tag tree.
+    run(&mut s, "Set Tag 911 \"Priority\" 0");
+    let p = lumacore_objects::paint::Painter::new(&s.root.show_data, "Admin");
+    assert_eq!(p.of(&meta(&s, 3)).from_text(), "tag Front · 0");
+    // Its own Paint overrides; none goes back to its tags.
+    run(&mut s, "Set Group 3 \"Paint\" \"#010203\"");
+    let p = lumacore_objects::paint::Painter::new(&s.root.show_data, "Admin");
+    assert_eq!((p.of(&meta(&s, 3)).hex.as_deref(), p.of(&meta(&s, 3)).from), (Some("#010203"), lumacore_objects::paint::From::Own));
+    let pool = p.of(&meta(&s, 6));
+    assert_eq!((pool.hex.clone(), pool.from_text()), (None, "the pool".to_string()));
 }

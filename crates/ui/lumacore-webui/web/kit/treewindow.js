@@ -86,12 +86,18 @@ class LumaInspector extends HTMLElement {
     }
   }
 
+  /** "Colour from" (decisions 0294) leads with the colour the station resolved: `#3a62b8 · Theme Position`. */
+  swatch(r) {
+    const hex = r.name === 'Colour from' && /^#[0-9a-f]{6}\b/i.exec(String(r.value ?? ''));
+    return hex ? `<i class="lc-tree-sw" style="--lc-tree-sw:${hex[0]}"></i>` : '';
+  }
+
   row(r, copyAs) {
     const lit = this.flashes.has(r.name) ? ' lc-flash' : '';
     const value = r.missing
       ? `<span class="lc-insp-link missing">${esc(r.value)}</span>`
       : r.link ? `<button type="button" class="lc-insp-link" data-go="${esc(r.link)}" title="Go to ${esc(r.link)}">${esc(r.value || r.link)}</button>`
-        : `<span class="lc-insp-v${copyAs ? ' mono lc-selectable' : ''}">${esc(r.value) || '—'}</span>`;
+        : `<span class="lc-insp-v${copyAs ? ' mono lc-selectable' : ''}">${this.swatch(r)}${esc(r.value) || '—'}</span>`;
     const btn = copyAs && r.value ? `<button type="button" class="lc-insp-copy" data-copy="${esc(copyAs)}" data-text="${esc(r.value)}" aria-label="Copy ${esc(copyAs)}" title="Copy ${esc(copyAs)}"><luma-icon name="copy"></luma-icon></button>` : '';
     return `<div class="lc-insp-row${lit}" data-row="${esc(r.name)}"><span class="lc-insp-k">${esc(r.name)}</span>${value}${btn}</div>`;
   }
@@ -285,6 +291,8 @@ class LumaTreeWindow extends HTMLElement {
     const nodes = (d?.rows || []).map(r => ({
       path: r.path, depth: r.depth, no: r.no ?? '', name: r.quoted ? `"${r.name}"` : r.name,
       count: r.type || r.meta || null, badge: r.marks || '', branch: r.branch, open: r.open, hit: r.hit, dir: r.kind === 'node',
+      // The object's paint as this viewer sees it (decisions 0294): the row's swatch.
+      colour: /^#[0-9a-f]{6}$/i.test(String(r.paint ?? '')) ? r.paint : '', paint_from: r.paint_from || '',
     }));
     this.tree.update({
       host: true, nodes, selected: here, search: true, query: this.cfg.search || '', reveal: here,

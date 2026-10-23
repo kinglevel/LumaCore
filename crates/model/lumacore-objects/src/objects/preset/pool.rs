@@ -70,7 +70,7 @@ fn preset_cells(ctx: &PoolContext) -> Vec<PoolCell> {
     dp.presets
         .iter()
         .filter_map(|(&no, p)| {
-            let groups = groups_of(ctx.show, p);
+            let groups = groups_of(ctx.show, ctx.paint, p);
             if feature.is_some_and(|f| !groups.iter().any(|(g, _)| g.eq_ignore_ascii_case(f))) {
                 return None;
             }
@@ -186,14 +186,15 @@ fn letter(mode: &PresetMode) -> &'static str {
 }
 
 /// The show's feature groups a preset's attributes belong to, in the show's order, with their
-/// colours (`#rrggbb`, or null).
-pub fn groups_of(show: &ShowData, p: &Preset) -> Vec<(String, Value)> {
+/// colours as `paint` shows them (`#rrggbb`, or null; decisions 0294: a group's own Paint, else
+/// its theme slot).
+pub fn groups_of(show: &ShowData, paint: &crate::paint::Painter, p: &Preset) -> Vec<(String, Value)> {
     let ids: BTreeSet<Uuid> = p.attributes().iter().filter_map(|a| show.attribute_defs.get(*a).and_then(|d| d.feature_group)).collect();
     show.feature_groups
         .values()
         .filter(|g| ids.contains(&g.meta.identity.guid))
         .map(|g| {
-            let color = g.meta.annotation.paint.map_or(Value::Null, |[r, gr, b, _]| json!(format!("#{r:02x}{gr:02x}{b:02x}")));
+            let color = paint.of_or(&g.meta, Some(&crate::commands::attributes::group_paint(g))).hex.map_or(Value::Null, |h| json!(h));
             (g.meta.name().unwrap_or_default().to_string(), color)
         })
         .collect()
