@@ -291,6 +291,9 @@ Options:
 - `/Overwrite (/o)` (Store): Replace what is there
 - `/Remove` (Store): Take the selection out of what is there
 - `/CreateSecondCue` (Store): Store as a new cue right after it
+- `/Original` (Update): Where the value was stored (the cue it tracks from)
+- `/Active` (Update): In this cue
+- `/Shield` (Update): Protect the next cues: they keep their look
 
 | Property | Value | Rights | Home | |
 |---|---|---|---|---|
@@ -1378,13 +1381,13 @@ Options:
 
 ## Preset
 
-aliases `presets` · verbs List, Store, SelectFixtures, Delete, Copy, Cut, Paste, Move, Insert, Compact · default verb SelectFixtures (`Preset <ids>` = `SelectFixtures Preset <ids>`) · rights Guest: List · Playback: SelectFixtures · Program: Store, Delete, Copy, Cut, Paste, Move, Insert, Compact · tree `Root.ShowData.DataPools.DataPool.Presets` · pool window
+aliases `presets` · verbs List, Store, SelectFixtures, Delete, Update, Recast, Extract, Copy, Cut, Paste, Move, Insert, Compact · default verb SelectFixtures (`Preset <ids>` = `SelectFixtures Preset <ids>`) · rights Guest: List · Playback: SelectFixtures · Presets: Update · Program: Store, Delete, Recast, Extract, Copy, Cut, Paste, Move, Insert, Compact · tree `Root.ShowData.DataPools.DataPool.Presets` · pool window
 
 ```
-Preset <n> | Store Preset [<n>] ["name"] [/Merge|/Overwrite|/Remove] | At Preset <n> | Call Preset <n>
+Preset <n> | Store Preset [<n>] ["name"] [/Merge|/Overwrite|/Remove] | At Preset <n> | Call Preset <n> | Update Preset <n> [/Merge|/Add|/Overwrite] | Recast Preset <n> [Sequence <m>] | Extract Preset <n> [Sequence <m> [Cue <c>]]
 ```
 
-The DataPool's one preset pool (decisions 0288). Store keeps every active value of your programmer (Selective: per fixture; Universal when every fixture holds the same value); At puts its values on the selected fixtures, Call is the same; a bare Preset selects its fixtures. Tag presets to sort them; the Presets window shows the ones that touch the feature group you are on.
+The DataPool's one preset pool (decisions 0288). Store keeps every active value of your programmer (Selective: per fixture; Universal when every fixture holds the same value); At puts its values on the selected fixtures, Call is the same; a bare Preset selects its fixtures. Tag presets to sort them; the Presets window shows the ones that touch the feature group you are on. A cue stores a value from a preset as the link only and plays the preset as it is now (decisions 0293): Update puts your changes back into it, Recast brings its attributes into the cues that link it, Extract turns links into its values; deleting a used preset keeps the cues' values.
 
 Examples:
 
@@ -1394,14 +1397,18 @@ Store Preset                 -- the next free number
 At Preset 3                  -- its values on your selection
 Preset 3                     -- select its fixtures
 Assign Tag "Song 3" At Preset 3
+Update Preset 3 /Merge        -- your changes back into it
+Recast Preset 3              -- its new attributes into the cues
+Extract Preset 3 Sequence 1  -- that sequence's links become values
 ```
 
 Related: `store`, `at`, `tag`
 
 Options:
 
-- `/Merge` (Store): Add to what is there
-- `/Overwrite (/o)` (Store, Copy, Paste): Replace what is there
+- `/Merge` (Store, Update): Add to what is there
+- `/Add` (Update): Also what isn't there yet (new attributes)
+- `/Overwrite (/o)` (Store, Copy, Paste, Update): Replace what is there
 - `/Remove` (Store): Take the selection out of what is there
 - `/By <key>` (Compact): What to sort, split, compact or show by (Number, Name, Family, MainFirst, Address, FixtureType)
 
@@ -1641,7 +1648,7 @@ Related: `window`, `windowpreset`, `editsetting`
 
 ## Sequence
 
-aliases `sequences`, `seq` · verbs List, Info, Store, On, Off, Toggle, Edit, Delete, Copy, Cut, Paste, Move, Insert, Compact · default verb Select (`Sequence <ids>` = `Select Sequence <ids>`) · rights Guest: List, Info · Playback: On, Off, Toggle · Program: Store, Edit, Delete, Copy, Cut, Paste, Move, Insert, Compact · tree `Root.ShowData.DataPools.DataPool.Sequences` · pool window
+aliases `sequences`, `seq` · verbs List, Info, Store, On, Off, Toggle, Edit, Delete, Copy, Cut, Paste, Move, Insert, Compact, Update, Extract · default verb Select (`Sequence <ids>` = `Select Sequence <ids>`) · rights Guest: List, Info · Playback: On, Off, Toggle · Program: Store, Edit, Delete, Copy, Cut, Paste, Move, Insert, Compact, Update, Extract · tree `Root.ShowData.DataPools.DataPool.Sequences` · pool window
 
 ```
 Sequence <id> | On|Off|Toggle Sequence <id> | Store Sequence <id> Cue <n>
@@ -1666,6 +1673,9 @@ Options:
 - `/Overwrite (/o)` (Store): Replace what is there
 - `/Remove` (Store): Take the selection out of what is there
 - `/CreateSecondCue` (Store): Store as a new cue right after it
+- `/Original` (Update): Where the value was stored (the cue it tracks from)
+- `/Active` (Update): In this cue
+- `/Shield` (Update): Protect the next cues: they keep their look
 
 | Property | Value | Rights | Home | |
 |---|---|---|---|---|
@@ -2091,6 +2101,9 @@ Options:
 | "NotificationMode" | timed/permanent | Guest | show | feedback cards close after 5 s or stay |
 | "PopupDim" | On/Off | Guest | show | dim the interface behind a pop-up (a tap outside closes it) |
 | "NavLog" | On/Off/Toggle | Guest | show | NAV's gesture log: three lines above the command line with the lines NAV made and what it copied (L in NAV) |
+| "UpdateContent" | OnlyExisting/AddNew/Overwrite | Guest | show | what the Update ask starts with: OnlyExisting = only what a preset holds (/Merge), AddNew = new attributes too (/Add), Overwrite = the preset becomes your values (/Overwrite); decisions 0293, the last update's |
+| "UpdateRecast" | On/Off/Toggle | Guest | show | the Update ask's switch: add a preset's new attributes to the cues that follow it (Recast) |
+| "UpdateShield" | On/Off/Toggle | Guest | show | the Update ask's switch: protect the next cues when a cue value changes where it was stored (/Shield) |
 | "SubAttributesFollow" | Ask/Always/Never | Guest | show | moving a main attribute brings its sub-attributes |
 | "MvrMatch" | Auto/UUID/FID/FixtureName | Guest | show | how a file fixture finds its draft fixture: Auto = UUID, then FID, then the name |
 | "MvrLost" | Mark/Delete | Guest | show | a fixture in scope the file no longer has |
@@ -2326,6 +2339,7 @@ Options:
 | "Counts" | as its type declares | Playback | station | each tag's member count in the tree |
 | "Mode" | as its type declares or Fixture/Channel | Playback | station | Fixture = a row per device, a column per attribute; Channel = tiles with the dimmer and the colour |
 | "Layer" | as its type declares or Absolute/Fade/Delay/Output/DMX | Playback | station | Absolute = the values; Fade / Delay = their times; Output = after masters; DMX = the byte |
+| "Show" | as its type declares or Value/Link/Both | Playback | station | a value from a preset: its value, its link (the preset: P3 Split) or both; the preset bar marks it either way |
 | "MergeCells" | as its type declares | Playback | station | equal neighbours in one feature group draw once |
 | "ProgrammerOnly" | as its type declares | Playback | station | only devices with values in your programmer |
 | "SelectedOnly" | as its type declares | Playback | station | only your selected devices |
@@ -2335,7 +2349,6 @@ Options:
 | "FeatureGroup" | as its type declares or Selected | Playback | station | Follows the encoder bar's feature group; pin one, or All for every preset |
 | "Tags" | as its type declares | Playback | station | the tag chips lit on top (tag GUIDs); a preset must carry every one |
 | "Follow" | as its type declares or None/Selected | Playback | station | Selected = jump to what you select or tap (the last fixture of your selection, a pool object); None = stay. My NAV (your terminal's NAV cursor) is planned |
-| "Show" | as its type declares or All/Changed | Playback | station | Changed only = the properties that differ from their declared default (●) |
 | "Split" | as its type declares | Playback | station | the tree's share of the width in %; the inspector takes the rest |
 | "Path" | as its type declares | Playback | station | where the window stands: a tree path or a GUID (whole or its first 8 digits); empty = Root.ShowData |
 | "Open" | as its type declares | Playback | station | the branches you opened, a comma list (a new window: ShowData); the path's own parents open by themselves |

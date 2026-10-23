@@ -10,6 +10,7 @@ Options are bare `/words` (a quoted `"/word"` is a value). Each word lists its o
 
 | Category | Commands |
 |---|---|
+| DataPool | [Extract](#extract) · [Recast](#recast) |
 | Fixture | [Move](#move) |
 | Group | [add](#add) · [Compact](#compact) · [Copy](#copy) · [Cut](#cut) · [Delete](#delete) · [Edit](#edit) · [Insert](#insert) · [Label](#label) · [Paste](#paste) · [remove](#remove) · [Store](#store) · [Update](#update) |
 | Inspection | [Dump](#dump) · [EditSetting](#editsetting) · [Export](#export) · [Help](#help) · [Info](#info) · [List](#list) |
@@ -20,6 +21,45 @@ Options are bare `/words` (a quoted `"/word"` is a value). Each word lists its o
 | Undo | [Oops](#oops) · [Redo](#redo) |
 | Universe | [Park](#park) · [Unpark](#unpark) |
 | Unix-tree Navigation | [cat](#cat) · [cd](#cd) · [cp](#cp) · [diff](#diff) · [du](#du) · [find](#find) · [grep](#grep) · [head](#head) · [ls](#ls) · [mv](#mv) · [pwd](#pwd) · [rm](#rm) · [stat](#stat) · [tail](#tail) · [tree](#tree) · [wc](#wc) |
+
+## DataPool
+
+### Extract
+
+rights Program · scope Master · reach Show · undo Oops (Show) · object verb Extract
+
+```
+Extract Preset <ids> [Sequence <m> [Cue <n>]] | Extract Sequence <m> [Cue <n>]
+```
+
+Preset links become the preset's values as they are now (decisions 0293): in your programmer, a sequence or a cue.
+
+Examples:
+
+```
+Extract Preset 3
+Extract Preset 3 Sequence 4 Cue 9
+Extract Sequence 1 Cue 2
+```
+
+
+### Recast
+
+rights Program · scope Master · reach Show · undo Oops (Show) · object verb Recast
+
+```
+Recast Preset <ids> [Sequence <m> [Cue <n>]]
+```
+
+The cues that link a preset gain links for its new attributes and lose the dropped ones (decisions 0293); asks first.
+
+Examples:
+
+```
+Recast Preset 3
+Recast Preset 3 Sequence 1
+```
+
 
 ## Fixture
 
@@ -256,10 +296,10 @@ Remove fixtures from group (edit mode).
 aliases `s` · rights Program · scope Master · reach Show · undo Oops (Show, Main) · object verb Store
 
 ```
-Store [Cue] [<n>] [/Merge|/Overwrite|/Remove|/CreateSecondCue] | Store Group <id> ["name"] | Store Sequence [<n>] | Store Universe <id> | Store Preset ...
+Store [Cue] [<n>] [/Merge|/Overwrite|/Remove|/CreateSecondCue] | Store Group <id> ["name"] | Store Sequence [<n>] | Store Universe <id> | Store Preset [<n>] ["name"] [/Merge|/Overwrite|/Remove]
 ```
 
-Store the current programmer state. Cue is Store's default object: `Store` alone stores the next cue of your selected sequence, `Store 2` is `Store Cue 2`; over an existing cue it asks Merge / Overwrite / Remove / Create Second Cue. `Store Group` creates or updates a fixture group. `Store Universe` (requires the Devices claim) creates a DMX universe. `Store Preset` stores attribute values as a preset (planned).
+Store the current programmer state. Cue is Store's default object: `Store` alone stores the next cue of your selected sequence, `Store 2` is `Store Cue 2`; over an existing cue it asks Merge / Overwrite / Remove / Create Second Cue. `Store Group` creates or updates a fixture group. `Store Universe` (requires the Devices claim) creates a DMX universe. `Store Preset` keeps your active values as a preset (plain values: a value from another preset is flattened; decisions 0288, 0293).
 
 Examples:
 
@@ -283,21 +323,24 @@ Options:
 
 ### Update
 
-aliases `u` · rights Program · scope Master · reach Show · undo Oops (Show) · object verb Update
+aliases `u` · rights Presets · scope Master · reach Show · undo Oops (Show) · object verb Update
 
 ```
-Update Group <id>
+Update | Update Preset <ids> [/Merge|/Add|/Overwrite] | Update Sequence <m> [Cue <n>] [/Original|/Active] [/Shield] | Update Group <id>
 ```
 
-Merge the current programmer selection into an existing group. Existing group members are retained; new fixtures are added.
+Your programmer's changes back where they came from (decisions 0293): alone it asks (presets with the cues that follow, cues with plain values; one Oops step, ``Update `<lines>` ``). A preset: /Merge what it holds, /Add new attributes, /Overwrite. A cue: /Original where stored, /Active this cue, /Shield the next. A group: adds the selection.
 
 Examples:
 
 ```
-Update Group 1    -- add current selection to group 1
+Update
+Update Preset 3 /Merge
+Update Sequence 1 Cue 2 /Original
+Update Group 1
 ```
 
-Related: `store`, `copy`
+Related: `store`, `recast`, `extract`
 
 
 ## Inspection

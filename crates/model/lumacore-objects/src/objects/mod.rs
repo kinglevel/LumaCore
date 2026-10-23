@@ -403,11 +403,18 @@ pub fn json_view<T: serde::Serialize>(
         .or_else(|| json.get("meta").and_then(|m| m.get("name")))
         .and_then(|n| n.as_str())
         .map(str::to_string);
+    // Its GUID from its meta (the inspector's links need it, decisions 0293).
+    let guid = json
+        .get("guid")
+        .or_else(|| json.get("meta").and_then(|m| m.get("guid")))
+        .and_then(|g| g.as_str())
+        .unwrap_or_default()
+        .to_string();
     crate::vfs::NodeView::Object {
         json,
         node_type,
         id,
-        guid: String::new(),
+        guid,
         name,
     }
 }

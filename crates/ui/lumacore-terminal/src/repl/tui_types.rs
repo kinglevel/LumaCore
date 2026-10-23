@@ -130,6 +130,8 @@ pub(super) struct DialogUi {
     pub(super) values: Vec<String>,
     pub(super) toggles: Vec<bool>,
     pub(super) selectors: Vec<usize>,
+    /// The tree's ticks (decisions 0293), one per tickable node in order.
+    pub(super) ticks: Vec<bool>,
     /// The countdown was paused by a key here.
     pub(super) paused: bool,
 }

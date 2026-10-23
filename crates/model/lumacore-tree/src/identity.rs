@@ -588,9 +588,11 @@ impl Walk for Programmer {
                 active: _,
                 stamp: _,
                 timing: _,
+                origin,
             } = &values[k];
             w.link("Values.Fixture", "Fixture", k.0);
             value.walk(w);
+            w.link_opt("Values.Origin", "Preset", *origin);
         }
         w.data(clear_state);
     }

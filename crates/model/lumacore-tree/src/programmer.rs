@@ -138,12 +138,18 @@ pub struct ProgValue {
     /// Its own Fade / Delay (decisions §30 "12f" value timing); stored into cues with it.
     #[serde(default, skip_serializing_if = "lumacore_base::value::ValueTiming::is_cue")]
     pub timing: lumacore_base::value::ValueTiming,
+    /// The preset this value came from (decisions 0293), kept when a plain value replaces the
+    /// linked one (`At Preset 3` then `At 85`): `Update` puts the change back there. `value.preset`
+    /// is the live link; this is the home.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub origin: Option<Uuid>,
 }
 
 impl ProgValue {
     /// Create a new active programmer value, touched now.
     pub fn new(value: Value) -> Self {
         Self {
+            origin: value.preset,
             value,
             active: true,
             stamp: next_stamp(),
@@ -442,8 +448,13 @@ impl Programmer {
     /// Set an attribute value for a fixture in the programmer (always
     /// active, touched now).
     pub fn set_value(&mut self, fixture_guid: Uuid, attribute: impl Into<String>, value: Value) {
-        self.values
-            .insert((fixture_guid, attribute.into()), ProgValue::new(value));
+        let key = (fixture_guid, attribute.into());
+        let mut pv = ProgValue::new(value);
+        // A plain value over a linked one keeps where it came from (decisions 0293).
+        if pv.origin.is_none() {
+            pv.origin = self.values.get(&key).and_then(|old| old.origin);
+        }
+        self.values.insert(key, pv);
         self.value_since_select = true;
     }
 
@@ -1083,6 +1094,32 @@ pub struct UserPreferences {
     /// each a declared `UserProfile` property of the section "MVR import".
     #[serde(default)]
     pub mvr: MvrImportPreset,
+    /// The Update ask's choices as last used (decisions 0293): Content and its two switches.
+    #[serde(default)]
+    pub update: UpdateChoices,
+}
+
+/// What the Update ask starts with (decisions 0293): the Content (`OnlyExisting` → `/Merge`,
+/// `AddNew` → `/Add`, `Overwrite` → `/Overwrite`), Recast (add new attributes to the cues that follow) and Shield (protect the
+/// next cues). The last update's choices.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UpdateChoices {
+    #[serde(default = "default_update_content")]
+    pub content: String,
+    #[serde(default = "default_true")]
+    pub recast: bool,
+    #[serde(default = "default_true")]
+    pub shield: bool,
+}
+
+fn default_update_content() -> String {
+    "OnlyExisting".to_string()
+}
+
+impl Default for UpdateChoices {
+    fn default() -> Self {
+        Self { content: default_update_content(), recast: true, shield: true }
+    }
 }
 
 /// How an MVR import matches, what it takes and what it offers (decisions §34 "Import MVR
@@ -1359,6 +1396,7 @@ impl Default for UserPreferences {
             notifications: BTreeMap::new(),
             notification_mode: default_notification_mode(),
             mvr: MvrImportPreset::default(),
+            update: UpdateChoices::default(),
         }
     }
 }

@@ -6,7 +6,7 @@ status: built
 date: 2026-10-23
 built_in: the preset pool (2026-10-23)
 supersedes: [visions/presets.md "feature group pools", record 0105 Preset Parts(2)]
-superseded_by: —
+superseded_by: presets-link-into-cues-update-recast-extract
 confirmed_by: [objects::preset tests, a_preset_carries_the_tag_assigned_at_it, kit-presets.spec.ts]
 source: [session 2026-10-23, preset pool round 1 — docs/dev/ui-kit/mockups/2026-10-23-presets/01-presets.html, approved]
 ---

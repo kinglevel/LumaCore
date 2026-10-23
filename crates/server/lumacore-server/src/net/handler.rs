@@ -258,7 +258,9 @@ fn execute_as(ctx: &mut ServerContext, user: &str, cmd: &str) -> (RemoteReply, b
     }
 
     // Rights are checked by dispatch, like for every other transport.
-    let commands: Vec<&str> = input.split(';').map(|s| s.trim()).collect();
+    // Split where the lexer splits: a line in backticks keeps its `;` (decisions 0293).
+    let split = lumacore_objects::commands::line::Line::split(&input);
+    let commands: Vec<&str> = split.iter().map(|s| s.trim()).collect();
 
     let Some(acting_user) = ctx.state.begin_acting_as_existing_user(user) else {
         sysmon(

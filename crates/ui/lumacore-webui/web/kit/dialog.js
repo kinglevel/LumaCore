@@ -19,9 +19,15 @@
 // spec: { title, meta, meta_tone, text, rows: [{k, v, tone}], details: [{k,
 //   tone}], inputs: [{name, label, value, kind: {kind: 'text'|'password'|
 //   'number'|'link', min, max, unit, pick}, chips}], toggles: [{name, label,
-//   on}], selectors: [{name, label, choices, value}], buttons: [{label,
+//   on, flag}], selectors: [{name, label, choices, value, texts}], buttons: [{label,
 //   value, kind: 'primary'|'danger'|'plain'|'please', disabled}], primary,
-//   cancel, note, countdown }
+//   cancel, note, countdown, tree }
+//
+// A tree to tick (decisions 0293, the Update ask): `tree: { nodes: [{ id, depth, kind, no, name,
+// badge, note, note_off, on, tickable, tone, when_on, when_off }] }`, drawn by <luma-tree> in pick
+// mode with guides; a tick is answered like a toggle (by the node's id). The details list is the
+// lines the answer will run: redrawn as you tick from the nodes' statements (`treeLines`, the
+// station's `DialogTree::statements` and its line filling) — the station builds the real line.
 
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const kindOf = input => (typeof input.kind === 'string' ? input.kind : input.kind?.kind) || 'text';
@@ -83,13 +89,16 @@ function mount(spec, { resolve, onAnswer, onPause, local }) {
   if (spec.id) host.dataset.id = spec.id;
   host.innerHTML = `<section class="lc-dlg" role="dialog" aria-modal="true"></section>`;
   const card = host.firstElementChild;
-  const state = { spec, values: {}, toggles: {}, selectors: {}, paused: false, keyboard: null };
+  const state = { spec, values: {}, toggles: {}, selectors: {}, ticks: {}, paused: false, keyboard: null };
   let me = null;
   const self = () => me;
 
   const collect = () => ({
     inputs: Object.fromEntries((state.spec.inputs || []).map(i => [i.name, state.values[i.name] ?? i.value ?? ''])),
-    toggles: Object.fromEntries((state.spec.toggles || []).map(t => [t.name, state.toggles[t.name] ?? !!t.on])),
+    toggles: Object.fromEntries([
+      ...(state.spec.toggles || []).map(t => [t.name, state.toggles[t.name] ?? !!t.on]),
+      ...(state.spec.tree?.nodes || []).filter(n => n.tickable).map(n => [n.id, state.ticks[n.id] ?? !!n.on]),
+    ]),
     selectors: Object.fromEntries((state.spec.selectors || []).map(s => [s.name, state.selectors[s.name] ?? s.value ?? s.choices?.[0] ?? ''])),
   });
 
@@ -107,10 +116,13 @@ function mount(spec, { resolve, onAnswer, onPause, local }) {
         ${s.text ? `<p class="lc-dlg-text lc-selectable">${esc(s.text)}</p>` : ''}
         ${s.countdown ? '<div class="lc-dlg-bar"><i></i></div>' : ''}
         ${s.rows?.length ? `<div class="lc-dlg-rows">${s.rows.map(r => `<div><span>${esc(r.k)}</span><b class="${r.tone ? `tone-${esc(r.tone)}` : ''}">${esc(r.v)}</b></div>`).join('')}</div>` : ''}
-        ${s.details?.length ? `<ul class="lc-dlg-details lc-selectable">${s.details.map(r => `<li class="${r.tone ? `tone-${esc(r.tone)}` : ''}"><i></i>${esc(r.k)}</li>`).join('')}</ul>` : ''}
+        ${s.tree ? '<div class="lc-dlg-tree"><luma-tree></luma-tree></div>' : ''}
+        ${s.details?.length && !s.tree ? detailsHtml(s.details) : ''}
         ${(s.inputs || []).map((inp, n) => fieldHtml(inp, n)).join('')}
+        ${s.tree ? selectorsHtml(s) : ''}
         ${(s.toggles || []).map((t, n) => `<div class="lc-dlg-toggle"><span>${esc(t.label)}</span><button type="button" role="switch" data-toggle="${n}" aria-label="${esc(t.label)}"><i></i></button></div>`).join('')}
-        ${(s.selectors || []).map((sel, n) => `<div class="lc-dlg-select"><span>${esc(sel.label)}</span><span class="lc-dlg-seg">${(sel.choices || []).map(c => `<button type="button" data-sel="${n}" data-choice="${esc(c)}">${esc(c)}</button>`).join('')}</span></div>`).join('')}
+        ${s.tree ? '' : selectorsHtml(s)}
+        ${s.tree ? `<ul class="lc-dlg-details lc-selectable" data-kit="lines"></ul>` : ''}
         <div class="lc-dlg-buttons" style="--lc-dlg-cols:${buttons.length}"></div>
         <span class="lc-dlg-note"></span>
       </div>`;
@@ -142,17 +154,54 @@ function mount(spec, { resolve, onAnswer, onPause, local }) {
       const t = s.toggles[+b.dataset.toggle];
       const on = () => state.toggles[t.name] ?? !!t.on;
       const paint = () => b.setAttribute('aria-checked', String(on()));
-      b.addEventListener('click', () => { state.toggles[t.name] = !on(); paint(); });
+      b.addEventListener('click', () => { state.toggles[t.name] = !on(); paint(); paintTree(); });
       paint();
     });
     card.querySelectorAll('[data-sel]').forEach(b => {
       const sel = s.selectors[+b.dataset.sel];
       const paint = () => card.querySelectorAll(`[data-sel="${b.dataset.sel}"]`).forEach(x =>
         x.classList.toggle('on', x.dataset.choice === (state.selectors[sel.name] ?? sel.value)));
-      b.addEventListener('click', () => { state.selectors[sel.name] = b.dataset.choice; paint(); });
+      b.addEventListener('click', () => { state.selectors[sel.name] = b.dataset.choice; paint(); paintTree(); });
       paint();
     });
+    const tree = card.querySelector('.lc-dlg-tree luma-tree');
+    if (tree) tree.addEventListener('toggle', e => {
+      const n = treePaths(s.tree.nodes).byPath.get(e.detail.path);
+      if (!n || !n.tickable) return;
+      state.ticks[n.id] = !(state.ticks[n.id] ?? !!n.on);
+      paintTree();
+    });
+    paintTree();
     tick();
+  };
+
+  const detailsHtml = details => `<ul class="lc-dlg-details lc-selectable">${details.map(r => `<li class="${r.tone ? `tone-${esc(r.tone)}` : ''}"><i></i>${esc(r.k)}</li>`).join('')}</ul>`;
+  const selectorsHtml = s => (s.selectors || []).map((sel, n) => `<div class="lc-dlg-select"><span>${esc(sel.label)}</span><span class="lc-dlg-seg">${(sel.choices || []).map(c => `<button type="button" data-sel="${n}" data-choice="${esc(c)}">${esc(c)}</button>`).join('')}</span></div>`).join('');
+
+  // The tree's rows with the ticks as they stand, and the lines the answer will run.
+  const paintTree = () => {
+    const s = state.spec;
+    if (!s.tree) return;
+    const ticked = n => state.ticks[n.id] ?? !!n.on;
+    const { paths } = treePaths(s.tree.nodes);
+    card.querySelector('.lc-dlg-tree luma-tree')?.update({
+      mode: 'pick', guides: true, empty: 'Nothing to update.',
+      nodes: s.tree.nodes.map((n, i) => ({
+        path: paths[i], no: n.no || '', name: n.name, id: n.badge || '', tickable: !!n.tickable, tone: n.tone || '',
+        state: n.tickable ? (ticked(n) ? 'on' : 'off') : 'off',
+        count: (n.tickable && !ticked(n) && n.note_off) ? n.note_off : (n.note || null),
+      })),
+    });
+    const answers = collect();
+    const lines = treeLines(s, answers);
+    const list = card.querySelector('[data-kit="lines"]');
+    if (list) list.innerHTML = lines.length ? lines.map(l => `<li class="tone-ok"><i></i>${esc(l)}</li>`).join('') : '<li><i></i>Nothing ticked</li>';
+    const primary = card.querySelector('.lc-dlg-btn[data-primary]');
+    if (primary) {
+      const b = (s.buttons || [])[s.primary ?? 0];
+      primary.disabled = !!b?.disabled || !lines.length;
+      primary.textContent = lines.length ? `${b?.label || 'OK'} (${lines.length} line${lines.length === 1 ? '' : 's'})` : (b?.label || 'OK');
+    }
   };
 
   const fieldHtml = (inp, n) => {
@@ -337,4 +386,51 @@ function mount(spec, { resolve, onAnswer, onPause, local }) {
   render();
   (card.querySelector('input[data-field]') || card.querySelector('.lc-dlg-btn[data-primary="1"]:not(:disabled)') || card.querySelector('.lc-dlg-btn:not(:disabled)'))?.focus();
   return collect;
+}
+
+/** A tree's nodes as <luma-tree> paths (`1`, `1.2` …, from each node's depth). */
+function treePaths(nodes) {
+  const paths = [], byPath = new Map(), counters = [];
+  for (const n of nodes) {
+    const d = Math.min(n.depth || 0, counters.length);
+    counters.length = d + 1;
+    counters[d] = (counters[d] || 0) + 1;
+    const path = counters.join('.');
+    paths.push(path);
+    byPath.set(path, n);
+  }
+  return { paths, byPath };
+}
+
+/** The lines a tree dialog's answer runs (decisions 0293): its nodes' statements lane by lane,
+ *  `{?name}` / `{?name!=text}` guards worked out, then the selectors' texts and the toggles'
+ *  flags filled in — the station's `DialogTree::statements` and `Ask::line_for`, for the preview. */
+export function treeLines(spec, answers) {
+  const nodes = spec.tree?.nodes || [];
+  const sels = spec.selectors || [];
+  const text = name => {
+    const s = sels.find(x => x.name === name);
+    if (!s) return null;
+    const v = answers.selectors?.[name] ?? s.value;
+    return (s.texts || [])[(s.choices || []).indexOf(v)] ?? null;
+  };
+  const on = id => {
+    if (id.includes('!=')) { const [name, not] = id.split('!='); const t = text(name); return t != null && t !== not; }
+    if (answers.toggles && id in answers.toggles) return !!answers.toggles[id];
+    return !!nodes.find(n => n.id === id)?.on;
+  };
+  const picked = [];
+  nodes.forEach((n, i) => {
+    for (const st of (!n.tickable || on(n.id)) ? (n.when_on || []) : (n.when_off || [])) {
+      let t = st.text, keep = true;
+      for (let m; (m = /^\{\?([^}]*)\}/.exec(t));) { keep = keep && on(m[1]); t = t.slice(m[0].length); }
+      if (keep && t.trim()) picked.push([st.lane || 0, i, t.trim()]);
+    }
+  });
+  picked.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+  return picked.map(([, , t]) => {
+    for (const s of sels) t = t.split(`{${s.name}}`).join(text(s.name) ?? '');
+    for (const tg of spec.toggles || []) t = t.split(`{${tg.name}}`).join((answers.toggles?.[tg.name] ?? tg.on) ? (tg.flag || '') : '');
+    return t.split(/\s+/).filter(Boolean).join(' ');
+  });
 }

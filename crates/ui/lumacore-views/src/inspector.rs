@@ -247,6 +247,13 @@ fn links(state: &AppState, guid: uuid::Uuid) -> Vec<Row> {
     let object_of = |g: uuid::Uuid| walk.objects.iter().find(|o| o.guid == g);
     let label = |o: &lumacore_base::ObjectEntry| {
         let no = o.path.rsplit('.').next().unwrap_or("");
+        // A cue is named with its sequence and its number as typed (`Sequence 1 Cue 2.5`).
+        if o.kind == "Cue" {
+            let seq = o.path.split(".Cues.").next().and_then(|s| s.rsplit('.').next()).unwrap_or("");
+            let cue = no.parse::<u32>().map_or_else(|_| no.to_string(), lumacore_tree::cue_label);
+            let named = o.name.as_deref().filter(|n| !n.is_empty()).map(|n| format!(" \"{n}\"")).unwrap_or_default();
+            return format!("Sequence {seq} Cue {cue}{named}");
+        }
         match &o.name {
             Some(n) if !n.is_empty() => format!("{} {no} \"{n}\"", o.kind),
             _ => format!("{} {no}", o.kind),
@@ -259,7 +266,14 @@ fn links(state: &AppState, guid: uuid::Uuid) -> Vec<Row> {
     let mut rows = Vec::new();
     let mut seen = std::collections::BTreeSet::new();
     for l in walk.links.iter().filter(|l| l.target == guid) {
-        let Some(from) = l.from.and_then(object_of) else { continue };
+        let Some(mut from) = l.from.and_then(object_of) else { continue };
+        // A cue part's link is its cue's (a cue links a preset, decisions 0293).
+        if from.kind == "Part"
+            && let Some((cue_path, _)) = from.path.rsplit_once(".Parts.")
+            && let Some(cue) = walk.objects.iter().find(|o| o.path == cue_path)
+        {
+            from = cue;
+        }
         if seen.insert(("Used by", from.guid)) {
             rows.push(Row { link: show_path(from), ..Row::fact(Section::Link, "Used by", label(from)) });
         }

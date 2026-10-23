@@ -4,7 +4,7 @@ category: docs
 ---
 # Presets
 
-**Design, not built:** this page is the preset system as decided — pools, modes, Extract / Recast, recipe and embedded presets — written before it was built. Today the station has the one `Value` type presets share with the programmer and cues, the preset type words as published (`Planned` in the generated reference, `docs/user/reference/objects.md`), and the `TimingPreset` / `CurvePreset` pools; everything marked Planned below is still not built. The decision records are `docs/decisions/<slug>` — the related ones today are `playback-merge-order`, `sequences-in-datapools`, `attributes-two-layers` and `pawtern-pool`; presets get their own record when their step is picked up (see `docs/plans/active/md-upgrade.records.md` for the slugs). `§N` below names a section of the frozen log `docs/archive/decisions-2026-10.md`.
+**Partly built (2026-10-23):** the one preset pool (record 0288) and preset links in cues with Update, Recast and Extract (record 0293, `presets-link-into-cues-update-recast-extract`) are built; embedded and recipe presets, Global mode and filters are still planned. **Design, otherwise:** this page is the preset system as decided — pools, modes, Extract / Recast, recipe and embedded presets — written before it was built. Today the station has the one `Value` type presets share with the programmer and cues, the preset type words as published (`Planned` in the generated reference, `docs/user/reference/objects.md`), and the `TimingPreset` / `CurvePreset` pools; everything marked Planned below is still not built. The decision records are `docs/decisions/<slug>` — the related ones today are `playback-merge-order`, `sequences-in-datapools`, `attributes-two-layers` and `pawtern-pool`; presets get their own record when their step is picked up (see `docs/plans/active/md-upgrade.records.md` for the slugs). `§N` below names a section of the frozen log `docs/archive/decisions-2026-10.md`.
 
 This document defines the preset system for LumaCore, informed by established console
 preset models and aligned with `Lum` sentence shapes and command families
@@ -22,11 +22,14 @@ Markers: **Built** = in the code today · **Planned** = decided, not built ·
   `Control`, `Shaper`, `Video`, `All`) are published, so they complete and show in
   Help; attribute definitions (seeded from the GDTF standard attribute table)
   and feature groups in `ShowData`.
-- **Planned:** preset pools and everything on this page that stores, calls,
-  edits or shows a preset — S/G/U modes, Extract, Recast, embedded and recipe
-  presets, filters, indicators. Only `List Preset` is built; `Store`, `Call` and
-  `Info Preset` are published as Planned and reply `isn't built yet (planned)`
-  [E-CMD-003], changing nothing.
+- **Built (records 0288, 0293):** the one preset pool (`Preset <n>`, Store / At / Call /
+  SelectFixtures, Selective and Universal chosen automatically, tags, the Presets window); a
+  cue stores a value from a preset as the link only and plays the preset as it is now;
+  `Update` (the ask with its tree, `/Merge` / `/Add` / `/Overwrite`, a cue's `/Original` /
+  `/Active` / `/Shield`), `Recast`, `Extract`; deleting a used preset keeps its cues' values;
+  the Device Sheet's Show.
+- **Planned:** Global mode, embedded and recipe presets (Store Preset still flattens; the
+  Update ask's tree has the loop rows ready), filters, Preview in Blind.
 - **Superseded:** multistep (phaser) presets. Decisions §28 makes a value
   static; all dynamics are effects (see the roadmap and
   `docs/archive/handoffs/effects.md`).

@@ -187,6 +187,35 @@ fn an_older_show_upgrades_step_by_step_to_today() {
         let group = serde_json::json!({ "meta": lumacore_base::NodeMeta::new(Some("All".into())), "preset_mode": "Selective", "presets": presets });
         pool["preset_groups"] = serde_json::json!({ "1": group });
     }
+    // Before format 36 a cue value was its steps plus the preset it came from (decisions 0293):
+    // a link goes back to a value that still carries a copy, a plain value to its steps.
+    let mut links = 0;
+    for pool in old["datapools"].as_object_mut().unwrap().values_mut() {
+        for seq in pool["sequences"].as_object_mut().into_iter().flat_map(|m| m.values_mut()) {
+            let mut cues: Vec<&mut serde_json::Value> = Vec::new();
+            for (k, v) in seq.as_object_mut().unwrap().iter_mut() {
+                match k.as_str() {
+                    "cue_zero" | "off_cue" => cues.push(v),
+                    "cues" => cues.extend(v.as_object_mut().unwrap().values_mut()),
+                    _ => {}
+                }
+            }
+            for part in cues.into_iter().flat_map(|c| c["parts"].as_object_mut().unwrap().values_mut()) {
+                for v in part["values"].as_array_mut().into_iter().flatten() {
+                    let data = v["value"].take();
+                    v["value"] = match (data.get("Value"), data.get("Link")) {
+                        (Some(plain), _) => plain.clone(),
+                        (_, Some(g)) => {
+                            links += 1;
+                            serde_json::json!({ "steps": [{ "absolute": { "Normalized": 33.0 } }], "preset": g })
+                        }
+                        _ => panic!("a cue value is plain or a link: {data}"),
+                    };
+                }
+            }
+        }
+    }
+    assert!(links > 0, "the rig's preset sequence links its presets");
     for p in old["user_profiles"].as_object_mut().unwrap().values_mut() {
         let flat: serde_json::Map<String, serde_json::Value> = p["content"]["view_buttons"]
             .as_object()
@@ -207,6 +236,7 @@ fn an_older_show_upgrades_step_by_step_to_today() {
     assert_eq!((upgraded.from, upgraded.to), (lumacore_luma::show_file::OLDEST_FORMAT, lumacore_tree::FORMAT_VERSION));
     assert!(upgraded.notes.iter().any(|n| n.contains("view buttons")), "{:?}", upgraded.notes);
     assert!(upgraded.notes.iter().any(|n| n.contains("presets in one pool")), "{:?}", upgraded.notes);
+    assert!(upgraded.notes.iter().any(|n| n.contains(&format!("{links} cue values from presets now link"))), "{:?}", upgraded.notes);
     assert_eq!(serde_json::to_value(&show).unwrap(), today, "the upgraded show is today's");
     // One older than the oldest is refused, naming why.
     old["show_settings"]["format_version"] = (lumacore_luma::show_file::OLDEST_FORMAT - 1).into();

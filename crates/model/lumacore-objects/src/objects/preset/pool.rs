@@ -10,8 +10,8 @@
 //! presets that touch the window's feature group (the programmer's on the encoder bar, or the
 //! pinned one; All = every one) and carry every lit tag. A cell names how it fits the user's
 //! selection (all / some / none), its mode letter, the feature groups it holds (each with its
-//! colour), a preview drawn from its values, the fixtures using it in a programmer and whether it
-//! is in the user's own.
+//! colour), a preview drawn from its values, its uses (the fixtures using it in a programmer and
+//! the cues that link it, decisions 0293) and whether it is in the user's own.
 //!
 //! Owns:          PRESET_POOL, WINDOW, the cells, tag_list.
 //! Doesn't own:   the pool window (`lumacore-views::pools`, the WebUI), the presets (`preset`).
@@ -64,6 +64,8 @@ fn preset_cells(ctx: &PoolContext) -> Vec<PoolCell> {
     let Some(dp) = ctx.show.datapools.get(&ctx.datapool) else { return Vec::new() };
     let selected: Vec<Uuid> = ctx.show.programmer_of(ctx.user).map(|p| p.selected_fixtures.clone()).unwrap_or_default();
     let usage = usage(ctx.show, ctx.user);
+    // The cues that link each preset (decisions 0293) count as uses too.
+    let cues = lumacore_tree::PresetUses::build(ctx.show);
     let feature = ctx.filter.feature.as_deref().filter(|f| !f.is_empty() && !f.eq_ignore_ascii_case("all"));
     dp.presets
         .iter()
@@ -78,13 +80,16 @@ fn preset_cells(ctx: &PoolContext) -> Vec<PoolCell> {
             let mut cell = PoolCell::of(no, &p.meta, ctx);
             cell.applicability = fit(ctx.show, p, &selected);
             let (used, mine) = usage.get(&p.meta.identity.guid).copied().unwrap_or((0, false));
+            let in_cues = cues.count(p.meta.identity.guid);
             cell.selected = mine;
             cell.badges = vec![letter(&p.mode).to_string()];
             cell.extra = Some(json!({
                 "mode": letter(&p.mode),
                 "groups": groups.iter().map(|(name, color)| json!({ "name": name, "color": color })).collect::<Vec<_>>(),
                 "preview": preview(ctx.show, p, &groups),
-                "use": used,
+                "use": used + in_cues,
+                "fixtures": used,
+                "cues": in_cues,
                 "mine": mine,
                 "tags": p.meta.annotation.tags.iter().filter_map(|t| tag_name(ctx.show, *t)).collect::<Vec<_>>(),
             }));

@@ -2116,6 +2116,11 @@ luma-tree { display: block; min-height: 0; }
 .lc-tree-box { flex: none; width: 22px; height: 22px; border: 1px solid var(--lc-text-dim); border-radius: var(--lc-radius-sm); background: var(--lc-surface);
   cursor: pointer; padding: 0; position: relative; }
 .lc-tree-box[data-state="on"] { background: var(--lc-accent); border-color: var(--lc-accent); }
+.lc-tree-box.gap { border-color: transparent; background: none; }
+.lc-tree-name.tone-alert, .lc-tree-count.tone-alert { color: var(--lc-alert); }
+/* A dialog's tree (the Update ask, decisions 0293): the kit's tree in pick mode, in a box. */
+.lc-dlg-details[data-kit="lines"] { flex: none; }
+.lc-dlg-tree { flex: none; max-height: min(440px, 40dvh); overflow: auto; overscroll-behavior: contain; border: 1px solid var(--lc-line); border-radius: var(--lc-radius); padding: 6px; background: var(--lc-surface); }
 .lc-tree-box[data-state="on"]::after { content: ''; position: absolute; left: 6px; top: 2px; width: 6px; height: 11px; border: solid var(--lc-on-accent);
   border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .lc-tree-box[data-state="part"]::after { content: ''; position: absolute; left: 4px; right: 4px; top: 9px; height: 2px; background: var(--lc-text); }

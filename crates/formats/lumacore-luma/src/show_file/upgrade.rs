@@ -46,6 +46,8 @@ pub static STEPS: &[Step] = &[
     // 34 → 35: a user's NAV bookmarks and a profile's NavLog, both new with their defaults
     // (decisions 0291).
     Step { from: 34, run: nav_bookmarks_and_log },
+    // 35 → 36: a cue value is plain steps or a preset link (decisions 0293).
+    Step { from: 35, run: cue_values_link_presets },
 ];
 
 /// What an upgrade did: the format it came from, this build's, and each step's notes.
@@ -177,6 +179,67 @@ fn one_preset_pool(show: &mut Value) -> Vec<String> {
 /// `preferences.nav_log` are new and read as their defaults (none; On).
 fn nav_bookmarks_and_log(_show: &mut Value) -> Vec<String> {
     Vec::new()
+}
+
+/// 35 → 36: a cue value becomes `{"Value": …}` (plain steps) or `{"Link": "<preset GUID>"}`
+/// (decisions 0293). A value that carried the preset it came from keeps only the link — the cue
+/// now plays the preset as it is; every other value keeps its steps. (A programmer value's new
+/// `origin` reads as none.)
+fn cue_values_link_presets(show: &mut Value) -> Vec<String> {
+    let (mut linked, mut sequences) = (0, 0);
+    for (_, pool) in members_keyed(show, "datapools") {
+        let Some(seqs) = pool.get_mut("sequences").and_then(Value::as_object_mut) else { continue };
+        for seq in seqs.values_mut() {
+            let before = linked;
+            let mut cues: Vec<&mut Value> = Vec::new();
+            let Some(obj) = seq.as_object_mut() else { continue };
+            for (k, v) in obj.iter_mut() {
+                match k.as_str() {
+                    "cue_zero" | "off_cue" => cues.push(v),
+                    "cues" => cues.extend(v.as_object_mut().into_iter().flat_map(|m| m.values_mut())),
+                    _ => {}
+                }
+            }
+            for cue in cues {
+                let Some(parts) = cue.get_mut("parts").and_then(Value::as_object_mut) else { continue };
+                for part in parts.values_mut() {
+                    let Some(values) = part.get_mut("values").and_then(Value::as_array_mut) else { continue };
+                    for v in values {
+                        let Some(old) = v.get_mut("value") else { continue };
+                        let preset = old.get("preset").and_then(Value::as_str).map(str::to_string);
+                        let release = old.get("release").and_then(Value::as_bool).unwrap_or(false);
+                        *old = match preset {
+                            Some(g) if !release => {
+                                linked += 1;
+                                json!({ "Link": g })
+                            }
+                            _ => {
+                                let mut plain = old.take();
+                                if let Some(m) = plain.as_object_mut() {
+                                    m.remove("preset");
+                                }
+                                json!({ "Value": plain })
+                            }
+                        };
+                    }
+                }
+            }
+            if linked > before {
+                sequences += 1;
+            }
+        }
+    }
+    if linked == 0 {
+        Vec::new()
+    } else {
+        vec![format!(
+            "{linked} cue value{} from presets now link{} to {} (in {sequences} sequence{}): the cues play the presets as they are",
+            if linked == 1 { "" } else { "s" },
+            if linked == 1 { "s" } else { "" },
+            if linked == 1 { "its preset" } else { "their presets" },
+            if sequences == 1 { "" } else { "s" }
+        )]
+    }
 }
 
 // ██╗  ██╗███████╗██╗     ██████╗ ███████╗██████╗ ███████╗

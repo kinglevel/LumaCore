@@ -158,7 +158,8 @@ pub fn cue_label(key: u32) -> String {
 
 /// A tracked value at a cue: the value and the cue (key) that stored it.
 pub struct Tracked<'a> {
-    pub value: &'a Value,
+    /// Plain steps or a preset link (resolve a link with [`CueData::resolve`]).
+    pub value: &'a CueData,
     pub cue: u32,
     /// The part of `cue` it is stored in (its timing).
     pub part: u32,
@@ -226,7 +227,7 @@ impl SequenceObject {
             for (&part_no, part) in &obj.parts {
                 for (index, v) in part.values.iter().enumerate() {
                     let k = (v.fixture_id, v.attribute.as_str());
-                    if v.value.release {
+                    if v.value.is_release() {
                         out.remove(&k);
                     } else {
                         out.insert(
@@ -388,12 +389,84 @@ pub enum CueTrigger {
     Midi,
 }
 
+/// What a cue value holds (decisions 0293): plain steps, or a link to a preset. A link holds no
+/// value of its own: the cue plays the preset as it is now (the fixture's own entry, else the
+/// preset's universal one; none = no value), resolved where the plan is compiled.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub enum CueData {
+    /// Plain steps (a release too). Its `preset` is always `None` here.
+    Value(Value),
+    /// The preset's GUID (a link, decisions §21 "6d").
+    Link(Uuid),
+}
+
+impl CueData {
+    /// What a programmer value becomes in a cue: a value that came from a preset is the link
+    /// only, everything else its plain steps.
+    pub fn from_programmer(v: &Value) -> Self {
+        match v.preset {
+            Some(g) if !v.release => Self::Link(g),
+            _ => {
+                let mut v = v.clone();
+                v.preset = None;
+                Self::Value(v)
+            }
+        }
+    }
+
+    /// The plain value, if it is one.
+    pub fn plain(&self) -> Option<&Value> {
+        match self {
+            Self::Value(v) => Some(v),
+            Self::Link(_) => None,
+        }
+    }
+
+    /// The preset it links to, if it is a link.
+    pub fn link(&self) -> Option<Uuid> {
+        match self {
+            Self::Link(g) => Some(*g),
+            Self::Value(_) => None,
+        }
+    }
+
+    /// A release (the attribute goes back to lower sources).
+    pub fn is_release(&self) -> bool {
+        matches!(self, Self::Value(v) if v.release)
+    }
+
+    /// The value it plays: its own, or the linked preset's for this fixture and attribute.
+    pub fn resolve<'a, P: PresetValues + ?Sized>(&'a self, fixture: Uuid, attribute: &str, presets: &'a P) -> Option<&'a Value> {
+        match self {
+            Self::Value(v) => Some(v),
+            Self::Link(g) => presets.preset_value(*g, fixture, attribute),
+        }
+    }
+}
+
+/// Where a cue's preset links are looked up (the show's preset pools; the plan compiler's own
+/// per-compile index): the preset `preset`'s value for `fixture`'s `attribute` — the fixture's
+/// own entry, else the universal one; None when the preset is gone or holds no such value.
+pub trait PresetValues {
+    fn preset_value(&self, preset: Uuid, fixture: Uuid, attribute: &str) -> Option<&Value>;
+}
+
+/// No presets (a link plays nothing): for readers that only look at plain values.
+pub struct NoPresets;
+
+impl PresetValues for NoPresets {
+    fn preset_value(&self, _: Uuid, _: Uuid, _: &str) -> Option<&Value> {
+        None
+    }
+}
+
 /// One fixture attribute's value in a cue part.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CueValue {
     pub fixture_id: Uuid,
     pub attribute: String,
-    pub value: Value,
+    /// Plain steps or a preset link (decisions 0293).
+    pub value: CueData,
     /// Its own Fade / Delay over the cue's (decisions §30 "12f" value timing).
     #[serde(default, skip_serializing_if = "lumacore_base::value::ValueTiming::is_cue")]
     pub timing: lumacore_base::value::ValueTiming,
@@ -958,7 +1031,11 @@ impl Walk for CuePart {
                 timing: _,
             } = v;
             w.link("Values.Fixture", "Fixture", *fixture_id);
-            value.walk(w);
+            match value {
+                CueData::Value(v) => v.walk(w),
+                // A cue uses the preset it links to (decisions 0293): its "Used by".
+                CueData::Link(g) => w.link("Values.Preset", "Preset", *g),
+            }
         }
     }
 }
@@ -1076,7 +1153,7 @@ mod tests {
                     fixture_id: *fixture,
                     attribute: attr.to_string(),
                     timing: Default::default(),
-                    value: value.clone(),
+                    value: CueData::Value(value.clone()),
                 });
         }
         seq
@@ -1092,7 +1169,7 @@ mod tests {
             (3000, f, "Pan", Value::release()),
         ]);
         let at2 = seq.tracked(2000);
-        assert_eq!(at2[&(f, "Dimmer")].value.percent(), Some(80.0));
+        assert_eq!(at2[&(f, "Dimmer")].value.plain().and_then(Value::percent), Some(80.0));
         assert_eq!(at2[&(f, "Pan")].cue, 1000);
         let at3 = seq.tracked(3000);
         assert!(!at3.contains_key(&(f, "Pan")));

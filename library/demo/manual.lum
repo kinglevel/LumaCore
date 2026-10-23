@@ -20,3 +20,18 @@ Store Preset 3 "Split"
 ResetAll
 Store Tag 901 "Wash"
 Assign Tag "Wash" At Preset 1 + 2
+
+# A sequence whose cues link Presets 1-3 (decisions 0293): a value called from a preset is stored as
+# the link only, so the cues play the presets as they are now. Cue 3 holds a plain value beside
+# its links (Fixture 103), so Update has a cue with plain values too.
+Store Sequence 1 "Presets"
+Fixture 101 Thru 110 At Preset 1
+Store Sequence 1 Cue 1 "Full"
+ResetAll
+Fixture 101 Thru 110 At Preset 2
+Store Sequence 1 Cue 2 "Half"
+ResetAll
+Fixture 101 + 102 At Preset 3
+Fixture 103 At 30
+Store Sequence 1 Cue 3 "Split"
+ResetAll

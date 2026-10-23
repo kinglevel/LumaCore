@@ -615,7 +615,8 @@ The verbs, by family (every one in the [command reference](../reference/commands
 - **Values** — `At`, `Full`, `Zero`, `Release`, `Park`, `Unpark`
 - **Assignment** — `Assign`, `Unassign` (one object into another)
 - **Store / edit** — `Store`, `Update`, `Label`, `Edit`, `Copy`, `Cut`, `Paste`, `Move`, `Insert`,
-  `Compact`, `Delete`, `Sort`, `Split`, `Clone` (one fixture's data onto another)
+  `Compact`, `Delete`, `Sort`, `Split`, `Clone` (one fixture's data onto another), `Recast`,
+  `Extract` (preset links in cues)
 - **Recall** — `Call` brings a stored thing back here: `Call View 3`, `Call WindowPreset 2`
 - **Settings** — `Set`, `Reset` (back to the declared defaults: an object, or one quoted
   property), `EditSetting`
@@ -741,6 +742,44 @@ Fixture 101 Thru 104 At Preset 12
 Call Preset 12
 Preset 12
 Assign Tag "Song 3" At Preset 12
+```
+
+#### Presets in cues: Update, Recast, Extract
+
+A value you called from a preset keeps the preset's link; a plain value typed over it drops the
+link, but your programmer still knows where it came from. `Store Cue` keeps such a value as the
+link only, so the cue plays the preset as it is now — change the preset and every cue that uses
+it follows. `Store Preset` still keeps plain values (a value from another preset is flattened).
+
+`Update` puts what you changed back where it came from. Alone it asks: each preset your values
+came from with the cues that follow it (untick a cue and it keeps its old look), the cues whose
+plain values you changed, its Content — what goes into a preset: `OnlyExisting` (`/Merge`, only
+what it holds), `AddNew` (`/Add`, new attributes too) or `Overwrite` (`/Overwrite`, it becomes your
+values) — and two switches, Recast the cues and `/Shield` the next cues. The ask remembers them on
+your profile (`UpdateContent`, `UpdateRecast`, `UpdateShield`). Its Update button runs one line:
+``Update `<statements>` `` runs the Update, Recast and Extract statements in the backticks inside
+one statement, so the whole update is one Oops step. A cue's plain values go where they were
+stored (`/Original`) or into this cue (`/Active`).
+
+`Recast` brings a preset's new attributes into the cues that link it and drops the links to the
+ones it no longer holds; it asks first. `Extract` turns links into the preset's values as they
+are now: in your programmer, in a sequence or in one cue. Deleting a preset that cues use asks,
+then those cues keep its values; Oops brings the preset and every link back.
+
+```lum
+Update
+Update Preset 3 /Merge
+Update Preset 3 + 1 /Add
+Update Preset 3 /Overwrite
+Update Sequence 1 Cue 2 /Original
+Update Sequence 1 Cue 2 /Active /Shield
+Update `Extract Preset 3 Sequence 4 Cue 9; Update Preset 3 /Merge`
+Update `Update Preset 3 /Add; Recast Preset 3; Update Sequence 1 Cue 2 /Original /Shield`
+Recast Preset 3
+Recast Preset 3 Sequence 1
+Extract Preset 3
+Extract Preset 3 Sequence 4 Cue 9
+Extract Sequence 1 Cue 2
 ```
 
 ### Copy, Cut, Paste, Move, Insert, Compact

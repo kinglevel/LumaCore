@@ -160,7 +160,7 @@ fn tracking_input(input: &EngineInput, cues: u32) -> EngineInput {
                     fixture_id: *g,
                     attribute: "Dimmer".into(),
                     timing: Default::default(),
-                    value: Value::normalized(f64::from(n % 100)),
+                    value: lumacore_tree::CueData::Value(Value::normalized(f64::from(n % 100))),
                 });
             }
         }

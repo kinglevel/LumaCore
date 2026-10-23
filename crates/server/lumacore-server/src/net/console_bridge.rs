@@ -308,7 +308,7 @@ impl lumacore_http::ConsoleBridge for ServerConsoleBridge {
     }
 
     fn devices(&self, user: &str, params: &Value) -> Value {
-        use lumacore_views::devices::{Layer, Params};
+        use lumacore_views::devices::{Layer, Params, Show};
         let show = self.published.show.load();
         let plan = self.published.render.plan.load();
         let frame = self.published.render.frame.load();
@@ -317,6 +317,7 @@ impl lumacore_http::ConsoleBridge for ServerConsoleBridge {
         let base = Params::default();
         let p = Params {
             layer: params["layer"].as_str().map_or(Layer::Absolute, Layer::parse),
+            show: params["show"].as_str().map_or(Show::Both, Show::parse),
             programmer_only: flag("programmer_only", base.programmer_only),
             selected_only: flag("selected_only", base.selected_only),
             selection_first: flag("selection_first", base.selection_first),

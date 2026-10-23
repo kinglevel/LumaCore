@@ -263,7 +263,7 @@ pub trait ConsoleBridge: Send + Sync {
     }
 
     /// A Device Sheet for a user (the `devices` feed, decisions device-sheet-window): `params` are
-    /// the window's (`layer`, `programmer_only`, `selected_only`, `selection_first`, `folders`,
+    /// the window's (`layer`, `show`, `programmer_only`, `selected_only`, `selection_first`, `folders`,
     /// `from`, `count`).
     fn devices(&self, _user: &str, _params: &serde_json::Value) -> serde_json::Value {
         serde_json::json!({ "rows": [], "columns": [], "cells": {}, "total": 0 })

@@ -295,7 +295,7 @@ pub static SEQUENCE: ObjectDef = ObjectDef {
         keyword: "Sequence",
         lum: crate::objects::LumShape::ids(1).children(&[&crate::objects::playback::CUE.decl]),
         default_verb: crate::objects::Verb::Select,
-        flags: crate::commands::flags::STORE_CUE,
+        flags: crate::commands::flags::SEQUENCE_CUE,
         aliases: &["sequences", "seq"],
         doc: Doc {
             display: "Sequence",
@@ -338,6 +338,8 @@ pub static SEQUENCE: ObjectDef = ObjectDef {
         (Verb::Move, crate::commands::typed::typed::<sequence_door::Move>),
         (Verb::Insert, crate::commands::typed::typed::<sequence_door::Insert>),
         (Verb::Compact, crate::commands::typed::typed::<sequence_door::Compact>),
+        (Verb::Update, crate::commands::typed::typed::<pb::update::UpdateSequence>),
+        (Verb::Extract, crate::commands::typed::typed::<pb::extract::ExtractSequence>),
     ],
     delete_ask: Some(|s, a| crate::commands::door::delete_ask(s, &SEQUENCE, a)),
     complete: None,
@@ -485,7 +487,7 @@ pub static CUE: ObjectDef = ObjectDef {
         // A feature group's timing in the cue is that group under it (§33 87).
         lum: crate::objects::LumShape::decimal().children(&[&crate::commands::attributes::FEATURE_GROUP.decl]),
         default_verb: crate::objects::Verb::Goto,
-        flags: crate::commands::flags::STORE_CUE,
+        flags: crate::commands::flags::SEQUENCE_CUE,
         aliases: &["cues"],
         doc: Doc {
             display: "Cue",

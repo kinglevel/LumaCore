@@ -11,6 +11,9 @@
 //     dialog's MVR tree), menu: false (no ≡ on the selected row), unit: 'fixtures' (after each
 //     count), guides: true (a guide line for every level) })
 //   events: select { path } · toggle { path, on } · menu { path, x, y } · new { parent }
+//   A node may carry its own shown number (`no`), `tickable: false` (pick mode: no box — a
+//   heading, a circular reference) and a `tone` for its name (`alert`): the station's Update ask
+//   (decisions 0293) draws its tree of presets and cues this way.
 //
 // Host mode (the Tree window, decisions 0292: NAV's rows from the station): the host sends the
 // rows it shows, already opened and filtered — each { path, name, depth, no, count, badge,
@@ -76,16 +79,16 @@ class LumaTree extends HTMLElement {
     if (s.host) hasKids = !!n.branch;
     const depth = n.depth ?? depthOf(n.path);
     const fold = hasKids ? `<button type="button" class="lc-tree-fold" data-fold="${esc(n.path)}" aria-label="${open ? 'Fold' : 'Unfold'} ${esc(n.name)}"><luma-icon name="${open ? 'minus' : 'plus'}"></luma-icon></button>` : '<span class="lc-tree-fold leaf"></span>';
-    const box = pick ? `<button type="button" class="lc-tree-box" data-box="${esc(n.path)}" data-state="${esc(n.state || 'off')}" role="checkbox" aria-checked="${n.state === 'on' ? 'true' : n.state === 'part' ? 'mixed' : 'false'}" aria-label="${esc(n.name)}"></button>` : '';
-    const no = s.host ? (n.no ?? '') : n.path;
+    const box = pick && n.tickable === false ? '<span class="lc-tree-box gap" aria-hidden="true"></span>' : pick ? `<button type="button" class="lc-tree-box" data-box="${esc(n.path)}" data-state="${esc(n.state || 'off')}" role="checkbox" aria-checked="${n.state === 'on' ? 'true' : n.state === 'part' ? 'mixed' : 'false'}" aria-label="${esc(n.name)}"></button>` : '';
+    const no = s.host ? (n.no ?? '') : (n.no ?? n.path);
     return `<div class="lc-tree-row${sel ? ' sel' : ''}${n.hit ? ' hit' : ''}${n.dir ? ' dir' : ''}" role="treeitem" aria-level="${depth + 1}" ${hasKids ? `aria-expanded="${!!open}"` : ''} ${sel ? 'aria-selected="true"' : ''} data-path="${esc(n.path)}" style="--lc-tree-depth:${depth}">
       ${fold}${box}
       ${s.numbers === false ? '' : `<span class="lc-tree-no">${esc(no)}</span>`}
       ${n.colour ? `<i class="lc-tree-sw" style="background:${esc(n.colour)}"></i>` : ''}
-      <span class="lc-tree-name">${esc(n.name) || '<i>no name</i>'}</span>
+      <span class="lc-tree-name${n.tone ? ` tone-${esc(n.tone)}` : ''}">${esc(n.name) || '<i>no name</i>'}</span>
       ${n.id ? `<span class="lc-tree-id">${esc(n.id)}</span>` : ''}
       ${n.badge ? `<span class="lc-tree-badge"${s.host ? ` title="Bookmark ${esc(n.badge)}"` : ''}>${esc(n.badge)}</span>` : ''}
-      ${n.count != null ? `<small class="lc-tree-count">${esc(n.count)}${s.unit ? ` ${esc(s.unit)}` : ''}</small>` : ''}
+      ${n.count != null ? `<small class="lc-tree-count${n.tone ? ` tone-${esc(n.tone)}` : ''}">${esc(n.count)}${s.unit ? ` ${esc(s.unit)}` : ''}</small>` : ''}
       ${!pick && sel && s.menu !== false && !s.host ? `<button type="button" class="lc-tree-menu" data-menu="${esc(n.path)}" aria-label="Menu of ${esc(n.name)}"><luma-icon name="menu"></luma-icon></button>` : ''}
     </div>`;
   }

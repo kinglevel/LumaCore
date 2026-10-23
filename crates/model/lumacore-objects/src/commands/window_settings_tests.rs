@@ -89,7 +89,7 @@ fn a_profiles_preferences_are_typed_settings_on_six_tabs() {
     sections.sort();
     sections.dedup();
     // Meta: the facts every show object has (decisions §12 "Tags hardened" 8).
-    assert_eq!(sections, ["Attributes", "Command line", "Input & keys", "Lock screen", "Look", "MVR import", "Meta", "Oops"]);
+    assert_eq!(sections, ["Attributes", "Command line", "Input & keys", "Lock screen", "Look", "MVR import", "Meta", "Oops", "Update"]);
     let meow = f.iter().find(|f| f.name == "MeowKey").unwrap();
     assert_eq!(meow.value, "Shift", "Shift is the default Meow key");
     assert!(matches!(&meow.input, FieldInput::Choice { options } if options.len() == 3));

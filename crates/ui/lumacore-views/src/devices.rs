@@ -72,10 +72,40 @@ impl Layer {
     }
 }
 
+/// What a value cell shows when the value comes from a preset (decisions 0293, the window's
+/// `Show` setting): its value, the link — the preset it comes from (`P3 Split`) — or both
+/// (`P3 Split · 85`). The preset bar shows whatever it is set to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum Show {
+    Value,
+    Link,
+    #[default]
+    Both,
+}
+
+impl Show {
+    pub const ALL: [Show; 3] = [Show::Value, Show::Link, Show::Both];
+
+    pub fn word(self) -> &'static str {
+        match self {
+            Show::Value => "Value",
+            Show::Link => "Link",
+            Show::Both => "Both",
+        }
+    }
+
+    /// A word back (any case); anything else is Both.
+    pub fn parse(word: &str) -> Self {
+        Self::ALL.into_iter().find(|s| s.word().eq_ignore_ascii_case(word)).unwrap_or_default()
+    }
+}
+
 /// What a window asks for: its settings and the rows it shows.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Params {
     pub layer: Layer,
+    /// A linked value's text (decisions 0293).
+    pub show: Show,
     /// Only devices with values in the viewer's programmer.
     pub programmer_only: bool,
     /// Only the viewer's selected devices.
@@ -91,7 +121,7 @@ pub struct Params {
 
 impl Default for Params {
     fn default() -> Self {
-        Self { layer: Layer::Absolute, programmer_only: false, selected_only: false, selection_first: true, folders: true, from: 0, count: 60 }
+        Self { layer: Layer::Absolute, show: Show::Both, programmer_only: false, selected_only: false, selection_first: true, folders: true, from: 0, count: 60 }
     }
 }
 
@@ -155,6 +185,7 @@ struct Ctx<'a> {
     frame: Option<&'a RenderedFrame>,
     now_ms: u64,
     layer: Layer,
+    show_as: Show,
     selected_sequence: Option<Uuid>,
     running: Vec<Running<'a>>,
     /// The plan's first channel slot of each attribute index.
@@ -252,7 +283,7 @@ pub fn view(
     let columns = columns(show, &used);
 
     // ----- Cells: the rows the window shows -----
-    let ctx = context(show, user, plan, frame, now_ms, p.layer);
+    let ctx = context(show, user, plan, frame, now_ms, p.layer, p.show);
     let from = p.from.min(rows.len());
     let to = (from + p.count.min(MAX_ROWS)).min(rows.len());
     let mut cells = Map::new();
@@ -305,6 +336,7 @@ pub fn view(
         .collect();
     json!({
         "layer": p.layer.word(),
+        "show": p.show.word(),
         "layers": Layer::ALL.iter().map(|l| l.word()).collect::<Vec<_>>(),
         "total": rows.len(),
         "from": from,
@@ -356,6 +388,7 @@ fn context<'a>(
     frame: Option<&'a RenderedFrame>,
     now_ms: u64,
     layer: Layer,
+    show_as: Show,
 ) -> Ctx<'a> {
     let prog = show
         .programmer_of(user)
@@ -392,6 +425,7 @@ fn context<'a>(
         frame,
         now_ms,
         layer,
+        show_as,
         selected_sequence: show.user(user).and_then(|u| u.selected.sequence),
         running,
         first_channel,
@@ -403,7 +437,10 @@ fn context<'a>(
 fn cell(ctx: &Ctx, f: &Fixture, attr: &str, cf: &ChannelFunction) -> serde_json::Value {
     let g = f.meta.identity.guid;
     let mut layers: Vec<&str> = Vec::new();
+    // The preset the value comes from (decisions 0293): the programmer's link, or the cue's.
+    let mut link: Option<Uuid> = None;
     let (state, value, src): (State, Option<&Value>, String) = if let Some(pv) = ctx.prog.get(&(g, attr)) {
+        link = pv.value.preset;
         layers.push(if pv.active { "abs" } else { "deact" });
         if pv.timing.fade.is_some() {
             layers.push("fade");
@@ -423,6 +460,7 @@ fn cell(ctx: &Ctx, f: &Fixture, attr: &str, cf: &ChannelFunction) -> serde_json:
                 }
                 Source::Programmer(n) => (State::Other, Some(&r.value), format!("User {n}'s programmer")),
                 Source::Sequence(no) => {
+                    link = ctx.running.iter().find(|run| run.no == no).and_then(|run| run.now.get(&(g, attr))).and_then(|t| t.value.link());
                     let (state, src) = sequence_state(ctx, no, g, attr, cf, &r.value);
                     (state, Some(&r.value), src)
                 }
@@ -430,11 +468,33 @@ fn cell(ctx: &Ctx, f: &Fixture, attr: &str, cf: &ChannelFunction) -> serde_json:
             None => (State::Default, None, "at its default".to_string()),
         }
     };
-    if value.is_some_and(|v| v.preset.is_some()) {
-        layers.push("preset");
-    }
     let n = value.and_then(|v| fraction(v, cf)).unwrap_or_else(|| default_fraction(cf));
-    let mut out = json!({ "t": readout(ctx.show, attr, cf, n), "s": state.word(), "n": round3(n), "src": src });
+    let shown = readout(ctx.show, attr, cf, n);
+    let preset = link.map(|g| (g, ctx.show.preset_by_guid(g)));
+    let (text, src) = match preset {
+        Some((_, Some((_, no, p)))) => {
+            layers.push("preset");
+            let name = p.meta.name().unwrap_or_default();
+            let tag = if name.is_empty() { format!("P{no}") } else { format!("P{no} {name}") };
+            let text = match ctx.show_as {
+                Show::Value => shown.clone(),
+                Show::Link => tag.clone(),
+                Show::Both => format!("{tag} · {shown}"),
+            };
+            let named = if name.is_empty() { String::new() } else { format!(" \"{name}\"") };
+            (text, format!("{src} · Preset {no}{named} ({shown})"))
+        }
+        // A link to a preset that is gone: kept and listed (decisions §35).
+        Some((g, None)) => {
+            layers.push("preset");
+            (shown.clone(), format!("{src} · a preset that is gone ({})", &g.to_string()[..8]))
+        }
+        None => (shown.clone(), src),
+    };
+    let mut out = json!({ "t": text, "s": state.word(), "n": round3(n), "src": src });
+    if let Some((_, Some((_, no, p)))) = preset {
+        out["p"] = json!({ "no": no, "name": p.meta.name().unwrap_or_default() });
+    }
     if !layers.is_empty() {
         out["l"] = json!(layers);
     }
@@ -456,12 +516,15 @@ fn sequence_state(ctx: &Ctx, no: u32, g: Uuid, attr: &str, cf: &ChannelFunction,
     };
     let name = run.sequence.meta.identity.name.clone().unwrap_or_default();
     let cue = lumacore_tree::cue_label(run.cue);
-    let stored = run.now.get(&(g, attr)).is_some_and(|t| t.cue == run.cue);
+    let now = run.now.get(&(g, attr));
+    let stored = now.is_some_and(|t| t.cue == run.cue);
+    // A link compares as a link (decisions 0293): the same preset again is blocked.
+    let blocked = |prev: &lumacore_tree::tree::Tracked| now.is_some_and(|t| t.value == prev.value);
     let state = match (stored, run.before.get(&(g, attr))) {
         (false, _) => State::Tracked,
-        (true, Some(prev)) if prev.value == value => State::Blocked,
+        (true, Some(prev)) if blocked(prev) => State::Blocked,
         (true, Some(prev)) if cf.attribute_type == AttributeType::Dimmer
-            && fraction(prev.value, cf).zip(fraction(value, cf)).is_some_and(|(was, now)| now < was) =>
+            && prev.value.resolve(g, attr, ctx.show).and_then(|v| fraction(v, cf)).zip(fraction(value, cf)).is_some_and(|(was, now)| now < was) =>
         {
             State::Lower
         }

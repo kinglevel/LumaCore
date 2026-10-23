@@ -701,6 +701,8 @@ fn echo_levels(show: &ShowData, tier: &ChannelTier, intensity: &[bool]) -> Vec<E
         }
     }
     let mut out = Vec::new();
+    // Preset links play the preset as it is now (decisions 0293).
+    let presets = lumacore_tree::PresetIndex::new(show);
     for (guid, runs) in echoes {
         let Some((_, seq)) = show.sequence_by_guid(*guid).map(|(_, n, s)| (n, s)) else { continue };
         let start = seq.tracked(lumacore_tree::CUE_ZERO);
@@ -721,10 +723,11 @@ fn echo_levels(show: &ShowData, tier: &ChannelTier, intensity: &[bool]) -> Vec<E
                     .unwrap_or_default();
                 for &ci in by_attr.get(&a).map(Vec::as_slice).unwrap_or_default() {
                     let cf = &tier.functions[ci as usize];
-                    let to = fraction(t.value, cf).unwrap_or(0.0);
+                    let to = presets.resolve(t.value, fixture, attr).and_then(|v| fraction(v, cf)).unwrap_or(0.0);
                     let from = start
                         .get(&(fixture, attr))
-                        .and_then(|z| fraction(z.value, cf))
+                        .and_then(|z| presets.resolve(z.value, fixture, attr))
+                        .and_then(|v| fraction(v, cf))
                         .unwrap_or(0.0);
                     let rising = Fade { from, start_ms: echo.started_ms, delay_ms: timing.delay_in, fade_ms: timing.fade_in, snap: false, path: timing.path };
                     out.push(match echo.off_ms {

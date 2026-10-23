@@ -7,7 +7,7 @@
 // FILE: playback
 
 //! The command rows of playback: Go, Go-, Goto, Top, Pause, Stop, Stomp, Shuffle (decisions §34
-//! 25.7, 25.13: each crate of 34g4 takes its file).
+//! 25.7, 25.13: each crate of 34g4 takes its file); Recast and Extract, presets in cues (0293).
 //!
 //! Owns:          the playback family's command rows (`ROWS`): each word's declaration and handler.
 //! Doesn't own:   the handlers' work (their command modules), the catalog's checks (registry).
@@ -26,6 +26,50 @@ use crate::commands::registry::*;
 
 /// This family's commands with their handlers; `commands::register` adds them to the catalog.
 pub(crate) static ROWS: &[CommandDef] = &[
+    CommandDef {
+        run: crate::commands::typed::typed::<crate::objects::preset::recast::RecastWhat>,
+        decl: CommandDecl {
+            verb: "recast",
+            doc: Doc {
+                display: "Recast",
+                category: HelpCategory::DataPool,
+                syntax: "Recast Preset <ids> [Sequence <m> [Cue <n>]]",
+                description: "The cues that link a preset gain links for its new attributes and lose the dropped ones (decisions 0293); asks first.",
+                examples: &["Recast Preset 3", "Recast Preset 3 Sequence 1"],
+                alias_depth: AliasDepth::Full,
+                ..Doc::BASE
+            },
+            undo: STORE,
+            family: Some(CommandFamily::StoreUpdate),
+            scope: Scope::Master,
+            object_verb: Some(Verb::Recast),
+            rights: Rights::Program,
+            reach: Reach::Show,
+            ..CommandDecl::BASE
+        },
+    },
+    CommandDef {
+        run: crate::commands::typed::typed::<crate::objects::preset::extract::ExtractWhat>,
+        decl: CommandDecl {
+            verb: "extract",
+            doc: Doc {
+                display: "Extract",
+                category: HelpCategory::DataPool,
+                syntax: "Extract Preset <ids> [Sequence <m> [Cue <n>]] | Extract Sequence <m> [Cue <n>]",
+                description: "Preset links become the preset's values as they are now (decisions 0293): in your programmer, a sequence or a cue.",
+                examples: &["Extract Preset 3", "Extract Preset 3 Sequence 4 Cue 9", "Extract Sequence 1 Cue 2"],
+                alias_depth: AliasDepth::Full,
+                ..Doc::BASE
+            },
+            undo: STORE,
+            family: Some(CommandFamily::StoreUpdate),
+            scope: Scope::Master,
+            object_verb: Some(Verb::Extract),
+            rights: Rights::Program,
+            reach: Reach::Show,
+            ..CommandDecl::BASE
+        },
+    },
     CommandDef {
         run: |s, a| match playback::parse_target(a, &crate::objects::SEQUENCE) {
             Ok(t) => out(playback::go(s, t)),

@@ -348,7 +348,7 @@ $ ls Root.ShowData.DataPools.1
   | ├── Timecodes/          no timecodes
   | ├── Priorities          no local priorities
   | ├── Groups/             77 groups
-  | ├── Sequences           no sequences
+  | ├── Sequences/          1 sequences
   | ├── TimingPresets       no timing presets
   | └── CurvePresets        no curve presets
   @ / · scope Root · claim None · context Fixture · repl Fixture
@@ -656,7 +656,8 @@ $ cd Root.ShowData.DataPools.1.Sequences
   | /ShowData/DataPools/1/Sequences
   @ /ShowData/DataPools/1/Sequences · scope Sequences · claim Some("DataPools") · context Sequence · repl Fixture
 $ ls Root.ShowData.DataPools.1.Sequences
-  | (empty)
+  | Sequences/
+  | └── 1  "Presets"  [3 children]  (Sequence)
   @ / · scope Root · claim None · context Fixture · repl Fixture
 $ cd Root.ShowData.DataPools.1.TimingPresets
   | /ShowData/DataPools/1/TimingPresets
@@ -955,6 +956,12 @@ $ cd Root.ShowData.DataPools.1.Groups.3
 $ ls Root.ShowData.DataPools.1.Groups.3
   | Group 3 "Blinder"  (use 'cat' to view contents)
   @ / · scope Root · claim None · context Fixture · repl Fixture
+$ cd Root.ShowData.DataPools.1.Sequences.1
+  | /ShowData/DataPools/1/Sequences/1
+  @ /ShowData/DataPools/1/Sequences/1 · scope 1 · claim Some("DataPools") · context Sequence · repl Fixture
+$ ls Root.ShowData.DataPools.1.Sequences.1
+  | Sequence 1 "Presets"  (use 'cat' to view contents)
+  @ / · scope Root · claim None · context Fixture · repl Fixture
 $ cd Root.ShowData.Protocols.DMXProtocols.Sacn.1
   | /ShowData/Protocols/DMXProtocols/Sacn/1
   @ /ShowData/Protocols/DMXProtocols/Sacn/1 · scope 1 · claim Some("Protocols") · context Fixture · repl Fixture
@@ -1185,7 +1192,7 @@ $ ls Root.ShowData.DataPools.1
   | ├── Timecodes/          no timecodes
   | ├── Priorities          no local priorities
   | ├── Groups/             77 groups
-  | ├── Sequences           no sequences
+  | ├── Sequences/          1 sequences
   | ├── TimingPresets       no timing presets
   | └── CurvePresets        no curve presets
   @ / · scope Root · claim None · context Fixture · repl Fixture

@@ -21,7 +21,7 @@ pub use lumacore_effects::{
     EffectEngineConfig, EffectEnginesData, EffectGenerator, EffectGraphNode, EffectParameter,
 };
 pub use lumacore_playback::{
-    CueObject, CuePart, CueTrigger, CueValue, CurvePreset, FadePath, Effect, ExecutorObject, GroupTiming,
+    CueData, CueObject, CuePart, CueTrigger, CueValue, CurvePreset, FadePath, Effect, ExecutorObject, GroupTiming, NoPresets, PresetValues,
     MibPreference, ParkData, ParkedChannel, ParkedValue, PlaybackData,
     CueZeroMode, CUE_ZERO, Echo, EchoPlaybacks, GrandMasters, LivePlaybacks, MasterLevel, Masters, PlaybackPriority, PlaybackStates, RestartMode, now_ms, SequenceAssignment, SequenceObject,
     SequenceSettings, SequenceState, TimingPreset, Tracked, cue_key, cue_label,
@@ -34,7 +34,7 @@ use uuid::Uuid;
 
 /// The show format this build writes and reads (decisions §20). Only
 /// forward: no migrations; bump it when the file format changes.
-pub const FORMAT_VERSION: u32 = 35;
+pub const FORMAT_VERSION: u32 = 36;
 
 /// The show's LumaSession memory (`ShowData.LumaSession`, the
 /// stations that output).

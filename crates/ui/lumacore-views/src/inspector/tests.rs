@@ -90,3 +90,14 @@ fn a_node_shows_its_counts() {
     assert_eq!(value(&i, "Kind").value, "Node");
     assert!(value(&i, "Holds").value.ends_with("fixtures patched"));
 }
+
+/// A preset that cues link (decisions 0293): its Used by names the cues, with their sequence.
+#[test]
+fn a_linked_preset_is_used_by_its_cues() {
+    let mut state = lumacore_objects::demo::fresh_state();
+    let dp = state.selected_datapool();
+    let i = view(&mut state, &format!("Root.ShowData.DataPools.{dp}.Presets.3"));
+    let used: Vec<_> = i.rows.iter().filter(|r| r.name == "Used by").collect();
+    assert!(used.iter().any(|r| r.value == "Sequence 1 Cue 3 \"Split\""), "{:#?}", i.rows);
+}
+

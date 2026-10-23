@@ -136,7 +136,7 @@ pub fn show(fixtures: u32) -> ShowData {
                 fixture_id: g,
                 attribute: cf.attribute_name.clone(),
                 timing: Default::default(),
-                value: Value::normalized(f64::from(n % 100)),
+                value: lumacore_tree::CueData::Value(Value::normalized(f64::from(n % 100))),
             });
         }
         if n % 4 == 0 {

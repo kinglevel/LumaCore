@@ -32,6 +32,10 @@ pub struct Dialog {
     pub toggles: Vec<DialogToggle>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub selectors: Vec<DialogSelector>,
+    /// A tree to tick (decisions 0293, the Update ask): drawn by the kit's tree in pick mode,
+    /// each tickable node answered like a toggle (by its `id`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tree: Option<DialogTree>,
     pub buttons: Vec<DialogButton>,
     /// The button Enter presses.
     #[serde(default)]
@@ -160,6 +164,9 @@ pub struct DialogToggle {
     pub label: String,
     #[serde(default)]
     pub on: bool,
+    /// The text `{name}` becomes in a line when it is on (a client's preview of the lines).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub flag: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -169,6 +176,94 @@ pub struct DialogSelector {
     pub choices: Vec<String>,
     #[serde(default)]
     pub value: String,
+    /// The text `{name}` becomes for each choice (a client's preview of the lines).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub texts: Vec<String>,
+}
+
+/// A tree in a dialog (decisions 0293): nodes in order, each at its depth. A tickable node is
+/// answered like a toggle (`DialogAnswer.toggles[id]`); what it adds to the answer's line is its
+/// `on` or `off` statements. The station builds the line; a client builds the same list only to
+/// preview it ([`DialogTree::statements`]).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct DialogTree {
+    pub nodes: Vec<DialogTreeNode>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct DialogTreeNode {
+    /// Its name in the answer (unique in the dialog).
+    pub id: String,
+    pub depth: u32,
+    /// What it is (`preset`, `cue`, `plaincue`, `dir`, `loop`): the client's icon.
+    pub kind: String,
+    /// Its number as shown (`P3`, `Cue 2`).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub no: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub name: String,
+    /// A short badge (`S` / `G` / `U`, `Seq 1`).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub badge: String,
+    /// The small text on the right while ticked (`3 cues`, `follows`) and while not
+    /// (`keeps its old look`; empty = the same).
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub note: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub note_off: String,
+    #[serde(default)]
+    pub on: bool,
+    /// Whether it can be ticked (a heading or a circular reference can't).
+    #[serde(default)]
+    pub tickable: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tone: Option<Tone>,
+    /// The statements it adds while ticked / not ticked.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub when_on: Vec<TreeStatement>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub when_off: Vec<TreeStatement>,
+}
+
+/// A statement a tree node adds to the answer's line: statements run lane by lane (lane 0 first),
+/// in tree order within a lane. A statement that starts with `{?name}` runs only while the
+/// toggle or node `name` is on; `{?name!=text}` only while the selector `name` isn't on the
+/// choice whose text is `text`. Guards stack.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+pub struct TreeStatement {
+    #[serde(default)]
+    pub lane: u8,
+    pub text: String,
+}
+
+impl DialogTree {
+    /// The statements the tree adds with these ticks (`on(id)`: a node's or a toggle's state;
+    /// `text(name)`: a selector's chosen text), lane by lane, the guards worked out; placeholders
+    /// (`{content}`) stay for the dialog's line to fill.
+    pub fn statements(&self, on: impl Fn(&str) -> Option<bool>, text: impl Fn(&str) -> Option<String>) -> Vec<String> {
+        let state = |id: &str| match id.split_once("!=") {
+            Some((name, not)) => text(name).is_some_and(|t| t != not),
+            None => on(id).or_else(|| self.nodes.iter().find(|n| n.id == id).map(|n| n.on)).unwrap_or(false),
+        };
+        let mut picked: Vec<(u8, usize, String)> = Vec::new();
+        for (i, n) in self.nodes.iter().enumerate() {
+            let list = if !n.tickable || state(&n.id) { &n.when_on } else { &n.when_off };
+            for s in list {
+                let mut text = s.text.as_str();
+                let mut keep = true;
+                while let Some(rest) = text.strip_prefix("{?") {
+                    let Some((name, after)) = rest.split_once('}') else { break };
+                    keep &= state(name);
+                    text = after;
+                }
+                if keep && !text.trim().is_empty() {
+                    picked.push((s.lane, i, text.trim().to_string()));
+                }
+            }
+        }
+        picked.sort_by_key(|(lane, i, _)| (*lane, *i));
+        picked.into_iter().map(|(_, _, t)| t).collect()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

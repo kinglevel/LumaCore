@@ -499,6 +499,8 @@ pub(crate) fn builtin_window_types() -> BTreeMap<u32, WindowType> {
                         .hint("Fixture = a row per device, a column per attribute; Channel = tiles with the dimmer and the colour"),
                     SettingDef::new("layer", "Layer", choice(&["Absolute", "Fade", "Delay", "Output", "DMX"]), json!("Absolute"))
                         .hint("Absolute = the values; Fade / Delay = their times; Output = after masters; DMX = the byte"),
+                    SettingDef::new("show", "Show", choice(&["Value", "Link", "Both"]), json!("Both"))
+                        .hint("a value from a preset: its value, its link (the preset: P3 Split) or both; the preset bar marks it either way"),
                     SettingDef::new("merge_cells", "Merge cells", SettingKind::Bool, json!(false))
                         .hint("equal neighbours in one feature group draw once"),
                 ],
@@ -517,7 +519,7 @@ pub(crate) fn builtin_window_types() -> BTreeMap<u32, WindowType> {
             s
         })
         .bar_min(320, 160)
-        .bar(true, &["mode", "layer", "programmer_only", "selected_only"]),
+        .bar(true, &["mode", "layer", "show", "programmer_only", "selected_only"]),
         // One window type per pool (decisions 0287): the Macros pool.
         WindowType::new(
             12,

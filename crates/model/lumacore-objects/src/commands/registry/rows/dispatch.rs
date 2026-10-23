@@ -91,14 +91,14 @@ pub(crate) static ROWS: &[CommandDef] = &[
             doc: Doc {
                 display: "Store",
                 category: HelpCategory::Group,
-                syntax: "Store [Cue] [<n>] [/Merge|/Overwrite|/Remove|/CreateSecondCue] | Store Group <id> [\"name\"] | Store Sequence [<n>] | Store Universe <id> | Store Preset ...",
+                syntax: "Store [Cue] [<n>] [/Merge|/Overwrite|/Remove|/CreateSecondCue] | Store Group <id> [\"name\"] | Store Sequence [<n>] | Store Universe <id> | Store Preset [<n>] [\"name\"] [/Merge|/Overwrite|/Remove]",
                 description: "Store the current programmer state. Cue is Store's default object: \
                           `Store` alone stores the next cue of your selected sequence, `Store 2` is \
                           `Store Cue 2`; over an existing cue it asks Merge / Overwrite / Remove / \
                           Create Second Cue. \
                           `Store Group` creates or updates a fixture group. \
                           `Store Universe` (requires the Devices claim) creates a DMX universe. \
-                          `Store Preset` stores attribute values as a preset (planned).",
+                          `Store Preset` keeps your active values as a preset (plain values: a value from another preset is flattened; decisions 0288, 0293).",
                 examples: &[
                     "Store                    -- the next cue of the selected sequence",
                     "Store 2 /Merge           -- Store Cue 2, merged into it",
@@ -313,18 +313,17 @@ pub(crate) static ROWS: &[CommandDef] = &[
         },
     },
     CommandDef {
-        run: |_, _| run::objects_usage(Verb::Update),
+        run: |s, a| crate::objects::preset::update::update_line(s, a),
         decl: CommandDecl {
             verb: "update",
             aliases: &["u"],
             doc: Doc {
                 display: "Update",
                 category: HelpCategory::Group,
-                syntax: "Update Group <id>",
-                description: "Merge the current programmer selection into an existing group. \
-                          Existing group members are retained; new fixtures are added.",
-                examples: &["Update Group 1    -- add current selection to group 1"],
-                related: &["store", "copy"],
+                syntax: "Update | Update Preset <ids> [/Merge|/Add|/Overwrite] | Update Sequence <m> [Cue <n>] [/Original|/Active] [/Shield] | Update Group <id>",
+                description: "Your programmer's changes back where they came from (decisions 0293): alone it asks (presets with the cues that follow, cues with plain values; one Oops step, ``Update `<lines>` ``). A preset: /Merge what it holds, /Add new attributes, /Overwrite. A cue: /Original where stored, /Active this cue, /Shield the next. A group: adds the selection.",
+                examples: &["Update", "Update Preset 3 /Merge", "Update Sequence 1 Cue 2 /Original", "Update Group 1"],
+                related: &["store", "recast", "extract"],
                 alias_depth: AliasDepth::ProgLang,
                 ..Doc::BASE
             },
@@ -332,7 +331,7 @@ pub(crate) static ROWS: &[CommandDef] = &[
             family: Some(CommandFamily::StoreUpdate),
             scope: Scope::Master,
             object_verb: Some(Verb::Update),
-            rights: Rights::Program,
+            rights: Rights::Presets,
             reach: Reach::Show,
             ..CommandDecl::BASE
         },

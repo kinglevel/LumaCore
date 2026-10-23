@@ -15,6 +15,10 @@ use crate::errors::render_code;
 use crate::objects::{self, ObjectDef};
 use crate::text::render_success;
 
+/// `Extract Sequence …` and `Update Sequence … Cue …` (decisions 0293).
+pub mod extract;
+pub mod update;
+
 /// The sequence a command acts on, as (datapool, number): the one it names (in the user's
 /// selected DataPool, or the line's owner — `DataPool 2 Sequence 3`; decisions §30 "12f"), else
 /// the user's selected sequence (decisions §29, in whichever pool it is); none → E-PLAY-003
@@ -297,7 +301,8 @@ pub fn store_cue(state: &mut AppState, target: Target, mode: StoreMode, name: Op
             fixture_id: *fixture,
             attribute: attr.clone(),
             timing: pv.timing,
-            value: pv.value.clone(),
+            // A value that came from a preset is stored as the link only (decisions 0293).
+            value: lumacore_tree::CueData::from_programmer(&pv.value),
         })
         .collect();
     active.sort_by(|a, b| (a.fixture_id, &a.attribute).cmp(&(b.fixture_id, &b.attribute)));
@@ -382,7 +387,8 @@ pub fn store_cue(state: &mut AppState, target: Target, mode: StoreMode, name: Op
     // doesn't track through it (R1-31, Q16 b). With tracking off nothing
     // tracks in. A blocked value is told apart by comparing, not a flag.
     // Nothing tracks into CueZero: it is the start.
-    let tracked: Vec<(uuid::Uuid, String, lumacore_tree::Value)> = if seq.settings.tracking && key != lumacore_tree::CUE_ZERO {
+    // Links compare as links: a cue linking the preset that already tracks in is blocked.
+    let tracked: Vec<(uuid::Uuid, String, lumacore_tree::CueData)> = if seq.settings.tracking && key != lumacore_tree::CUE_ZERO {
         seq.previous_cue(key)
             .or(Some(lumacore_tree::CUE_ZERO))
             .map(|prev| {
@@ -1239,7 +1245,7 @@ pub fn fill_cue_zero(show: &mut lumacore_tree::ShowData, dp: u32, seq_id: u32) {
                     fixture_id: *guid,
                     attribute: cf.attribute_name.clone(),
                     timing: Default::default(),
-                    value: lumacore_tree::Value::normalized(lumacore_render::merge::default_fraction(cf) * 100.0),
+                    value: lumacore_tree::CueData::Value(lumacore_tree::Value::normalized(lumacore_render::merge::default_fraction(cf) * 100.0)),
                 });
             }
         }

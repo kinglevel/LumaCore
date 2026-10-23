@@ -423,7 +423,7 @@ function presetHtml(no, c, phone) {
   }).join('');
   const squares = (x.groups || []).map(gr => `<i title="${esc(gr.name)}" style="background:${gr.color ? esc(gr.color) : 'var(--lc-text-dim)'}"></i>`).join('');
   return `<i class="lc-pre-fit" style="background:${fit}"></i>`
-    + `<span class="lc-pool-no">${no}${x.use ? `<b class="lc-pre-use" title="fixtures using it">${x.use}</b>` : ''}<b class="lc-pre-mode">${esc(x.mode)}</b></span>`
+    + `<span class="lc-pool-no">${no}${x.use ? `<b class="lc-pre-use" title="${x.fixtures || 0} fixtures in programmers · ${x.cues || 0} cues follow it">${x.use}</b>` : ''}<b class="lc-pre-mode">${esc(x.mode)}</b></span>`
     + `<span class="lc-pool-name">${esc(c.name ?? '')}</span>`
     + (phone ? '' : `<span class="lc-pre-pv">${pv}</span>`)
     + `<span class="lc-pre-fg">${squares}</span>`;

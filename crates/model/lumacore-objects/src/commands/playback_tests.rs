@@ -664,7 +664,7 @@ fn store_cue_makes_the_cue_play_the_programmer() {
                 fixture_id: g1,
                 attribute: "Dimmer".into(),
                 timing: Default::default(),
-                value: lumacore_tree::Value::normalized(80.0),
+                value: lumacore_tree::CueData::Value(lumacore_tree::Value::normalized(80.0)),
             }],
             ..Default::default()
         },

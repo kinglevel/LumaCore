@@ -10,13 +10,16 @@
 //! its values touch. `Store Preset [n]` keeps every active programmer value; `At Preset n` puts
 //! its values on the selection (`Call Preset n` is the same line); `Preset n` selects its
 //! fixtures (`SelectFixtures`). Tags are its NodeMeta's (`Assign Tag … At Preset n`); the Presets
-//! window filters the pool by the programmer's feature group and those tags.
+//! window filters the pool by the programmer's feature group and those tags. Cues link presets
+//! (decisions 0293): `Update`, `Recast`, `Extract` and Delete's ask live in `links` and the files
+//! beside it.
 //!
 //! Owns:          PRESET, its door and tree row, List.
 //! Doesn't own:   storing (`store`), applying and selecting (`apply`), the pool window's cells
-//!                (`pool`), the programmer (`programmers`).
+//!                (`pool`), the links in cues (`links`, `update`, `recast`, `extract`, `delete`),
+//!                the programmer (`programmers`).
 //! Entry points:  PRESET, PRESET_DOOR.
-//! Decisions:     docs/decisions/0288-one-preset-pool-follows-the-programmer, §33 (SelectFixtures, At).
+//! Decisions:     docs/decisions/0288-one-preset-pool-follows-the-programmer, docs/decisions/0293-presets-link-into-cues-update-recast-extract, §33 (SelectFixtures, At).
 
 use std::collections::BTreeMap;
 
@@ -31,8 +34,13 @@ use crate::errors::render_code;
 use crate::vfs::{DynChild, NodeView};
 
 pub mod apply;
+pub mod delete;
+pub mod extract;
+pub mod links;
 pub mod pool;
+pub mod recast;
 pub mod store;
+pub mod update;
 
 // ██████╗ ███████╗ ██████╗ ██╗███████╗████████╗██████╗ ██╗   ██╗
 // ██╔══██╗██╔════╝██╔════╝ ██║██╔════╝╚══██╔══╝██╔══██╗╚██╗ ██╔╝
@@ -45,8 +53,9 @@ pub mod store;
 /// `Store Preset … /Merge` (the Presets level on an existing preset, `rights::presets`),
 /// `/Overwrite`, `/Remove`.
 const PRESET_FLAGS: &[crate::commands::flags::FlagDef] = &[
-    crate::commands::flags::MERGE.on(&[Verb::Store]),
-    crate::commands::flags::OVERWRITE.on(&[Verb::Store, Verb::Copy, Verb::Paste]),
+    crate::commands::flags::MERGE.on(&[Verb::Store, Verb::Update]),
+    crate::commands::flags::ADD.on(&[Verb::Update]),
+    crate::commands::flags::OVERWRITE.on(&[Verb::Store, Verb::Copy, Verb::Paste, Verb::Update]),
     crate::commands::flags::REMOVE.on(&[Verb::Store]),
     crate::commands::flags::BY.on(&[Verb::Compact]),
 ];
@@ -76,18 +85,24 @@ pub static PRESET: ObjectDef = ObjectDef {
             display: "Preset",
             category: HelpCategory::DataPool,
             also_applies_to: &[],
-            syntax: "Preset <n> | Store Preset [<n>] [\"name\"] [/Merge|/Overwrite|/Remove] | At Preset <n> | Call Preset <n>",
+            syntax: "Preset <n> | Store Preset [<n>] [\"name\"] [/Merge|/Overwrite|/Remove] | At Preset <n> | Call Preset <n> | Update Preset <n> [/Merge|/Add|/Overwrite] | Recast Preset <n> [Sequence <m>] | Extract Preset <n> [Sequence <m> [Cue <c>]]",
             description: "The DataPool's one preset pool (decisions 0288). Store keeps every active value of \
                           your programmer (Selective: per fixture; Universal when every fixture holds the \
                           same value); At puts its values on the selected fixtures, Call is the same; a bare \
                           Preset selects its fixtures. Tag presets to sort them; the Presets window shows the \
-                          ones that touch the feature group you are on.",
+                          ones that touch the feature group you are on. A cue stores a value from a preset as \
+                          the link only and plays the preset as it is now (decisions 0293): Update puts your \
+                          changes back into it, Recast brings its attributes into the cues that link it, \
+                          Extract turns links into its values; deleting a used preset keeps the cues' values.",
             examples: &[
                 "Store Preset 3 \"Deep red\"   -- your active values as preset 3",
                 "Store Preset                 -- the next free number",
                 "At Preset 3                  -- its values on your selection",
                 "Preset 3                     -- select its fixtures",
                 "Assign Tag \"Song 3\" At Preset 3",
+                "Update Preset 3 /Merge        -- your changes back into it",
+                "Recast Preset 3              -- its new attributes into the cues",
+                "Extract Preset 3 Sequence 1  -- that sequence's links become values",
             ],
             related: &["store", "at", "tag"],
             alias_depth: AliasDepth::Base,
@@ -106,7 +121,10 @@ pub static PRESET: ObjectDef = ObjectDef {
         (Verb::List, list),
         (Verb::Store, crate::commands::typed::typed::<store::StorePreset>),
         (Verb::SelectFixtures, crate::commands::typed::typed::<apply::SelectPreset>),
-        (Verb::Delete, crate::commands::typed::typed::<preset_door::Delete>),
+        (Verb::Delete, crate::commands::typed::typed::<delete::DeletePreset>),
+        (Verb::Update, crate::commands::typed::typed::<update::UpdatePreset>),
+        (Verb::Recast, crate::commands::typed::typed::<recast::RecastPreset>),
+        (Verb::Extract, crate::commands::typed::typed::<extract::ExtractPreset>),
         (Verb::Copy, crate::commands::typed::typed::<preset_door::Copy>),
         (Verb::Cut, crate::commands::typed::typed::<preset_door::Cut>),
         (Verb::Paste, crate::commands::typed::typed::<preset_door::Paste>),
@@ -114,7 +132,7 @@ pub static PRESET: ObjectDef = ObjectDef {
         (Verb::Insert, crate::commands::typed::typed::<preset_door::Insert>),
         (Verb::Compact, crate::commands::typed::typed::<preset_door::Compact>),
     ],
-    delete_ask: Some(|s, a| crate::commands::door::delete_ask(s, &PRESET, a)),
+    delete_ask: Some(delete::delete_ask),
     complete: None,
     props: Some(&PRESET_PROPS),
     tree: Some(TreeDef {

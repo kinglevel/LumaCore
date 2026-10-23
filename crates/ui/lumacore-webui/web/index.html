@@ -3764,7 +3764,7 @@ function buildDevicePanel(win) {
     deviceViews.set(win.no, v);
   }
   v.params = {
-    layer: cfg.layer || 'Absolute',
+    layer: cfg.layer || 'Absolute', show: cfg.show || 'Both',
     programmer_only: !!cfg.programmer_only, selected_only: !!cfg.selected_only,
     selection_first: cfg.selection_first !== false, folders: cfg.folders !== false,
   };

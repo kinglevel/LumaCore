@@ -299,9 +299,9 @@ pub const FEEDS: &[FeedDecl] = &[
         name: "devices",
         kind: FeedKind::State,
         open: false,
-        params: &["layer", "programmer_only", "selected_only", "selection_first", "folders", "from", "count"],
+        params: &["layer", "show", "programmer_only", "selected_only", "selection_first", "folders", "from", "count"],
         period_ms: 100,
-        doc: "A Device Sheet (decisions device-sheet-window, device-grid-and-value-marks): every device in scope in tree order with its folders, the attributes in scope as columns by feature group, and for the rows `from`..`from + count` each value's readout, state, layers and source; sampled, sent when it changes.",
+        doc: "A Device Sheet (decisions device-sheet-window, device-grid-and-value-marks): every device in scope in tree order with its folders, the attributes in scope as columns by feature group, and for the rows `from`..`from + count` each value's readout, state, layers and source — a value from a preset carries the preset (`p`: number, name) and its text follows `show` (Value / Link / Both, decisions 0293); sampled, sent when it changes.",
     },
     FeedDecl {
         name: "tree",

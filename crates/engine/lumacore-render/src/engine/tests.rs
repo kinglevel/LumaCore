@@ -334,7 +334,7 @@ fn the_sequence_cache_merges_like_no_cache() {
         fixture_id: g,
         attribute: "Dimmer".into(),
         timing: Default::default(),
-        value: lumacore_tree::Value::normalized(42.0),
+        value: lumacore_tree::CueData::Value(lumacore_tree::Value::normalized(42.0)),
     });
     show.sequence_mut(1, 1).unwrap().cues.insert(2000, cue);
     let seq_guid = show.datapools[&1].sequences[&1].meta.identity.guid;
@@ -344,7 +344,7 @@ fn the_sequence_cache_merges_like_no_cache() {
     same(&gone, &mut cache);
     // An edit of the sequence at the same cue: a new Arc, worked out again.
     show.sequence_mut(1, 1).unwrap().cues.get_mut(&2000).unwrap().part0().values[0].value =
-        lumacore_tree::Value::normalized(7.0);
+        lumacore_tree::CueData::Value(lumacore_tree::Value::normalized(7.0));
     let edited = crate::merge::EngineInput { show: Arc::new(show), ..base };
     same(&edited, &mut cache);
 }

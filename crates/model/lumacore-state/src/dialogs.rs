@@ -31,6 +31,7 @@ const GONE_AFTER: Duration = Duration::from_secs(30);
 use lumacore_base::clock::now_ms;
 
 mod topic;
+mod tree;
 pub use topic::{close_topic, holds_topic};
 
 // ── Asking ──────────────────────────────────────────────────────────
@@ -46,10 +47,6 @@ pub struct Ask {
     /// Per button: the line it runs instead when every input is empty (an
     /// empty Label clears it: `Label Group 4 /Clear`).
     empty_lines: Vec<Option<String>>,
-    /// Per toggle: the text `{name}` becomes when it is on.
-    toggle_flags: Vec<String>,
-    /// Per selector: the text `{name}` becomes for each choice.
-    selector_texts: Vec<Vec<String>>,
     /// Input values that stand for other text: (input, value, text) — a pick
     /// list row "Own — a copy of Default" (no 0) becomes `New`, a file row
     /// its file name. Such text may name other inputs (`{name}`).
@@ -72,8 +69,6 @@ impl Ask {
             },
             lines: Vec::new(),
             empty_lines: Vec::new(),
-            toggle_flags: Vec::new(),
-            selector_texts: Vec::new(),
             value_texts: Vec::new(),
             countdown_s: None,
             flags: "/NoConfirmation".to_string(),
@@ -118,8 +113,8 @@ impl Ask {
             name: name.to_string(),
             label: label.to_string(),
             on,
+            flag: flag.to_string(),
         });
-        self.toggle_flags.push(flag.to_string());
         self
     }
 
@@ -130,9 +125,8 @@ impl Ask {
             label: label.to_string(),
             choices: choices.iter().map(|(l, _)| l.to_string()).collect(),
             value: value.to_string(),
+            texts: choices.iter().map(|(_, t)| t.to_string()).collect(),
         });
-        self.selector_texts
-            .push(choices.iter().map(|(_, t)| t.to_string()).collect());
         self
     }
 
@@ -300,10 +294,11 @@ impl Ask {
         if all_empty && let Some(Some(line)) = self.empty_lines.get(i) {
             return Ok(Some(line.clone()));
         }
-        let mut line = template.clone();
+        // The tree's statements before anything else: they name selectors and toggles.
+        let mut line = tree::fill(self, answer, template.clone());
         // Selectors first: a choice's text may be a whole line naming inputs
         // (New profile: From Default / Copy of… / Import file…).
-        for (s, texts) in self.view.selectors.iter().zip(&self.selector_texts) {
+        for (s, texts) in self.view.selectors.iter().map(|s| (s, &s.texts)) {
             let chosen = answer.selectors.get(&s.name).unwrap_or(&s.value);
             let text = s
                 .choices
@@ -329,7 +324,7 @@ impl Ask {
             let value = clean_input(&input.kind, raw)?;
             line = line.replace(&format!("{{{}}}", input.name), &value);
         }
-        for (t, flag) in self.view.toggles.iter().zip(&self.toggle_flags) {
+        for (t, flag) in self.view.toggles.iter().map(|t| (t, &t.flag)) {
             let on = answer.toggles.get(&t.name).copied().unwrap_or(t.on);
             line = line.replace(&format!("{{{}}}", t.name), if on { flag } else { "" });
         }
@@ -612,6 +607,7 @@ fn claim_view(a: &lumacore_tree::ClaimAsk) -> Dialog {
             name: "remember".to_string(),
             label: "Remember for this session".to_string(),
             on: false,
+            flag: String::new(),
         }],
         buttons: vec![
             DialogButton {

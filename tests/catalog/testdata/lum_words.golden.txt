@@ -1,3 +1,5 @@
+/Active — option
+/Add — option
 /Addresses — option (value)
 /All — option
 /Amount — option (value)
@@ -57,6 +59,7 @@
 /Offer — option (value)
 /Only — option
 /Open — option (value)
+/Original — option
 /Overwrite — option
 /Pane — option (value)
 /Password — option (value)
@@ -81,6 +84,7 @@
 /Screen — option (value)
 /Selection — option
 /Settings — option
+/Shield — option
 /Show — option
 /Size — option (value)
 /Skip — option
@@ -113,6 +117,7 @@ AccentHue — property
 Action — property
 add — verb
 Additive — value
+AddNew — value
 Address — property
 AddressMode — property
 Admin — value
@@ -147,6 +152,7 @@ bar — value
 Base — property
 Bind — verb
 Blind — object
+Both — value
 Brightness — property
 Build — property
 Call — verb
@@ -237,6 +243,7 @@ Executor — object ids:1
 Exit — verb
 Export — verb
 Extended — value
+Extract — verb
 Fade — helper · value
 Family — value
 FeatureGroup — object ids:1
@@ -324,6 +331,7 @@ LevelBar — property
 Library — object
 Line — property
 Linear — value
+Link — value
 Linked — value
 List — verb
 LoadShow — verb
@@ -416,6 +424,7 @@ Offset — property
 Ok — property
 On — verb · value
 Online — property
+OnlyExisting — value
 OnlySelection — property
 OnlyUsedDimmers — value
 Oops — verb
@@ -430,6 +439,7 @@ OutDelay — property
 OutFade — property
 output — value
 OutputWhenAlone — property
+Overwrite — value
 Packed — value
 PacketGap — property
 Paint — object
@@ -472,6 +482,7 @@ Raised — property
 Rate — property
 Readout — property
 Realtime — value
+Recast — verb
 Recovery — object ids:1
 RecoveryCap — property
 RecoveryKeepDays — property
@@ -599,6 +610,9 @@ Unpark — verb
 Unstomp — verb
 Unwatch — verb
 Update — verb
+UpdateContent — property
+UpdateRecast — property
+UpdateShield — property
 Uptime — property
 USB — value
 UseMaster — value

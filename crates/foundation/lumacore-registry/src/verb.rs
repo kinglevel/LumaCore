@@ -91,6 +91,10 @@ pub enum Verb {
     /// An object's settings (`EditSetting Theme`; a one-of-a-kind settings object typed alone,
     /// decisions §33 63).
     EditSetting,
+    /// Bring a preset's attributes into the cues that link it (decisions 0293).
+    Recast,
+    /// Turn preset links into plain values (decisions 0293).
+    Extract,
 }
 
 // ██╗      ██████╗  ██████╗ ██╗ ██████╗
@@ -142,6 +146,8 @@ impl Verb {
             Self::Insert => "Insert",
             Self::Compact => "Compact",
             Self::EditSetting => "EditSetting",
+            Self::Recast => "Recast",
+            Self::Extract => "Extract",
         }
     }
 }

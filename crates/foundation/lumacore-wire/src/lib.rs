@@ -22,7 +22,7 @@ pub use command::{
 };
 pub use dialog::{
     ButtonKind, Countdown, Dialog, DialogAnswer, DialogButton, DialogClosed, DialogInput, DialogRow,
-    DialogSelector, DialogToggle, InputKind, Pick, PickItem, Tone,
+    DialogSelector, DialogToggle, DialogTree, DialogTreeNode, InputKind, Pick, PickItem, Tone, TreeStatement,
 };
 pub use discovery::{
     Capability, EngineInfo, EngineStatus, SessionDiscoveryWire,
@@ -72,9 +72,11 @@ pub const SESSION_PROTOCOL: u32 = 21;
 /// 22 = device-sheet-window: the `devices` feed; 23 = top-bar-status-strip: `Status.strip`;
 /// 24 = view-bar-any-object-pool-windows: the `viewbar` feed, the `pools` feed's `profile`;
 /// 25 = one-preset-pool-follows-the-programmer: `Tap.window`, the `pools` feed's `feature` / `tags`;
-/// 26 = the NAV inspector's copy: the `copy_text` UI event, text for the user's clipboard).
+/// 26 = the NAV inspector's copy: the `copy_text` UI event, text for the user's clipboard;
+/// 27 = presets link into cues (0293): `Dialog.tree`, a toggle's `flag`, a selector's `texts`,
+/// the `devices` feed's `show` and a cell's preset).
 /// A client only attaches when it matches (E-WIRE-001).
-pub const CLIENT_PROTOCOL: u32 = 26;
+pub const CLIENT_PROTOCOL: u32 = 27;
 
 /// The refusal a station sends a client speaking another client protocol.
 pub fn client_mismatch(client: u32, station: u32) -> String {

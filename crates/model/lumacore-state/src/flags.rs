@@ -60,6 +60,22 @@ pub const CREATE_SECOND_CUE: FlagDef = FlagDef::new("CreateSecondCue", "Store as
 /// Sequence.
 pub const STORE_CUE: &[FlagDef] =
     &[MERGE.on(&[Verb::Store]), OVERWRITE.on(&[Verb::Store]), REMOVE.on(&[Verb::Store]), CREATE_SECOND_CUE.on(&[Verb::Store])];
+/// Update's answers (decisions 0293): what goes into a preset, where a cue value lands, the
+/// next cues kept.
+pub const ADD: FlagDef = FlagDef::new("Add", "Also what isn't there yet (new attributes)");
+pub const ORIGINAL: FlagDef = FlagDef::new("Original", "Where the value was stored (the cue it tracks from)");
+pub const ACTIVE: FlagDef = FlagDef::new("Active", "In this cue");
+pub const SHIELD: FlagDef = FlagDef::new("Shield", "Protect the next cues: they keep their look");
+/// A sequence's and a cue's flags: the store ask's answers, and Update's for a cue.
+pub const SEQUENCE_CUE: &[FlagDef] = &[
+    MERGE.on(&[Verb::Store]),
+    OVERWRITE.on(&[Verb::Store]),
+    REMOVE.on(&[Verb::Store]),
+    CREATE_SECOND_CUE.on(&[Verb::Store]),
+    ORIGINAL.on(&[Verb::Update]),
+    ACTIVE.on(&[Verb::Update]),
+    SHIELD.on(&[Verb::Update]),
+];
 pub const FORCE: FlagDef = FlagDef::new("Force", "Do it even though someone else holds it (Admin)");
 pub const KEEP: FlagDef = FlagDef::new("Keep", "Keep the changes");
 pub const REMEMBER: FlagDef = FlagDef::new("Remember", "Remember this answer");

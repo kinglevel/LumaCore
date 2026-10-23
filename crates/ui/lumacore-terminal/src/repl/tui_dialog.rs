@@ -10,7 +10,10 @@
 //! middle of the dimmed shell, drawn here for the CLI and the station's own
 //! console (a UI client draws the kit's dialog from its Status instead).
 //! ←/→ or Tab choose, Enter presses, 1–9 press a button, Esc = Cancel, any
-//! key stops a countdown. The answer goes the same way as any client's.
+//! key stops a countdown. The answer goes the same way as any client's. A
+//! dialog's tree (the Update ask, decisions 0293) is an indented list whose
+//! tickable rows are numbered fields (Tab to one, Space ticks it); the lines it
+//! will run are listed under it as they stand.
 //!
 //! Owns:          the station's dialog drawn in a terminal
 //! Doesn't own:   the dialog's content (core::dialogs)
@@ -54,14 +57,50 @@ impl DialogUi {
                 .iter()
                 .map(|s| s.choices.iter().position(|c| *c == s.value).unwrap_or(0))
                 .collect(),
+            ticks: tickable(d).map(|n| n.on).collect(),
             paused: false,
         }
     }
 }
 
-/// Inputs, toggles and selectors before the buttons row.
+/// Inputs, toggles, selectors and the tree's ticks before the buttons row.
 fn fields(d: &Dialog) -> usize {
-    d.inputs.len() + d.toggles.len() + d.selectors.len()
+    d.inputs.len() + d.toggles.len() + d.selectors.len() + tickable(d).count()
+}
+
+/// The tree's nodes that can be ticked, in order.
+fn tickable(d: &Dialog) -> impl Iterator<Item = &lumacore_wire::DialogTreeNode> {
+    d.tree.iter().flat_map(|t| t.nodes.iter()).filter(|n| n.tickable)
+}
+
+/// What the answer's line would run with these ticks (the station builds the real line).
+fn tree_preview(d: &Dialog, ui: &DialogUi) -> Vec<String> {
+    let Some(tree) = &d.tree else { return Vec::new() };
+    let ids: Vec<&str> = tickable(d).map(|n| n.id.as_str()).collect();
+    let on = |id: &str| {
+        if let Some(i) = ids.iter().position(|x| *x == id) {
+            return ui.ticks.get(i).copied();
+        }
+        d.toggles.iter().position(|t| t.name == id).and_then(|i| ui.toggles.get(i).copied())
+    };
+    let text = |name: &str| {
+        let (i, s) = d.selectors.iter().enumerate().find(|(_, s)| s.name == name)?;
+        s.texts.get(ui.selectors.get(i).copied().unwrap_or(0)).cloned()
+    };
+    tree.statements(on, text)
+        .into_iter()
+        .map(|mut line| {
+            for (i, s) in d.selectors.iter().enumerate() {
+                let t = s.texts.get(ui.selectors.get(i).copied().unwrap_or(0)).cloned().unwrap_or_default();
+                line = line.replace(&format!("{{{}}}", s.name), &t);
+            }
+            for (i, t) in d.toggles.iter().enumerate() {
+                let flag = if ui.toggles.get(i).copied().unwrap_or(t.on) { t.flag.as_str() } else { "" };
+                line = line.replace(&format!("{{{}}}", t.name), flag);
+            }
+            line.split_whitespace().collect::<Vec<_>>().join(" ")
+        })
+        .collect()
 }
 
 impl TuiApp {
@@ -110,6 +149,10 @@ impl TuiApp {
             .field
             .checked_sub(d.inputs.len() + d.toggles.len())
             .filter(|s| *s < d.selectors.len());
+        let tick = ui
+            .field
+            .checked_sub(d.inputs.len() + d.toggles.len() + d.selectors.len())
+            .filter(|t| *t < ui.ticks.len());
         let step = |from: usize, forward: bool| {
             let len = d.buttons.len().max(1);
             let mut i = from;
@@ -142,6 +185,10 @@ impl TuiApp {
             (KeyCode::Char(' '), _) if toggle.is_some() => {
                 let t = toggle.unwrap_or_default();
                 ui.toggles[t] = !ui.toggles[t];
+            }
+            (KeyCode::Char(' '), _) if tick.is_some() => {
+                let t = tick.unwrap_or_default();
+                ui.ticks[t] = !ui.ticks[t];
             }
             (KeyCode::Backspace, _) if input.is_some() => {
                 ui.values[input.unwrap_or_default()].pop();
@@ -183,6 +230,7 @@ impl TuiApp {
                 .iter()
                 .zip(ui.toggles.iter())
                 .map(|(t, on)| (t.name.clone(), *on))
+                .chain(tickable(d).zip(ui.ticks.iter()).map(|(n, on)| (n.id.clone(), *on)))
                 .collect(),
             selectors: d
                 .selectors
@@ -236,10 +284,34 @@ impl TuiApp {
                 Span::styled(r.v.clone(), text.fg(look.tone(r.tone))),
             ]));
         }
-        if !d.details.is_empty() {
+        if !d.details.is_empty() && d.tree.is_none() {
             lines.push(Line::raw(""));
             for r in &d.details {
                 lines.push(Line::styled(format!("  {}", r.k), text.fg(look.tone(r.tone))));
+            }
+        }
+        // The tree: an indented list, its tickable rows numbered fields.
+        if let Some(tree) = &d.tree {
+            lines.push(Line::raw(""));
+            let first = d.inputs.len() + d.toggles.len() + d.selectors.len();
+            let mut t = 0;
+            for n in &tree.nodes {
+                let indent = "  ".repeat(n.depth as usize);
+                let tone = text.fg(look.tone(n.tone));
+                let (mark, note, style) = if n.tickable {
+                    let on = ui.ticks.get(t).copied().unwrap_or(n.on);
+                    let focused = ui.field == first + t;
+                    t += 1;
+                    let note = if !on && !n.note_off.is_empty() { &n.note_off } else { &n.note };
+                    (format!("{t:>2} [{}]", if on { "x" } else { " " }), note.clone(), if focused { tone.fg(look.accent) } else { tone })
+                } else {
+                    ("     ".to_string(), n.note.clone(), tone)
+                };
+                let badge = if n.badge.is_empty() { String::new() } else { format!("  {}", n.badge) };
+                lines.push(Line::from(vec![
+                    Span::styled(format!("{indent}{mark} {} {}{badge}", n.no, n.name), style),
+                    Span::styled(format!("  {note}"), dim),
+                ]));
             }
         }
         let field_style = |i: usize| {
@@ -283,6 +355,17 @@ impl TuiApp {
                 Span::styled(format!("{}  ", sel.label), dim),
                 Span::styled(format!("‹ {choice} ›"), field_style(i)),
             ]));
+        }
+        // The lines it will run, as the ticks stand.
+        if d.tree.is_some() {
+            lines.push(Line::raw(""));
+            let preview = tree_preview(&d, &ui);
+            if preview.is_empty() {
+                lines.push(Line::styled("  Nothing ticked", dim));
+            }
+            for l in preview {
+                lines.push(Line::styled(format!("  {l}"), text.fg(look.tone(Some(lumacore_wire::Tone::Ok)))));
+            }
         }
         // The countdown bar.
         let mut meta = d.meta.clone().map(|m| (m, look.tone(d.meta_tone)));

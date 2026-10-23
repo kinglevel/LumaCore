@@ -98,7 +98,7 @@ fn cue_value(show: &ShowData, key: u32, f: u32) -> Option<f64> {
     show.datapools[&1].sequences[&1].cues[&key]
         .values()
         .find(|v| v.fixture_id == g)
-        .and_then(|v| v.value.percent())
+        .and_then(|v| v.value.plain().and_then(lumacore_tree::Value::percent))
 }
 
 /// `PrepareSeq1to10`: cue n holds fixture n at n × 10.

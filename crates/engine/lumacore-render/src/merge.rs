@@ -294,7 +294,7 @@ pub fn releases_by<K: Hash + Eq>(
         };
         let stamp = state.stamp_of(state.current_cue);
         for part in cue.parts.values() {
-            for v in part.values.iter().filter(|v| v.value.release) {
+            for v in part.values.iter().filter(|v| v.value.is_release()) {
                 let Some(key) = key_of(v.fixture_id, &v.attribute) else { continue };
                 if out.get(&key).is_none_or(|(s, _): &(u64, Timing)| *s < stamp) {
                     out.insert(key, (stamp, Timing::of_attribute(part, &v.attribute, show)));
@@ -383,6 +383,10 @@ pub fn resolve_cached<K: Hash + Eq + Clone>(
     cache: &mut SequenceCache<K>,
 ) -> HashMap<K, Resolved> {
     let show = &input.show;
+    // A cue's preset links play the preset as it is now (decisions 0293): looked up here, once
+    // per compile, so the cached offers (positions in the sequence) never hold a stale copy and a
+    // changed preset needs no invalidation.
+    let presets = lumacore_tree::PresetIndex::new(show);
     // What each running sequence offers: from the cache, worked out again only for a changed
     // sequence or another cue.
     let groups = groups_fingerprint(show);
@@ -433,7 +437,11 @@ pub fn resolve_cached<K: Hash + Eq + Clone>(
             else {
                 continue;
             };
-            offer(&mut ltp, key.clone(), state.stamp_of(*cue), &value.value, Source::Sequence(seq_id), *timing);
+            // A link to a preset without this value plays nothing.
+            let Some(played) = presets.resolve(&value.value, value.fixture_id, &value.attribute) else {
+                continue;
+            };
+            offer(&mut ltp, key.clone(), state.stamp_of(*cue), played, Source::Sequence(seq_id), *timing);
         }
     }
     // Echoes: the newest runs of their sequences (stamped at Top On); intensity is HTP elsewhere.
@@ -451,7 +459,8 @@ pub fn resolve_cached<K: Hash + Eq + Clone>(
                     .cue(tracked.cue)
                     .and_then(|c| c.parts.get(&tracked.part))
                     .map(|p| value_timing(p, tracked.index, attr, show));
-                offer(&mut ltp, key, echo.stamp, tracked.value, Source::Sequence(seq_id), timing);
+                let Some(played) = presets.resolve(tracked.value, fixture, attr) else { continue };
+                offer(&mut ltp, key, echo.stamp, played, Source::Sequence(seq_id), timing);
             }
         }
     }

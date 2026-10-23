@@ -257,7 +257,8 @@ impl TuiApp {
         );
 
         let nav_before = state.navigation_path.clone();
-        let commands: Vec<&str> = input.split(';').map(|s| s.trim()).collect();
+        let split = crate::core::commands::line::Line::split(&input);
+        let commands: Vec<&str> = split.iter().map(|s| s.trim()).collect();
         let mut outputs = Vec::new();
         let mut error = None;
 
@@ -338,7 +339,8 @@ impl TuiApp {
         let nav_before = state.navigation_path.clone();
         let mode_before = state.shortcut_mode;
 
-        let commands: Vec<&str> = input.split(';').map(|s| s.trim()).collect();
+        let split = crate::core::commands::line::Line::split(input);
+        let commands: Vec<&str> = split.iter().map(|s| s.trim()).collect();
 
         for (i, cmd) in commands.iter().copied().enumerate() {
             if cmd.is_empty() {

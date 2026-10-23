@@ -839,7 +839,7 @@ macro_rules! colour {
 }
 
 /// A profile's writable look (§30 "12a2"): users of the profile and Admins.
-pub static PROFILE_PROPS: [props::Property; 38] = [
+pub static PROFILE_PROPS: [props::Property; 41] = [
     props::Property { name: "Name", access: crate::props::Access::Field("meta.name"), kind: TEXT, rights: crate::commands::registry::Rights::Admin, doc: "display name", ..crate::props::Property::BASE },
     props::Property { name: "Note", access: crate::props::Access::Field("meta.note"), kind: TEXT, rights: GUEST, doc: "operator note", ..crate::props::Property::BASE },
     // The behaviour (decisions §30 "12b2": every preference a declared prop,
@@ -862,6 +862,9 @@ pub static PROFILE_PROPS: [props::Property; 38] = [
     props::Property { name: "NotificationMode", access: crate::props::Access::Field("settings.preferences.notification_mode"), kind: props::PropKind::Choice(&["timed", "permanent"]), rights: GUEST, doc: "feedback cards close after 5 s or stay", ..crate::props::Property::BASE },
     props::Property { name: "PopupDim", access: crate::props::Access::Field("settings.preferences.popup_dim"), kind: props::PropKind::OnOff, rights: GUEST, doc: "dim the interface behind a pop-up (a tap outside closes it)", ..crate::props::Property::BASE },
     props::Property { name: "NavLog", access: crate::props::Access::Field("settings.preferences.nav_log"), kind: props::PropKind::Switch, rights: GUEST, section: "Command line", default: Some("On"), doc: "NAV's gesture log: three lines above the command line with the lines NAV made and what it copied (L in NAV)", ..crate::props::Property::BASE },
+    props::Property { name: "UpdateContent", access: crate::props::Access::Field("settings.preferences.update.content"), kind: props::PropKind::Choice(&["OnlyExisting", "AddNew", "Overwrite"]), rights: GUEST, section: "Update", default: Some("OnlyExisting"), doc: "what the Update ask starts with: OnlyExisting = only what a preset holds (/Merge), AddNew = new attributes too (/Add), Overwrite = the preset becomes your values (/Overwrite); decisions 0293, the last update's", ..crate::props::Property::BASE },
+    props::Property { name: "UpdateRecast", access: crate::props::Access::Field("settings.preferences.update.recast"), kind: props::PropKind::Switch, rights: GUEST, section: "Update", default: Some("On"), doc: "the Update ask's switch: add a preset's new attributes to the cues that follow it (Recast)", ..crate::props::Property::BASE },
+    props::Property { name: "UpdateShield", access: crate::props::Access::Field("settings.preferences.update.shield"), kind: props::PropKind::Switch, rights: GUEST, section: "Update", default: Some("On"), doc: "the Update ask's switch: protect the next cues when a cue value changes where it was stored (/Shield)", ..crate::props::Property::BASE },
     props::Property { name: "SubAttributesFollow", access: crate::props::Access::Field("settings.preferences.sub_attributes_follow"), kind: props::PropKind::Choice(&["Ask", "Always", "Never"]), rights: GUEST, doc: "moving a main attribute brings its sub-attributes", ..crate::props::Property::BASE },
     // The MVR import preset (decisions §34 "Import MVR hardened" 2): the Options step's settings.
     props::Property { name: "MvrMatch", access: crate::props::Access::Field("settings.preferences.mvr.match_key"), kind: props::PropKind::Choice(&["Auto", "UUID", "FID", "FixtureName"]), rights: GUEST, section: "MVR import", default: Some("Auto"), doc: "how a file fixture finds its draft fixture: Auto = UUID, then FID, then the name", ..crate::props::Property::BASE },

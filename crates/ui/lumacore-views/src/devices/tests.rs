@@ -145,16 +145,16 @@ fn cue_values_are_new_lower_or_tracked() {
     for line in [
         format!("Fixture {a} + {b} + {c}"),
         "At 50".into(),
-        "Store Sequence 1 Cue 1".into(),
+        "Store Sequence 901 Cue 1".into(),
         clear.clone(),
         format!("Fixture {a}"),
         "At 80".into(),
         format!("Fixture {b}"),
         "At 20".into(),
-        "Store Sequence 1 Cue 2".into(),
+        "Store Sequence 901 Cue 2".into(),
         clear.clone(),
-        "Select Sequence 1".into(),
-        "Goto Sequence 1 Cue 2".into(),
+        "Select Sequence 901".into(),
+        "Goto Sequence 901 Cue 2".into(),
     ] {
         run(&mut state, &line);
     }
@@ -167,7 +167,7 @@ fn cue_values_are_new_lower_or_tracked() {
     assert_eq!(find(&state, &ka)["s"], "new", "{}", find(&state, &ka));
     assert_eq!(find(&state, &kb)["s"], "lower", "{}", find(&state, &kb));
     assert_eq!(find(&state, &kc)["s"], "track", "{}", find(&state, &kc));
-    assert!(find(&state, &ka)["src"].as_str().unwrap().contains("Sequence 1"));
+    assert!(find(&state, &ka)["src"].as_str().unwrap().contains("Sequence 901"));
     run(&mut state, "Deselect Sequence");
     assert_eq!(find(&state, &ka)["s"], "other", "{}", find(&state, &ka));
     assert_eq!(find(&state, &kc)["s"], "otherT", "{}", find(&state, &kc));
@@ -226,3 +226,38 @@ fn the_opening_window_builds_quickly_on_the_rig() {
     // Generous for a debug build; the release build is many times faster.
     assert!(each < std::time::Duration::from_millis(400), "{each:?}");
 }
+
+/// A value from a preset (decisions 0293): the cell carries the preset and its text follows the
+/// window's Show — the value, the link (the preset), or both; the preset bar either way; the hover names
+/// both. The rig's Sequence 1 cue 3 links Preset 3 "Split" for Fixture 101.
+#[test]
+fn a_linked_value_shows_its_preset_by_the_show_setting() {
+    let mut state = lumacore_objects::demo::fresh_state();
+    run(&mut state, "Goto Sequence 1 Cue 3");
+    let key = state.root.show_data.fixture_guid(101).unwrap().to_string();
+    let at = |state: &AppState, show: Show| {
+        let p = Params { folders: false, programmer_only: false, show, count: MAX_ROWS, ..Params::default() };
+        let mut from = 0;
+        loop {
+            let v = sheet(state, &Params { from, ..p.clone() });
+            let c = cell(&v, &key, "Dimmer");
+            if c.is_object() || from > v["total"].as_u64().unwrap() as usize {
+                return c.clone();
+            }
+            from += MAX_ROWS;
+        }
+    };
+    let both = at(&state, Show::Both);
+    assert_eq!(both["p"]["no"], 3, "{both}");
+    assert_eq!(both["p"]["name"], "Split");
+    let value = at(&state, Show::Value)["t"].as_str().unwrap().to_string();
+    assert_eq!(both["t"], format!("P3 Split · {value}"), "{both}");
+    assert_eq!(at(&state, Show::Link)["t"], "P3 Split");
+    assert!(both["l"].as_array().unwrap().iter().any(|l| l == "preset"), "the preset bar: {both}");
+    assert!(both["src"].as_str().unwrap().contains("Preset 3 \"Split\""), "{both}");
+    // A plain value over it in the programmer: no preset.
+    run(&mut state, "Fixture 101 At 42");
+    let plain = at(&state, Show::Both);
+    assert!(plain["p"].is_null() && !plain["t"].as_str().unwrap().contains("P3"), "{plain}");
+}
+

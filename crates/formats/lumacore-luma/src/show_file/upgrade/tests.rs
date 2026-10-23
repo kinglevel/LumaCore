@@ -87,6 +87,29 @@ fn preset_groups_become_one_pool_in_order() {
 }
 
 #[test]
+fn a_cue_value_from_a_preset_keeps_only_its_link() {
+    let g = "6f1f4f0e-0000-4000-8000-000000000003";
+    let f = "6f1f4f0e-0000-4000-8000-000000000004";
+    let value = |v: serde_json::Value| json!({ "fixture_id": f, "attribute": "Dimmer", "value": v });
+    let part = |values: Vec<serde_json::Value>| json!({ "parts": { "0": { "values": values } } });
+    let mut show = json!({ "datapools": { "1": { "sequences": { "1": {
+        "cue_zero": part(vec![value(json!({ "steps": [{ "absolute": { "Normalized": 0.0 } }] }))]),
+        "off_cue": part(vec![]),
+        "cues": { "1000": part(vec![
+            value(json!({ "steps": [{ "absolute": { "Normalized": 70.0 } }], "preset": g })),
+            value(json!({ "steps": [], "release": true })),
+        ]) },
+    } } } } });
+    let notes = cue_values_link_presets(&mut show);
+    let seq = &show["datapools"]["1"]["sequences"]["1"];
+    assert_eq!(seq["cues"]["1000"]["parts"]["0"]["values"][0]["value"], json!({ "Link": g }), "the link only, no copy");
+    assert_eq!(seq["cues"]["1000"]["parts"]["0"]["values"][1]["value"], json!({ "Value": { "steps": [], "release": true } }));
+    assert_eq!(seq["cue_zero"]["parts"]["0"]["values"][0]["value"], json!({ "Value": { "steps": [{ "absolute": { "Normalized": 0.0 } }] } }));
+    assert_eq!(notes.len(), 1, "{notes:?}");
+    assert!(notes[0].starts_with("1 cue value from presets now links to its preset (in 1 sequence)"), "{notes:?}");
+}
+
+#[test]
 fn a_show_of_this_format_is_left_alone() {
     let mut show = json!({ "show_settings": { "format_version": lumacore_tree::FORMAT_VERSION } });
     assert_eq!(upgrade(&mut show).unwrap(), None);

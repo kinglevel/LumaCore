@@ -151,7 +151,7 @@ fn latest_touch_wins_between_programmers_and_cues() {
         fixture_id: g,
         attribute: "Dimmer".into(),
         timing: Default::default(),
-        value: Value::normalized(100.0),
+        value: lumacore_tree::CueData::Value(Value::normalized(100.0)),
     });
     seq.cues.insert(1000, cue);
     let seq_guid = seq.meta.identity.guid;

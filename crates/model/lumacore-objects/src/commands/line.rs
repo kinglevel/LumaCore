@@ -115,6 +115,16 @@ impl Line {
         Ok(Self { text: text.to_string(), statements })
     }
 
+    /// A line's statements as text, split where the lexer splits — a `;` inside quotes or a line
+    /// in backticks (``Update `a; b` ``) stays in its statement; a line that doesn't lex splits
+    /// at every `;` (dispatch then names its error).
+    pub fn split(text: &str) -> Vec<String> {
+        match Self::parse(text) {
+            Ok(line) => line.statements.into_iter().map(|s| s.text).filter(|s| !s.trim().is_empty()).collect(),
+            Err(_) => text.split(';').map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect(),
+        }
+    }
+
     /// Every flag nobody declares, across the statements.
     pub fn unknown_flags(&self) -> impl Iterator<Item = (&Statement, &str)> {
         self.statements.iter().flat_map(|s| s.unknown_flags.iter().map(move |f| (s, f.as_str())))
