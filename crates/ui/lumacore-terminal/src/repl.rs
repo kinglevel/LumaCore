@@ -100,8 +100,6 @@ struct TuiApp {
     watch_output: Vec<String>,
     /// UDP command bridge for external tools.
     remote_listener: Option<RemoteCommandListener>,
-    /// Last shortcut key + timestamp for double-tap detection.
-    last_shortcut: Option<(char, std::time::Instant)>,
     /// Navigation path history for Alt-Left/Alt-Right (cd history).
     nav_history: Vec<Vec<String>>,
     /// Current position in nav_history.
@@ -203,15 +201,29 @@ fn make_textarea(initial: &str) -> TextArea<'static> {
 }
 
 /// The keyboard layer of decisions §17 (key → UiKey), resolved for the
-/// acting user: debug > profile > vanilla. Rebuilt whenever the show, the
-/// user or debug mode changes, so `Bind` takes effect at once.
+/// acting user and the shortcut mode: debug > profile > vanilla, a mode's own
+/// over every mode's (0295). Rebuilt whenever the show, the user, debug mode
+/// or the mode changes, so `Bind` takes effect at once.
 pub(super) struct KeyCache {
-    stamp: Option<(u64, String, bool)>,
+    stamp: Option<(u64, String, bool, &'static str)>,
     map: HashMap<(KeyCode, u8), String>,
     /// The held modifier acting as Meow (profile `meow_key`).
     meow: KeyModifiers,
     /// Last bound key pressed, for DoublePress timing.
     pub(super) last: Option<(String, std::time::Instant)>,
+    /// The press cycle under way (decisions 0295): which key typed what, so its next press
+    /// replaces it while the line still ends with it.
+    pub(super) cycle: Option<Cycle>,
+}
+
+/// What a key's press typed onto the command line, and where in its cycle it is.
+pub(super) struct Cycle {
+    pub(super) id: String,
+    pub(super) meow: bool,
+    pub(super) row: usize,
+    /// The line before the press typed, and after.
+    pub(super) before: String,
+    pub(super) after: String,
 }
 
 impl Default for KeyCache {
@@ -219,8 +231,9 @@ impl Default for KeyCache {
         Self {
             stamp: None,
             map: HashMap::new(),
-            meow: KeyModifiers::ALT,
+            meow: KeyModifiers::SHIFT,
             last: None,
+            cycle: None,
         }
     }
 }
@@ -231,6 +244,7 @@ impl KeyCache {
             state.show_generation,
             state.effective_user_name().to_string(),
             state.debug_mode,
+            state.shortcut_mode.label(),
         );
         if self.stamp.as_ref() == Some(&stamp) {
             return;
@@ -258,24 +272,39 @@ impl KeyCache {
 
 impl TuiApp {
     /// The UiKey a key event is bound to, and whether Meow was held: an exact
-    /// binding wins (`Alt-S`); otherwise the key without the Meow modifier.
+    /// binding wins (`Alt-S`); otherwise the key without the Meow modifier. A
+    /// letter is matched in lower case; a sign's Shift is part of the sign
+    /// (`+` on a US keyboard), never Meow.
     pub(super) fn bound_key(
         &mut self,
         state: &AppState,
         key: &crossterm::event::KeyEvent,
     ) -> Option<(String, bool)> {
         self.keys.refresh(state);
-        if let Some(id) = self.keys.map.get(&(key.code, key.modifiers.bits())) {
+        let (code, mods) = match key.code {
+            KeyCode::Char(c) if c.is_alphabetic() => (KeyCode::Char(c.to_ascii_lowercase()), key.modifiers),
+            KeyCode::Char(c) => (KeyCode::Char(c), key.modifiers - KeyModifiers::SHIFT),
+            other => (other, key.modifiers),
+        };
+        if let Some(id) = self.keys.map.get(&(code, mods.bits())) {
             return Some((id.clone(), false));
         }
         let meow = self.keys.meow;
-        if !key.modifiers.contains(meow) {
+        if !mods.contains(meow) {
             return None;
         }
         self.keys
             .map
-            .get(&(key.code, (key.modifiers - meow).bits()))
+            .get(&(code, (mods - meow).bits()))
             .map(|id| (id.clone(), true))
+    }
+
+    /// Whether a bound key's every press counts (a press cycle or a key that types, decisions
+    /// 0295): a burst of them is never collapsed into one.
+    fn presses_count(&mut self, state: &AppState, key: &crossterm::event::KeyEvent) -> bool {
+        self.bound_key(state, key)
+            .and_then(|(id, _)| lumacore_cmd_keys::find(state, &id))
+            .is_some_and(|k| k.cycles(false) || k.cycles(true) || k.press_rows(false).iter().any(|r| r.types))
     }
 
     fn new(state: &AppState) -> Self {
@@ -294,7 +323,6 @@ impl TuiApp {
             gestures: std::collections::HashMap::new(),
             watch_output: Vec::new(),
             remote_listener: RemoteCommandListener::bind(),
-            last_shortcut: None,
             nav_history: vec![Vec::new()], // start with empty path
             nav_history_idx: Some(0),
             input_undo: Vec::new(),
@@ -373,7 +401,7 @@ impl TuiApp {
                     let dominated = if let Event::Key(key) = &evt {
                         if key.kind == KeyEventKind::Press {
                             if let Some(prev) = deduped.last() {
-                                prev == &evt && self.bound_key(state, key).is_some()
+                                prev == &evt && self.bound_key(state, key).is_some() && !self.presses_count(state, key)
                             } else {
                                 false
                             }

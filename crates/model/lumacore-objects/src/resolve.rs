@@ -443,8 +443,9 @@ fn members(state: &AppState, object: &'static ObjectDef, datapool: Option<u32>, 
         return path_members(state, object, None, ids).map(|(r, _)| r);
     }
     // Rows an object declares by key (an interface, a station, the show — decisions §33 58).
-    if object.tree.is_none()
-        && let Some(keyed) = object.props.and_then(|p| p.keyed.as_ref())
+    if let Some(props) = object.props
+        && (object.tree.is_none() || props.keyed_beside_tree)
+        && let Some(keyed) = props.keyed.as_ref()
     {
         return keyed_members(state, object, keyed, ids);
     }

@@ -152,6 +152,7 @@ fn value(v: &Value, vocab: &Vocabulary) -> String {
         Value::Word(w) => vocab.word(w.node).name.clone(),
         Value::Text(t) => quote(&t.node),
         Value::Line(l) => format!("`{}`", l.node),
+        Value::Lines(ls) => ls.iter().map(|l| format!("`{}`", l.node)).collect::<Vec<_>>().join(" "),
         Value::Read(parts) => format!("Self.{}", parts.node.join(".")),
         Value::Target(t) => target(t, vocab),
     }

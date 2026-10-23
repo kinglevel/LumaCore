@@ -65,6 +65,7 @@ pub fn lum_vocab() -> Vocabulary {
         .object("View", counted(1, &[]))
         .object("ViewButton", counted(2, &[]))
         .object("Window", counted(2, &[]))
+        .object("UIKey", counted(1, &[]))
         .object("Executor", counted(1, &[]))
         .object("Attribute", counted(1, &[]))
         .object("FixtureType", counted(1, &[]))
@@ -130,6 +131,7 @@ pub fn lum_vocab() -> Vocabulary {
         ("Tab", true),
         ("From", true),
         ("Description", true),
+        ("Shortcuts", true),
         ("Every", true),
         ("Merge", false),
         ("Overwrite", false),

@@ -34,7 +34,7 @@ use uuid::Uuid;
 
 /// The show format this build writes and reads (decisions §20). Only
 /// forward: no migrations; bump it when the file format changes.
-pub const FORMAT_VERSION: u32 = 37;
+pub const FORMAT_VERSION: u32 = 38;
 
 /// The show's LumaSession memory (`ShowData.LumaSession`, the
 /// stations that output).
@@ -1353,7 +1353,7 @@ impl Root {
     /// Resolve effective keybindings for a user with three-layer priority.
     ///
     /// Priority: debug (if active) > user > vanilla.
-    pub fn resolve_keybindings(&self, user_id: u32, debug_active: bool) -> KeyBindingMap {
+    pub fn resolve_keybindings(&self, user_id: u32, debug_active: bool, layer: crate::keybindings::Layer) -> KeyBindingMap {
         let user_bindings = self
             .show_data
             .user_profiles
@@ -1366,6 +1366,7 @@ impl Root {
             &user_bindings,
             &self.debug_keybindings,
             debug_active,
+            layer,
         )
     }
 }

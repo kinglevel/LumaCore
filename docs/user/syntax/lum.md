@@ -51,7 +51,7 @@ range         = id [ "Thru" [ id ] ] | "Thru" [ id ] ;
 id            = NUMBER | QUOTED ;
 set-op        = "+" | "-" ;
 slot          = HELPER [ value ] | value ;     (* which slots, in which order: the signature *)
-value         = NUMBER | relative | spread | WORD | QUOTED | LINE | SELF-READ | target | named-one ;
+value         = NUMBER | relative | spread | WORD | QUOTED | LINE { LINE } | SELF-READ | target | named-one ;
 named-one     = OBJECT QUOTED ;                (* a one-of-a-kind object and a name: Theme "Position", a theme paint slot *)
 relative      = ( "+" | "-" | "*" | "/" ) NUMBER ;
 spread        = NUMBER "Thru" NUMBER ;
@@ -69,7 +69,8 @@ fence-arg     = TREE-PATH | "-" LETTER [ value ] | "--" NAME [ value ] | QUOTED 
 (* Tokens *)
 NUMBER        = [ "+" | "-" ] DIGITS { "." DIGITS } ;   (* a glued sign belongs to the number *)
 QUOTED        = '"' { any char but '"' } '"' ;          (* text, never a keyword *)
-LINE          = '`' { any char but '`' } '`' ;          (* a command line as a value, never text *)
+LINE          = '`' { any char but '`' } '`' ;          (* a command line as a value, never text; several
+                                                  in a row are one value: a key's press cycle *)
 WORD          = LETTER { LETTER | DIGIT | "_" } [ "+" | "-" ] ;  (* case-insensitive; a glued
                                                   trailing sign only before a space, ";" or the end: Go- *)
 ROOT-PATH     = "Root" "." PART { "." PART } ;          (* the tree form; with SELF-READ the only place a dot nests *)
@@ -185,6 +186,9 @@ How the grammar is read. Each rule is one sentence; the decision it comes from i
 - **A line given as a value is in backticks:** ``Bind "F5" `Set Self "AutoScroll" Toggle` `` —
   so its quotes stay plain. `"…"` is always text, never a line; a backtick can't stand inside a
   line (there are no escapes). The verb's signature says which slots take a line.
+- **Several lines in a row are one value:** a key's press cycle (decisions 0295), each press the
+  next — ``Set UIKey "user.prg.e" "Press" `Edit` `EditSetting` ``, ``Bind "E" `Edit` `EditSetting`
+  /Shortcuts "PRG"``.
 - **A stored line can't use your personal things:** a bare number, an alias or a fuzzy word in
   a key, macro or cue command is refused when it is saved.
 
@@ -930,6 +934,8 @@ List Fixture /Verbose
 Menu "Backup" /Tab "History"
 Import Patch + Users /From "Festival"
 Bind "F5" `List Fixture` /Description "Lists all fixtures"
+Bind "E" `Edit` `EditSetting` /Shortcuts "PRG"
+Set UIKey "user.prg.e" "Types" 1 Thru 2
 Watch `List Fixture` /Every 500
 LoadShow "Festival 26" /Drive "usb1"
 ```

@@ -11,9 +11,10 @@
 //!
 //! Owns:          which keys this user has, a key by id, this user's bindings, a gesture's line.
 //! Doesn't own:   the key data (lumacore-tree ui_keys, keybindings), what a key runs (the terminal, the page).
-//! Entry points:  all_keys, find, bindings, command_for.
+//! Entry points:  all_keys, find, bindings, bindings_in, command_for.
 //! Decisions:     §17.
 
+use lumacore_tree::keybindings::Layer;
 use lumacore_tree::resolve_bindings;
 use lumacore_tree::ui_keys::{Gesture, UiKey, resolve};
 
@@ -62,9 +63,14 @@ pub fn find(state: &AppState, id: &str) -> Option<UiKey> {
     resolve(id, &state.root.resources.ui_keys, plugins, profile).cloned()
 }
 
-/// The binding for a key combo (`Ctrl-R`, `F5`) for this user: debug >
-/// profile > vanilla (§17 layers).
+/// The bindings this user's keys have in the screen's shortcut mode: debug > profile > vanilla,
+/// a mode's own over its every-mode ones (§17 layers, decisions 0295).
 pub fn bindings(state: &AppState) -> lumacore_tree::KeyBindingMap {
+    bindings_in(state, state.shortcut_mode.layer())
+}
+
+/// The bindings in one layer (`Layer::All` = only the every-mode ones).
+pub fn bindings_in(state: &AppState, layer: Layer) -> lumacore_tree::KeyBindingMap {
     let empty = lumacore_tree::KeyBindingMap::new();
     let user = state
         .root
@@ -76,6 +82,7 @@ pub fn bindings(state: &AppState) -> lumacore_tree::KeyBindingMap {
         user,
         &state.root.debug_keybindings,
         state.debug_mode,
+        layer,
     )
 }
 

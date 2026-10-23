@@ -84,3 +84,75 @@ fn bind_is_a_keys_oops_step() {
     let newest = undo.frames.back().expect("a step");
     assert_eq!(newest.category, lumacore_tree::OopsCategory::Keys);
 }
+
+fn user_key(state: &AppState, id: &str) -> lumacore_tree::UiKey {
+    state.root.show_data.profile_for_user(state.effective_user_name()).unwrap().content.ui_keys.values().find(|k| k.id == id).cloned().unwrap()
+}
+
+/// A letter types in KBD (decisions 0295): it binds only in a mode where keys are words, and
+/// several lines are a press cycle.
+#[test]
+fn a_letter_binds_in_a_mode_as_a_press_cycle() {
+    use lumacore_tree::keybindings::Layer;
+    let mut state = lumacore_objects::demo::fresh_state();
+    assert!(run(&mut state, "Bind \"E\" `Edit`").contains("E-KEY-006"));
+    assert!(run(&mut state, "Bind \"E\" `Edit` /Shortcuts \"KBD\"").contains("E-KEY-006"));
+    let out = run(&mut state, "Bind \"E\" `Edit` `EditSetting` /Shortcuts \"PRG\"");
+    assert!(out.contains("user.prg.e"), "{out}");
+    let key = user_key(&state, "user.prg.e");
+    assert_eq!((key.press.as_str(), key.cycle.as_slice()), ("Edit", ["EditSetting".to_string()].as_slice()));
+    assert_eq!(crate::lookup::bindings_in(&state, Layer::Programmer)["E"].ui_key, "user.prg.e");
+    assert!(!crate::lookup::bindings_in(&state, Layer::Keyboard).contains_key("E"));
+    // Ctrl and Alt combinations bind in every mode.
+    assert!(!run(&mut state, "Bind \"Ctrl-E\" `Edit`").contains("E-KEY"));
+}
+
+/// Unbind takes your binding away (LumaCore's comes back); with none of yours it turns LumaCore's
+/// off on your profile, and again brings it back.
+#[test]
+fn unbind_turns_lumacores_key_off_and_back() {
+    use lumacore_tree::keybindings::Layer;
+    let mut state = lumacore_objects::demo::fresh_state();
+    let prg = |s: &AppState| crate::lookup::bindings_in(s, Layer::Programmer).get("E").map(|b| b.ui_key.clone());
+    assert_eq!(prg(&state).as_deref(), Some("prg.e"));
+    assert!(run(&mut state, "Unbind \"E\" /Shortcuts \"PRG\"").contains("off on this profile"));
+    assert_eq!(prg(&state), None);
+    assert!(run(&mut state, "Unbind \"E\" /Shortcuts \"PRG\"").contains("is back"));
+    assert_eq!(prg(&state).as_deref(), Some("prg.e"));
+    assert!(run(&mut state, "Unbind \"F6\"").contains("E-KEY-003"));
+    assert!(run(&mut state, "Unbind \"F10\"").contains("E-KEY-005"));
+}
+
+/// A profile key's lines are its properties: Press takes a cycle, Types the presses that type;
+/// a LumaCore key is locked.
+#[test]
+fn a_keys_press_cycle_and_its_typing_presses_are_set_line_by_line() {
+    let mut state = lumacore_objects::demo::fresh_state();
+    run(&mut state, "Bind \"F5\" `List Fixture`");
+    let out = run(&mut state, "Set UIKey \"user.f5\" \"Press\" `Copy` `Paste` `Insert`");
+    assert!(!out.contains("E-"), "{out}");
+    let out = run(&mut state, "Set UIKey \"user.f5\" \"Types\" 1 Thru 2");
+    assert!(!out.contains("E-"), "{out}");
+    let key = user_key(&state, "user.f5");
+    assert_eq!(key.press_rows(false).iter().map(|r| (r.line.as_str(), r.types)).collect::<Vec<_>>(), [("Copy", true), ("Paste", true), ("Insert", false)]);
+    assert!(run(&mut state, "Set UIKey \"user.f5\" \"Types\" 4").contains("E-KEY-007"));
+    assert!(run(&mut state, "Set UIKey \"user.f5\" \"Press\" `Frobnicate`").contains("E-KEY-001"));
+    assert!(run(&mut state, "Set UIKey \"user.f5\" \"MeowPress\" `Cut`").contains("Cut"));
+    assert_eq!(user_key(&state, "user.f5").meow.press, "Cut");
+    assert!(run(&mut state, "Set UIKey \"prg.e\" \"Press\" `Oops`").contains("E-KEY-007"));
+}
+
+/// The Programmer's keys are LumaCore's own rows (decisions 0295): E cycles Edit › EditSetting,
+/// a dot then a dot runs Zero, Delete clears level by level and held clears all.
+#[test]
+fn the_programmers_keys_are_lumacores_rows() {
+    let keys = lumacore_tree::builtin_ui_keys();
+    let key = |id: &str| keys.values().find(|k| k.id == id).unwrap().clone();
+    let rows = |id: &str| key(id).press_rows(false).into_iter().map(|r| (r.line, r.types)).collect::<Vec<_>>();
+    assert_eq!(rows("prg.e"), [("Edit".to_string(), true), ("EditSetting".to_string(), true)]);
+    assert_eq!(rows("prg.alt-a"), [("Assign".to_string(), true), ("Label".to_string(), true)]);
+    assert_eq!(rows("prg.dot"), [(".".to_string(), true), ("Zero".to_string(), false)]);
+    assert_eq!(rows("prg.delete").len(), 3);
+    assert_eq!(key("prg.delete").hold, "ResetAll");
+    assert_eq!(key("prg.p").press_rows(true)[0].line, "FeatureGroup");
+}

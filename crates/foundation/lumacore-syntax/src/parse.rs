@@ -714,10 +714,17 @@ impl<'a> Parser<'a> {
                 Some(Value::Text(Spanned::new(unquote(self.text(t)).to_string(), t.span)))
             }
             TokenKind::Line { .. } => {
-                self.pos += 1;
-                let text = self.text(t);
-                let inner = text.strip_prefix('`').unwrap_or(text);
-                Some(Value::Line(Spanned::new(inner.strip_suffix('`').unwrap_or(inner).to_string(), t.span)))
+                // Lines in a row are one value, a key's press cycle (decisions 0295): completion
+                // offers the next line at each.
+                let mut lines = Vec::new();
+                while let Some(t) = self.here().filter(|t| matches!(t.kind, TokenKind::Line { .. })) {
+                    self.expect(&[Expect::Value]);
+                    self.pos += 1;
+                    let text = self.text(t);
+                    let inner = text.strip_prefix('`').unwrap_or(text);
+                    lines.push(Spanned::new(inner.strip_suffix('`').unwrap_or(inner).to_string(), t.span));
+                }
+                Some(if lines.len() == 1 { Value::Line(lines.remove(0)) } else { Value::Lines(lines) })
             }
             TokenKind::Dotted if is_read(self.text(t)) => {
                 self.pos += 1;

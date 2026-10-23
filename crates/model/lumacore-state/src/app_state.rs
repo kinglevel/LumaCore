@@ -38,6 +38,16 @@ impl ShortcutMode {
             Self::Navigator => "NAV",
         }
     }
+
+    /// The key bindings' layer this mode uses (decisions 0295).
+    pub fn layer(self) -> lumacore_tree::keybindings::Layer {
+        use lumacore_tree::keybindings::Layer;
+        match self {
+            Self::Keyboard => Layer::Keyboard,
+            Self::Programmer => Layer::Programmer,
+            Self::Navigator => Layer::Navigator,
+        }
+    }
 }
 
 impl std::fmt::Display for ShortcutMode {

@@ -374,8 +374,11 @@ fn tui_hotkeys_run_registered_commands() {
 fn core_ui_keys_run_registered_commands() {
     let mut failures = Vec::new();
     for key in lumacore_tree::builtin_ui_keys().values() {
-        for line in [&key.press, &key.double_press, &key.hold] {
-            check_command_line(&format!("UIKey {}", key.id), line, &mut failures);
+        // A press that types onto the command line is a fragment (`.`, `Thru`; decisions 0295):
+        // the catalog test checks its words. Every press that runs, and the other gestures, here.
+        let runs = key.press_rows(false).into_iter().filter(|r| !r.types).map(|r| r.line);
+        for line in runs.chain([key.double_press.clone(), key.hold.clone()]) {
+            check_command_line(&format!("UIKey {}", key.id), &line, &mut failures);
         }
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));

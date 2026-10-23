@@ -16,6 +16,7 @@
 /DataPool — option (value)
 /Debug — option
 /Default — option
+/Description — option (value)
 /Discard — option
 /DiscardChanges — option
 /Drive — option (value)
@@ -85,6 +86,7 @@
 /Selection — option
 /Settings — option
 /Shield — option
+/Shortcuts — option (value)
 /Show — option
 /Size — option (value)
 /Skip — option
@@ -309,6 +311,7 @@ High — value
 Highest — value
 Highlight — object
 HissMe — verb
+Hold — property
 HoldAction — property
 HoldFollows — property
 HoldOutput — property
@@ -331,6 +334,7 @@ Interface — object ids:1
 Invite — verb
 Join — verb
 Journal — object
+KBD — value
 KeyBindings — object
 Kind — property
 Label — verb
@@ -378,7 +382,13 @@ Medium — value
 Members — property
 Menu — object ids:1
 Meow — verb
+MeowDoublePress — property
+MeowHold — property
 MeowKey — property
+MeowPress — property
+MeowRelease — property
+MeowReleaseAfterHold — property
+MeowTypes — property
 Merge — value
 MergeCells — property
 MergeDefault — property
@@ -416,6 +426,7 @@ MvrX — property
 MvrY — property
 MvrZ — property
 Name — property
+NAV — value
 NavLog — property
 Negative — value
 Network — object ids:1
@@ -488,7 +499,9 @@ PosZ — property
 PreserveGrid — property
 Preset — object ids:1
 Presets — value
+Press — property
 Previous — verb · value
+PRG — value
 Prio — value
 Priority — property
 Profile — property
@@ -511,6 +524,8 @@ Recreate — value
 Red — value
 Redo — verb
 Reference — object ids:1
+Release — property
+ReleaseAfterHold — property
 ReloadUI — verb
 RemoteLogin — property
 remove — verb
@@ -623,6 +638,7 @@ Top — verb (hold)
 Total — property
 Tracking — property
 tree — value · fence flags:d=
+Types — property
 UIEngine — object
 UIKey — object ids:1
 Ultra — value

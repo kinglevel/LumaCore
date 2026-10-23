@@ -227,3 +227,20 @@ fn a_line_value_is_in_backticks() {
     assert!(lum(&line).slots.iter().any(|s| matches!(s, Slot::Value(Value::Line(l)) if l.node == "Set Self \"AutoScroll\" Toggle")));
     assert_eq!(codes_of(&typed("Bind \"F5\" `List Fixture")), vec![codes::UNTERMINATED]);
 }
+
+/// Decisions 0295: lines in a row are one value, a key's press cycle; it prints back as written.
+#[test]
+fn lines_in_a_row_are_one_value() {
+    let line = typed("Bind \"E\" `Edit` `EditSetting` /Shortcuts \"PRG\"");
+    assert!(line.is_clean(), "{:?}", line.diags);
+    let rows: Vec<&str> = lum(&line)
+        .slots
+        .iter()
+        .find_map(|s| match s {
+            Slot::Value(Value::Lines(ls)) => Some(ls.iter().map(|l| l.node.as_str()).collect()),
+            _ => None,
+        })
+        .expect("one Lines value");
+    assert_eq!(rows, ["Edit", "EditSetting"]);
+    assert_eq!(printed("Bind \"E\" `Edit` `EditSetting`"), "Bind \"E\" `Edit` `EditSetting`");
+}

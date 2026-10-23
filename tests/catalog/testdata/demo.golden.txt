@@ -1,4 +1,4 @@
-format 37
+format 38
 fixtures 1348
 folders 23
 fixture_types 22
@@ -7,4 +7,4 @@ lines 7
 users 3
 profiles 4
 groups 77
-sha256 72bc9e12132201293021c48a7c123b7ea819e383930674497f84c34857e3ef1d
+sha256 02865c6c130614ae07c4efa257508d53dcd4d6729772e9317056f0ea096536ba

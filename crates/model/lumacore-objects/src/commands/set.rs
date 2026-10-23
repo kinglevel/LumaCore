@@ -314,6 +314,9 @@ fn value_text(v: &Value) -> Result<String, String> {
         Value::Text(t) => t.node.clone(),
         // A property that holds a command line takes it in backticks (decisions §33 91).
         Value::Line(l) => l.node.clone(),
+        // Several (a key's press cycle, decisions 0295) reach the property each in its backticks:
+        // a backtick never stands inside a line, so its write splits them back.
+        Value::Lines(ls) => ls.iter().map(|l| format!("`{}`", l.node)).collect::<Vec<_>>().join(" "),
         Value::Read(_) => return Err(render_code("A Self read as a Set value isn't built yet (planned).", "E-CMD-003")),
         Value::Target(_) => return Err(render_code("Set takes a value here, not an object.", lumacore_syntax::codes::VALUE_WORD)),
     })
@@ -347,7 +350,7 @@ pub fn rows_of(state: &AppState, obj: &ObjectDef, props: &Props, r: &Resolved, p
         .map(|m| {
             // Keyed rows (no tree) by their key, a Path object's (a tag: its number moves) by its
             // GUID, tree members by their number.
-            let key = if obj.tree.is_none() && props.keyed.is_some() {
+            let key = if (obj.tree.is_none() || props.keyed_beside_tree) && props.keyed.is_some() {
                 m.name.clone().unwrap_or_default()
             } else if reads_a_path(obj) {
                 m.guid.map(|g| g.to_string()).unwrap_or_default()
@@ -390,7 +393,9 @@ fn set_resolved(
     }
     if let [row] = rows.as_slice() {
         let value = match value {
-            Value::Spread { from, .. } => from.node.clone(),
+            // One row takes a spread's start — but text takes the words as written (a key's
+            // typing presses, `"Types" 1 Thru 2`).
+            Value::Spread { from, .. } if !matches!(prop.kind, PropKind::Text) => from.node.clone(),
             _ => raw.to_string(),
         };
         return DispatchResult::Output(match write(state, obj, props, row, prop, &value) {

@@ -2327,6 +2327,7 @@ version = "0.1.0"
 dependencies = [
  "ctor",
  "lumacore-base",
+ "lumacore-cmd-keys",
  "lumacore-cmd-showfile",
  "lumacore-fixtures",
  "lumacore-luma",

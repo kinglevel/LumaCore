@@ -2005,6 +2005,21 @@ aliases `uikeys` · verbs List, Info · default verb Info (`UIKey <ids>` = `Info
 
 A UI button with a command line per gesture (Press, Release, Hold, ReleaseAfterHold, DoublePress) and Meow lines (core, plugin, profile)
 
+| Property | Value | Rights | Home | |
+|---|---|---|---|---|
+| "Press" | text | Program | user | what a press runs or types: one line, or several in backticks — a press cycle, each press the next |
+| "Types" | text | Program | user | the presses that type their words onto the command line (1 = the first); the others run |
+| "Release" | text | Program | user | what the release runs (the app and web; a terminal sees presses only) |
+| "Hold" | text | Program | user | what a hold past your HoldTime runs (the app and web) |
+| "ReleaseAfterHold" | text | Program | user | what the release after a hold runs (the app and web) |
+| "DoublePress" | text | Program | user | what a second press within your DoublePress time runs; none = a second press |
+| "MeowPress" | text | Program | user | the press with Meow held: one line or a press cycle; none = the plain press |
+| "MeowTypes" | text | Program | user | the Meow presses that type onto the command line |
+| "MeowRelease" | text | Program | user | the release with Meow held |
+| "MeowHold" | text | Program | user | the hold with Meow held |
+| "MeowReleaseAfterHold" | text | Program | user | the release after a hold with Meow held |
+| "MeowDoublePress" | text | Program | user | the double press with Meow held |
+
 
 ## Undo
 

@@ -66,3 +66,14 @@ fn a_preset_carries_the_tag_assigned_at_it() {
     assert!(!out.contains("E-"), "{out}");
     assert_eq!(tags(&state, 3), vec![wash]);
 }
+
+/// Every built-in key's lines (the core keys, the Programmer's cycles; decisions 0295) use only
+/// words the catalog has: a typed press is a fragment of them, every other line a whole one.
+#[test]
+fn every_built_in_keys_lines_are_the_catalogs_words() {
+    let state = lumacore_objects::demo::fresh_state();
+    for k in state.root.resources.ui_keys.values() {
+        let problems = lumacore_cmd_keys::key_problems(k);
+        assert!(problems.is_empty(), "UIKey {}: {problems:?}", k.id);
+    }
+}

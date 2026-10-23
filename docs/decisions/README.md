@@ -4,7 +4,7 @@ Built by `scripts/unix/docs_check --index` from every record's frontmatter; do n
 One file per binding decision; a reversal is a new record that supersedes the old one.
 The log these came from is frozen at `docs/archive/decisions-2026-10.md`; `source` cites its section and lines.
 
-Records: 216.
+Records: 217.
 
 ## attributes
 
@@ -197,6 +197,7 @@ Records: 216.
 | id | title | status | confirmed by | supersedes | source |
 |---|---|---|---|---|---|
 | [0170](0170-keys-uikey-gestures.md) | Keyboard to UiKey to command line; core keys; Meow is Shift | built | [E-KEY-005, `keybindings::CORE_KEYS`, `ui_keys::CORE_MEOW`, e2e `kit-12b2.spec.ts`] | [archive §17 L1242–1245 "KeyBinding key→command map", archive §17 L1247–1249 "Meow default Option/Alt", archive §30 L3923–3948 "F12 hides sidebars only", archive §30 L3945–3946 "F1–F5 F9 F10 defaults"] | [archive §17 L1230–1257, archive §29 L3110–3111, archive §30 L3923–3948, archive §30 L3973–3975, archive §30 L4002–4004, archive §30 L4230–4252, archive §30 L4297–4305] |
+| [0295](0295-keys-in-shortcut-layers-and-press-cycles.md) | Keys bind per shortcut mode; a press can cycle | built | [E-KEY-006, E-KEY-007, a_mode_binding_wins_over_all_and_an_empty_one_turns_a_key_off, a_letter_binds_in_a_mode_as_a_press_cycle, prg_keys_cycle_their_word_in_place_and_a_run_completes_the_line, every_built_in_keys_lines_are_the_catalogs_words, lines_in_a_row_are_one_value, every_format_from_the_oldest_has_its_step] | [0170 "letters are never bound" — that sentence only: letters bind in PRG and NAV] | [docs/plans/active/2026-10-23-profile-and-key-editor.md, the user in session 2026-10-23 ("looks good, implement" on mockups docs/dev/ui-kit/mockups/2026-10-23-profile-editor/02-keys.html, 03-cycles.html), docs/research/keys/2026-10-23-key-editor.md] |
 
 ## lines
 

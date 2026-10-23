@@ -12,11 +12,11 @@
 //!
 //! Owns:          the checks of a key's command lines: on save (Bind) and after a show replaced the last.
 //! Doesn't own:   the parse (lumacore-syntax, the kernel's line), the sysmon log (lumacore-sysmon).
-//! Entry points:  check_line, key_problems, check_after_load, check_loaded.
+//! Entry points:  check_line, check_fragment, key_problems, check_after_load, check_loaded.
 //! Decisions:     §17, §31, §33 21.
 
 use lumacore_tree::TreeNode;
-use lumacore_tree::ui_keys::UiKey;
+use lumacore_tree::ui_keys::{Gesture, UiKey};
 
 use lumacore_objects::AppState;
 use lumacore_objects::commands::registry::{self, Status, Word};
@@ -67,20 +67,44 @@ pub fn check_line(line: &str) -> Vec<Result<String, String>> {
     problems
 }
 
-/// Every problem of a key's command lines, as `Gesture: problem` lines.
-pub fn key_problems(key: &UiKey) -> Vec<String> {
-    key.lines()
-        .flat_map(|(gesture, meow, line)| {
-            check_line(line).into_iter().map(move |p| {
-                let p = p.unwrap_or_else(|e| e);
-                format!(
-                    "{}{}: {p}",
-                    if meow { "Meow+" } else { "" },
-                    gesture.label()
-                )
-            })
-        })
+/// What is wrong with a row a key types onto the command line (decisions 0295): a fragment, not
+/// a line (`At 100`, `.`, `Store /Merge`) — each of its words must be one of the language's.
+pub fn check_fragment(fragment: &str) -> Vec<Result<String, String>> {
+    let vocab = lumacore_objects::lum::vocabulary();
+    fragment
+        .split_whitespace()
+        .filter(|w| w.starts_with(|c: char| c.is_ascii_alphabetic()))
+        // The grammar's own words are no vocabulary entries (lum.md: `Thru`, `If`, `EndIf`, `Self`, `Root`).
+        .filter(|w| !["Thru", "If", "EndIf", "Self", "Root"].iter().any(|g| g.eq_ignore_ascii_case(w)))
+        .filter(|w| vocab.lookup(w).is_none())
+        .map(|w| Err(format!("unknown word '{w}'")))
         .collect()
+}
+
+/// Every problem of a key's command lines, as `Gesture: problem` lines (a cycle's presses
+/// numbered: `Press 2: …`).
+pub fn key_problems(key: &UiKey) -> Vec<String> {
+    let mut out = Vec::new();
+    for meow in [false, true] {
+        if meow && key.meow.press.is_empty() {
+            continue;
+        }
+        let rows = key.press_rows(meow);
+        let many = rows.len() > 1;
+        for (i, row) in rows.iter().enumerate() {
+            let problems = if row.types { check_fragment(&row.line) } else { check_line(&row.line) };
+            for p in problems {
+                let n = if many { format!(" {}", i + 1) } else { String::new() };
+                out.push(format!("{}Press{n}: {}", if meow { "Meow+" } else { "" }, p.unwrap_or_else(|e| e)));
+            }
+        }
+    }
+    for (gesture, meow, line) in key.lines().filter(|(g, _, _)| *g != Gesture::Press) {
+        for p in check_line(line) {
+            out.push(format!("{}{}: {}", if meow { "Meow+" } else { "" }, gesture.label(), p.unwrap_or_else(|e| e)));
+        }
+    }
+    out
 }
 
 /// After a show loads: flag the profile keys and plugin buttons whose

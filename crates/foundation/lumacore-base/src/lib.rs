@@ -32,8 +32,8 @@ pub use id_pool::IdPool;
 pub use identity::{Guid, Identified, IdentityReport, LinkEntry, ObjectEntry, Walk, Walker};
 pub use inbound::{InboundEvent, TransportAction};
 pub use keybindings::{
-    BindingSource, KeyBinding, KeyBindingMap, debug_keybindings, normalize_key, resolve_bindings,
-    resolve_bindings_with_source, vanilla_keybindings,
+    BindingSource, KeyBinding, KeyBindingMap, Layer, LayerKey, PRG_KEYS, debug_keybindings, normalize_key, resolve_bindings,
+    resolve_bindings_with_source, slot, vanilla_keybindings,
 };
 pub use node::{Annotation, IconRef, Identity, Meta, NodeMeta, TreeNode};
 pub use paint::Paint;

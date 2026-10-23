@@ -48,8 +48,8 @@ pub use events::{TreeEvent, TreeObserver};
 pub use id_pool::IdPool;
 pub use media::{Asset, AssetRoot, AssetsData, LockScreen, MediaFile, Theme, ThemeAdjust, ThemePalette};
 pub use keybindings::{
-    BindingSource, KeyBinding, KeyBindingMap, debug_keybindings, normalize_key, resolve_bindings,
-    resolve_bindings_with_source, vanilla_keybindings,
+    BindingSource, KeyBinding, KeyBindingMap, Layer, LayerKey, PRG_KEYS, debug_keybindings, normalize_key, resolve_bindings,
+    resolve_bindings_with_source, slot, vanilla_keybindings,
 };
 pub use lumacore_base::error_code::{self, Coded, ErrorInfo};
 pub use lumacore_base::replication::{PendingReplicationOp, ReplicationJournal, ReplicationOp};

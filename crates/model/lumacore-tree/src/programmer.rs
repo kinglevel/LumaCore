@@ -1645,16 +1645,37 @@ impl UserProfile {
 
     /// Bind `key` to a command line (decisions §17): the line goes into a
     /// user UiKey `user.<key>` (made or updated here) and the binding names
-    /// that key. Returns the UiKey id.
+    /// that key, in every mode. Returns the UiKey id.
     pub fn bind_command(&mut self, key: &str, command: &str, description: &str) -> String {
+        self.bind_rows(crate::keybindings::Layer::All, key, &[command.to_string()], &[], description)
+    }
+
+    /// The user UiKey a key's binding in `layer` makes (`user.f5`, `user.prg.e`).
+    pub fn user_key_id(layer: crate::keybindings::Layer, key: &str) -> String {
+        let key = crate::keybindings::normalize_key(key).to_lowercase();
+        match layer {
+            crate::keybindings::Layer::All => format!("user.{key}"),
+            l => format!("user.{}.{key}", l.label().to_lowercase()),
+        }
+    }
+
+    /// Bind `key` in `layer` to a press cycle (decisions 0295): the rows go into the user UiKey
+    /// [`Self::user_key_id`] (made or updated here; `types` = the presses that type) and the
+    /// binding names it. Returns the UiKey id.
+    pub fn bind_rows(&mut self, layer: crate::keybindings::Layer, key: &str, rows: &[String], types: &[u8], description: &str) -> String {
         let key = crate::keybindings::normalize_key(key);
-        let id = format!("user.{}", key.to_lowercase());
+        let id = Self::user_key_id(layer, &key);
+        let (first, more) = rows.split_first().map_or((String::new(), Vec::new()), |(f, m)| (f.clone(), m.to_vec()));
         match self
             .content.ui_keys
             .values_mut()
             .find(|k| k.id.eq_ignore_ascii_case(&id))
         {
-            Some(existing) => existing.press = command.to_string(),
+            Some(existing) => {
+                existing.press = first;
+                existing.cycle = more;
+                existing.types = types.to_vec();
+            }
             None => {
                 let no = self.content.ui_keys.keys().next_back().map_or(1, |n| n + 1);
                 let label = if description.is_empty() {
@@ -1662,7 +1683,9 @@ impl UserProfile {
                 } else {
                     description
                 };
-                let mut ui_key = crate::ui_keys::UiKey::user(&id, label, command);
+                let mut ui_key = crate::ui_keys::UiKey::user(&id, label, &first);
+                ui_key.cycle = more;
+                ui_key.types = types.to_vec();
                 // A user key belongs to this profile: two profiles binding the
                 // same key never share a GUID (decisions §29, finding 3).
                 ui_key.meta.identity.guid = lumacore_base::Guid::named(
@@ -1673,19 +1696,25 @@ impl UserProfile {
                 self.content.ui_keys.insert(no, ui_key);
             }
         }
-        self.bind_ui_key(&key, &id, description);
+        self.bind_ui_key_in(layer, &key, &id, description);
         id
     }
 
-    /// Bind `key` to an existing UiKey id.
+    /// Bind `key` to an existing UiKey id, in every mode.
     pub fn bind_ui_key(&mut self, key: &str, ui_key: &str, description: &str) {
+        self.bind_ui_key_in(crate::keybindings::Layer::All, key, ui_key, description);
+    }
+
+    /// Bind `key` in `layer` to an existing UiKey id; an empty id turns the key off there.
+    pub fn bind_ui_key_in(&mut self, layer: crate::keybindings::Layer, key: &str, ui_key: &str, description: &str) {
         let key = crate::keybindings::normalize_key(key);
         self.content.keybindings.insert(
-            key.clone(),
+            crate::keybindings::slot(layer, &key),
             crate::keybindings::KeyBinding {
                 key,
                 ui_key: ui_key.to_string(),
                 description: description.to_string(),
+                layer,
             },
         );
     }

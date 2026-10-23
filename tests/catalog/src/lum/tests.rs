@@ -58,8 +58,6 @@ const PENDING: &[&str] = &[
     "Info AttributeMap 3",
     // The Users object and /From (Import parts, 20).
     "Import Patch + Users /From \"Festival\"",
-    // Bind's own /Description (20) — the option was only Show's (decision 46 removed it).
-    "Bind \"F5\" `List Fixture` /Description \"Lists all fixtures\"",
     // The Alias object (13).
     "Store Alias \"St\" `Store Cue 1`",
     "Store Alias \"sg\" `Store Group`",

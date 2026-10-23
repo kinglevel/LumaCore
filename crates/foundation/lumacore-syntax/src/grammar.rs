@@ -24,7 +24,7 @@ range         = id [ "Thru" [ id ] ] | "Thru" [ id ] ;
 id            = NUMBER | QUOTED ;
 set-op        = "+" | "-" ;
 slot          = HELPER [ value ] | value ;     (* which slots, in which order: the signature *)
-value         = NUMBER | relative | spread | WORD | QUOTED | LINE | SELF-READ | target | named-one ;
+value         = NUMBER | relative | spread | WORD | QUOTED | LINE { LINE } | SELF-READ | target | named-one ;
 named-one     = OBJECT QUOTED ;                (* a one-of-a-kind object and a name: Theme "Position", a theme paint slot *)
 relative      = ( "+" | "-" | "*" | "/" ) NUMBER ;
 spread        = NUMBER "Thru" NUMBER ;
@@ -42,7 +42,8 @@ fence-arg     = TREE-PATH | "-" LETTER [ value ] | "--" NAME [ value ] | QUOTED 
 (* Tokens *)
 NUMBER        = [ "+" | "-" ] DIGITS { "." DIGITS } ;   (* a glued sign belongs to the number *)
 QUOTED        = '"' { any char but '"' } '"' ;          (* text, never a keyword *)
-LINE          = '`' { any char but '`' } '`' ;          (* a command line as a value, never text *)
+LINE          = '`' { any char but '`' } '`' ;          (* a command line as a value, never text; several
+                                                  in a row are one value: a key's press cycle *)
 WORD          = LETTER { LETTER | DIGIT | "_" } [ "+" | "-" ] ;  (* case-insensitive; a glued
                                                   trailing sign only before a space, ";" or the end: Go- *)
 ROOT-PATH     = "Root" "." PART { "." PART } ;          (* the tree form; with SELF-READ the only place a dot nests *)

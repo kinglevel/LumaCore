@@ -51,6 +51,9 @@ pub static STEPS: &[Step] = &[
     // 36 → 37: a Paint is `#rrggbb` or a theme slot link; feature groups follow their slot
     // (decisions object-paint-palette-free-theme-links).
     Step { from: 36, run: paint_is_hex_or_a_theme_link },
+    // 37 → 38: a key binding's shortcut layer and a UiKey's press cycle, both new and empty
+    // (decisions 0295).
+    Step { from: 37, run: keys_in_layers_and_cycles },
 ];
 
 /// What an upgrade did: the format it came from, this build's, and each step's notes.
@@ -181,6 +184,12 @@ fn one_preset_pool(show: &mut Value) -> Vec<String> {
 /// 34 → 35: nothing saved changes shape — a user's `bookmarks` and a profile's
 /// `preferences.nav_log` are new and read as their defaults (none; On).
 fn nav_bookmarks_and_log(_show: &mut Value) -> Vec<String> {
+    Vec::new()
+}
+
+/// 37 → 38: nothing saved changes shape — a binding without a layer works in every mode, a key
+/// without a cycle has its one press (decisions 0295).
+fn keys_in_layers_and_cycles(_show: &mut Value) -> Vec<String> {
     Vec::new()
 }
 

@@ -23,6 +23,7 @@ lumacore-luma = { path = "../../crates/formats/lumacore-luma" }
 uuid = { workspace = true }
 lumacore-base = { path = "../../crates/foundation/lumacore-base" }
 lumacore-cmd-showfile = { path = "../../crates/commands/objects/lumacore-cmd-showfile" }
+lumacore-cmd-keys = { path = "../../crates/commands/objects/lumacore-cmd-keys" }
 serde_json = { workspace = true }
 
 [lints]

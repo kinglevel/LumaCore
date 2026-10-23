@@ -273,7 +273,34 @@ $ ls Root.Resources.UIKeys
   | ├── 10  "DeskLock — Meow: normal theme"  (UIKey)
   | ├── 11  "Shortcut mode KBD/PRG/NAV — Meow: view bar"  (UIKey)
   | ├── 12  "Screenshot of my screens — Meow: Shutdown menu"  (UIKey)
-  | └── 13  "Sidebars — Meow: full screen"  (UIKey)
+  | ├── 13  "Sidebars — Meow: full screen"  (UIKey)
+  | ├── 14  "Fixture"  (UIKey)
+  | ├── 15  "Group"  (UIKey)
+  | ├── 16  "Preset"  (UIKey)
+  | ├── 17  "Cue"  (UIKey)
+  | ├── 18  "Sequence"  (UIKey)
+  | ├── 19  "At"  (UIKey)
+  | ├── 20  "Assign"  (UIKey)
+  | ├── 21  "Edit"  (UIKey)
+  | ├── 22  "Store"  (UIKey)
+  | ├── 23  "Update"  (UIKey)
+  | ├── 24  "Thru"  (UIKey)
+  | ├── 25  "If"  (UIKey)
+  | ├── 26  "Off"  (UIKey)
+  | ├── 27  "List"  (UIKey)
+  | ├── 28  "Copy"  (UIKey)
+  | ├── 29  "Move"  (UIKey)
+  | ├── 30  "Delete"  (UIKey)
+  | ├── 31  "Select"  (UIKey)
+  | ├── 32  "On"  (UIKey)
+  | ├── 33  "Stomp"  (UIKey)
+  | ├── 34  "Goto"  (UIKey)
+  | ├── 35  "SelFix"  (UIKey)
+  | ├── 36  "Pause"  (UIKey)
+  | ├── 37  "Go"  (UIKey)
+  | ├── 38  "."  (UIKey)
+  | ├── 39  "+"  (UIKey)
+  | … (+11 lines)
   @ / · scope Root · claim None · context Fixture · repl Fixture
 $ cd Root.Library.GDTF
   | /Library/GDTF
@@ -1691,7 +1718,7 @@ $ tree Root -d 2
   | │   └── Claims/  (1)
   | ├── Resources/
   | │   ├── WindowTypes/  (15)
-  | │   └── UIKeys/  (13)
+  | │   └── UIKeys/  (50)
   | ├── Diagnostics
   | ├── StationSettings
   | ├── Library/

@@ -190,19 +190,28 @@ impl TuiApp {
         }
     }
 
-    /// A keyboard key bound to UiKey `id` was pressed (decisions §17). The
-    /// terminal only sees presses: a second press of the same key inside the
-    /// profile's double-click time is the DoublePress. Release / Hold need the
-    /// app or web UI.
-    pub(super) fn press_bound_key(&mut self, state: &mut AppState, id: &str, meow: bool) {
+    /// A keyboard key bound to UiKey `id` was pressed (decisions §17, 0295): its
+    /// press cycle's next row types or runs, or a second press inside the
+    /// profile's double-click time is the DoublePress (a key without a cycle).
+    /// The terminal only sees presses; Release / Hold need the app or web UI.
+    /// False when the key doesn't act here (an empty-line key on a line with
+    /// words): it types its character.
+    pub(super) fn press_bound_key(&mut self, state: &mut AppState, id: &str, meow: bool) -> bool {
         use lumacore_tree::ui_keys::Gesture;
         let Some(def) = lumacore_cmd_keys::find(state, id) else {
             self.output.push(crate::core::errors::render_code(
                 format!("The key is bound to UIKey '{id}', which doesn't exist."),
                 "E-KEY-004",
             ));
-            return;
+            return true;
         };
+        let input = self.get_input();
+        // An empty-line key (PRG's Space = Go, the mode letters) types its character on a line
+        // with words (decisions 0295).
+        if def.empty_only && !input.trim().is_empty() {
+            return false;
+        }
+        let rows = def.press_rows(meow);
         let window = state
             .root
             .show_data
@@ -211,22 +220,50 @@ impl TuiApp {
                 p.settings.preferences.double_click_ms
             });
         let now = std::time::Instant::now();
-        let has_double = !def.command_for(Gesture::Double, meow).is_empty();
+        // A double press is a key's own timed gesture; a press cycle takes every press.
+        let has_double = !def.command_for(Gesture::Double, meow).is_empty() && rows.len() <= 1;
         let double = has_double
             && self.keys.last.as_ref().is_some_and(|(last, t)| {
                 last.eq_ignore_ascii_case(id)
                     && now.duration_since(*t).as_millis() < u128::from(window)
             });
         self.keys.last = (!double).then(|| (id.to_string(), now));
-        let gesture = if double {
-            Gesture::Double
-        } else {
-            Gesture::Press
-        };
-        let (_, cmd) = lumacore_cmd_keys::command_for(&def, gesture, meow);
-        if !cmd.trim().is_empty() {
-            self.execute_command(state, &cmd);
+        if double || rows.is_empty() {
+            self.keys.cycle = None;
+            let (_, cmd) = lumacore_cmd_keys::command_for(&def, if double { Gesture::Double } else { Gesture::Press }, meow);
+            if !cmd.trim().is_empty() {
+                self.execute_command(state, &cmd);
+            }
+            return true;
         }
+        // The cycle (decisions 0295): the same key again, while the line still ends with what it
+        // typed, takes the next row in its place; anything else starts over. No timer.
+        let again = self.keys.cycle.as_ref().filter(|c| c.id.eq_ignore_ascii_case(id) && c.meow == meow && c.after == input);
+        let (row, base) = match again {
+            Some(c) => ((c.row + 1) % rows.len(), c.before.clone()),
+            None => (0, input.clone()),
+        };
+        let press = &rows[row];
+        if press.types {
+            let text = typed(&base, &press.line);
+            self.snapshot_input();
+            self.set_input(&text);
+            self.keys.cycle = Some(super::Cycle { id: id.to_string(), meow, row, before: base, after: text });
+            return true;
+        }
+        if rows.iter().any(|r| r.types) {
+            // A press that runs in a cycle that types completes the line with it (`Fixture 1` +
+            // `. .` → `Fixture 1 Zero`).
+            let line = format!("{} {}", base.trim_end(), press.line).trim().to_string();
+            self.snapshot_input();
+            self.set_input(&line);
+            self.submit_command(state);
+        } else {
+            self.execute_command(state, &press.line);
+        }
+        let after = self.get_input();
+        self.keys.cycle = Some(super::Cycle { id: id.to_string(), meow, row, before: after.clone(), after });
+        true
     }
 
     pub(super) fn execute_remote_command(
@@ -652,4 +689,12 @@ fn common_prefix<'a>(mut items: impl Iterator<Item = &'a str>) -> String {
             .count();
     }
     first.chars().take(len).collect()
+}
+
+/// The command line after a key types `row` onto `base` (decisions 0295): a word with a space on
+/// each side, a dot glued to the number before it (`1.5`).
+fn typed(base: &str, row: &str) -> String {
+    let dot = row == ".";
+    let glue = if base.is_empty() || base.ends_with(' ') || (dot && base.ends_with(|c: char| c.is_ascii_digit())) { "" } else { " " };
+    format!("{base}{glue}{row}{}", if dot { "" } else { " " })
 }

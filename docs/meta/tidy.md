@@ -74,7 +74,7 @@ The registry is the one source of command and object words (`words.rs`).
 - **Escape:** none
 
 ### core_ui_keys_run_registered_commands
-- **Checks:** every built-in UI key's Press, DoublePress and Hold line starts with a registered word.
+- **Checks:** every built-in UI key's Press, DoublePress and Hold line starts with a registered word; a press that types onto the command line (a cycle's fragment, decisions 0295) is checked by the catalog test `every_built_in_keys_lines_are_the_catalogs_words` instead.
 - **Why:** §17 — command lines live in UiKeys and are checked like any other.
 - **Escape:** none
 

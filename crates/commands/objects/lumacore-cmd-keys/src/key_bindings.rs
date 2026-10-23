@@ -26,7 +26,8 @@ use lumacore_objects::objects::{ObjectDef, out};
 // ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
 // PART: LOGIC
 
-/// List all effective keybindings grouped by layer: Debug > User > Vanilla.
+/// List the keybindings of the screen's shortcut mode (decisions 0295), grouped by source:
+/// Debug > User > Vanilla; each says the mode it belongs to, a turned-off key says so.
 pub fn list_keybindings(state: &AppState) -> String {
     use lumacore_tree::{BindingSource, resolve_bindings_with_source};
 
@@ -43,6 +44,7 @@ pub fn list_keybindings(state: &AppState) -> String {
         &user_bindings,
         &state.root.debug_keybindings,
         state.debug_mode,
+        state.shortcut_mode.layer(),
     );
 
     if resolved.is_empty() {
@@ -53,21 +55,24 @@ pub fn list_keybindings(state: &AppState) -> String {
     let shown: std::collections::BTreeMap<&str, String> = resolved
         .values()
         .map(|(b, _)| {
+            if b.ui_key.is_empty() {
+                return (b.key.as_str(), "off (LumaCore's turned off here)".to_string());
+            }
             let press = crate::lookup::find(state, &b.ui_key)
-                .map(|k| k.press)
+                .map(|k| k.press_rows(false).iter().map(|r| r.line.clone()).collect::<Vec<_>>().join(" › "))
                 .unwrap_or_else(|| "⚠ no such UIKey".into());
             (b.key.as_str(), format!("{} ({press})", b.ui_key))
         })
         .collect();
 
     // Group by source
-    let mut debug_rows: Vec<(&str, &str, &str)> = Vec::new();
-    let mut user_rows: Vec<(&str, &str, &str)> = Vec::new();
-    let mut vanilla_rows: Vec<(&str, &str, &str)> = Vec::new();
+    let mut debug_rows: Vec<(String, &str, &str)> = Vec::new();
+    let mut user_rows: Vec<(String, &str, &str)> = Vec::new();
+    let mut vanilla_rows: Vec<(String, &str, &str)> = Vec::new();
 
     for (binding, source) in resolved.values() {
         let row = (
-            binding.key.as_str(),
+            lumacore_tree::keybindings::slot(binding.layer, &binding.key),
             shown[binding.key.as_str()].as_str(),
             binding.description.as_str(),
         );
@@ -112,7 +117,7 @@ pub fn list_keybindings(state: &AppState) -> String {
     let mut text = format!(
         "{}  {}\n",
         bold("Key Bindings"),
-        dim(&format!("({})", state.effective_user_name())),
+        dim(&format!("({} · {})", state.effective_user_name(), state.shortcut_mode.label())),
     );
 
     // Debug section
@@ -146,7 +151,7 @@ pub fn list_keybindings(state: &AppState) -> String {
 
     text.push_str(&format!(
         "\n{}",
-        dim("Use 'Bind <key> <command | UIKey>' to add (takes effect at once). 'Unbind <key>' to remove.")
+        dim("Use 'Bind <key> `<line>` | <UIKey> [/Shortcuts PRG]' to add (takes effect at once). 'Unbind <key> [/Shortcuts PRG]' to remove.")
     ));
 
     text

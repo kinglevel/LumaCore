@@ -154,6 +154,31 @@ pub struct UiKey {
     /// Can't be changed by users (core and plugin keys).
     #[serde(default)]
     pub locked: bool,
+    /// A press cycle (decisions 0295): the presses after the first, each the next row. The next
+    /// press replaces the row the key just typed while it is still the last on the line.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub cycle: Vec<String>,
+    /// The presses (1 = the first) that type their words onto the command line; the others run,
+    /// as every key's press always did.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub types: Vec<u8>,
+    /// The Meow press's cycle and the Meow presses that type.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub meow_cycle: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub meow_types: Vec<u8>,
+    /// It acts only on an empty command line; with words there it types its character (a mode
+    /// key, Space = Go in PRG).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub empty_only: bool,
+}
+
+/// One press of a key's press cycle (decisions 0295).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PressRow {
+    pub line: String,
+    /// It types its words onto the command line instead of running.
+    pub types: bool,
 }
 
 impl UiKey {
@@ -168,6 +193,11 @@ impl UiKey {
             meow: KeyCommands { press: d.meow_press.clone(), release_after_hold: d.meow_release_after_hold.clone(), ..KeyCommands::default() },
             double_replaces_press: d.double_replaces_press,
             state: d.state.clone(),
+            cycle: d.cycle.clone(),
+            types: d.types.clone(),
+            meow_cycle: d.meow_cycle.clone(),
+            meow_types: d.meow_types.clone(),
+            empty_only: d.empty_only,
             ..Self::core(&d.id, &d.label, &d.icon, &d.tooltip)
         }
     }
@@ -188,6 +218,11 @@ impl UiKey {
             double_replaces_press: false,
             state: String::new(),
             locked: true,
+            cycle: Vec::new(),
+            types: Vec::new(),
+            meow_cycle: Vec::new(),
+            meow_types: Vec::new(),
+            empty_only: false,
         }
     }
 
@@ -219,6 +254,28 @@ impl UiKey {
             line if meow && !line.is_empty() => line,
             _ => self.command(gesture),
         }
+    }
+
+    /// The press cycle with Meow held or not: the rows in order. With Meow held and no Meow press,
+    /// the plain rows.
+    pub fn press_rows(&self, meow: bool) -> Vec<PressRow> {
+        let (first, more, types) = if meow && !self.meow.press.is_empty() {
+            (&self.meow.press, &self.meow_cycle, &self.meow_types)
+        } else {
+            (&self.press, &self.cycle, &self.types)
+        };
+        std::iter::once(first)
+            .chain(more)
+            .enumerate()
+            .filter(|(i, l)| *i == 0 || !l.is_empty())
+            .map(|(i, l)| PressRow { line: l.clone(), types: types.contains(&(i as u8 + 1)) })
+            .filter(|r| !r.line.is_empty())
+            .collect()
+    }
+
+    /// Whether the key has more than one press (a cycle), with Meow held or not.
+    pub fn cycles(&self, meow: bool) -> bool {
+        self.press_rows(meow).len() > 1
     }
 
     /// Every (gesture, meow, command line) the key has.
@@ -259,7 +316,34 @@ pub(crate) fn core_keys() -> Vec<lumacore_registry::KeyDecl> {
         mode("freeze", "Freeze", "❄"),
         mode("solo", "Solo", "◎"),
     ];
-    keys.into_iter().chain(command_keys()).collect()
+    keys.into_iter().chain(command_keys()).chain(layer_keys()).collect()
+}
+
+/// The shortcut layers' own keys (decisions 0295; `keybindings::PRG_KEYS`): each row a press of
+/// the cycle — `!…` runs at once, the others type onto the command line.
+fn layer_keys() -> impl Iterator<Item = KeyDecl> {
+    fn rows(list: &[&str]) -> (String, Vec<String>, Vec<u8>) {
+        let mut lines = list.iter().map(|r| r.strip_prefix('!').unwrap_or(r).to_string());
+        let first = lines.next().unwrap_or_default();
+        let types = list.iter().enumerate().filter(|(_, r)| !r.starts_with('!')).map(|(i, _)| i as u8 + 1).collect();
+        (first, lines.collect(), types)
+    }
+    lumacore_base::keybindings::PRG_KEYS.iter().map(|k| {
+        let (press, cycle, types) = rows(k.press);
+        let (meow_press, meow_cycle, meow_types) = rows(k.meow);
+        KeyDecl {
+            press,
+            cycle,
+            types,
+            meow_press,
+            meow_cycle,
+            meow_types,
+            hold: k.hold.into(),
+            double_press: k.double.into(),
+            empty_only: k.empty_only,
+            ..core(k.id, k.label, "", &format!("{} {} — {}", k.layer.label(), k.key, k.label))
+        }
+    })
 }
 
 /// The built-in keys, numbered as published at `Root.Resources.UIKeys`: the catalog's keys as

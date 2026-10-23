@@ -38,7 +38,7 @@ pub const ERRORS: &[ErrorInfo] = &[
     ErrorInfo {
         code: "E-KEY-003",
         title: "No such binding",
-        explain: "Unbind removes your profile's own bindings; vanilla (factory) bindings stay. `List KeyBindings` shows each binding's layer.",
+        explain: "Unbind removes your profile's own binding and LumaCore's comes back; with none of yours it turns LumaCore's default off in that mode (decisions 0295). A key nobody binds there has nothing to remove. `List KeyBindings` shows each binding's source.",
     },
     ErrorInfo {
         code: "E-KEY-004",
@@ -49,5 +49,15 @@ pub const ERRORS: &[ErrorInfo] = &[
         code: "E-KEY-005",
         title: "Core keys can't be bound",
         explain: "F9–F12, Pause and Print Screen are the core keys (DeskLock, normal theme, shortcut mode, view bar, screenshot, Shutdown menu, sidebars, full screen — decisions §30 \"12a3\"), with or without modifiers. F1–F8 are free for your own keys and executors.",
+    },
+    ErrorInfo {
+        code: "E-KEY-006",
+        title: "Letters type in KBD",
+        explain: "In the Keyboard mode a letter, digit or sign always types (decisions 0295), so it can't be bound for every mode or for KBD. Bind it where single keys are words: `Bind \"E\" `Edit` /Shortcuts \"PRG\"` (or NAV). F keys and Ctrl / Alt combinations bind in every mode.",
+    },
+    ErrorInfo {
+        code: "E-KEY-007",
+        title: "Not a key's line",
+        explain: "A UI key's lines (decisions 0295): Press takes one or more lines in backticks (more than one is a press cycle), Types the presses that type onto the command line (`1`, `1 Thru 2`, `\"1 3\"`, `None`), the other gestures one line each. A LumaCore or plugin key is locked: bind your own in its place (`Bind … /Shortcuts`).",
     },
 ];

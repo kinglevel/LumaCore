@@ -59,8 +59,8 @@ line falls back to its plain line.
 
 ## Core keys (F9–F12)
 
-Core shortcuts are F keys and special keys, never letters (letters always type); F1–F8 are free for your own keys and, later, executors. Core keys
-can't be taken by `Bind` (E-KEY-005), with or without modifiers.
+Core shortcuts are F keys and special keys, never letters; F1–F8 are free for your own keys and, later, executors. Core keys
+can't be taken by `Bind` (E-KEY-005), with or without modifiers, in any shortcut mode.
 
 | Key | Does |
 |---|---|
@@ -101,25 +101,63 @@ desk maximises a window from the window menu (**Maximize**).
 `List UIKey` lists the keys you can use; `Info UIKey <id>` shows one key's lines.
 When ids clash, core wins over plugin over user.
 
+## Shortcut modes and the Programmer's keys
+
+F10 switches the screen between three shortcut modes (decisions 0295):
+
+- **KBD** — every letter, digit and sign types; F keys and Ctrl / Alt keys still work.
+- **PRG** — single keys are console words: `F` Fixture, `G` Group, `P` Preset, `A` At,
+  `E` Edit, `S` Store, `U` Update, `T` Thru, `I` If, `O` Off, `L` List, Alt+A Assign,
+  Alt+C Cue, Alt+S Sequence, Ctrl+C Copy, Ctrl+M Move, Ctrl+D Delete, Ctrl+S Select,
+  Ctrl+O On, Alt+T Stomp, Alt+G Goto, Ctrl+Alt+F SelectFixtures, Ctrl+P Pause, Ctrl+G Go,
+  Ctrl+F Full, Delete clears (Selection › Active › All; held: all), `H` / `B` / Alt+F /
+  Ctrl+Alt+S the modes, Space Go and Alt+Space Pause (Space and the mode letters only on an
+  empty line), Ctrl+Z Oops, Ctrl+Alt+H Help. With Meow held some keys give another word
+  (Shift+F FixtureType, Shift+P FeatureGroup, Shift+G Tag, …). Inside an open quote every
+  key types. `List KeyBindings` shows the whole map of your mode.
+- **NAV** — the tree's keys (press `?` there).
+
+### Press cycles
+
+Press a key again and its word changes in place: `E` puts `Edit` on the line, `E` again turns
+it into `EditSetting`; Alt+A gives `Assign`, then `Label`; Ctrl+C `Copy`, `Paste`, `Insert`.
+This works while the word is still the last thing on the line — type anything else and the key
+starts over; there is no timer. Some presses run instead of typing: `Fixture 1` then `.` `.`
+runs `Fixture 1 Zero`, `+` `+` runs `… At + 10`.
+
 ## Bind and Unbind
 
 ```text
-Bind F5 "List Fixture" "Quick list"   -- F5 → user key user.f5 (Press line)
-Bind F6 Blind                         -- F6 presses the core Blind key
-Unbind F5
-List Keys
+Bind "F5" `List Fixture` /Description "Quick list"   -- F5 → user key user.f5, every mode
+Bind "F6" "blind"                                    -- F6 presses the core Blind key
+Bind "E" `Edit` `EditSetting` `EditRecipe` /Shortcuts "PRG"   -- your own E in PRG, a cycle
+Set UIKey "user.prg.e" "Types" 1 Thru 3              -- its presses type onto the line
+Unbind "E" /Shortcuts "PRG"                          -- LumaCore's E is back
+Unbind "L" /Shortcuts "PRG"                          -- LumaCore's L off on your profile
+List KeyBindings
 ```
 
-- ``Bind <key> `<command line>` `` (the line in backticks, decisions §33 91) puts the line into the user key `user.<key>` (its
-  Press line) and binds the key to it.
+- ``Bind <key> `<command line>` `` (the line in backticks, decisions §33 91) puts the line into
+  the user key `user.<key>` (`user.prg.<key>` with `/Shortcuts "PRG"`) and binds the key to it.
+  Several lines are a press cycle.
 - `Bind <key> <UI key id>` binds the key to an existing UI key.
+- `/Shortcuts "KBD" | "PRG" | "NAV"` binds in that mode only; without it the key works in
+  every mode. A letter, digit, sign or Space (no Ctrl / Alt) types in KBD, so it binds only in
+  PRG or NAV (E-KEY-006).
+- A user key's lines are its properties: `Set UIKey "<id>" "Press" `…` `…``, `"Types"` (the
+  presses that type; the others run), `"Hold"`, `"Release"`, `"ReleaseAfterHold"`,
+  `"DoublePress"`, and the same with `Meow` in front. LumaCore's keys are locked (E-KEY-007):
+  bind your own in their place.
 - Bindings work at once — no restart.
-- `Unbind` removes your binding; the vanilla default for that key comes back.
-- Key names: `F5`, `Ctrl-R`, `Alt-S`, `Ctrl-Shift-L`, …
+- `Unbind` removes your binding; LumaCore's default for that key comes back. With none of
+  yours there, it turns LumaCore's key off in that mode on your profile; `Unbind` again brings
+  it back.
+- Key names: `F5`, `Ctrl-R`, `Alt-S`, `Ctrl-Shift-L`, `E`, `.`, `Space`, …
   An unknown key name is refused (E-KEY-002).
 
 Bindings resolve in three layers: debug bindings (debug mode only), then your
-profile's bindings, then the vanilla defaults.
+profile's bindings, then LumaCore's; within each, a mode's own binding wins over an every-mode
+one.
 
 ## Checked command lines
 
@@ -141,11 +179,11 @@ Each user sees their own modes (`Runtime.Users.{User}.Modes`).
 ## Built and planned
 
 - **Built:** the three layers, five gestures in the model and in the app/web
-  clients, Meow lines, core / plugin / user keys, `Bind` / `Unbind`, per-profile
-  timing, checks on save and load, key lights for the mode objects.
-- Still planned: setting a user key's other gestures and Meow lines from the command
-  line (today `Bind` sets the Press line), a hotkey editor and per-view shortcut modes —
-  see [the roadmap](../../meta/roadmap.md).
+  clients, Meow lines, core / plugin / user keys, `Bind` / `Unbind` per shortcut mode,
+  press cycles, the Programmer's keys as LumaCore's rows, a user key's lines with `Set UIKey`,
+  per-profile timing, checks on save and load, key lights for the mode objects.
+- Still planned: the key editor in the profile editor, the shortcut mode per screen, NAV's
+  own keys as rows, hold = repeat — see [the roadmap](../../meta/roadmap.md).
 
 ## Recovery: CleanStart
 

@@ -131,6 +131,9 @@ pub enum Value {
     Text(Spanned<String>),
     /// A command line as a value, without its backticks (decision 91).
     Line(Spanned<String>),
+    /// Several command lines in a row, each in its backticks: a key's press cycle (decisions
+    /// 0295, ``Set UIKey "user.e" "Press" `Edit` `EditSetting` ``).
+    Lines(Vec<Spanned<String>>),
     /// `Self.DataPool.Name`, the parts after `Self`.
     Read(Spanned<Vec<String>>),
     /// An object, a path or a tree path as a value: `At Output 1`, `Attribute "Pan"`.
@@ -179,6 +182,10 @@ impl Value {
             Value::Number(n) | Value::Text(n) | Value::Line(n) => n.span,
             Value::Relative { op, number } => op.span.to(number.span),
             Value::Spread { from, to } => from.span.to(to.span),
+            Value::Lines(ls) => match (ls.first(), ls.last()) {
+                (Some(a), Some(b)) => a.span.to(b.span),
+                _ => Span::default(),
+            },
             Value::Word(w) => w.span,
             Value::Read(r) => r.span,
             Value::Target(t) => t.span(),

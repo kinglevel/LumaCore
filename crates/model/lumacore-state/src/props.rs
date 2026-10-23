@@ -210,6 +210,9 @@ pub struct Props {
     pub lists: &'static [&'static [Property]],
     /// Rows by key; None = the members of the object's tree collection.
     pub keyed: Option<Keyed>,
+    /// Its keyed rows are its members though it also has a tree to browse (a UI key: the core
+    /// keys at `Root.Resources.UIKeys`, a line names any key by its id — decisions 0295).
+    pub keyed_beside_tree: bool,
     /// The row a target without ids means (this station, the show, your own profile).
     pub implicit: Option<fn(&AppState) -> String>,
     /// How a row is named in replies and titles (`Interface en0`); None = `<Keyword> <n>`.
@@ -264,6 +267,7 @@ impl Props {
         meta: MetaLevel::None,
         lists: &[],
         keyed: None,
+        keyed_beside_tree: false,
         implicit: None,
         label: None,
         apply: None,

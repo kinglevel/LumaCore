@@ -142,6 +142,53 @@ fn the_terminal_and_the_bar_show_the_same_suggestions() {
     assert!(compared >= 5, "only {compared} lines had a list to compare");
 }
 
+/// PRG's letters are LumaCore's keys (decisions 0295): a key types its word, the same key again
+/// takes the next row of its cycle in place, a press that runs completes the line, and anything
+/// typed between starts over.
+#[test]
+fn prg_keys_cycle_their_word_in_place_and_a_run_completes_the_line() {
+    let mut state = crate::core::demo::fresh_state();
+    state.user = "Admin".into();
+    state.shortcut_mode = crate::core::app_state::ShortcutMode::Programmer;
+    let mut app = TuiApp::new(&state);
+    let key = |app: &mut TuiApp, state: &mut AppState, code: KeyCode, mods: KeyModifiers| app.handle_key(CtKeyEvent::new(code, mods), state);
+    let ch = |app: &mut TuiApp, state: &mut AppState, c: char| key(app, state, KeyCode::Char(c), KeyModifiers::NONE);
+    ch(&mut app, &mut state, 'f');
+    ch(&mut app, &mut state, '1');
+    assert_eq!(app.get_input(), "Fixture 1");
+    ch(&mut app, &mut state, 'e');
+    assert_eq!(app.get_input(), "Fixture 1 Edit ");
+    ch(&mut app, &mut state, 'e');
+    assert_eq!(app.get_input(), "Fixture 1 EditSetting ");
+    ch(&mut app, &mut state, 'e');
+    assert_eq!(app.get_input(), "Fixture 1 Edit ", "it wraps");
+    key(&mut app, &mut state, KeyCode::Char('a'), KeyModifiers::ALT);
+    key(&mut app, &mut state, KeyCode::Char('a'), KeyModifiers::ALT);
+    assert_eq!(app.get_input(), "Fixture 1 Edit Label ");
+    // A dot glues to its number; a second dot runs Zero with the line.
+    app.set_input("");
+    ch(&mut app, &mut state, 'f');
+    ch(&mut app, &mut state, '1');
+    ch(&mut app, &mut state, '.');
+    assert_eq!(app.get_input(), "Fixture 1.");
+    ch(&mut app, &mut state, '.');
+    assert_eq!(app.get_input(), "", "the line ran");
+    assert!(app.output.iter().any(|l| l.contains("Fixture 1 Zero")), "{:?}", app.output.iter().rev().take(3).collect::<Vec<_>>());
+    // Inside a quote every key types.
+    app.set_input("Label Group 3 \"");
+    ch(&mut app, &mut state, 'e');
+    assert_eq!(app.get_input(), "Label Group 3 \"e");
+    // Space is Go only on an empty line; with words it types.
+    app.set_input("Group 3");
+    ch(&mut app, &mut state, ' ');
+    assert_eq!(app.get_input(), "Group 3 ");
+    // KBD: the letter types.
+    state.shortcut_mode = crate::core::app_state::ShortcutMode::Keyboard;
+    app.set_input("");
+    ch(&mut app, &mut state, 'e');
+    assert_eq!(app.get_input(), "e");
+}
+
 #[test]
 fn meow_f9_toggles_the_normal_theme_of_the_device() {
     let mut state = AppState::new();

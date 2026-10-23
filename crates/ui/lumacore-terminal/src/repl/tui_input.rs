@@ -339,6 +339,11 @@ impl TuiApp {
             return;
         }
 
+        // In NAV your own NAV bindings come before NAV's keys (decisions 0295).
+        if state.shortcut_mode == ShortcutMode::Navigator && self.bound_key_pressed(state, &key) {
+            return;
+        }
+
         // NAV's keys while its tree is up and the command line is NAV's (decisions 0291).
         if self.nav_key(key, state) {
             return;
@@ -348,94 +353,11 @@ impl TuiApp {
             return;
         }
 
-        // Keyboard bindings first: key → UiKey (§17).
-        if let Some((id, meow)) = self.bound_key(state, &key)
-        {
-            self.press_bound_key(state, &id, meow);
+        // Keyboard bindings: key → UiKey (§17), in the screen's shortcut mode (0295): PRG's
+        // letters are LumaCore's keys there, and a key's next press cycles its word. Inside an
+        // open quote a plain key types.
+        if self.bound_key_pressed(state, &key) {
             return;
-        }
-
-        // Programmer mode: object/noun keys append to command line (work with any input)
-        if state.shortcut_mode == ShortcutMode::Programmer
-            && let KeyCode::Char(ch) = key.code
-            && (key.modifiers == KeyModifiers::NONE || key.modifiers == KeyModifiers::SHIFT)
-        {
-            let now = std::time::Instant::now();
-            let is_double = self
-                .last_shortcut
-                .map(|(prev_ch, prev_time)| {
-                    prev_ch == ch.to_ascii_lowercase()
-                        && now.duration_since(prev_time).as_millis() < 500
-                })
-                .unwrap_or(false);
-
-            let handled = match ch.to_ascii_lowercase() {
-                // ── Object/noun keys: append to command line ──
-                'a' => {
-                    if is_double {
-                        self.last_shortcut = None;
-                        self.execute_command(state, "at 100");
-                    } else {
-                        self.last_shortcut = Some(('a', now));
-                        self.append_keyword("at");
-                    }
-                    true
-                }
-                't' => {
-                    self.append_keyword("thru");
-                    true
-                }
-                'f' => {
-                    self.append_keyword("fixture");
-                    true
-                }
-                'g' => {
-                    self.append_keyword("group");
-                    true
-                }
-                's' => {
-                    self.append_keyword("store");
-                    true
-                }
-                'u' => {
-                    self.append_keyword("update");
-                    true
-                }
-                'o' => {
-                    self.append_keyword("off");
-                    true
-                }
-                'p' => {
-                    self.append_keyword("preset");
-                    true
-                }
-                'e' => {
-                    self.append_keyword("edit");
-                    true
-                }
-                'i' => {
-                    self.append_keyword("if");
-                    true
-                }
-                // ── Action keys: execute immediately (only on empty input) ──
-                'h' if self.get_input().is_empty() => {
-                    self.execute_command(state, "highlight");
-                    true
-                }
-                'b' if self.get_input().is_empty() => {
-                    self.execute_command(state, "blind");
-                    true
-                }
-                'l' if self.get_input().is_empty() => {
-                    self.execute_command(state, "list");
-                    true
-                }
-                _ => false,
-            };
-
-            if handled {
-                return;
-            }
         }
 
         match (key.code, key.modifiers) {
@@ -774,13 +696,15 @@ impl TuiApp {
     }
 
     /// Append a keyword to the command line with correct spacing.
-    fn append_keyword(&mut self, keyword: &str) {
-        let current = self.get_input();
-        let sep = if current.is_empty() || current.ends_with(' ') {
-            ""
-        } else {
-            " "
-        };
-        self.set_input(&format!("{current}{sep}{keyword} "));
+    /// A bound key, pressed: true when it acted. A plain key inside an open quote types.
+    fn bound_key_pressed(&mut self, state: &mut AppState, key: &CtKeyEvent) -> bool {
+        let plain = matches!(key.code, KeyCode::Char(_)) && !key.modifiers.intersects(KeyModifiers::CONTROL | KeyModifiers::ALT);
+        if plain && self.get_input().matches('"').count() % 2 == 1 {
+            return false;
+        }
+        match self.bound_key(state, key) {
+            Some((id, meow)) => self.press_bound_key(state, &id, meow),
+            None => false,
+        }
     }
 }
