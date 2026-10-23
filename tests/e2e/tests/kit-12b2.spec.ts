@@ -89,7 +89,7 @@ test('the Menu has icons; Users & Profiles shows users, profiles and a profile\'
   await setup.locator(`luma-grid [data-gutter="${admin.guid}"]`).click();
   await setup.locator('luma-slab [data-own][data-id="settings"]').filter({ visible: true }).click();
   const sw = page.locator('.lc-set-scrim');
-  await expect(sw.locator('.lc-set-tabs button')).toHaveText(['Look', 'Input & keys', 'Oops', 'Command line', 'Attributes', 'MVR import', 'Lock screen', 'Meta', 'Tags']);
+  await expect(sw.locator('.lc-set-tabs button')).toHaveText(['Look', 'Input & keys', 'Oops', 'Command line', 'Update', 'Attributes', 'MVR import', 'Paint slots', 'Lock screen', 'Meta', 'Tags']);
   await sw.locator('.lc-set-tabs button', { hasText: 'Input & keys' }).click();
   const meow = sw.locator('.lc-set-cell', { hasText: 'MeowKey' });
   await meow.click();

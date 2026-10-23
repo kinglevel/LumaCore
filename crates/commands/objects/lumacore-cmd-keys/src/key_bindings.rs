@@ -157,12 +157,32 @@ pub fn list_keybindings(state: &AppState) -> String {
     text
 }
 
+/// `Edit KeyBindings` (decisions 0295): open the key editor of your profile; a terminal gets the
+/// list.
+#[derive(lumacore_syntax_derive::Args)]
+#[lum(verb = "Edit", object = "KeyBindings")]
+pub struct EditKeyBindings {
+    #[lum(target)]
+    pub target: Option<lumacore_syntax::ast::Target>,
+}
+
+impl lumacore_objects::commands::typed::Command for EditKeyBindings {
+    fn run(self, state: &mut AppState) -> lumacore_objects::DispatchResult {
+        // Always your own profile's keys (Bind's): the target names nothing more.
+        let _ = self.target;
+        state.ui_requests.push(lumacore_wire::UiEvent::KeyEditor);
+        out(list_keybindings(state))
+    }
+}
+
 lumacore_objects::listed_object!(
 default List,
+@rights lumacore_objects::rights::content, lumacore_objects::objects::on_client, lumacore_objects::objects::show_reach;
 KEY_BINDINGS,
 "KeyBindings",
 ["keys", "bindings"],
-"Key bindings",
+"Key bindings of your profile; Edit opens the key editor",
 [
     List => |s, _| out(list_keybindings(s)),
+    Edit => lumacore_objects::commands::typed::typed::<EditKeyBindings>,
 ]);

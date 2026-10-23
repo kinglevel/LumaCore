@@ -953,9 +953,9 @@ Related: `undo`, `health`, `error`
 
 ## KeyBindings
 
-aliases `keys`, `bindings` · verbs List · default verb List (`KeyBindings` = `List KeyBindings`) · rights Guest: List
+aliases `keys`, `bindings` · verbs List, Edit · default verb List (`KeyBindings` = `List KeyBindings`) · rights Guest: List · Program: Edit
 
-Key bindings
+Key bindings of your profile; Edit opens the key editor
 
 
 ## Library

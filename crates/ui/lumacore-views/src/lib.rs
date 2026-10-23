@@ -14,6 +14,7 @@ pub mod detail;
 pub mod devices;
 pub mod encoder;
 pub mod insert;
+pub mod keys;
 pub mod inspector;
 pub mod menu_rows;
 pub mod menus;

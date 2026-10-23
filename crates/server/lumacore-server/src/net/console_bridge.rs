@@ -466,9 +466,9 @@ impl lumacore_http::ConsoleBridge for ServerConsoleBridge {
     }
 
     fn paint(&self, user: &str, profile: &Value) -> Value {
-        let show = self.published.show.load();
-        lumacore_views::paint::view(&show, user, profile.as_u64().and_then(|n| u32::try_from(n).ok()))
+        lumacore_views::paint::view(&self.published.show.load(), user, profile.as_u64().and_then(|n| u32::try_from(n).ok()))
     }
+    fn keys(&self, user: &str) -> Value { lumacore_views::keys::view(&self.published.show.load(), user) }
 
     fn rules(&self, user: &str, profile: &Value, which: &str) -> Value {
         let show = self.published.show.load();

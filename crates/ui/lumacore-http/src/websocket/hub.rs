@@ -70,6 +70,8 @@ pub enum BuildSpec {
     Paint { user: String, profile: Value },
     /// The Rules window (decisions 0294).
     Rules { user: String, profile: Value, which: String },
+    /// The key editor (decisions 0295): the viewer's keyboard in each shortcut layer.
+    Keys { user: String },
 }
 
 impl BuildSpec {
@@ -99,6 +101,7 @@ impl BuildSpec {
             Self::Inspector { user, path } => format!("inspector|{}|{path}", user.to_lowercase()),
             Self::Paint { user, profile } => format!("paint|{}|{profile}", user.to_lowercase()),
             Self::Rules { user, profile, which } => format!("rules|{}|{profile}|{which}", user.to_lowercase()),
+            Self::Keys { user } => format!("keys|{}", user.to_lowercase()),
         }
     }
 
@@ -125,6 +128,8 @@ impl BuildSpec {
             Self::Tree { .. } | Self::Inspector { .. } => [r.show, 0, 0],
             // The palette is fixed; the slots, recent colours and rules are show data.
             Self::Paint { .. } | Self::Rules { .. } => [r.show, 0, 0],
+            // The bindings and keys are the profile's (show data); LumaCore's are fixed.
+            Self::Keys { .. } => [r.show, 0, 0],
         }
     }
 
@@ -192,6 +197,7 @@ impl BuildSpec {
             Self::Inspector { user, path } => console.inspector(user, path),
             Self::Paint { user, profile } => console.paint(user, profile),
             Self::Rules { user, profile, which } => console.rules(user, profile, which),
+            Self::Keys { user } => console.keys(user),
         }
     }
 }

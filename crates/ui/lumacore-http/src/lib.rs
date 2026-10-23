@@ -274,6 +274,11 @@ pub trait ConsoleBridge: Send + Sync {
         serde_json::json!({ "rows": [] })
     }
 
+    /// The key editor's keyboard (the `keys` feed, decisions 0295).
+    fn keys(&self, _user: &str) -> serde_json::Value {
+        serde_json::json!({ "layers": [] })
+    }
+
     /// A Device Sheet for a user (the `devices` feed, decisions device-sheet-window): `params` are
     /// the window's (`layer`, `show`, `programmer_only`, `selected_only`, `selection_first`, `folders`,
     /// `from`, `count`).

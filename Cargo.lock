@@ -2405,6 +2405,7 @@ dependencies = [
  "lumacore-objects",
  "lumacore-registry",
  "lumacore-syntax",
+ "lumacore-syntax-derive",
  "lumacore-sysmon",
  "lumacore-tree",
  "lumacore-wire",

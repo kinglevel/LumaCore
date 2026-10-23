@@ -34,6 +34,7 @@ import * as marks from './marks.js';
 import './devicegrid.js';
 import './treewindow.js';
 import './ruleswindow.js';
+import './keymap.js';
 
 const PALETTE = [
   ['Background', 'bg'], ['Surface', 'surface'], ['Raised', 'raised'], ['Line', 'line'], ['Text', 'text'],
@@ -893,7 +894,38 @@ export function buildShowroom() {
   build12d(root, { section, div, btn });
   // After 12d: its slab stays the first one in the Showroom (kit-12d reads the first).
   root.append(section('luma-rules-window — the Rules window: the attribute rules in order (first match wins), Which rule?, drag to reorder, the slab', rwWrap));
+  // The key editor (decisions 0295) on sample data — its lines show here instead of running.
+  const km = document.createElement('luma-keymap');
+  const kmOut = div('lc-sr-note lc-selectable', 'Pick a key, edit its presses, Make it mine, Unbind: the line shows here.');
+  km.addEventListener('run', e => { e.stopPropagation(); kmOut.textContent = `› ${e.detail.line}`; });
+  const kmWrap = div('lc-sr-col');
+  kmWrap.append(km, kmOut);
+  km.show(sampleKeys(), { layer: 'PRG' });
+  root.append(section('luma-keymap — the key editor: a keyboard per shortcut mode, modifier layers, a key\'s layers, its press cycle (types / runs), Make it mine, Unbind', kmWrap));
   return root;
+}
+
+// A few keys as the `keys` feed sends them (lumacore_views::keys).
+export function sampleKeys() {
+  const lines = (press, meow = []) => ({ press, meow, Release: '', Hold: '', ReleaseAfterHold: '', DoublePress: '' });
+  const t = line => ({ line, types: true });
+  const r = line => ({ line, types: false });
+  const core = (key, text) => ({ key, from: 'All', source: 'core', ui_key: 'core', text, locked: true, lines: lines([r(text)]) });
+  const all = [core('F9', 'DeskLock'), core('F10', 'Shortcuts'), core('F11', 'Screenshot'), core('F12', 'Sidebars'),
+    { key: 'F5', from: 'All', source: 'profile', ui_key: 'user.f5', text: 'F5', locked: false, lines: lines([r('List Fixture')], [r('Info Fixture')]) },
+    { key: 'Enter', from: 'All', source: 'line', text: 'Run the line', locked: true }];
+  const prg = [...all,
+    { key: 'E', from: 'PRG', source: 'lumacore', ui_key: 'prg.e', text: 'Edit', locked: true, lines: lines([t('Edit'), t('EditSetting')]) },
+    { key: 'Alt-A', from: 'PRG', source: 'lumacore', ui_key: 'prg.alt-a', text: 'Assign', locked: true, lines: lines([t('Assign'), t('Label')], [t('Set')]) },
+    { key: 'F', from: 'PRG', source: 'lumacore', ui_key: 'prg.f', text: 'Fixture', locked: true, lines: lines([t('Fixture'), t('Selection')], [t('FixtureType')]) },
+    { key: '.', from: 'PRG', source: 'lumacore', ui_key: 'prg.dot', text: '.', locked: true, lines: lines([t('.'), r('Zero')]) },
+    { key: 'L', from: 'PRG', source: 'off', ui_key: '', text: '', locked: true, lines: null }];
+  const nav = [...all, { key: 'Y', from: 'NAV', source: 'nav', text: 'Copy…', locked: true }, { key: 'Up', from: 'NAV', source: 'nav', text: 'Move', locked: true }];
+  return {
+    profile: 2, name: 'Admin', meow: 'Shift', core: ['F9', 'F10', 'F11', 'F12', 'Pause', 'PrintScreen'],
+    layers: [{ layer: 'All', own: 'user.', keys: all }, { layer: 'KBD', own: 'user.kbd.', keys: all }, { layer: 'PRG', own: 'user.prg.', keys: prg }, { layer: 'NAV', own: 'user.nav.', keys: nav }],
+    lines: { bind: 'Bind "{key}" {lines}{mode}', mode: ' /Shortcuts "{layer}"', unbind: 'Unbind "{key}"{mode}', set: 'Set UIKey "{id}" "{prop}" {value}' },
+  };
 }
 
 // A small sequence as the `sequence` feed sends it (lumacore_views::sequence).

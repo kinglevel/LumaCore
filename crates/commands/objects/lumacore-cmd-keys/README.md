@@ -36,15 +36,16 @@ crate may use this one, never the other way round (§34 25.4).
 
 ## Edges
 
-- **Depends on:** lumacore-registry, lumacore-base, lumacore-syntax, lumacore-sysmon,
-  lumacore-wire, lumacore-tree, lumacore-objects.
-- **Used by:** lumacore-terminal, lumacore-sweep, lumacore-tidy.
+- **Depends on:** lumacore-registry, lumacore-base, lumacore-syntax, lumacore-syntax-derive,
+  lumacore-sysmon, lumacore-wire, lumacore-tree, lumacore-objects.
+- **Used by:** lumacore-terminal, lumacore-sweep, lumacore-tidy, lumacore-catalog-tests.
 
 ## Decisions
 
 - [§17](../../../../docs/archive/decisions-2026-10.md) — keys: binding → UiKey → command lines
 - [§30 "12a3"](../../../../docs/archive/decisions-2026-10.md) — the core keys
 - [§34 25.4](../../../../docs/archive/decisions-2026-10.md#34-code-structure-and-file-headers-2026-10-15) — this crate
+- [0295](../../../../docs/decisions/0295-keys-in-shortcut-layers-and-press-cycles.md) — keys per shortcut mode, press cycles, `Edit KeyBindings`
 
 ## Testing
 

@@ -8,6 +8,7 @@ description = "The keys: Bind, Unbind, Shortcuts, the UIKey and KeyBindings obje
 lumacore-registry = { path = "../../../foundation/lumacore-registry" }
 lumacore-base = { path = "../../../foundation/lumacore-base" }
 lumacore-syntax = { path = "../../../foundation/lumacore-syntax" }
+lumacore-syntax-derive = { path = "../../../foundation/lumacore-syntax-derive" }
 lumacore-sysmon = { path = "../../../foundation/lumacore-sysmon" }
 lumacore-wire = { path = "../../../foundation/lumacore-wire" }
 lumacore-tree = { path = "../../../model/lumacore-tree" }

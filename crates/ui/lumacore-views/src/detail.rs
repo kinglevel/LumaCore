@@ -43,7 +43,8 @@ fn profile(show: &ShowData, no: u32) -> Option<Value> {
     let keys: Vec<Value> = c
         .keybindings
         .values()
-        .map(|k| json!({ "key": k.key, "ui_key": k.ui_key, "description": k.description }))
+        // A key per shortcut layer (`PRG E`, decisions 0295); a turned-off LumaCore key says so.
+        .map(|k| json!({ "key": lumacore_tree::keybindings::slot(k.layer, &k.key), "ui_key": if k.ui_key.is_empty() { "off" } else { k.ui_key.as_str() }, "description": k.description }))
         .collect();
     let mut window_presets = Vec::new();
     for (kind, pool) in &c.window_presets {

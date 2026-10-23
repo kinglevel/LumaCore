@@ -4,6 +4,11 @@ The user approved the mockups on 2026-10-23 ("looks good, implement"), with ever
 `docs/dev/ui-kit/mockups/2026-10-23-profile-editor/` 01 (the profile editor), 02 (a keyboard per
 shortcut mode) and 03 (press cycles). Research: `docs/research/keys/2026-10-23-key-editor.md`.
 
+## Status (2026-10-24)
+
+Steps 1–4 built: 1 in `5f6fc39c`, 2–3 in `e71b3831`, 4 in the commit after it (CHANGELOG). What
+stays open is the list below.
+
 ## Steps
 
 1. **The profile's Settings…** opens the whole profile in `<luma-settings>`, not the theme editor.

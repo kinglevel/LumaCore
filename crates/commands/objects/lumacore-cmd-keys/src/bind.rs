@@ -37,7 +37,7 @@ use crate::lookup::find;
 /// `/Shortcuts "PRG"`: the mode a binding works in (decisions 0295); absent = every mode.
 pub const SHORTCUTS: FlagDef = FlagDef::new("Shortcuts", "The shortcut mode the binding works in (KBD, PRG, NAV); absent = every mode")
     .value("mode")
-    .choices(&["All", "KBD", "PRG", "NAV"]);
+    .choices(&["KBD", "PRG", "NAV"]);
 /// `/Description "…"`: the key's text in lists and the editor.
 pub const DESCRIPTION: FlagDef = FlagDef::new("Description", "The key's text in lists and the key editor").rest("text");
 

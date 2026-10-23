@@ -1652,6 +1652,7 @@ function handleUiEvent(ev) {
   if (ev.action === 'open_menu') return openMenuEvent(ev);
   if (ev.action === 'attribute_board') return openAttributeBoard(ev);
   if (ev.action === 'sequence_sheet') return openSequenceSheet(ev.sequence);
+  if (ev.action === 'key_editor') return openKeyEditor();
   if (ev.action === 'close_menu') {
     menuEpoch++;
     document.querySelectorAll('.mo-overlay.open').forEach(o => closeMenuOverlay(o.id));
@@ -2866,6 +2867,19 @@ function openAttributeBoard(ev) {
       attrBoard.open.board.update(m.data);
     },
   });
+}
+
+// `Edit KeyBindings` (decisions 0295): the key editor of your profile on the `keys` feed; every
+// change is a Bind / Unbind / Set UIKey line from the feed's templates.
+const keyEditor = { ed: null, sub: null };
+function openKeyEditor() {
+  if (keyEditor.ed) return;
+  const layer = document.querySelector('#cb-mode .cb-text')?.textContent?.trim();
+  keyEditor.ed = LumaKit.keymap.openKeyEditor({
+    line: wsCommand, layer,
+    close: () => { keyEditor.sub?.close(); Object.assign(keyEditor, { ed: null, sub: null }); },
+  });
+  keyEditor.sub = feeds().sub('keys', {}, { batch: m => keyEditor.ed?.update(m.data) });
 }
 
 function closeAttributeBoard() {
@@ -4440,7 +4454,8 @@ function openObjectSettings(ev) {
   LumaKit.settings.openSettings({
     title: ev.title, icon: win ? 'app-window' : 'settings', fields: ev.fields || [],
     delete_line: win ? `Delete Window ${win}` : null,
-    actions: themeOwner ? [{ label: 'Theme editor', line: `EditSetting ${themeOwner} Theme` }] : undefined,
+    // Keys are your own profile's (Bind's): the key editor opens on yours (decisions 0295).
+    actions: themeOwner ? [{ label: 'Theme editor', line: `EditSetting ${themeOwner} Theme` }, { label: 'My keys', line: 'Edit KeyBindings' }] : undefined,
   }, { run: line => { wsCommand(line); if (!/^(Delete|EditSetting) /.test(line)) setTimeout(() => wsCommand(win ? `EditSetting Window ${win}` : `EditSetting ${ev.title}`), 60); } });
 }
 
@@ -4522,7 +4537,7 @@ const DEVICE = (() => {
   } catch(_) { return 'tab-' + Math.random().toString(36).slice(2, 12); }
 })();
 const LAST_USER_KEY = 'lumacore.lastUser';
-const QUEUED_WHILE_LOCKED = new Set(['edit_settings', 'open_menu', 'attribute_board']);
+const QUEUED_WHILE_LOCKED = new Set(['edit_settings', 'open_menu', 'attribute_board', 'key_editor']);
 let loggedIn = false;
 let loginError = '';
 let station = null;

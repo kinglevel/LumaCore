@@ -126,6 +126,8 @@ pub enum Feed {
     Paint,
     /// The Rules window's rules (decisions 0294).
     Rules,
+    /// The key editor's keyboard (decisions 0295).
+    Keys,
 }
 
 /// Every feed a page can subscribe, once — the HTTP engine's rows in the catalog (decisions §34
@@ -340,6 +342,14 @@ pub const FEEDS: &[FeedDecl] = &[
         doc: "The paint picker and the theme editor's Paint tab (decisions 0294): the palette (12 hues in four tones, the named tone, the greys), the theme paint slots of `profile` (default your own: colour, LumaCore's, changed, added, each slot's Set and Reset line), your recent colours, the mode the picker opens on and the lines to add a slot, reset them and keep the mode.",
     },
     FeedDecl {
+        name: "keys",
+        kind: FeedKind::State,
+        open: false,
+        params: &[],
+        period_ms: 100,
+        doc: "The key editor (decisions 0295): your profile's keyboard in each shortcut layer (All, KBD, PRG, NAV) — every bound key with where it comes from (core, LumaCore, your profile, turned off), its UiKey and lines (the press cycle and which presses type, Meow, the other gestures), what the command line and NAV do with an unbound key, and the Bind / Unbind / Set UIKey line templates.",
+    },
+    FeedDecl {
         name: "rules",
         kind: FeedKind::State,
         open: false,
@@ -350,7 +360,7 @@ pub const FEEDS: &[FeedDecl] = &[
 ];
 
 impl Feed {
-    pub const ALL: [Feed; 27] = [
+    pub const ALL: [Feed; 28] = [
         Feed::Render,
         Feed::Health,
         Feed::Sysmon,
@@ -378,6 +388,7 @@ impl Feed {
         Feed::Inspector,
         Feed::Paint,
         Feed::Rules,
+        Feed::Keys,
     ];
 
     /// Its declaration in the catalog.
@@ -415,6 +426,7 @@ impl Feed {
             Feed::Inspector => "inspector",
             Feed::Paint => "paint",
             Feed::Rules => "rules",
+            Feed::Keys => "keys",
         }
     }
 
@@ -1000,6 +1012,7 @@ impl Conn {
             Feed::Inspector => Some(BuildSpec::Inspector { user: user.clone(), path: text("path").unwrap_or_default() }),
             Feed::Paint => Some(BuildSpec::Paint { user: user.clone(), profile: v["profile"].clone() }),
             Feed::Rules => Some(BuildSpec::Rules { user: user.clone(), profile: v["profile"].clone(), which: text("which").unwrap_or_default() }),
+            Feed::Keys => Some(BuildSpec::Keys { user: user.clone() }),
             Feed::ViewBar => Some(BuildSpec::ViewBar {
                 user: user.clone(),
                 screen: v["screen"].as_u64().unwrap_or(0) as u32,

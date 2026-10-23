@@ -70,8 +70,9 @@ test('the Power key opens the Shutdown menu', async ({ page }) => {
 
 test('List UIKey / Info UIKey publish the keys', async ({ page }) => {
   await open(page);
+  // The list is longer than a screen now: its end shows PRG's keys (decisions 0295); Menu is Info's.
   await cmd(page, 'List UIKey');
-  await expect.poll(() => screenText(page)).toMatch(/menu\s+core\s+⚙ Menu\s+Press: Toggle Menu\s+DoublePress: SaveShow/);
+  await expect.poll(() => screenText(page)).toMatch(/prg\.\S+\s+core\s+\S+\s+Press: /);
   await cmd(page, 'Info UIKey "Menu"');
   await expect.poll(() => screenText(page)).toMatch(/DoublePress:\s+SaveShow\s+\(replaces the press\)/);
   const r = await page.request.get(`${server.url}/api/ui-keys`);

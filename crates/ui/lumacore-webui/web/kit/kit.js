@@ -58,6 +58,7 @@ import './fader.js';
 import './encoderbar.js';
 import * as oops from './oops.js';
 import * as presetEditor from './preseteditor.js';
+import * as keymap from './keymap.js';
 import * as cueSheet from './cuesheet.js';
 import { FeedClient, SampleRing, drawLoop, applyDiff } from './feeds.js';
 import { buildShowroom } from './showroom.js';
@@ -68,5 +69,5 @@ const ready = Promise.all([
   document.fonts?.ready?.catch(() => {}) ?? Promise.resolve(),
 ]);
 
-window.LumaKit = { theme, pointer, icon, marks, statusStrip, themeEditor, paint, menu, dialog, keyboard, keypad, popup, settings, windowBar, suggest, toast, clipboard, mini, split, context, value, insert, mvrimport, editPatch, tools, groupEditor, presetEditor, attrBoard, oops, cueSheet, grid, slab, setup, editCard, feeds: { FeedClient, SampleRing, drawLoop, applyDiff }, showroom: buildShowroom, ready };
+window.LumaKit = { theme, pointer, icon, marks, statusStrip, themeEditor, paint, menu, dialog, keyboard, keypad, popup, settings, windowBar, suggest, toast, clipboard, mini, split, context, value, insert, mvrimport, editPatch, tools, groupEditor, presetEditor, keymap, attrBoard, oops, cueSheet, grid, slab, setup, editCard, feeds: { FeedClient, SampleRing, drawLoop, applyDiff }, showroom: buildShowroom, ready };
 ready.then(() => window.dispatchEvent(new Event('lumakit')));

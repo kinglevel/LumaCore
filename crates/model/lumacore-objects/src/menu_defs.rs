@@ -176,7 +176,14 @@ static PROFILE_DETAIL: Detail = Detail {
                     actions: &[("Open the attribute board", "Edit {owner} Attribute"), ("New attributes", "Edit {owner} Attribute /New"), ("Rules", "List {owner} AttributeRule")],
                 },
                 part("EncoderBars", "Encoder bars", "Attributes.EncoderBars", PartContent::Custom("encoder_bars")),
-                part("Keys", "Keys", "Keybindings", PartContent::List("keys", "key", &[frozen(ro("key", "Key", 120, 1)), ro("ui_key", "UI key", 160, 1), ro("description", "Description", 220, 2)])),
+                Part {
+                    name: "Keys",
+                    label: "Keys",
+                    path: "Keybindings",
+                    content: PartContent::List("keys", "key", &[frozen(ro("key", "Key", 120, 1)), ro("ui_key", "UI key", 160, 1), ro("description", "Description", 220, 2)]),
+                    // Bind edits your own profile's keys (decisions 0295).
+                    actions: &[("Open the key editor (your keys)", "Edit KeyBindings")],
+                },
                 part("WindowPresets", "Window presets", "WindowPresets", PartContent::List("window_presets", "guid", &[frozen(ro("no", "No", 48, 1)), ro("name", "Name", 160, 1), ro("type", "Window type", 140, 1)])),
                 part("Images", "Images", "Images", PartContent::List("images", "guid", &[frozen(ro("no", "No", 48, 1)), ro("name", "Name", 160, 1), ro("dims", "Size", 110, 2), ro("ext", "Type", 70, 2)])),
                 part("Icons", "Icons", "Icons", PartContent::List("icons", "guid", &[frozen(ro("no", "No", 48, 1)), ro("name", "Name", 160, 1), ro("ext", "Type", 70, 2)])),

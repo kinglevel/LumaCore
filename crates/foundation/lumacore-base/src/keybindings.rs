@@ -229,6 +229,74 @@ pub const PRG_KEYS: &[LayerKey] = &[
     LayerKey::prg("Ctrl-Alt-H", "prg.ctrl-alt-h", "Help", &["!Help"]).double("quicksheet"),
 ];
 
+/// What the command line itself does with a key (decisions 0295; the terminal's and the page's
+/// line editing, no UiKey): shown by the key editor so every key says what it does, never bound.
+/// A mode's row is that mode's own meaning.
+pub const LINE_KEYS: &[(Layer, &str, &str)] = &[
+    (Layer::All, "Enter", "Run the line"),
+    (Layer::All, "Esc", "Clear"),
+    (Layer::All, "Tab", "Complete"),
+    (Layer::All, "Backspace", "Erase"),
+    (Layer::All, "Up", "History"),
+    (Layer::All, "Down", "History"),
+    (Layer::All, "Left", "Cursor"),
+    (Layer::All, "Right", "Cursor · ghost"),
+    (Layer::All, "PageUp", "Scroll"),
+    (Layer::All, "PageDown", "Scroll"),
+    (Layer::All, "Home", "Line start"),
+    (Layer::All, "End", "Line end"),
+    (Layer::All, "Ctrl-Z", "Undo typing"),
+    (Layer::All, "Ctrl-Y", "Redo typing"),
+    (Layer::All, "Ctrl-C", "Clear line"),
+    (Layer::All, "Alt-Left", "cd back"),
+    (Layer::All, "Alt-Right", "cd forward"),
+    (Layer::Programmer, "Backspace", "Reset (empty line)"),
+    (Layer::Programmer, "Up", "Previous (empty line)"),
+    (Layer::Programmer, "Down", "Next (empty line)"),
+];
+
+/// NAV's own keys, one per key (decisions 0291; the `?` overlay's list in the terminal): shown by
+/// the key editor; a profile's NAV binding wins over them. Not lines yet, so not bindable rows.
+pub const NAV_MAP: &[(&str, &str)] = &[
+    ("Up", "Move"),
+    ("Down", "Move"),
+    ("PageUp", "Page"),
+    ("PageDown", "Page"),
+    ("Home", "First"),
+    ("End", "Last"),
+    ("Right", "Open"),
+    ("Left", "Close · parent"),
+    ("Enter", "Open · Set line"),
+    ("Tab", "Tree ⇄ inspector"),
+    ("Shift-Tab", "Tree ⇄ inspector"),
+    ("0", "Slot"),
+    ("1", "Slot"),
+    ("2", "Slot"),
+    ("3", "Slot"),
+    ("4", "Slot"),
+    ("5", "Slot"),
+    ("6", "Slot"),
+    ("7", "Slot"),
+    ("8", "Slot"),
+    ("9", "Slot"),
+    ("/", "Filter"),
+    ("N", "Next hit"),
+    ("Shift-N", "Previous hit"),
+    ("Space", "Mark"),
+    ("Y", "Copy…"),
+    ("R", "Reset line"),
+    ("V", "Changed only"),
+    ("M", "Bookmark…"),
+    ("'", "Jump…"),
+    ("P", "Pin"),
+    ("C", "cd here"),
+    ("Delete", "Delete line"),
+    ("Shift-L", "Log"),
+    ("?", "Help"),
+    ("Esc", "Leave NAV"),
+    ("Backspace", "cd .. (held: cd /)"),
+];
+
 /// Build the vanilla (system default) key bindings: every mode's ([`VANILLA`]) and each mode's
 /// own ([`PRG_KEYS`]), by [`slot`].
 ///

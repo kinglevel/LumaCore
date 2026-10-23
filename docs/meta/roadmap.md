@@ -63,7 +63,7 @@ What is being built now, next and later — one line per item, each with a link 
 - After the merge of bugfixes: open ranges in `Set <rows>`, a `busy` test, a retried remote edit; the known failing e2e ([vision](../../visions/notes/ideas-2026-10.md#tests-and-known-failures))
 - Feedback system leftovers: the Message Center, the envelope, the `client` audience, CLI feedback lines, the progress API ([plan](../plans/done/2026-10-10-feedback-system.md))
 - Thin client leftovers: HttpOnly cookie, per-user feeds, the macOS bundle, `Connect` completion, a manual GUI pass ([plan](../plans/done/2026-10-10-thin-client.md))
-- UI keys leftovers: UIKey words and a key editor, plugins, double presses, safe mode, the `--clean-start` test ([plan](../plans/done/2026-10-10-ui-keys.md))
+- UI keys leftovers: plugins, double presses, safe mode, the `--clean-start` test ([plan](../plans/done/2026-10-10-ui-keys.md)); the key editor's leftovers — the shortcut mode per screen, NAV's own keys as rows, hold = repeat, line-guarded and state-computed cycles, executors on Ctrl / Alt + F1–F8, the numpad's names, the F10 cheat sheet, export / import ([plan](../plans/active/2026-10-23-profile-and-key-editor.md))
 - WebUI: the e2e under Playwright's WebKit on Linux, a Windows build of the app ([record](../decisions/0037-wire-crate-clients.md))
 - The console study's open questions, in order ([vision](../../visions/notes/ideas-2026-10.md))
 - Later words from §40 and the `Part` word for cue parts ([vision](../../visions/notes/ideas-2026-10.md#later-words))

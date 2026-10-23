@@ -380,6 +380,9 @@ pub enum UiEvent {
     /// sequence sheet of `sequence` (its GUID) as a pop-up, fed by the
     /// `sequence` feed.
     SequenceSheet { sequence: String },
+    /// `Edit KeyBindings` (decisions 0295): open the key editor of your profile, fed by the
+    /// `keys` feed.
+    KeyEditor,
     /// Close open menus / pop-ups (a UI key's double press that replaces its
     /// press: Menu twice closes the menu again and quick-saves).
     CloseMenu,
