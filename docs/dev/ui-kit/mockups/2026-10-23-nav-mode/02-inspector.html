@@ -1,0 +1,461 @@
+<title>NAV Inspector Round 2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* A proposal page: notes in one column, the working terminal mock (the TUI in the kit's dark theme) full width; the page around it follows the viewer. */
+:root{--bg:#f4f3ef;--fg:#1b1a17;--mute:#69655b;--line:#d8d3c6;--card:#fffdf8;--gold:#8a6d06;--code:#ecebe4;
+  --font:"Source Sans 3","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",Menlo,Consolas,monospace;
+  /* the TUI's roles in the kit's dark theme (tui_look::role) */
+  --t-bg:#0d0d0d;--t-line:#3a3a3a;--t-text:#d1d1d1;--t-dim:#7d7d7d;--t-strong:#ececec;--t-accent:#d4a634;--t-sel:#3a3320;--t-kind:#3fc8d8;--t-num:#e0b341;--t-ok:#3fbf4a;--t-alert:#ff6b6b;--t-mark:#2a3a4a;--t-flash:#5a4a10;--t-hit:#4a3c0a;--t-pop:#141414}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141518;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1c1e23;--gold:#e0b341;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141518;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1c1e23;--gold:#e0b341;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--font);margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1320px;margin:0 auto;display:grid;gap:26px}
+.narrow{max-width:900px}
+h1{font-size:1.85rem;margin:0;line-height:1.15;text-wrap:balance}h2{font-size:1.2rem;margin:0 0 6px;text-wrap:balance}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:600}
+p{max-width:76ch;margin:.35em 0}.mute{color:var(--mute)}
+code{font:.85em var(--mono);background:var(--code);padding:1px 5px;border-radius:4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.two{display:grid;gap:16px;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}@media (max-width:900px){.two{grid-template-columns:minmax(0,1fr)}}
+ol.q{margin:0;padding-left:1.3em;display:grid;gap:12px}
+.opt{border:1px solid var(--line);border-radius:8px;padding:5px 10px;margin-top:5px}
+.opt b{color:var(--gold)}
+.rec{font-size:.72rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.05em;margin-left:6px}
+table.k{border-collapse:collapse;width:100%;font-size:.92rem}
+table.k td{border-top:1px solid var(--line);padding:4px 8px 4px 0;vertical-align:top}
+table.k td:first-child{font-family:var(--mono);white-space:nowrap;color:var(--gold);width:9ch}
+.tablewrap{overflow-x:auto}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ctl button{font:inherit;font-size:.88rem;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:4px 12px;cursor:pointer}
+.ctl button:focus-visible,.term:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.try{display:flex;gap:6px;flex-wrap:wrap}
+.try span{font:12px var(--mono);border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--card)}
+
+/* the terminal */
+.termwrap{overflow-x:auto;border-radius:10px;border:1px solid var(--line)}
+.term{position:relative;background:var(--t-bg);color:var(--t-text);font:13px/1.5 var(--mono);min-width:1120px;height:700px;display:grid;grid-template-rows:auto 1fr auto auto auto;outline:none}
+.term.nolog{grid-template-rows:auto 1fr auto auto}
+.t-head{display:flex;gap:16px;padding:6px 12px;border-bottom:1px solid var(--t-line);color:var(--t-dim);white-space:nowrap;overflow:hidden}
+.t-head b{color:var(--t-accent);font-weight:600}
+.t-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);min-height:0}
+.pane{min-height:0;overflow:hidden;border-right:1px solid var(--t-line);display:flex;flex-direction:column}
+.pane:last-child{border-right:none}
+.pane h4{margin:0;padding:4px 12px;font:600 12px var(--mono);color:var(--t-dim);border-bottom:1px solid var(--t-line);letter-spacing:.04em;white-space:nowrap;overflow:hidden;display:flex;gap:10px}
+.pane h4 .pin{color:var(--t-accent)}
+.pane.focus h4{color:var(--t-accent)}
+.rows{overflow:auto;scrollbar-width:none;padding:4px 0;flex:1}
+.rows::-webkit-scrollbar{display:none}
+.row{display:grid;grid-template-columns:2ch minmax(0,1fr) auto;gap:0 8px;padding:0 12px 0 6px;white-space:pre;align-items:baseline}
+.row>span{overflow:hidden;text-overflow:ellipsis}
+.row .mk{color:var(--t-kind)}
+.row.marked{background:var(--t-mark)}
+.row.cur{background:var(--t-sel)}
+.pane.focus .row.cur{box-shadow:inset 2px 0 0 var(--t-accent)}
+.ind{color:var(--t-dim)}.no{color:var(--t-num)}.nm{color:var(--t-strong)}.dir{color:var(--t-kind)}.meta{color:var(--t-dim);text-align:right}
+.bm{color:var(--t-accent)}
+.hit{background:var(--t-hit);color:var(--t-strong)}
+.sect{padding:6px 12px 2px;color:var(--t-dim);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.pv{display:grid;grid-template-columns:2ch 15ch minmax(0,1fr) 15ch;gap:0 8px;padding:0 12px 0 6px;white-space:nowrap}
+.pv>span{overflow:hidden;text-overflow:ellipsis}
+.pv .chg{color:var(--t-accent)}
+.pv .pk{color:var(--t-text)}.pv .pval{color:var(--t-strong)}.pv .pkind{color:var(--t-dim)}
+.pv.ro .pk{color:var(--t-dim)}
+.pv.link .pval{color:var(--t-kind);text-decoration:underline;text-underline-offset:2px}
+.pv.cur{background:var(--t-sel)}
+.pane.focus .pv.cur{box-shadow:inset 2px 0 0 var(--t-accent)}
+.pv.flash .pval{background:var(--t-flash)}
+.note{padding:6px 12px;color:var(--t-dim);white-space:normal}
+.t-log{padding:4px 12px;border-top:1px solid var(--t-line);color:var(--t-dim);font-size:12px;min-height:3.2em}
+.t-log div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-log .ln{color:var(--t-ok)}
+.t-line{padding:6px 12px;border-top:1px solid var(--t-line);color:var(--t-strong);white-space:pre;overflow:hidden}
+.t-line .p{color:var(--t-dim)}
+.t-keys{padding:4px 12px;border-top:1px solid var(--t-line);color:var(--t-dim);white-space:nowrap;overflow:hidden;font-size:12px}
+.t-keys b{color:var(--t-accent);font-weight:600}
+.caret{display:inline-block;width:.6em;background:var(--t-strong);animation:blink 1s steps(1) infinite}
+@media (prefers-reduced-motion:reduce){.caret{animation:none}}
+@keyframes blink{50%{opacity:0}}
+.toast{position:absolute;right:14px;bottom:96px;background:var(--t-pop);border:1px solid var(--t-accent);color:var(--t-strong);border-radius:6px;padding:6px 12px;font-size:12px;max-width:60%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.help{position:absolute;inset:40px 80px 110px;background:var(--t-pop);border:1px solid var(--t-line);border-radius:6px;padding:12px 16px;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 24px;align-content:start}
+.help h5{grid-column:1/-1;margin:0 0 4px;color:var(--t-accent);font:600 12px var(--mono);letter-spacing:.06em}
+.help div{white-space:nowrap}.help b{color:var(--t-accent);display:inline-block;min-width:7ch;font-weight:600}
+</style>
+
+<main>
+  <header class="narrow" style="display:grid;gap:8px">
+    <div class="kicker">Shell mockup · round 2 · 2026-10-23</div>
+    <h1>The NAV inspector, round 2</h1>
+    <p>Layout A from round 1, now with the features you picked from the research:</p>
+    <ul style="margin:.2em 0;padding-left:1.2em">
+      <li>copy the GUID, the path or the object to your clipboard;</li>
+      <li>follow "Used by" links;</li>
+      <li>filter and search;</li>
+      <li>changed-value markers with their <code>Reset</code> line;</li>
+      <li>marked rows into one range;</li>
+      <li>a <code>?</code> help overlay;</li>
+      <li>a log of the lines your gestures made;</li>
+      <li>bookmarks by GUID;</li>
+      <li>a pinned inspector;</li>
+      <li>values that flash when another station changes them.</li>
+    </ul>
+    <p class="mute">The research covered 4 groups of tools: file managers (yazi, ranger, lf, broot, mc), dashboards (k9s, lazygit, htop), data explorers (jless, fx, visidata) and inspectors (Blender, Godot, Unity, Unreal, VS Code, DevTools). Each idea here is one that several of those tools share.</p>
+  </header>
+
+  <section style="display:grid;gap:10px">
+    <div class="ctl">
+      <button type="button" id="sim">Simulate: another station sets Group 1 "Mode" Additive</button>
+      <span class="mute" style="font-size:.88rem">Click the terminal, then press <code>?</code> for every key.</span>
+    </div>
+    <div class="try" aria-label="Things to try">
+      <span>Tab, ↑ to GUID, y</span><span>yp · ya on a tree row</span><span>Tab, ↓ to Used by, Enter</span><span>Space Space Space</span><span>/ Deco</span><span>ma … 'a</span><span>p to pin</span><span>r on a ● row</span>
+    </div>
+    <div class="termwrap"><div class="term" id="term" tabindex="0" aria-label="NAV inspector mock terminal"></div></div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h2>Questions</h2>
+      <ol class="q">
+        <li><b>Copy keys.</b>
+          <div class="opt"><b>A</b> In the inspector, <code>y</code> copies the focused row. On a tree row, <code>yg</code> copies the GUID, <code>yp</code> the path, <code>ya</code> the object as a target (<code>Fixture 101</code>), <code>yn</code> the name and <code>ys</code> a property's <code>Set</code> line.<span class="rec">recommended</span></div>
+          <div class="opt"><b>B</b> One <code>y</code> that opens a small menu of the same choices</div></li>
+        <li><b>The gesture log.</b> Three lines above the command line show the lines NAV made and what you copied; <code>L</code> turns it on or off.
+          <div class="opt"><b>A</b> On by default; the profile keeps your choice<span class="rec">recommended</span></div>
+          <div class="opt"><b>B</b> Off until you turn it on</div></li>
+        <li><b>Bookmarks.</b> <code>m</code> + letter stores the object's GUID; <code>'</code> + letter jumps back to it, even after it was renumbered or moved.
+          <div class="opt"><b>A</b> Kept per user in the show, like Usage<span class="rec">recommended</span></div>
+          <div class="opt"><b>B</b> Kept only on this device</div></li>
+        <li><b>Changed values.</b> ● marks a property that differs from its declared default, and <code>r</code> puts <code>Reset Fixture 101 "PosX"</code> on the command line (Lum already has <code>Reset</code>). <span class="mute">Should there also be a toggle that shows only the changed rows? The ● marks in this mockup are examples; the registry's defaults decide.</span></li>
+        <li><b>Following a link</b> moves the NAV cursor; no command line runs and nothing changes. A link to a GUID that no longer exists shows red with "missing". <span class="rec">recommended</span></li>
+      </ol>
+    </div>
+    <div class="card" style="display:grid;gap:10px;align-content:start">
+      <h2>Copy on every client</h2>
+      <p>The keys are the same everywhere. Each client puts the text on your computer's clipboard and says "Copied".</p>
+      <div class="tablewrap"><table class="k">
+        <tr><td>CLI</td><td>The OSC 52 escape sequence (works over SSH; tmux needs <code>set-clipboard on</code>), with the native clipboard as the fallback when it runs on a desktop.</td></tr>
+        <tr><td>Web</td><td>The browser's clipboard (https or localhost). On a plain-http address it uses the older copy method while the key press still counts as yours; failing that, a toast holds the text, selected and ready for Ctrl+C.</td></tr>
+        <tr><td>App</td><td>The page hands the text to the app over its IPC, and the app writes it to the clipboard natively.</td></tr>
+      </table></div>
+      <h2 style="margin-top:6px">Keys</h2>
+      <div class="tablewrap"><table class="k">
+        <tr><td>↑↓ → ←</td><td>Move, open, close or go to the parent</td></tr>
+        <tr><td>Tab</td><td>Switch between tree and inspector (the cursor goes up into Slot, Kind, GUID and Path)</td></tr>
+        <tr><td>y …</td><td>Copy (question 1)</td></tr>
+        <tr><td>Enter</td><td>On a property: its <code>Set</code> line goes on the command line. On a link: go there</td></tr>
+        <tr><td>r</td><td>On a changed property: its <code>Reset</code> line</td></tr>
+        <tr><td>/ n N</td><td>Filter the pool or the properties · next / previous hit</td></tr>
+        <tr><td>Space</td><td>Mark a row; marked rows become one range on the command line</td></tr>
+        <tr><td>m '</td><td>Set a bookmark by GUID · jump to a bookmark</td></tr>
+        <tr><td>p</td><td>Pin the inspector to this object</td></tr>
+        <tr><td>L ?</td><td>Gesture log · help</td></tr>
+        <tr><td>c Esc</td><td>Make this the prompt's place (cd) · leave NAV</td></tr>
+      </table></div>
+    </div>
+  </section>
+</main>
+
+<script>
+// ── The demo show's tree (from the station's ls / EditSetting output) ──
+const GROUPS = ["Photon","Icarus","Blinder","LedBar","BL-100","Deco LED","Tornado","Cyclone","Aeco 30 IP","OZONE","TitanTubes","Fresnel","SoftLights","TYGTAK","PIXStick","1","2","SMOKE","LEDpar","VIRGO","Trophy understage","MAPPING","PREVIZ CAM","Automation","L1 SW 1","L1 IC 1","Fram","LB Bakre","Par upper","Deco Main Puck","RIKNERS SUPER POLAR","L1 SW 2","L1 IC 2","De losta","LB Fram","Par lower","Deco Trophy","Studio Fans","AUTOMATION"];
+const OBJ = (no, name, kind, extra = {}) => ({ no, name, kind, ...extra });
+// [name, value, kind, changed-from-default (an example)]
+const FIX101 = [['MasterReact','Grand','Grand/Group/None'],['Address','7.074','text',1],['Function','—','text'],['FixtureID','101','text',1],['UnitNumber','0','0–4294967295'],['FID','101','0–4294967295',1],['IDType','None','None/Fixture/…/Marker'],['CID','0','0–4294967295'],['PosX','-6.63','text',1],['PosY','15.087','text',1],['PosZ','23.378','text',1],['RotX','0','text'],['RotY','0','text'],['RotZ','0','text'],['Name','ACME PHOTON HYBRID(XL 500 BSW)','text',1],['Note','—','text'],['Locked','Off','on/off'],['Hidden','Off','on/off'],['Paint','—','#rrggbb or Theme'],['Icon','—','text']];
+const GROUP1 = [['Mode','Scaling','None/Positive/Negative/Scaling/Additive',1],['PreserveGrid','On','on/off'],['MoveGridCursor','Linked','Linked/None/AppendX/NewLine'],['Name','Photon','text',1],['Note','—','text'],['Locked','Off','on/off'],['Hidden','Off','on/off'],['Paint','—','#rrggbb or Theme'],['Icon','—','text']];
+const tree = { name: 'Root', kids: [
+  { name: 'ShowData', meta: '1371 fixtures, 106 universes, 4 users', kids: [
+    { name: 'Devices', meta: '1371 fixtures, 106 universes', kids: [
+      { name: 'Dmx', kids: [ { name: 'Patch', kids: [
+        { name: 'Fixtures', meta: '1371 fixtures patched', objs: [
+          ...[1,2,3,4,5].map(i => OBJ(i, 'ACME Aeco 30 IP (Aeco 30 IP)', 'Fixture')),
+          ...[6,7,8,9,10,11].map(i => OBJ(i, 'ACME PHOTON HYBRID(XL 500 BSW)', 'Fixture')),
+          OBJ(12, 'ACME ICARUS 620(CM-620Z)', 'Fixture'),
+          { gap: 88 },
+          OBJ(101, 'ACME PHOTON HYBRID(XL 500 BSW)', 'Fixture', { props: FIX101, guid: '1c3ee576-4107-4eec-b3fb-6d4715432a28', usedBy: [1, 22, 25, 75], usedMore: 1, tags: 'none',
+            info: [['Type','ACME PHOTON HYBRID 500 (XL 500 BSW IP)'],['Mode','Mode 1 28CH'],['Location','Universe 7 · 074–101']] }),
+          { gap: 1270 },
+        ] },
+        { name: 'FixtureTypes', meta: '22 fixture types loaded', kids: [] },
+        { name: 'Universes', meta: '106 universes', kids: [] },
+      ] } ] },
+      { name: 'Metadata', kids: [ { name: 'MVR', kids: [] } ] },
+    ] },
+    { name: '3DSpatial' },
+    { name: 'Playback', meta: 'effects, executors, park', kids: [] },
+    { name: 'Playbacks', meta: 'nothing running', kids: [] },
+    { name: 'DataPools', meta: '77 groups', kids: [
+      { name: 'DatapoolPriorityOrders', meta: 'no datapool priority orders' },
+      { no: 1, name: 'Default', kind: 'DataPool', meta: '77 children', kids: [
+        { name: 'Presets', meta: '3 presets', objs: [
+          OBJ(1, 'Full', 'Preset', { props: [['Name','Full','text',1],['Note','—','text'],['Locked','Off','on/off'],['Hidden','Off','on/off'],['Paint','—','#rrggbb or Theme'],['Icon','—','text']], guid: 'e686a6ee-9958-41b3-8e78-67266635efde', usedBy: [], tags: '901 Wash' }),
+          OBJ(2, 'Half', 'Preset'), OBJ(3, 'Split', 'Preset'),
+        ] },
+        { name: 'Layouts', meta: 'layouts' }, { name: 'Macros', meta: 'macros' }, { name: 'Timecodes', meta: 'timecodes', kids: [] },
+        { name: 'Groups', meta: '77 groups', objs: [
+          ...GROUPS.map((n, i) => OBJ(i + 1, n, 'Group', i === 0 ? { props: GROUP1, guid: '2fe94d0c-f976-429d-ad96-95e2134e4a18', usedBy: [], tags: 'none' } : {})),
+          { gap: 38 },
+        ] },
+        { name: 'Sequences', meta: 'no sequences' },
+      ] },
+    ] },
+    { name: 'Protocols', meta: '7 lines', kids: [] },
+    { name: 'ShowSettings', meta: '"Demo"' },
+    { name: 'UserProfiles', meta: '4 users', kids: [] },
+  ] },
+  { name: 'Runtime', meta: '1 users, 1 connections, 0 global vars', kids: [] },
+  { name: 'StationSettings', meta: 'station: LumaCoreA' },
+  { name: 'Library', meta: 'gdtf, shows, presets, mvr', kids: [] },
+] };
+const children = n => n.kids || n.objs || [];
+const isBranch = n => !!(n.kids || n.objs);
+const seg = n => n.no != null ? String(n.no) : n.name;
+(function link(node, path) { node.path = path; for (const c of children(node)) if (!c.gap) { c.parent = node; link(c, `${path}.${seg(c)}`); } })(tree, 'Root');
+const FIXTURES = tree.kids[0].kids[0].kids[0].kids[0].kids[0];
+const GROUPS_NODE = tree.kids[0].kids[4].kids[1].kids[4];
+const groupNode = no => GROUPS_NODE.objs.find(g => g.no === no);
+const target = n => `${n.kind} ${n.no}`;
+
+// ── State ──
+const term = document.getElementById('term');
+const st = {
+  open: new Set(['Root.ShowData', 'Root.ShowData.Devices', 'Root.ShowData.Devices.Dmx', 'Root.ShowData.Devices.Dmx.Patch', 'Root.ShowData.Devices.Dmx.Patch.Fixtures', 'Root.ShowData.DataPools', 'Root.ShowData.DataPools.1', 'Root.ShowData.DataPools.1.Groups']),
+  cur: FIXTURES.objs.find(o => o.no === 101), focus: 'tree', irow: -1, filter: null, typing: false, ifilter: null,
+  marked: new Set(), marks: {}, pinned: null, line: '', log: ['NAV on · Tab opens the inspector · ? shows every key'], showLog: true,
+  pending: null, toast: null, help: false, flash: null, digits: '',
+};
+
+function flat() {
+  const out = [];
+  (function walk(node, depth) {
+    for (const c of children(node)) {
+      if (c.gap) { if (!st.filter) out.push({ gap: c.gap, depth }); continue; }
+      if (st.filter && node.objs && !`${c.no} ${c.name}`.toLowerCase().includes(st.filter.toLowerCase())) continue;
+      out.push({ node: c, depth });
+      if (isBranch(c) && st.open.has(c.path)) walk(c, depth + 1);
+    }
+  })(tree, 0);
+  return out;
+}
+
+// Inspector rows: identity (copyable), info, properties (editable), links.
+function irows(node) {
+  const r = [];
+  if (!node) return r;
+  r.push({ sect: node.no != null ? `${node.kind} ${node.no} "${node.name}"` : node.name });
+  r.push({ k: 'Slot', v: node.no ?? '—', copy: true });
+  r.push({ k: 'Kind', v: node.kind || (isBranch(node) ? 'Branch' : 'Leaf'), copy: true });
+  if (node.guid) r.push({ k: 'GUID', v: node.guid, copy: true });
+  r.push({ k: 'Path', v: node.path, copy: true });
+  for (const [k, v] of node.info || []) r.push({ k, v, copy: true });
+  if (node.props) {
+    r.push({ sect: 'Properties' });
+    for (const [k, v, kind, chg] of node.props) {
+      if (st.ifilter && !k.toLowerCase().includes(st.ifilter.toLowerCase())) continue;
+      r.push({ k, v, kind, chg: !!chg, prop: true });
+    }
+    r.push({ sect: `Used by · ${node.usedBy.length + (node.usedMore || 0)}` });
+    if (!node.usedBy.length) r.push({ k: '', v: 'nothing', ro: true });
+    for (const no of node.usedBy) r.push({ k: 'Group', v: `${no}${groupNode(no) ? ` "${groupNode(no).name}"` : ''}`, link: no });
+    if (node.usedMore) r.push({ k: '', v: `and ${node.usedMore} more · in Info`, ro: true });
+    r.push({ k: 'Tags', v: node.tags, copy: true });
+  } else if (node.no != null) {
+    r.push({ note: `Its properties come from the registry (EditSetting ${target(node)}). In this mockup Fixture 101, Group 1 and Preset 1 carry the real ones.` });
+  } else if (isBranch(node)) {
+    r.push({ sect: `Contents · ${node.meta || `${children(node).length} entries`}` });
+    for (const c of children(node).filter(c => !c.gap).slice(0, 12)) r.push({ k: c.no != null ? String(c.no) : c.name, v: c.no != null ? `"${c.name}"` : (c.meta || ''), ro: true });
+  }
+  return r;
+}
+const selectable = r => !r.sect && !r.note && !(r.ro && !r.link);
+
+const esc = s => String(s ?? '').replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+const hl = s => st.filter ? esc(s).replace(new RegExp(st.filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig'), m => `<span class="hit">${m}</span>`) : esc(s);
+
+// Marked rows → one range line, e.g. Group 1 Thru 3 + 7.
+function rangeLine() {
+  const objs = [];
+  (function walk(x) { for (const c of children(x)) { if (c.gap) continue; if (st.marked.has(c.path)) objs.push(c); walk(c); } })(tree);
+  if (!objs.length) return '';
+  const kind = objs[0].kind, nos = objs.map(o => o.no).sort((a, b) => a - b);
+  const parts = []; let s = nos[0], e = nos[0];
+  for (const n of nos.slice(1).concat([null])) { if (n === e + 1) { e = n; continue; } parts.push(s === e ? `${s}` : `${s} Thru ${e}`); s = e = n; }
+  return `${kind} ${parts.join(' + ')}`;
+}
+
+function say(text, isLine) { st.log.push(isLine ? `<span class="ln">${esc(text)}</span>` : esc(text)); st.log = st.log.slice(-3); }
+function toast(text) { st.toast = text; clearTimeout(st.tt); st.tt = setTimeout(() => { st.toast = null; render(); }, 1800); }
+function copy(label, text) {
+  try { navigator.clipboard?.writeText(text).catch(() => {}); } catch { /* the mock still shows what was copied */ }
+  toast(`Copied ${label} · ${text}`);
+  say(`copied ${label}: ${text}  (your clipboard; no command line)`);
+}
+function putLine(line) { st.line = line; say(`→ command line: ${line}`, true); }
+
+function render() {
+  const rows = flat();
+  const idx = Math.max(0, rows.findIndex(r => r.node === st.cur));
+  const H = st.showLog ? 23 : 26, start = Math.max(0, Math.min(idx - 9, rows.length - H));
+  const bmOf = n => Object.entries(st.marks).filter(([, g]) => g === (n.guid || n.path)).map(([l]) => l).join('');
+  const tr = rows.slice(start, start + H).map(r => {
+    if (r.gap) return `<div class="row"><span></span><span class="ind">${'  '.repeat(r.depth)}  … ${r.gap} more · type a slot number</span><span></span></div>`;
+    const n = r.node, cur = n === st.cur, mk = st.marked.has(n.path);
+    const fold = isBranch(n) ? (st.open.has(n.path) ? '▾ ' : '▸ ') : '  ';
+    const label = n.no != null ? `<span class="no">${String(n.no).padStart(4)}</span>  <span class="nm">"${hl(n.name)}"</span>` : `<span class="${isBranch(n) ? 'dir' : 'nm'}">${esc(n.name)}${isBranch(n) ? '/' : ''}</span>`;
+    const bm = bmOf(n);
+    return `<div class="row${cur ? ' cur' : ''}${mk ? ' marked' : ''}"><span class="mk">${mk ? '◆' : bm ? `<span class="bm">${bm}</span>` : ''}</span><span><span class="ind">${'  '.repeat(r.depth)}${fold}</span>${label}</span><span class="meta">${esc(n.kind || n.meta || '')}</span></div>`;
+  }).join('');
+  const insNode = st.pinned || st.cur;
+  const ir = irows(insNode);
+  const sel = ir.map((r, i) => selectable(r) ? i : -1).filter(i => i >= 0);
+  if (st.focus === 'insp' && !sel.includes(st.irow)) st.irow = sel[0] ?? 0;
+  const insp = ir.map((r, i) => {
+    if (r.sect) return `<div class="sect">${esc(r.sect)}</div>`;
+    if (r.note) return `<div class="note">${esc(r.note)}</div>`;
+    const cls = ['pv', r.prop || r.link ? '' : 'ro', r.link ? 'link' : '', st.focus === 'insp' && st.irow === i ? 'cur' : '', st.flash && insNode === st.flash.node && r.k === st.flash.k ? 'flash' : ''].join(' ');
+    const hint = r.kind || (r.copy ? 'y copies' : r.link ? 'Enter goes' : '');
+    return `<div class="${cls}"><span class="chg">${r.chg ? '●' : ''}</span><span class="pk">${esc(r.k)}</span><span class="pval">${esc(r.v)}</span><span class="pkind">${esc(hint)}</span></div>`;
+  }).join('');
+  const marksText = Object.keys(st.marks).length ? `bookmarks ${Object.keys(st.marks).sort().join(' ')}` : '';
+  const head = `<div class="t-head"><b>NAV</b><span>${esc(st.cur.path)}</span><span style="margin-left:auto">${st.filter !== null ? `filter /${esc(st.filter)}${st.typing ? '▏' : ''}` : ''}</span><span>${st.marked.size ? `${st.marked.size} marked` : ''}</span><span>${marksText}</span><span>${st.pending ? `${st.pending}…` : ''}</span></div>`;
+  const keys = st.focus === 'insp'
+    ? '<b>↑↓</b> row  <b>y</b> copy  <b>Enter</b> Set line / follow link  <b>r</b> Reset line  <b>/</b> filter properties  <b>p</b> pin  <b>Tab</b> tree  <b>?</b> help'
+    : '<b>↑↓→←</b> move  <b>Tab</b> inspector  <b>y</b>g/p/a/n copy  <b>Space</b> mark  <b>/</b> filter  <b>n N</b> hits  <b>m</b> <b>\'</b> bookmarks  <b>p</b> pin  <b>L</b> log  <b>?</b> help';
+  const pinTag = st.pinned ? `<span class="pin">◉ pinned ${esc(target(st.pinned))} · p releases</span>` : '';
+  const help = st.help ? `<div class="help"><h5>NAV KEYS · ? or Esc closes</h5>
+    <div><b>↑ ↓</b> move</div><div><b>→ ←</b> open · close / parent</div><div><b>Tab</b> tree ⇄ inspector</div>
+    <div><b>yg yp</b> copy GUID · path</div><div><b>ya yn</b> copy target · name</div><div><b>ys</b> copy a Set line</div>
+    <div><b>y</b> (inspector) copy row</div><div><b>Enter</b> Set line · follow link</div><div><b>r</b> Reset line (● rows)</div>
+    <div><b>/</b> filter · <b>n N</b> hits</div><div><b>0–9</b> jump to slot</div><div><b>Space</b> mark → range</div>
+    <div><b>m</b>+letter bookmark</div><div><b>'</b>+letter jump to it</div><div><b>p</b> pin inspector</div>
+    <div><b>L</b> gesture log</div><div><b>c</b> cd here</div><div><b>Esc</b> leave NAV</div></div>` : '';
+  term.classList.toggle('nolog', !st.showLog);
+  term.innerHTML = head
+    + `<div class="t-body"><div class="pane${st.focus === 'tree' ? ' focus' : ''}"><h4>TREE · same rows as ls</h4><div class="rows">${tr}</div></div>`
+    + `<div class="pane${st.focus === 'insp' ? ' focus' : ''}"><h4>INSPECTOR${st.ifilter !== null ? ` · /${esc(st.ifilter)}` : ''} ${pinTag}</h4><div class="rows">${insp}</div></div></div>`
+    + (st.showLog ? `<div class="t-log">${st.log.map(l => `<div>${l}</div>`).join('')}</div>` : '')
+    + `<div class="t-line"><span class="p">[Admin@LumaCoreA] Root [Fixture]&gt; </span>${esc(st.line)}<span class="caret"> </span></div>`
+    + `<div class="t-keys">${keys}</div>`
+    + (st.toast ? `<div class="toast">${esc(st.toast)}</div>` : '') + help;
+  // Keep the inspector's cursor in view (the TUI scrolls its pane the same way).
+  const box = term.querySelectorAll('.rows')[1], cur = box?.querySelector('.pv.cur');
+  if (box && cur) {
+    if (cur.offsetTop + cur.offsetHeight > box.scrollTop + box.clientHeight) box.scrollTop = cur.offsetTop + cur.offsetHeight - box.clientHeight + 8;
+    else if (cur.offsetTop < box.scrollTop) box.scrollTop = Math.max(0, cur.offsetTop - 30);
+  }
+}
+
+function moveTree(d) {
+  const rows = flat().filter(r => !r.gap); const i = rows.findIndex(r => r.node === st.cur);
+  st.cur = rows[Math.max(0, Math.min(rows.length - 1, (i < 0 ? 0 : i) + d))].node;
+}
+function moveInsp(d) {
+  const ir = irows(st.pinned || st.cur); const sel = ir.map((r, i) => selectable(r) ? i : -1).filter(i => i >= 0);
+  const j = sel.indexOf(st.irow); st.irow = sel[Math.max(0, Math.min(sel.length - 1, (j < 0 ? 0 : j) + d))];
+}
+function goTo(node) {
+  let p = node.parent; while (p && p !== tree) { st.open.add(p.path); p = p.parent; }
+  st.cur = node; st.focus = 'tree'; st.filter = null;
+}
+
+term.addEventListener('keydown', e => {
+  const k = e.key;
+  if (st.help) { if (k === '?' || k === 'Escape') st.help = false; e.preventDefault(); render(); return; }
+  if (st.typing) {
+    const field = st.focus === 'insp' ? 'ifilter' : 'filter';
+    if (k === 'Enter' || k === 'Escape') { st.typing = false; if (k === 'Escape') st[field] = null; }
+    else if (k === 'Backspace') st[field] = st[field].slice(0, -1);
+    else if (k.length === 1) st[field] += k;
+    if (field === 'filter' && st.filter) { const hit = flat().find(r => r.node && r.node.no != null); if (hit) st.cur = hit.node; }
+    e.preventDefault(); render(); return;
+  }
+  if (st.pending) {
+    const p = st.pending; st.pending = null;
+    const n = st.cur;
+    if (p === 'y') {
+      if (k === 'g' && n.guid) copy('GUID', n.guid);
+      else if (k === 'p') copy('path', n.path);
+      else if (k === 'a' && n.no != null) copy('target', target(n));
+      else if (k === 'n') copy('name', n.name);
+      else if (k === 's' && n.props) copy('Set line', `Set ${target(n)} "${n.props[0][0]}" `);
+    } else if (p === 'm' && /^[a-z]$/.test(k)) { st.marks[k] = n.guid || n.path; say(`bookmark ${k} → ${n.no != null ? target(n) : n.name}  (kept by GUID)`); }
+    else if (p === "'" && st.marks[k]) {
+      const want = st.marks[k]; let found = null;
+      (function walk(x) { for (const c of children(x)) { if (c.gap) continue; if ((c.guid || c.path) === want) found = c; walk(c); } })(tree);
+      if (found) { goTo(found); say(`jumped to bookmark ${k}: ${found.no != null ? target(found) : found.name}`); }
+    }
+    e.preventDefault(); render(); return;
+  }
+  if (/^[0-9]$/.test(k) && st.focus === 'tree') {
+    st.digits += k; clearTimeout(st.dt); st.dt = setTimeout(() => { st.digits = ''; }, 1200);
+    const hit = st.cur.parent?.objs?.find(c => !c.gap && String(c.no) === st.digits); if (hit) st.cur = hit;
+    e.preventDefault(); render(); return;
+  }
+  switch (k) {
+    case 'ArrowDown': st.focus === 'insp' ? moveInsp(1) : moveTree(1); break;
+    case 'ArrowUp': st.focus === 'insp' ? moveInsp(-1) : moveTree(-1); break;
+    case 'ArrowRight':
+      if (st.focus === 'tree' && isBranch(st.cur)) { if (st.open.has(st.cur.path)) { const f = children(st.cur).find(c => !c.gap); if (f) st.cur = f; } else st.open.add(st.cur.path); }
+      break;
+    case 'ArrowLeft':
+      if (st.focus === 'insp') st.focus = 'tree';
+      else if (isBranch(st.cur) && st.open.has(st.cur.path)) st.open.delete(st.cur.path);
+      else if (st.cur.parent && st.cur.parent !== tree) st.cur = st.cur.parent;
+      break;
+    case 'Tab': st.focus = st.focus === 'tree' ? 'insp' : 'tree'; st.irow = -1; break;
+    case 'Enter': {
+      if (st.focus === 'tree') {
+        if (st.cur.props) { st.focus = 'insp'; st.irow = -1; }
+        else if (isBranch(st.cur)) st.open.has(st.cur.path) ? st.open.delete(st.cur.path) : st.open.add(st.cur.path);
+        break;
+      }
+      const node = st.pinned || st.cur, r = irows(node)[st.irow];
+      if (r?.prop) putLine(`Set ${target(node)} "${r.k}" `);
+      else if (r?.link) { const g = groupNode(r.link); if (g) { goTo(g); say(`followed Used by → Group ${r.link} "${g.name}"`); } }
+      else if (r?.copy) copy(r.k, String(r.v));
+      break;
+    }
+    case 'y':
+      if (st.focus === 'insp') { const r = irows(st.pinned || st.cur)[st.irow]; if (r && !r.sect && !r.note) copy(r.k || 'value', String(r.v)); }
+      else st.pending = 'y';
+      break;
+    case 'r':
+      if (st.focus === 'insp') { const node = st.pinned || st.cur, r = irows(node)[st.irow]; if (r?.chg) putLine(`Reset ${target(node)} "${r.k}"`); }
+      break;
+    case ' ':
+      if (st.focus === 'tree' && st.cur.no != null) {
+        st.marked.has(st.cur.path) ? st.marked.delete(st.cur.path) : st.marked.add(st.cur.path);
+        const l = rangeLine(); st.line = l; if (l) say(`→ command line: ${l}`, true); moveTree(1);
+      }
+      break;
+    case '/': st.typing = true; if (st.focus === 'insp') st.ifilter = ''; else st.filter = ''; break;
+    case 'n': case 'N':
+      if (st.filter) { const rs = flat().filter(r => r.node && r.node.no != null); const i = rs.findIndex(r => r.node === st.cur); const nx = rs[(i + (k === 'n' ? 1 : -1) + rs.length) % rs.length]; if (nx) st.cur = nx.node; }
+      break;
+    case 'm': case "'": st.pending = k; break;
+    case 'p':
+      if (st.pinned || st.cur.no != null) { st.pinned = st.pinned ? null : st.cur; say(st.pinned ? `inspector pinned to ${target(st.pinned)}` : 'inspector follows the cursor again'); }
+      break;
+    case 'L': st.showLog = !st.showLog; break;
+    case '?': st.help = true; break;
+    case 'c': if (st.focus === 'tree') putLine(`cd ${isBranch(st.cur) ? st.cur.path : st.cur.parent.path}`); break;
+    case 'Escape':
+      if (st.focus === 'insp') st.focus = 'tree';
+      else if (st.filter !== null) st.filter = null;
+      else if (st.marked.size) { st.marked.clear(); st.line = ''; }
+      break;
+    default: return;
+  }
+  e.preventDefault(); render();
+});
+
+document.getElementById('sim').onclick = () => {
+  const g = groupNode(1); const p = g.props.find(x => x[0] === 'Mode'); p[1] = p[1] === 'Additive' ? 'Scaling' : 'Additive';
+  st.flash = { node: g, k: 'Mode' }; say(`station "FOH-2" set Group 1 "Mode" ${p[1]}`);
+  if (!st.pinned) { goTo(g); st.focus = 'insp'; st.irow = -1; }
+  render(); clearTimeout(st.ft); st.ft = setTimeout(() => { st.flash = null; render(); }, 1500);
+  term.focus();
+};
+render();
+</script>
