@@ -16,6 +16,9 @@ An open-source lighting console, written in Rust. One server, the **station**, o
 and sends live DMX (sACN, Art-Net). You drive it from a terminal, a browser, a phone or the
 desktop app, all at the same time, and several stations can join into one **LumaSession**.
 
+> [!CAUTION]
+> **THIS IS A PROOF OF CONCEPT SOFTWARE**
+
 > [!WARNING]
 > **LumaCore is fully vibe-coded software.** It was written with AI, and it comes with no
 > reliability, no warranty and no promise that it works on your show. Never run anything that
