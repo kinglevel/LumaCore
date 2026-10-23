@@ -19,6 +19,12 @@ Research is input, never a rule; the rules are in `docs/decisions/`. Nothing her
 | [12d-rights.md](ui-kit/12d-rights.md) | Rights levels, one level per user; every rights mention in the docs tabulated | 2026-10-13 | 4,439 |
 | [12d-remote-station-edits.md](ui-kit/12d-remote-station-edits.md) | Editing another station's own settings: direct, via the master, or both (what other projects do) | 2026-10-13 | 2,635 |
 
+## keys/ — the key editor (the UserProfile editor's Keys tab)
+
+| File | Topic | Date | Words |
+|---|---|---|---|
+| [2026-10-23-key-editor.md](keys/2026-10-23-key-editor.md) | The KBD / PRG / NAV modes and every key today; how good key editors work (visual keyboards, scopes, modifier layers); the open questions | 2026-10-23 | 1,255 |
+
 ## patch/ — the patch overhaul, round 3 (decisions §34; plan `docs/plans/active/2026-10-18-patch-round3.md`)
 
 | File | Topic | Date | Words |
