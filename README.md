@@ -26,6 +26,7 @@ Every login asks you to accept the **Meow License** first. Share all your good v
 
 ## Contents
 
+- [How it fits together](#how-it-fits-together)
 - [Screenshots](#screenshots)
 - [How it differs from other consoles](#how-it-differs-from-other-consoles)
 - [Quick start](#quick-start)
@@ -33,6 +34,177 @@ Every login asks you to accept the **Meow License** first. Share all your good v
 - [Build it with us](#build-it-with-us)
 - [Docs](#docs)
 - [License](#license)
+
+## How it fits together
+
+LumaCore has one rule: **the station owns the show, and everything else is a view onto it.**
+
+- A **station** is one running `lumacore-server`, the program, on some computer. It holds the
+  show, runs every command line and renders DMX. A computer can run more than one.
+- A **client** is a window onto a station: a terminal, a browser or the desktop app. It sends
+  lines and draws what the station tells it to, and holds no show of its own, so you can attach
+  as many as you like and they all stay in step.
+- A **LumaSession** is several stations acting as one console with one show.
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#1c1c1c", "primaryTextColor": "#ececec", "primaryBorderColor": "#e0b341", "lineColor": "#8a8a8a", "textColor": "#d1d1d1", "clusterBkg": "#121212", "clusterBorder": "#424242", "titleColor": "#ececec", "edgeLabelBackground": "#121212"}}}%%
+flowchart LR
+  subgraph FRAME[" "]
+  direction LR
+  subgraph CLIENTS["Clients · hold no show"]
+    CLI["lumacore-cli<br/>terminal"]
+    WEB["Browser<br/>any computer"]
+    PHONE["Browser<br/>phone · tablet"]
+  end
+
+  subgraph SESSION["LumaSession · one show"]
+    subgraph FOH["FOH computer"]
+      A[("Station A · master<br/>lumacore-server<br/>owns the show")]
+    end
+    subgraph LAPTOP["Backstage laptop"]
+      APP["lumacore-app<br/>desktop windows"]
+      B[("Station B · member<br/>lumacore-server<br/>follows the show")]
+    end
+  end
+
+  subgraph RIG["The rig · lines in the show"]
+    OUT1["DMX nodes · FOH"]
+    OUT2["DMX nodes · stage"]
+    IN["DMX in · another desk"]
+    OSC["OSC in · show control"]
+  end
+
+  CLI -->|shell| A
+  WEB -->|web UI| A
+  PHONE -->|web UI| B
+  APP -->|starts · opens its page| B
+  A <==>|"lines up · changes down"| B
+  A -->|"sACN · Art-Net"| OUT1
+  B -->|"sACN · Art-Net"| OUT2
+  A ~~~ IN
+  IN -->|"DMX in · sACN · Art-Net"| A
+  A ~~~ OSC
+  OSC -->|"runs lines as its user"| A
+  end
+
+  classDef client fill:#1c1c1c,stroke:#3fc8d8,stroke-width:2px,color:#ececec
+  classDef station fill:#1c1c1c,stroke:#e0b341,stroke-width:3px,color:#f0cf6a
+  classDef rig fill:#1c1c1c,stroke:#e0862e,stroke-width:2px,color:#ececec
+  class CLI,WEB,PHONE,APP client
+  class A,B station
+  class OUT1,OUT2,IN,OSC rig
+  style CLIENTS fill:#121212,stroke:#3fc8d8,color:#3fc8d8
+  style SESSION fill:#121212,stroke:#e0b341,stroke-dasharray:6 4,color:#e0b341
+  style FOH fill:#161616,stroke:#424242,color:#d1d1d1
+  style LAPTOP fill:#161616,stroke:#424242,color:#d1d1d1
+  style RIG fill:#121212,stroke:#e0862e,color:#e0862e
+  linkStyle 0,1,2,3 stroke:#3fc8d8,stroke-width:2px
+  linkStyle 4 stroke:#e0b341,stroke-width:4px
+  linkStyle 5,6,8,10 stroke:#e0862e,stroke-width:2px
+  style FRAME fill:#0d1117,stroke:#0d1117
+```
+
+<sub>Gold: a station, which holds the show · Cyan: a client, which holds nothing · Orange: the rig, reached through the show's protocol lines</sub>
+
+The same pieces fit together in different ways:
+
+| Setup | What runs where |
+|---|---|
+| **One laptop** | The desktop app starts a station beside itself and opens its windows. |
+| **Laptop and phone** | Open the station's page in the phone's browser and walk the rig as a remote. |
+| **Headless** | A station on a server or a small PC in the rack; operators use browsers and terminals. |
+| **Show control** | An OSC line in the show lets another system fire Lum lines as the user the line names. Every gesture in the UI is a line too, so anything you can tap can be triggered. |
+| **Several stations** | FOH and backstage join one LumaSession. Each one sends DMX on the networks mapped to its own network cards, any client can attach to either, and if the master drops another station takes over. |
+
+<details>
+<summary><b>For developers: where the process edges are</b></summary>
+
+```mermaid
+%%{init: {"theme": "base", "themeVariables": {"primaryColor": "#1c1c1c", "primaryTextColor": "#ececec", "primaryBorderColor": "#e0b341", "lineColor": "#8a8a8a", "textColor": "#d1d1d1", "clusterBkg": "#121212", "clusterBorder": "#424242", "titleColor": "#ececec", "edgeLabelBackground": "#121212"}}}%%
+flowchart TB
+  subgraph FRAME[" "]
+  direction TB
+  subgraph CLIENTS["Client processes · lumacore-wire only"]
+    CLI["lumacore-cli"]
+    BROWSER["Browser<br/>lumacore-webui page"]
+    APP["lumacore-app<br/>spawns lumacore-server or finds one<br/>one window per screen"]
+  end
+
+  subgraph STATION["Station A · lumacore-server"]
+    subgraph DOORS["Doors · one socket each"]
+      SHELL["lumacore-shell<br/>shell port"]
+      HTTP["lumacore-http<br/>REST · /ws/feeds · /ws/shell"]
+      CMD["command port<br/>health · shutdown"]
+      BEACON["discovery beacon"]
+    end
+    subgraph CORE["Core · one state thread"]
+      STATE{{"dispatch · rights · Oops<br/>ShowData"}}
+    end
+    LS["lumacore-lumasession<br/>election · replication · clock"]
+    LINES["lumacore-lines<br/>a driver per protocol and NIC<br/>sACN · Art-Net · OSC"]
+  end
+
+  OTHER[("Station B, C …<br/>other lumacore-server processes")]
+  RIG["The rig<br/>DMX nodes · desks · OSC senders"]
+
+  CLI -->|"TCP · shell"| SHELL
+  CLI -->|"UDP · requests"| CMD
+  BROWSER -->|"HTTP · WebSocket"| HTTP
+  APP -->|"HTTP · WebSocket"| HTTP
+  APP -->|"UDP · requests"| CMD
+  APP -.->|finds| BEACON
+  SHELL -->|StateHandle| STATE
+  HTTP -->|StateHandle| STATE
+  CMD -->|StateHandle| STATE
+  STATE -->|outbox| LS
+  STATE -->|"show → plan → render tick"| LINES
+  LINES -->|"DMX in · OSC lines"| STATE
+  LS <==>|LumaSession stream| OTHER
+  LINES <-->|"sACN · Art-Net · OSC"| RIG
+  end
+
+  classDef client fill:#1c1c1c,stroke:#3fc8d8,stroke-width:2px,color:#ececec
+  classDef door fill:#1c1c1c,stroke:#d4a634,stroke-width:1px,color:#ececec
+  classDef core fill:#1c1c1c,stroke:#e0b341,stroke-width:3px,color:#f0cf6a
+  classDef station fill:#1c1c1c,stroke:#e0b341,stroke-width:3px,color:#f0cf6a
+  classDef rig fill:#1c1c1c,stroke:#e0862e,stroke-width:2px,color:#ececec
+  class CLI,BROWSER,APP client
+  class SHELL,HTTP,CMD,BEACON,LS door
+  class STATE core
+  class OTHER station
+  class LINES,RIG rig
+  style CLIENTS fill:#121212,stroke:#3fc8d8,color:#3fc8d8
+  style STATION fill:#121212,stroke:#e0b341,stroke-width:3px,color:#e0b341
+  style DOORS fill:#161616,stroke:#424242,color:#d1d1d1
+  style CORE fill:#161616,stroke:#9a7a08,color:#f0cf6a
+  linkStyle 0,1,2,3,4,5 stroke:#3fc8d8,stroke-width:2px
+  linkStyle 6,7,8,9,10,11 stroke:#e0b341,stroke-width:2px
+  linkStyle 12 stroke:#e0b341,stroke-width:4px
+  linkStyle 13 stroke:#e0862e,stroke-width:2px
+  style FRAME fill:#0d1117,stroke:#0d1117
+```
+
+- **One door in.** A shell, a page, a key or an OSC message all become a command line that goes
+  through the same dispatch on the station's one state thread. The rights gate, Oops and
+  replication are the same whatever sent the line.
+- **Clients are thin.** `lumacore-cli` and `lumacore-app` compile only `lumacore-wire`. The web
+  UI draws every window, pool and menu from server descriptors, and everything live in a page
+  comes over one `/ws/feeds` socket.
+- **The desktop app is a launcher plus windows.** It starts the `lumacore-server` shipped beside
+  it, or finds a station through the discovery beacon, then opens the station's own page in one
+  OS window per screen.
+- **Protocols are lines in the show, not clients.** sACN, Art-Net and OSC are each a line
+  (`Sacn 1`, `ArtNet 1`, `Osc 1`) on a network that each station maps to its own NIC. An OSC line
+  listens only once it is stored, and runs its commands as the user it names.
+- **LumaSession.** Only the master changes the show. Members forward lines to it and apply the
+  resulting changes in order. Station-local settings never leave their station.
+- **Ports** are constants in `lumacore-wire` (`REMOTE_SHELL_PORT`, `REMOTE_HTTP_PORT`,
+  `REMOTE_CMD_PORT`, …). Art-Net and sACN use their standard ports; an OSC line sets its own.
+
+More in [ARCHITECTURE.md](ARCHITECTURE.md) and the
+[LumaSession guide](docs/dev/networking/lumasession.md).
+
+</details>
 
 ## Screenshots
 
