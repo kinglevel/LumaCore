@@ -45,19 +45,18 @@ test('the keyboard per mode: PRG\'s E cycles, F10 is core, Meow relabels', async
   await shot(page, `prg-meow-${test.info().project.name}`);
 });
 
-test('editing E\'s cycle is one Bind + Set UIKey line; Unbind brings LumaCore\'s back', async ({ page }) => {
+test('editing E\'s cycle is one Bind + Set UIKey line as you leave the row; Unbind brings LumaCore\'s back', async ({ page }) => {
   const ed = await editor(page);
   await ed.locator('[data-layer="PRG"]').click();
   await ed.locator('.lc-km-key[data-code="KeyE"]').click();
   const panel = ed.locator('.lc-km-panel');
   await expect(panel.locator('.lc-km-head b')).toHaveText('E');
-  await expect(panel.locator('[data-act="save"]')).toBeDisabled();
+  // Saved as it is made: leaving the row is the change (no Save button).
   await panel.locator('[data-add="press"]').click();
   const third = panel.locator('.lc-km-row[data-which="press"][data-row="2"] [data-line]');
+  const from = server.mark();
   await third.fill('Label');
   await third.press('Tab');
-  const from = server.mark();
-  await panel.locator('[data-act="save"]').click();
   // One line, two statements (the station logs each).
   await server.waitSysmon(/Bind "E" `Edit` `EditSetting` `Label` \/Shortcuts "PRG" → ok/, from);
   await server.waitSysmon(/Set UIKey "user\.prg\.e" "Types" "1 2 3" → ok/, from);
@@ -94,4 +93,23 @@ test('a Mac\'s Option+A and Option+E reach Assign › Label and Edit in PRG', as
   await expect.poll(async () => (await bar.innerText()).trimEnd()).toMatch(/> Label Edit\b/);
   await page.evaluate(() => (window as any).wsCommand('Unbind "Alt-E" /Shortcuts "PRG"'));
   await page.evaluate(() => (window as any).wsCommand('Shortcuts Keyboard'));
+});
+
+// The user's way: a third word typed after Label, then the window closed — the row is saved.
+test('a word typed into a new press is saved when the window closes', async ({ page }) => {
+  const ed = await editor(page);
+  await ed.locator('[data-layer="PRG"]').click();
+  await ed.locator('.lc-km-key[data-code="KeyA"]').click();
+  await expect(ed.locator('.lc-km-panel .lc-km-head b')).toHaveText('A');
+  await ed.locator('.lc-km-bar [data-mod="Alt"]').click();
+  await ed.locator('.lc-km-key[data-code="KeyA"]').click();
+  const panel = ed.locator('.lc-km-panel');
+  await expect(panel.locator('.lc-km-head b')).toHaveText('Alt-A');
+  await panel.locator('[data-add="press"]').click();
+  const from = server.mark();
+  await panel.locator('.lc-km-row[data-which="press"][data-row="2"] [data-line]').fill('Unassign');
+  await ed.locator('.lc-close').click();
+  await expect(page.locator('[data-kit="key-editor"]')).toHaveCount(0);
+  await server.waitSysmon(/Bind "Alt-A" `Assign` `Label` `Unassign` \/Shortcuts "PRG" → ok/, from);
+  await page.evaluate(() => (window as any).wsCommand('Unbind "Alt-A" /Shortcuts "PRG"'));
 });

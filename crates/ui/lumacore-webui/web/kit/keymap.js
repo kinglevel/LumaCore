@@ -12,8 +12,10 @@
 //                  tinted, a turned-off key crossed; a corner when this mode's binding overrides
 //                  All, a badge with the count of a press cycle
 //   the key panel  what the picked key does in every layer; its press cycle (each press a line that
-//                  types or runs; ↑ ↓ ×, + a press), its Meow presses, the other gestures; Make it
-//                  mine / Bind here, Unbind, Turn off, Back on — every change one line (`run`)
+//                  types or runs; ↑ ↓ ×, + a press), its Meow presses, the other gestures — each
+//                  change saved as it is made (a row when it is left, Enter or Tab; a toggle, ↑ ↓ ×
+//                  at once; the window's close saves the row being typed); Unbind, Turn off, Back
+//                  on — every change one line (`run`): your own key's `Set UIKey`, else a `Bind`
 //   the list       <luma-grid> of the layer's bindings; a row picks its key
 //
 //   el.show(data)  ·  events: run { line } (bubbles)
@@ -220,9 +222,7 @@ class LumaKeymap extends HTMLElement {
     const cycle = (label, which, list) => `<div class="lc-km-cycle"><div class="lc-km-cap">${label}<small>${list.length > 1 ? 'each press while its word is still last on the line goes one on; anything else starts over' : 'add a press to make a cycle'}</small></div>`
       + rows(list, which) + (editable ? `<button type="button" class="lc-ins-chip lc-km-add" data-add="${which}">+ Add a press</button>` : '') + '</div>';
     const gestures = r.e?.lines ? `<div class="lc-km-ge">${GESTURES.map(([g, label]) => `<span>${label}${g === 'DoublePress' ? '' : ' <em>app · web</em>'}</span><input class="lc-km-line" data-gesture="${g}" value="${esc(r.e.lines[g] || '')}" ${own ? '' : 'disabled'} aria-label="${label}">`).join('')}</div>` : '';
-    const changed = JSON.stringify({ press: d.press, meow: d.meow }) !== JSON.stringify(this.baseRows(r));
     const acts = [];
-    if (editable) acts.push(`<button type="button" class="lc-ins-chip" data-act="save" ${changed ? '' : 'disabled'}>${own ? 'Save' : r.e ? 'Make it mine' : 'Bind here'}</button>`);
     if (own) acts.push(`<button type="button" class="lc-ins-chip" data-act="unbind">Unbind</button>`);
     if (r.src === 'lumacore') acts.push(`<button type="button" class="lc-ins-chip" data-act="unbind">Turn off</button>`);
     if (r.src === 'off') acts.push(`<button type="button" class="lc-ins-chip" data-act="unbind">Back on</button>`);
@@ -235,6 +235,7 @@ class LumaKeymap extends HTMLElement {
       ${note ? `<div class="lc-km-note">${note}</div>` : ''}
       ${editNow ? cycle('Press', 'press', d.press) + cycle(`Meow (${esc(this.meowMod())}) + press`, 'meow', d.meow) : ''}
       ${editNow ? gestures : ''}
+      ${editNow ? `<div class="lc-km-note">Changes save as you make them${own ? '' : r.e ? ' — the first one makes this key yours on this profile' : ' — the first one binds this key'}.</div>` : ''}
       ${acts.length && editNow ? `<div class="lc-km-acts">${acts.join('')}</div>` : r.src === 'off' ? `<div class="lc-km-acts">${acts.join('')}</div>` : ''}`;
   }
 
@@ -255,6 +256,14 @@ class LumaKeymap extends HTMLElement {
     const rows = list.filter(p => p.line.trim());
     const types = rows.map((p, i) => (p.types ? i + 1 : 0)).filter(Boolean);
     return { lines: rows.map(p => `\`${p.line.trim().replace(/`/g, '')}\``).join(' '), types: types.length ? `"${types.join(' ')}"` : 'None', count: rows.length };
+  }
+  /** Save the draft when it differs from what the station holds (empty rows don't count). */
+  commit(r) {
+    if (!r || !this.draft) return;
+    const filled = list => list.filter(p => p.line.trim()).map(p => ({ line: p.line.trim(), types: !!p.types }));
+    const base = this.baseRows(r);
+    const same = JSON.stringify([filled(this.draft.press), filled(this.draft.meow)]) === JSON.stringify([filled(base.press), filled(base.meow)]);
+    if (!same) this.save(r);
   }
   save(r) {
     const L = this.data.lines;
@@ -285,12 +294,11 @@ class LumaKeymap extends HTMLElement {
     else if (b.dataset.code) { this.sel = b.dataset.code; this.draft = null; }
     else if ('rec' in b.dataset) { this.recording = !this.recording; this.focus(); }
     else if ('shape' in b.dataset) this.shape = this.shape === 'ISO' ? 'ANSI' : 'ISO';
-    else if (b.dataset.types && list) list[i].types = b.dataset.types === '1';
-    else if ('up' in b.dataset && list && i > 0) [list[i - 1], list[i]] = [list[i], list[i - 1]];
-    else if ('down' in b.dataset && list && i < list.length - 1) [list[i + 1], list[i]] = [list[i], list[i + 1]];
-    else if ('del' in b.dataset && list) list.splice(i, 1);
+    else if (b.dataset.types && list) { list[i].types = b.dataset.types === '1'; this.commit(r); }
+    else if ('up' in b.dataset && list && i > 0) { [list[i - 1], list[i]] = [list[i], list[i - 1]]; this.commit(r); }
+    else if ('down' in b.dataset && list && i < list.length - 1) { [list[i + 1], list[i]] = [list[i], list[i + 1]]; this.commit(r); }
+    else if ('del' in b.dataset && list) { list.splice(i, 1); this.commit(r); }
     else if (b.dataset.add && d) d[b.dataset.add].push({ line: '', types: this.layer !== 'All' });
-    else if (b.dataset.act === 'save' && r) { this.save(r); return; }
     else if (b.dataset.act === 'unbind' && r) {
       this.run(fill(this.data.lines.unbind, { key: r.name, mode: this.layer === 'All' ? '' : fill(this.data.lines.mode, { layer: this.layer }) }));
       return;
@@ -302,9 +310,11 @@ class LumaKeymap extends HTMLElement {
     const t = e.target;
     const d = this.draft;
     if ('line' in t.dataset && d) {
+      // Saved at once; no redraw here (a click that blurred the field still lands) — the
+      // station's answer redraws it.
       const at = t.closest('[data-row]');
       d[at.dataset.which][+at.dataset.row].line = t.value;
-      this.render();
+      this.commit(this.look(this.keyOf(this.sel)));
     } else if (t.dataset.gesture) {
       const r = this.look(this.keyOf(this.sel));
       if (!r.e?.ui_key) return;
@@ -380,7 +390,12 @@ export function openKeyEditor({ line, close, layer } = {}) {
   document.body.appendChild(scrim);
   const map = card.querySelector('luma-keymap');
   map.addEventListener('run', e => line?.(e.detail.line));
-  const done = () => { scrim.remove(); close?.(); };
+  // Closing saves the row being typed: leaving the field is its change.
+  const done = () => {
+    if (card.contains(document.activeElement)) document.activeElement.blur();
+    scrim.remove();
+    close?.();
+  };
   card.querySelector('.lc-close').onclick = done;
   scrim.addEventListener('keydown', e => { if (e.key === 'Escape' && !e.target.matches('input')) done(); });
   return {
