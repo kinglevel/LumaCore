@@ -1,0 +1,387 @@
+<title>Preset Links</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* A proposal page: notes in one column, working mocks (the Update ask, the programmer, a cue, the Device Sheet) in the kit's dark theme; the page around them follows the viewer. */
+:root{--bg:#f4f3ef;--fg:#1b1a17;--mute:#69655b;--line:#d8d3c6;--card:#fffdf8;--gold:#8a6d06;--code:#ecebe4;
+  --font:"Source Sans 3","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",Menlo,Consolas,monospace;
+  /* the kit's dark theme (tokens.css); --k-preset is the kit's preset colour (--lc-v-preset) */
+  --k-bg:#121212;--k-surface:#1c1c1c;--k-raised:#2a2a2a;--k-line:#3a3a3a;--k-text:#d1d1d1;--k-dim:#8a8a8a;--k-strong:#ececec;
+  --k-accent:#d4a634;--k-on-accent:#121212;--k-sel:#3a3320;--k-preset:#3fc8d8;--k-preset-dim:#1d4a50;--k-prog:#d86a7c;--k-ok:#3fbf4a;--k-warn:#e08a2c;--k-alert:#ff6b6b;--k-scrim:rgba(0,0,0,.55)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141518;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1c1e23;--gold:#e0b341;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141518;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1c1e23;--gold:#e0b341;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--font);margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1300px;margin:0 auto;display:grid;gap:28px}
+.narrow{max-width:900px}
+h1{font-size:1.85rem;margin:0;line-height:1.15;text-wrap:balance}h2{font-size:1.25rem;margin:0 0 6px;text-wrap:balance}h3{font-size:1rem;margin:0 0 4px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:600}
+p{max-width:76ch;margin:.35em 0}.mute{color:var(--mute)}
+code{font:.85em var(--mono);background:var(--code);padding:1px 5px;border-radius:4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.two{display:grid;gap:16px;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}@media (max-width:900px){.two{grid-template-columns:minmax(0,1fr)}}
+.three{display:grid;gap:14px;grid-template-columns:repeat(3,minmax(0,1fr))}@media (max-width:980px){.three{grid-template-columns:minmax(0,1fr)}}
+ol.q{margin:0;padding-left:1.3em;display:grid;gap:12px}
+.opt{border:1px solid var(--line);border-radius:8px;padding:5px 10px;margin-top:5px}
+.opt b{color:var(--gold)}
+.rec{font-size:.72rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.05em;margin-left:6px}
+ul.f{margin:.3em 0;padding-left:1.2em;display:grid;gap:4px}
+.flow{display:grid;gap:10px;grid-template-columns:repeat(5,minmax(0,1fr))}@media (max-width:1000px){.flow{grid-template-columns:minmax(0,1fr)}}
+.step{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;min-width:0;display:grid;gap:6px;align-content:start}
+.step .n{font:600 .75rem var(--mono);color:var(--gold)}
+.step pre{margin:0;background:var(--k-bg);color:var(--k-text);font:12px/1.5 var(--mono);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:pre}
+.lk{color:var(--k-preset)}.dm{color:var(--k-dim)}.pg{color:var(--k-prog)}
+
+/* the kit dialog */
+.stage{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:var(--k-bg)}
+.scroll{overflow-x:auto}
+.dlg{min-width:1080px;margin:18px;background:var(--k-surface);border:1px solid var(--k-line);border-radius:6px;color:var(--k-text);font:14px/1.4 var(--font)}
+.dlg-title{height:50px;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid var(--k-line);color:var(--k-strong);font-weight:500}
+.dlg-title .meta{margin-left:auto;font:12px var(--mono);color:var(--k-dim);font-weight:400}
+.dlg-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+.half{padding:12px 16px;display:grid;gap:10px;align-content:start;min-width:0}
+.half+.half{border-left:1px solid var(--k-line)}
+.half h4{margin:0;font:600 13px var(--font);color:var(--k-dim);letter-spacing:.06em;text-transform:uppercase;display:flex;gap:8px;align-items:center}
+.row{border:1px solid var(--k-line);border-radius:6px;background:var(--k-bg);display:grid;gap:8px;padding:10px 12px}
+.row.off{opacity:.55}
+.rhead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rhead b{color:var(--k-strong);font-weight:600}
+.badge{font:11px var(--mono);border:1px solid var(--k-line);border-radius:3px;padding:0 6px;color:var(--k-dim)}
+.badge.lk{border-color:var(--k-preset-dim);color:var(--k-preset)}
+.badge.warn{border-color:#5a3c14;color:var(--k-warn)}
+.seg{display:inline-flex;border:1px solid var(--k-line);border-radius:5px;overflow:hidden;margin-left:auto}
+.seg button{all:unset;cursor:pointer;padding:4px 10px;font-size:12px;color:var(--k-text);border-left:1px solid var(--k-line)}
+.seg button:first-child{border-left:none}
+.seg button.on{background:var(--k-accent);color:var(--k-on-accent);font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--k-accent);outline-offset:-2px}
+.diff{display:grid;grid-template-columns:auto auto auto auto;gap:2px 12px;font:12px var(--mono);color:var(--k-dim)}
+.diff .old{color:var(--k-dim);text-decoration:line-through}.diff .new{color:var(--k-strong)}.diff .add{color:var(--k-ok)}
+.follow{font-size:12px;color:var(--k-dim)}
+.follow b{color:var(--k-preset);font-weight:600}
+.recast{display:flex;gap:10px;align-items:center;font-size:13px;border-top:1px dashed var(--k-line);padding-top:8px}
+.recast .q{flex:1}
+.toggle{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:12px}
+.toggle i{width:28px;height:16px;border-radius:9px;background:var(--k-raised);position:relative;border:1px solid var(--k-line)}
+.toggle i::after{content:"";position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--k-dim)}
+.toggle.on i{background:var(--k-accent);border-color:var(--k-accent)}
+.toggle.on i::after{left:14px;background:var(--k-on-accent)}
+.opts{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:12px;color:var(--k-dim)}
+.opts .seg{margin-left:0}
+.preview{border-top:1px solid var(--k-line);padding:10px 16px;display:grid;gap:6px}
+.preview h5{margin:0;font:600 12px var(--font);color:var(--k-dim);letter-spacing:.06em;text-transform:uppercase}
+.preview pre{margin:0;font:12px/1.6 var(--mono);color:var(--k-strong);white-space:pre-wrap}
+.preview .sum{font-size:13px;color:var(--k-text)}
+.btns{display:grid;grid-template-columns:1fr 1fr 2fr;gap:10px;padding:12px 16px;border-top:1px solid var(--k-line)}
+.btn{all:unset;cursor:pointer;text-align:center;min-height:44px;display:grid;place-items:center;border-radius:6px;border:1px solid var(--k-line);background:var(--k-raised);color:var(--k-strong);font-size:14px}
+.btn.primary{background:var(--k-accent);color:var(--k-on-accent);border-color:transparent;font-weight:600}
+.btn:focus-visible{outline:2px solid var(--k-accent);outline-offset:2px}
+
+.chips{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--k-line);font-size:12px;color:var(--k-dim)}
+.chip{display:inline-flex;align-items:center;gap:8px}
+.chip .seg{margin-left:0}
+.dlg-body.one{grid-template-columns:minmax(0,1fr)}
+.tnode{border:1px solid var(--k-line);border-radius:6px;background:var(--k-bg);padding:8px 10px;display:grid;gap:8px}
+.tnode.on{border-color:#5a4a1a}
+.tnode.later{opacity:.7;border-style:dashed}
+.tnode.loop{border-color:#6a2020;background:#1e1010}
+.thead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.thead b{color:var(--k-strong);font-weight:600}
+.ticon{color:var(--k-dim);width:16px;text-align:center}
+.ticon.lk{color:var(--k-preset)}
+.lvl{font:600 11px var(--mono);padding:0 5px;border-radius:3px;border:1px solid var(--k-line)}
+.lvl.S{color:var(--k-alert);border-color:#5a2a2a}.lvl.G{color:var(--k-warn);border-color:#5a3c14}.lvl.U{color:var(--k-text)}
+.why{font-size:12px;color:var(--k-dim);flex:1}
+.tnode.loop .why{color:var(--k-alert)}
+.upd{all:unset;cursor:pointer;width:52px;height:34px;display:grid;place-items:center;border-radius:6px;border:1px solid var(--k-line);background:var(--k-raised);color:var(--k-dim);font-size:18px;margin-left:auto}
+.upd.on{background:var(--k-accent);color:var(--k-on-accent);border-color:transparent}
+.upd:focus-visible{outline:2px solid var(--k-accent);outline-offset:2px}
+.diff2{display:grid;gap:2px;font:12px var(--mono);color:var(--k-dim)}
+.diff2 label{display:grid;grid-template-columns:18px minmax(0,1.4fr) minmax(0,1fr) auto auto;gap:10px;align-items:center;cursor:pointer}
+.diff2 .old{text-decoration:line-through}.diff2 .new{color:var(--k-strong)}.diff2 .add{color:var(--k-ok)}
+.diff2 input{accent-color:var(--k-accent);margin:0}
+.tlink{all:unset;cursor:pointer;font-size:12px;color:var(--k-preset)}
+.cuelist{display:grid;gap:4px;padding-left:10px}
+.cuelist div{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;font:12px var(--mono)}
+.cuelist .seg{margin-left:0}
+.dm{color:var(--k-dim)}
+/* small mocks */
+.mini{background:var(--k-bg);color:var(--k-text);border-radius:8px;border:1px solid var(--line);font:13px/1.45 var(--font);overflow:hidden}
+.mini .mh{padding:6px 10px;border-bottom:1px solid var(--k-line);font:600 12px var(--font);color:var(--k-dim);display:flex;gap:8px;align-items:center}
+.mini table{border-collapse:collapse;width:100%;font:12px var(--mono)}
+.mini th{color:var(--k-dim);font-weight:400;text-align:left;padding:4px 8px;border-bottom:1px solid var(--k-line)}
+.mini td{padding:4px 8px;border-bottom:1px solid #222;white-space:nowrap}
+.cellv{display:inline-flex;align-items:center;gap:6px}
+.chipP{display:inline-flex;align-items:center;gap:4px;border-radius:3px;padding:0 5px;background:var(--k-preset-dim);color:var(--k-preset);font:600 11px var(--mono)}
+.val{color:var(--k-strong)}.val.small{color:var(--k-dim);font-size:11px}
+.prog .val{color:var(--k-prog)}
+.bar{display:inline-block;width:3px;height:12px;border-radius:1px;background:var(--k-preset);vertical-align:-1px;margin-right:4px}
+.dlg.small{min-width:0;margin:12px}
+.list{display:grid;gap:4px;padding:10px 16px}
+.list div{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;font:12px var(--mono);color:var(--k-text);align-items:center}
+.list div .dm{font-size:11px}
+</style>
+
+<main>
+  <header class="narrow" style="display:grid;gap:8px">
+    <div class="kicker">Mockup · round 1 · 2026-10-23</div>
+    <h1>Preset links: Update, Recast and Extract</h1>
+    <p>When you call a preset, the programmer keeps the preset's GUID with each value. A cue stored from that programmer holds the link and no copy of the value. Playback reads the preset when it compiles the plan, so changing the preset changes every cue that uses it. Update puts your changes back where they came from, Recast brings new or removed attributes into the cues, and Extract turns links into plain values.</p>
+    <p class="mute">Decided so far: cues store the link only; deleting a preset that cues use asks, then writes the values into those cues; the Device Sheet gets a Show setting; Update is one ask with a preview; Update offers Recast, and there is a Recast word too; Extract comes now, embedded presets later; the words Update (for presets), Recast and Extract join lum.md.</p>
+  </header>
+
+  <section style="display:grid;gap:10px">
+    <h2>From a preset to a cue and back</h2>
+    <div class="flow">
+      <div class="step"><span class="n">1 · Store</span><pre>Fixture 6 Thru 11
+At 70
+Store Preset 3 "Split"</pre><span class="mute" style="font-size:.85rem">The preset holds the values. It never holds a link to another preset, because embedded presets come later.</span></div>
+      <div class="step"><span class="n">2 · Call</span><pre>Group 1 At Preset 3
+<span class="dm">Programmer:</span>
+ 6  Dim <span class="lk">→ P3 Split</span> <span class="dm">70</span>
+ 7  Dim <span class="lk">→ P3 Split</span> <span class="dm">70</span></pre><span class="mute" style="font-size:.85rem">Each value keeps the preset's GUID. A plain value typed over it, like <code>At 50</code>, drops the link.</span></div>
+      <div class="step"><span class="n">3 · Store a cue</span><pre>Store Cue 2
+<span class="dm">Sequence 1 Cue 2:</span>
+ 6  Dim <span class="lk">→ P3</span>
+ 7  Dim <span class="lk">→ P3</span></pre><span class="mute" style="font-size:.85rem">The cue holds only the link, one per fixture and attribute. A cue can mix linked and plain values.</span></div>
+      <div class="step"><span class="n">4 · Change</span><pre>Group 1 At Preset 3
+At 85
+<span class="dm">Programmer:</span>
+ 6  Dim <span class="pg">85</span> <span class="lk">(was P3)</span></pre><span class="mute" style="font-size:.85rem">The programmer remembers where each value came from, so Update knows its home.</span></div>
+      <div class="step"><span class="n">5 · Update</span><pre>Update
+<span class="dm">→ the ask below</span>
+<span class="dm">Into Preset 3:</span>
+ Cue 2, Cue 5, Cue 9
+ <span class="lk">follow by themselves</span></pre><span class="mute" style="font-size:.85rem">The cues need no update of their own, because they read the preset.</span></div>
+    </div>
+  </section>
+
+  <section style="display:grid;gap:10px">
+    <h2>The Update ask</h2>
+    <p class="mute" style="margin:0">One server-held dialog, so every client and the terminal show the same thing. It is a reference tree: each preset your values came from, with the presets it holds nested under it and an S / G / U badge for its data level (selective, global, universal). Each row has its own Update button. Open a row to see what changes, choose which fixtures, see the cues that follow and freeze any cue that should keep the old look, or make the update a new preset. The preview shows the lines that will run, and the whole update is one Oops step. Try it.</p>
+    <div class="stage scroll"><div class="dlg" id="upd"></div></div>
+  </section>
+
+  <section class="three">
+    <div>
+      <div class="kicker" style="margin-bottom:6px">Delete a preset that cues use</div>
+      <div class="mini"><div class="dlg small" style="border:none;margin:0">
+        <div class="dlg-title" style="height:44px">Delete Preset 3 "Split"<span class="meta">3 cues use it</span></div>
+        <div class="list">
+          <div><span class="dm">Seq 1</span><span>Cue 2 "Walk-in"</span><span class="dm">6 values</span></div>
+          <div><span class="dm">Seq 1</span><span>Cue 5 "Verse"</span><span class="dm">6 values</span></div>
+          <div><span class="dm">Seq 4</span><span>Cue 9 "Finale"</span><span class="dm">2 values</span></div>
+        </div>
+        <p style="margin:0 16px 10px;font-size:13px">These cues keep the preset's current values as plain values, and their links are dropped. Oops puts the preset and every link back.</p>
+        <div class="btns" style="grid-template-columns:1fr 1fr"><span class="btn">Cancel</span><span class="btn primary">Delete and keep the values</span></div>
+      </div></div>
+    </div>
+    <div>
+      <div class="kicker" style="margin-bottom:6px">Recast Preset 3 (also offered in Update)</div>
+      <div class="mini"><div class="dlg small" style="border:none;margin:0">
+        <div class="dlg-title" style="height:44px">Recast Preset 3 "Split"<span class="meta">Zoom added · Gobo1 removed</span></div>
+        <div class="list">
+          <div><span class="dm">Seq 1</span><span>Cue 2 <span class="lk">+ Zoom</span> <span class="dm">− Gobo1</span></span><span class="dm">6 fixtures</span></div>
+          <div><span class="dm">Seq 1</span><span>Cue 5 <span class="lk">+ Zoom</span></span><span class="dm">6 fixtures</span></div>
+          <div><span class="dm">Seq 4</span><span>Cue 9 <span class="lk">+ Zoom</span></span><span class="dm">2 fixtures</span></div>
+        </div>
+        <p style="margin:0 16px 10px;font-size:13px">Adds links for the preset's new attributes and drops the links to removed ones in the cues that use it. <code>Recast Preset 3 Sequence 1</code> limits it to one sequence.</p>
+        <div class="btns" style="grid-template-columns:1fr 1fr"><span class="btn">Cancel</span><span class="btn primary">Recast 3 cues</span></div>
+      </div></div>
+    </div>
+    <div>
+      <div class="kicker" style="margin-bottom:6px">Extract (links → plain values)</div>
+      <div class="mini">
+        <div class="mh">Lines</div>
+        <table>
+          <tr><td><code style="background:none;color:var(--k-strong)">Extract Preset 3</code></td></tr>
+          <tr><td class="dm">the programmer's P3 values become plain values</td></tr>
+          <tr><td><code style="background:none;color:var(--k-strong)">Extract Sequence 1 Cue 2</code></td></tr>
+          <tr><td class="dm">that cue's links become its plain values</td></tr>
+          <tr><td><code style="background:none;color:var(--k-strong)">Extract Preset 3 Sequence 1</code></td></tr>
+          <tr><td class="dm">only Preset 3's links in Sequence 1</td></tr>
+        </table>
+        <p style="margin:8px 10px 10px;font-size:13px;color:var(--k-dim)">Deleting a used preset does the same as an Extract on its cues.</p>
+      </div>
+    </div>
+  </section>
+
+  <section style="display:grid;gap:10px">
+    <h2>The Device Sheet: Show Value / Preset / Both</h2>
+    <div class="opts" style="color:var(--mute)">
+      <span>Window setting <b style="color:var(--fg)">Show</b>:</span>
+      <span class="seg" style="border-color:var(--line)" id="show"><button data-s="Value">Value</button><button data-s="Preset">Preset</button><button data-s="Both" class="on">Both</button></span>
+      <span>The cyan bar (the kit's preset colour) marks every linked value, whatever Show is set to.</span>
+    </div>
+    <div class="mini"><div class="mh">Device Sheet · Programmer only</div><div class="scroll"><table id="sheet"></table></div></div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h2>Questions</h2>
+      <ol class="q">
+        <li><b>The shape.</b> A reference tree: each preset your values came from, the presets it holds nested under it, an S / G / U level badge and an Update button per row; circular references show red and can't be updated. <span class="rec">recommended</span></li>
+        <li><b>Each preset row's default.</b>
+          <div class="opt"><b>A</b> Selected (its ⟳ lit) when your programmer changed its values<span class="rec">recommended</span></div>
+          <div class="opt"><b>B</b> Nothing selected; you pick each row</div></li>
+        <li><b>Fixture scope.</b> Untick lines in a preset's diff to update only some fixtures or attributes. <span class="rec">recommended</span></li>
+        <li><b>Freeze a cue.</b> In "Used by", a cue can keep the old look: before the preset changes, that cue gets the preset's current values as plain values (an Extract). <span class="rec">recommended</span></li>
+        <li><b>Update as a new preset.</b> Copy the preset to the next free number, update the copy, and keep the old one for the cues that use it. <span class="mute">Should the cues you choose move to the new one?</span></li>
+        <li><b>Preview in Blind.</b> The button shows the result on the Blind output before you commit. <span class="rec">recommended</span></li>
+        <li><b>One Oops step.</b> The whole update (Extracts, Updates, Recast) is one Oops step. <span class="rec">recommended</span> <span class="mute">Or one step per line?</span></li>
+        <li><b>Where a cue update lands</b> for a value that tracks from an earlier cue: where it was stored (recommended) or in this cue. <b>Protect the next cues</b> on by default? <span class="rec">recommended</span></li>
+        <li><b>Remembering choices.</b> The chips (Content, Level, Only presets with changes) are remembered on your profile. <span class="rec">recommended</span></li>
+        <li><b>Device Sheet default.</b> Show = Both. <span class="mute">Or Value?</span></li>
+      </ol>
+    </div>
+    <div class="card" style="display:grid;gap:8px;align-content:start">
+      <h2>How it is built</h2>
+      <ul class="f">
+        <li><b>The link.</b> <code>Value.preset</code> (the preset's GUID) already rides from <code>At Preset</code> into the programmer and <code>Store Cue</code>. With "link only", a cue value becomes the link and the attribute, with no steps of its own.</li>
+        <li><b>Playback.</b> The plan compiler looks each link up in the preset (the fixture's own entry, else the universal one). A preset change marks the sequences that use it, so their cached offers are rebuilt. Nothing runs in the background and nothing is ever stale.</li>
+        <li><b>Back-references.</b> A preset → cue parts index, rebuilt on load and kept by the change path. It gives "3 cues use it", the previews, Recast and the delete ask, and the pool's use count gets cues as well as programmers.</li>
+        <li><b>The ask.</b> <code>Update</code> alone opens it, listing every preset and cue the programmer's values came from. Each choice is a line: <code>Update Preset 3 /Merge</code> · <code>/Add</code> · <code>/Overwrite</code>, <code>Update Sequence 1 Cue 2 /Original</code>, <code>Recast Preset 3</code>. Rights: Presets for presets, Program for cues.</li>
+        <li><b>Store Preset</b> keeps writing plain values. A value already linked to another preset is flattened, until embedded presets come with a cycle check.</li>
+        <li><b>Tests on the rig.</b> The demo show gets one sequence whose cues use Presets 1–3: Store, call, Update, Recast, Extract, delete then Oops, and the Device Sheet's Show.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script>
+// ── The Update ask: a reference tree (each preset your values came from, the presets it holds
+// nested under it) with a preview, per-fixture scope, the cues that follow and a freeze per cue ──
+const st = {
+  content: 'Merge', level: 'Auto', onlyChanged: true, shield: true,
+  roots: [
+    { id: 3, name: 'Split', lvl: 'S', on: true, open: true, asNew: false,
+      diff: [{ f: 'Fixture 6 Thru 11', a: 'Dimmer', o: '70', n: '85', on: true }, { f: 'Fixture 6 Thru 11', a: 'Zoom', o: null, n: '40', on: true }, { f: 'Fixture 8', a: 'Dimmer', o: '70', n: '60', on: false }],
+      cues: [{ s: 1, c: 2, name: 'Walk-in', freeze: false }, { s: 1, c: 5, name: 'Verse', freeze: false }, { s: 4, c: 9, name: 'Finale', freeze: true }],
+      cuesOpen: true, recastOn: true },
+    { id: 5, name: 'Main Look', lvl: 'S', on: false, open: true, later: true,
+      diff: [], cues: [{ s: 1, c: 3, name: 'Chorus', freeze: false }], cuesOpen: false,
+      kids: [
+        { id: 1, name: 'Full', lvl: 'U', on: true, diff: [{ f: 'Fixture 1 Thru 5', a: 'Dimmer', o: '100', n: '90', on: true }], cues: [], used: 7 },
+        { id: 4, name: 'Cyan', lvl: 'G', on: false, diff: [], cues: [], used: 2, kids: [{ id: 5, name: 'Main Look', lvl: 'S', loop: true }] },
+      ] },
+  ],
+  cues: [{ title: 'Sequence 1 Cue 2 "Walk-in"', on: false, where: 'Original', diff: [['Fixture 12', 'Pan', '0°', '35°']], tracked: 'Pan was stored in Cue 1' }],
+};
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const seg = (key, opts, cur) => `<span class="seg">${opts.map(([v, l]) => `<button data-k="${key}" data-v="${v}" class="${v === cur ? 'on' : ''}">${l}</button>`).join('')}</span>`;
+const LVL = { S: 'Selective', G: 'Global', U: 'Universal' };
+const byKey = {};
+
+function lines() {
+  const out = [];
+  const walk = (p) => {
+    if (p.loop || p.later) { for (const k of p.kids || []) walk(k); return; }
+    if (p.on) {
+      const frozen = (p.cues || []).filter(c => c.freeze);
+      for (const c of frozen) out.push(`Extract Preset ${p.id} Sequence ${c.s} Cue ${c.c}`);
+      const scope = (p.diff || []).some(d => !d.on) ? ` ${(p.diff || []).filter(d => d.on).map(d => d.f).filter((v, i, a) => a.indexOf(v) === i).join(' + ')}` : '';
+      if (p.asNew) out.push(`Copy Preset ${p.id} At ${p.id + 10}`, `Update Preset ${p.id + 10} /${st.content}${scope}`);
+      else out.push(`Update Preset ${p.id} /${st.content}${scope}`);
+      if (p.recastOn && st.content !== 'Merge' && (p.diff || []).some(d => d.o === null)) out.push(`Recast Preset ${p.id}`);
+    }
+    for (const k of p.kids || []) walk(k);
+  };
+  st.roots.forEach(walk);
+  for (const c of st.cues) if (c.on) out.push(`Update Sequence 1 Cue 2 /${c.where}${st.shield ? ' /Shield' : ''}`);
+  return out;
+}
+
+function node(p, depth, path) {
+  byKey[path] = p;
+  if (p.loop) return `<div class="tnode loop" style="margin-left:${depth * 22}px"><div class="thead"><span class="ticon">⟲</span><b>Preset ${p.id} "${esc(p.name)}"</b><span class="lvl ${p.lvl}">${p.lvl}</span><span class="why">circular: it holds itself · can't update</span></div></div>`;
+  const following = (p.cues || []).filter(c => !c.freeze).length + (p.used || 0);
+  let h = `<div class="tnode${p.on ? ' on' : ''}${p.later ? ' later' : ''}" style="margin-left:${depth * 22}px">
+    <div class="thead">
+      ${depth ? '<span class="ticon" title="held by the preset above">↳</span>' : '<span class="ticon lk" title="your values came from it">⛓</span>'}
+      <b>Preset ${p.id} "${esc(p.name)}"</b><span class="lvl ${p.lvl}" title="${LVL[p.lvl]}">${p.lvl}</span>
+      ${p.later ? '<span class="why">holds other presets · embedded presets come later</span>' : `<span class="why">${following ? `${following} cue${following === 1 ? '' : 's'} follow` : 'no cues use it'}</span>`}
+      ${p.later ? '' : `<button class="upd${p.on ? ' on' : ''}" data-toggle="${path}" aria-pressed="${p.on}" title="Update this preset">⟳</button>`}
+    </div>`;
+  if (p.on && !p.later) {
+    if ((p.diff || []).length) h += `<div class="diff2">${p.diff.map((d, i) => `<label><input type="checkbox" data-scope="${path}" data-i="${i}" ${d.on ? 'checked' : ''}><span>${esc(d.f)}</span><span>${esc(d.a)}</span>${d.o === null ? '<span class="add">new</span>' : `<span class="old">${esc(d.o)}</span>`}<span class="new">${esc(d.n)}</span></label>`).join('')}</div>`;
+    if ((p.cues || []).length) {
+      h += `<button class="tlink" data-cues="${path}">${p.cuesOpen ? '▾' : '▸'} Used by ${p.cues.length} cue${p.cues.length === 1 ? '' : 's'}</button>`;
+      if (p.cuesOpen) h += `<div class="cuelist">${p.cues.map((c, i) => `<div><span class="dm">Seq ${c.s}</span><span>Cue ${c.c} "${esc(c.name)}"</span>${seg(`f${path}|${i}`, [['follow', 'Follows'], ['freeze', 'Keep old look']], c.freeze ? 'freeze' : 'follow')}</div>`).join('')}</div>`;
+    }
+    h += `<div class="opts"><button class="toggle${p.asNew ? ' on' : ''}" data-asnew="${path}"><i></i>Update as a new preset (${p.id + 10}) and keep this one</button></div>`;
+    if (st.content !== 'Merge' && (p.diff || []).some(d => d.o === null)) h += `<div class="recast"><span class="q">Zoom is new in this preset. Add it to the cues that follow as well (Recast)?</span><button class="toggle${p.recastOn ? ' on' : ''}" data-recast="${path}"><i></i>${p.recastOn ? 'Yes' : 'No'}</button></div>`;
+  }
+  h += `</div>`;
+  (p.kids || []).forEach((k, i) => { h += node(k, depth + 1, `${path}.${i}`); });
+  return h;
+}
+
+function render() {
+  const el = document.getElementById('upd');
+  const tree = st.roots.map((r, i) => node(r, 0, String(i))).join('');
+  const cs = st.cues.map((c, i) => `<div class="tnode${c.on ? ' on' : ''}"><div class="thead"><span class="ticon">▤</span><b>${esc(c.title)}</b><span class="why">${esc(c.tracked)}</span><button class="upd${c.on ? ' on' : ''}" data-cue="${i}" aria-pressed="${c.on}" title="Update this cue">⟳</button></div>
+    ${c.on ? `<div class="diff2">${c.diff.map(([f, a, o, n]) => `<label><input type="checkbox" checked><span>${esc(f)}</span><span>${esc(a)}</span><span class="old">${esc(o)}</span><span class="new">${esc(n)}</span></label>`).join('')}</div>
+    <div class="opts">Lands ${seg(`w${i}`, [['Original', 'Where stored'], ['Active', 'In this cue']], c.where)}<button class="toggle${st.shield ? ' on' : ''}" data-shield><i></i>Protect the next cues</button></div>` : ''}</div>`).join('');
+  const ls = lines();
+  el.innerHTML = `
+    <div class="dlg-title">Update<span class="meta">Admin · 9 values changed in your programmer</span></div>
+    <div class="chips">
+      <span class="chip">Content ${seg('content', [['Merge', 'Original only'], ['Add', 'Add new'], ['Overwrite', 'Overwrite']], st.content)}</span>
+      <span class="chip">Level ${seg('level', [['Auto', 'Auto'], ['Selective', 'S'], ['Universal', 'U']], st.level)}</span>
+      <button class="toggle${st.onlyChanged ? ' on' : ''}" data-only><i></i>Only presets with changes</button>
+    </div>
+    <div class="dlg-body one">
+      <div class="half"><h4>Presets your values came from <span class="badge lk">link</span></h4>${tree}
+        <h4 style="margin-top:8px">Cues with plain values</h4>${cs}
+        <p class="follow" style="margin:2px 0 0">A value that came from a preset never appears as a cue row: its cues follow the preset.</p></div>
+    </div>
+    <div class="preview"><h5>Preview · ${ls.length} line${ls.length === 1 ? '' : 's'}, one Oops step for the whole update</h5>
+      <pre>${ls.length ? ls.map(esc).join('\n') : 'Nothing to update.'}</pre></div>
+    <div class="btns"><span class="btn" tabindex="0">Cancel</span><span class="btn" tabindex="0">Preview in Blind</span><span class="btn primary" tabindex="0">Update ${ls.length ? `(${ls.length} lines)` : ''}</span></div>`;
+}
+document.getElementById('upd').addEventListener('click', e => {
+  const b = e.target.closest('button,input'); if (!b) return;
+  const d = b.dataset;
+  if (d.k) {
+    if (d.k === 'content') st.content = d.v;
+    else if (d.k === 'level') st.level = d.v;
+    else if (d.k[0] === 'w') st.cues[Number(d.k.slice(1))].where = d.v;
+    else if (d.k[0] === 'f') { const [path, i] = d.k.slice(1).split('|'); byKey[path].cues[Number(i)].freeze = d.v === 'freeze'; }
+  } else if (d.toggle) byKey[d.toggle].on = !byKey[d.toggle].on;
+  else if (d.cue !== undefined) st.cues[Number(d.cue)].on = !st.cues[Number(d.cue)].on;
+  else if (d.cues) byKey[d.cues].cuesOpen = !byKey[d.cues].cuesOpen;
+  else if (d.asnew) byKey[d.asnew].asNew = !byKey[d.asnew].asNew;
+  else if (d.recast) byKey[d.recast].recastOn = !byKey[d.recast].recastOn;
+  else if (d.scope) byKey[d.scope].diff[Number(d.i)].on = b.checked;
+  else if (d.shield !== undefined) st.shield = !st.shield;
+  else if (d.only !== undefined) st.onlyChanged = !st.onlyChanged;
+  else return;
+  render();
+});
+render();
+
+// ── The Device Sheet ──
+let show = 'Both';
+const rows = [
+  [6, 'ACME PHOTON HYBRID', ['P3 Split', '85'], ['', '0°'], ['P2 Half', '50']],
+  [7, 'ACME PHOTON HYBRID', ['P3 Split', '85'], ['', '0°'], ['P2 Half', '50']],
+  [8, 'ACME PHOTON HYBRID', ['', '60'], ['', '0°'], ['P2 Half', '50']],
+  [12, 'ACME ICARUS 620', ['P1 Full', '100'], ['', '35°'], ['', '20']],
+];
+function cell([p, v]) {
+  if (!p) return `<span class="val prog"><span class="val" style="color:var(--k-prog)">${v}</span></span>`;
+  const chip = `<span class="chipP">${p.split(' ')[0]}${show !== 'Value' ? ' ' + p.split(' ').slice(1).join(' ') : ''}</span>`;
+  if (show === 'Value') return `<span class="cellv"><span class="bar"></span><span class="val">${v}</span></span>`;
+  if (show === 'Preset') return `<span class="cellv"><span class="bar"></span>${chip}</span>`;
+  return `<span class="cellv"><span class="bar"></span>${chip}<span class="val small">${v}</span></span>`;
+}
+function sheet() {
+  document.getElementById('sheet').innerHTML = `<tr><th>FID</th><th>Name</th><th>Dim</th><th>Pan</th><th>Zoom</th></tr>` +
+    rows.map(r => `<tr><td style="color:var(--k-accent)">${r[0]}</td><td>${r[1]}</td><td>${cell(r[2])}</td><td>${cell(r[3])}</td><td>${cell(r[4])}</td></tr>`).join('');
+}
+document.getElementById('show').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return; show = b.dataset.s;
+  for (const x of e.currentTarget.querySelectorAll('button')) x.classList.toggle('on', x === b);
+  sheet();
+});
+sheet();
+</script>
