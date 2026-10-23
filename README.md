@@ -263,22 +263,17 @@ git clone https://github.com/kinglevel/LumaCore.git
 cd LumaCore
 ```
 
-**Linux / macOS:**
+Then start the scripts launcher:
 
 ```bash
-./scripts/unix/dev_init.sh
-./scripts/unix/start_developer
+./lumacore-scripts            # Linux / macOS
+.\lumacore-scripts.ps1        # Windows (PowerShell)
 ```
 
-**Windows (PowerShell):**
-
-```powershell
-.\scripts\win\dev_init.ps1
-.\scripts\win\start_developer.ps1
-```
-
-`start_developer` builds `lumacore-server` and `lumacore-cli`, starts the server with the
-`demo` show and attaches the CLI as `Admin` (password `admin`).
+The launcher builds itself and opens a menu of every script in `scripts/`, with a status pane
+for the server, the web UI address, the ports and the connected clients. Pick
+**start_developer**: it builds `lumacore-server` and `lumacore-cli`, starts the server with
+the `demo` show and attaches the CLI as `Admin` (password `admin`).
 
 Without the scripts:
 
@@ -334,6 +329,10 @@ where the last one left off:
 - [`.claude/rules/`](.claude/rules) holds the rules for each area, and `.claude/skills/` holds
   the procedures.
 - [`docs/decisions/`](docs/decisions/README.md) holds every design decision and its reasons.
+
+For a contributor setup, run `./scripts/unix/dev_init.sh` (or `.\scripts\win\dev_init.ps1`)
+once. It checks your tools, builds the Tracy profiler version the `tracy` feature needs (this can
+ask for `sudo`), copies the Obsidian snippets for the docs and builds the launcher.
 
 Clone it, point your AI at it and start. A good way to work:
 
