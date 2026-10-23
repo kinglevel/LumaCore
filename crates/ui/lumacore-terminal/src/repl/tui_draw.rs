@@ -117,6 +117,11 @@ impl TuiApp {
         for ((layer, _), rect) in stack.iter().zip(areas.iter().copied()) {
             match layer {
                 Layer::Watch => self.draw_watch_pane(frame, rect),
+                // NAV draws its tree and inspector where the output goes (decisions 0291).
+                Layer::Output if state.shortcut_mode == crate::core::app_state::ShortcutMode::Navigator => {
+                    view.output_height = rect.height;
+                    self.draw_nav(frame, rect, state);
+                }
                 Layer::Output => self.draw_history(frame, rect, view),
                 Layer::Status => self.draw_status_bar(frame, rect, state),
                 Layer::Path => self.draw_path_bar(frame, rect, state),
@@ -138,10 +143,6 @@ impl TuiApp {
             && self.completion_menu_visible()
         {
             self.draw_completion_menu(frame, area, input_area, state);
-        }
-        // NAV popup overlay (drawn last, on top of everything)
-        if self.nav_popup.is_some() {
-            self.draw_nav_popup(frame, area);
         }
     }
 
@@ -501,126 +502,6 @@ impl TuiApp {
         }
 
         frame.render_widget(Paragraph::new(Line::from(spans)), area);
-    }
-
-    /// Draw the NAV property popup overlay.
-    fn draw_nav_popup(&self, frame: &mut Frame, area: Rect) {
-        use super::tui_types::FieldKind;
-
-        let Some(popup) = &self.nav_popup else {
-            return;
-        };
-
-        // Centered popup: 60% width (min 40, max area), height = fields + 4 (max 80%)
-        let popup_w = (area.width * 60 / 100)
-            .max(40)
-            .min(area.width.saturating_sub(2));
-        let popup_h = ((popup.fields.len() as u16) + 4)
-            .max(6)
-            .min(area.height * 80 / 100);
-        let x = area.x + (area.width.saturating_sub(popup_w)) / 2;
-        let y = area.y + (area.height.saturating_sub(popup_h)) / 2;
-        let popup_area = Rect::new(x, y, popup_w, popup_h);
-
-        frame.render_widget(Clear, popup_area);
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .title(format!(" {} ", popup.title))
-            .title_bottom(" ↑↓ navigate  Enter edit  Esc close ")
-            .border_style(Style::default().fg(role::ACCENT));
-        let inner = block.inner(popup_area);
-        frame.render_widget(block, popup_area);
-
-        // Render fields
-        let visible_rows = inner.height as usize;
-        let start = popup.scroll;
-        let end = (start + visible_rows).min(popup.fields.len());
-
-        for (offset, field) in popup.fields[start..end].iter().enumerate() {
-            let idx = start + offset;
-            let is_selected = idx == popup.cursor;
-
-            let editable_marker = match &field.kind {
-                FieldKind::ReadOnly => " ",
-                _ => "*",
-            };
-
-            let cursor_indicator = if is_selected { ">" } else { " " };
-
-            let value_display = if is_selected {
-                if let Some(editing_val) = &popup.editing {
-                    format!("[{}]", editing_val)
-                } else {
-                    match &field.kind {
-                        FieldKind::Toggle { current, .. } => {
-                            if *current {
-                                "true".to_string()
-                            } else {
-                                "false".to_string()
-                            }
-                        }
-                        FieldKind::Enum {
-                            options,
-                            current_index,
-                            ..
-                        } => options.get(*current_index).cloned().unwrap_or_default(),
-                        _ => field.value.clone(),
-                    }
-                }
-            } else {
-                match &field.kind {
-                    FieldKind::Toggle { current, .. } => {
-                        if *current {
-                            "true".to_string()
-                        } else {
-                            "false".to_string()
-                        }
-                    }
-                    FieldKind::Enum {
-                        options,
-                        current_index,
-                        ..
-                    } => options.get(*current_index).cloned().unwrap_or_default(),
-                    _ => field.value.clone(),
-                }
-            };
-
-            let label_style = if is_selected {
-                Style::default()
-                    .fg(role::ACCENT)
-                    .add_modifier(Modifier::BOLD)
-            } else {
-                Style::default()
-            };
-            let cursor_style = Style::default().fg(role::ACCENT);
-            let marker_style = Style::default().fg(role::DIM);
-            let value_style = if is_selected && popup.editing.is_some() {
-                Style::default().fg(role::ACCENT)
-            } else {
-                Style::default().fg(role::STRONG)
-            };
-
-            // Truncate label and value to fit
-            let max_label = (inner.width as usize / 2).max(10);
-            let label_truncated: String = field.label.chars().take(max_label).collect();
-            let remaining = (inner.width as usize).saturating_sub(max_label + 5);
-            let value_truncated: String = value_display.chars().take(remaining).collect();
-
-            let line = Line::from(vec![
-                Span::styled(cursor_indicator, cursor_style),
-                Span::styled(editable_marker, marker_style),
-                Span::raw(" "),
-                Span::styled(
-                    format!("{:<width$}", label_truncated, width = max_label),
-                    label_style,
-                ),
-                Span::raw(" "),
-                Span::styled(value_truncated, value_style),
-            ]);
-
-            let row_area = Rect::new(inner.x, inner.y + offset as u16, inner.width, 1);
-            frame.render_widget(Paragraph::new(line), row_area);
-        }
     }
 }
 

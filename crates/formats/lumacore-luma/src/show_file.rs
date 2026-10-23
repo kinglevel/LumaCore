@@ -18,7 +18,7 @@
 //! Devices/Dmx/Patch/FixtureTypes/12 Aura XB/fixturetype.json
 //!                                          /Revisions/1/source.gdtf
 //! DataPools/1 Default/datapool.json + Groups.json, PresetGroups.json, Macros.json …
-//! Users/1 Admin/user.json + Programmer.json + Selected.json + Usage.json
+//! Users/1 Admin/user.json + Programmer.json + Selected.json + Usage.json + Bookmarks.json
 //! UserProfiles/1 Admin/profile.json  (name, locked)
 //!                     /Settings.json  (preferences, theme, lock screen, menus …)
 //!                     /Content.json   (attributes, encoder bars, keys, views, screens …)
@@ -366,6 +366,7 @@ pub fn encode_with(show: &ShowData, facts: &Value) -> Result<(Vec<u8>, Vec<Strin
                 e.json(format!("{dir}/Programmer.json"), &take(u, "programmer"))?;
                 e.json(format!("{dir}/Selected.json"), &take(u, "selected"))?;
                 e.json(format!("{dir}/Usage.json"), &take(u, "usage"))?;
+                e.json(format!("{dir}/Bookmarks.json"), &take(u, "bookmarks"))?;
             }
             e.json(format!("{dir}/user.json"), &user)?;
         }
@@ -582,6 +583,7 @@ pub fn decode(bytes: &[u8]) -> Result<Contents, String> {
                     "Programmer.json" => put(user, "programmer", parse(path, data)?),
                     "Selected.json" => put(user, "selected", parse(path, data)?),
                     "Usage.json" => put(user, "usage", parse(path, data)?),
+                    "Bookmarks.json" => put(user, "bookmarks", parse(path, data)?),
                     _ => {}
                 }
             }

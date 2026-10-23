@@ -391,6 +391,7 @@ MvrX — property
 MvrY — property
 MvrZ — property
 Name — property
+NavLog — property
 Negative — value
 Network — object ids:1
 Never — value

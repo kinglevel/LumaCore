@@ -337,7 +337,7 @@ Options:
 
 ## DataPool
 
-aliases `datapools`, `pool`, `pools` · verbs List, Select, Store, Delete, Edit, Copy, Update, Move · default verb Select (`DataPool <ids>` = `Select DataPool <ids>`) · **planned — not built yet:** Info · rights Guest: List, Info · Playback: Select · Program: Store, Delete, Edit, Copy, Update, Move
+aliases `datapools`, `pool`, `pools` · verbs List, Info, Select, Store, Delete, Edit, Copy, Update, Move · default verb Select (`DataPool <ids>` = `Select DataPool <ids>`) · rights Guest: List, Info · Playback: Select · Program: Store, Delete, Edit, Copy, Update, Move
 
 ```
 DataPool <id | name> | <verb> DataPool <id | name> Group <n> …
@@ -2090,6 +2090,7 @@ Options:
 | "Verbosity" | Summary/Verbose/Debug | Guest | show | how much a reply tells (a line's /v or /d overrides it) |
 | "NotificationMode" | timed/permanent | Guest | show | feedback cards close after 5 s or stay |
 | "PopupDim" | On/Off | Guest | show | dim the interface behind a pop-up (a tap outside closes it) |
+| "NavLog" | On/Off/Toggle | Guest | show | NAV's gesture log: three lines above the command line with the lines NAV made and what it copied (L in NAV) |
 | "SubAttributesFollow" | Ask/Always/Never | Guest | show | moving a main attribute brings its sub-attributes |
 | "MvrMatch" | Auto/UUID/FID/FixtureName | Guest | show | how a file fixture finds its draft fixture: Auto = UUID, then FID, then the name |
 | "MvrLost" | Mark/Delete | Guest | show | a fixture in scope the file no longer has |

@@ -9,6 +9,7 @@
 //! client to attach. Bump the number on any change to what it covers — no
 //! compatibility shims (forward only).
 
+pub mod clipboard;
 pub mod command;
 pub mod dialog;
 pub mod discovery;
@@ -70,9 +71,10 @@ pub const SESSION_PROTOCOL: u32 = 21;
 /// field input (a tag tree picker); 20 = §12 tags part 4b: the `tags` feed, `Pick.by_guid`;
 /// 22 = device-sheet-window: the `devices` feed; 23 = top-bar-status-strip: `Status.strip`;
 /// 24 = view-bar-any-object-pool-windows: the `viewbar` feed, the `pools` feed's `profile`;
-/// 25 = one-preset-pool-follows-the-programmer: `Tap.window`, the `pools` feed's `feature` / `tags`).
+/// 25 = one-preset-pool-follows-the-programmer: `Tap.window`, the `pools` feed's `feature` / `tags`;
+/// 26 = the NAV inspector's copy: the `copy_text` UI event, text for the user's clipboard).
 /// A client only attaches when it matches (E-WIRE-001).
-pub const CLIENT_PROTOCOL: u32 = 25;
+pub const CLIENT_PROTOCOL: u32 = 26;
 
 /// The refusal a station sends a client speaking another client protocol.
 pub fn client_mismatch(client: u32, station: u32) -> String {

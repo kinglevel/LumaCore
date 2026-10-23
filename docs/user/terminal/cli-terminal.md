@@ -205,20 +205,34 @@ holding Backspace to erase a command stops at the empty line.
 
 Example: F → 1 → A → 50 → Enter = `fixture 1 at 50`.
 
-**NAV (Navigator)** — a tree browser on the arrow keys (empty line). Each step
-replaces the last listing.
+**NAV (Navigator)** — the tree on the left, exactly the rows `ls` prints (slot, "name", kind,
+counts), and the inspector on the right following the cursor: the object's Slot, Kind, GUID and
+Path, its facts (a fixture's type, mode and address, a datapool's pools), every property with its
+value and kind (● = not its default) and its links (what uses it, what it points at; red
+"missing" when that object is gone). NAV's keys work while the command line is empty; whatever it
+changes is a command line it puts there or runs, and the gesture log above the command line says
+what (`L` turns the log off; your profile keeps it, `Set UserProfile "NavLog"`).
 
 | Key | Effect |
 |---|---|
-| Up / Down | move the cursor (wraps) |
-| Right | expand the node inline |
-| Left | collapse, jump to the parent row, or `cd ..` |
-| Enter | open the property popup for the node |
-| Backspace | up one level (`cd ..`) |
-| Backspace (hold ~1 s) | to the top (`cd /`) |
-| Delete | pre-fill `delete <name>` for the node |
-
-Structural nodes (Root, ShowData, Runtime, …) can't be deleted.
+| Up / Down, PageUp / PageDown, Home / End | move |
+| Right / Left | open; close, go to the parent row, or `cd ..` |
+| Enter | tree: open, or to the inspector · property: its `Set` line on the command line · link: go there |
+| Tab | tree ⇄ inspector |
+| digits | jump to that slot |
+| `/`, `n` / `N` | filter the pool by name or number (the inspector by property) · next / previous hit |
+| Space | mark rows: they become one range on the command line (`Group 1 Thru 3 + 7`) |
+| `y` | inspector: copy the focused row to your clipboard |
+| `yg` `yp` `ya` `yn` `ys` | tree: copy the GUID, path, target (`Fixture 101`), name, the property's Set line |
+| `r` | on a changed ● property: its `Reset` line |
+| `v` | only the changed properties |
+| `m` + letter, `'` + letter | bookmark the object (by GUID, kept on you in the show) · jump to it, wherever it moved |
+| `p` | pin the inspector to the object |
+| `c` | `cd` to the row |
+| Delete | its `Delete` line on the command line |
+| `?` | every key |
+| Esc | close · drop the marks · leave NAV |
+| Backspace (hold ~1 s) | up one level (`cd ..`); held, to the top (`cd /`) |
 
 ### Panel focus (app and web UI)
 

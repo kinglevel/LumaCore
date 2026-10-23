@@ -540,11 +540,15 @@ impl Walk for User {
             programmer,
             selected,
             usage,
+            bookmarks,
         } = self;
         meta.walk_links(w);
         // Usage keys name GUIDs as statistics, not links: a deleted object's
         // count is only stale, never a broken reference.
         w.data(usage);
+        // A bookmark is one user's place in NAV, not a link the show depends on: a deleted
+        // object's bookmark shows "missing" there (decisions 0291), never a broken reference.
+        w.data(bookmarks);
         w.data(rights);
         w.link("Profile", "Profile", *profile);
         w.link_opt("DefaultScreenConfig", "ScreenConfig", *default_screen_config);

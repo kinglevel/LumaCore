@@ -32,7 +32,10 @@ use crate::print::vfs_resolve_dot_path;
 pub(super) fn cmd_du(state: &AppState, line: &FenceLine) -> String {
     use nu_ansi_term::{Color, Style};
 
-    let dot_path = vfs_resolve_dot_path(state, line.arg(0));
+    let dot_path = match vfs_resolve_dot_path(state, line.arg(0)) {
+        Ok(path) => path,
+        Err(e) => return e,
+    };
     let counts = vfs::count_objects(&state.root, &dot_path);
 
     if counts.is_empty() {
@@ -55,7 +58,10 @@ pub(super) fn cmd_du(state: &AppState, line: &FenceLine) -> String {
 pub(super) fn cmd_wc(state: &AppState, line: &FenceLine) -> String {
     use nu_ansi_term::Color;
 
-    let dot_path = vfs_resolve_dot_path(state, line.arg(0));
+    let dot_path = match vfs_resolve_dot_path(state, line.arg(0)) {
+        Ok(path) => path,
+        Err(e) => return e,
+    };
     let count = vfs::count_direct_children(&dot_path, &state.root);
     format!("{}", Color::Green.bold().paint(format!("{count} children")))
 }

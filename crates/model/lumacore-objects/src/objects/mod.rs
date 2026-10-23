@@ -339,6 +339,18 @@ pub fn tree_at(path: &crate::tree_path::TreePath) -> Option<&'static TreeDef> {
     }
 }
 
+/// The object a tree path stands on, its datapool and its number (`…DataPools.2.Groups.3` →
+/// Group in DataPool 2, 3; `…DataPools.2` → DataPool 2); None for a node or a live entry.
+pub fn at_path(path: &crate::tree_path::TreePath) -> Option<(&'static ObjectDef, Option<u32>, u32)> {
+    if path.node() == crate::tree_path::Node::DataPool {
+        return Some((&DATAPOOL, None, path.datapool()?));
+    }
+    let id = path.entry()?;
+    let tree = tree_at(path)?;
+    let object = all().find(|o| o.tree.as_ref().is_some_and(|t| std::ptr::eq(t, tree)))?;
+    Some((object, path.datapool(), id))
+}
+
 /// The named entries of a named node (`DMXProtocols` → `Sacn`, `ArtNet`): the objects whose
 /// tree is its shape, in catalog order.
 pub fn named_in(node: crate::tree_path::Node) -> Vec<&'static str> {

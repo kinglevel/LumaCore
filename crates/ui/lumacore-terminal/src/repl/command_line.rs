@@ -401,6 +401,8 @@ impl RemoteCommandLine {
             } else if !app.watch_output.is_empty() {
                 app.watch_output.clear();
             }
+            // NAV's tree and inspector follow the show (another station's edit lights up).
+            app.nav_refresh(state);
         });
         let mut frames = Vec::with_capacity(jobs.len());
         for (id, w, h) in jobs {

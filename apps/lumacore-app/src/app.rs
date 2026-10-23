@@ -267,6 +267,9 @@ struct App {
     exit: bool,
     focused: Option<WindowId>,
     screens_menu: Submenu,
+    /// The user's clipboard (a page's `copy`), opened on the first copy; None
+    /// inside when this machine has none.
+    clipboard: Option<Option<arboard::Clipboard>>,
 }
 
 // ── Entry ────────────────────────────────────────────────────────────────────
@@ -324,6 +327,7 @@ pub fn run() {
         exit: false,
         focused: None,
         screens_menu,
+        clipboard: None,
     };
 
     event_loop.run(move |event, target, control_flow| {
@@ -982,6 +986,12 @@ impl App {
             Ipc::OpenOverview => self.open_overview(session, target),
             // Servers… on the station's surface: back to the connect page.
             Ipc::Servers => self.end_session(session, Some(win), Next::Servers(None), target),
+            // A copy for the user's clipboard (the NAV inspector's copy keys): written
+            // natively; the page says "Copied" or falls back to its own ways.
+            Ipc::Copy { text } => {
+                let ok = text.is_some_and(|t| self.copy_to_clipboard(&t));
+                self.screen_js(win, &format!("window.lumacoreApp?.copied?.({ok})"));
+            }
             _ => {}
         }
     }
@@ -1363,7 +1373,8 @@ impl App {
                loggedIn(user, token) {{ this.post({{ type: 'logged_in', user, token }}); }}, \
                focusSurface() {{ this.post({{ type: 'focus_surface' }}); }}, \
                showServers() {{ this.post({{ type: 'servers' }}); }}, \
-               openOverview() {{ this.post({{ type: 'open_overview' }}); }} }});"
+               openOverview() {{ this.post({{ type: 'open_overview' }}); }}, \
+               copy(text) {{ this.post({{ type: 'copy', text }}); }} }});"
         );
         let base = s.target.base_url();
         let url = format!("{base}/?screen={screen}");
@@ -1757,6 +1768,20 @@ impl App {
             if let (Role::Home, true, Some(wv)) = (&w.role, w.ready, &w.webview) {
                 let _ = wv.evaluate_script(js);
             }
+        }
+    }
+
+    /// Put `text` on the OS clipboard (the user's, never the station's object
+    /// clipboard). False when this machine has none or it refused.
+    fn copy_to_clipboard(&mut self, text: &str) -> bool {
+        let clipboard = self.clipboard.get_or_insert_with(|| arboard::Clipboard::new().ok());
+        match clipboard.as_mut().map(|c| c.set_text(text)) {
+            Some(Ok(())) => true,
+            Some(Err(e)) => {
+                log::warn!("copy: the clipboard refused ({e})");
+                false
+            }
+            None => false,
         }
     }
 

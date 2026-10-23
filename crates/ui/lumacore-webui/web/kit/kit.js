@@ -29,6 +29,7 @@ import * as setup from './setup.js';
 import * as editCard from './editcard.js';
 import './maxbar.js';
 import { toast } from './toast.js';
+import * as clipboard from './clipboard.js';
 import * as mini from './minipane.js';
 import * as split from './split.js';
 import './pool.js';
@@ -63,5 +64,5 @@ const ready = Promise.all([
   document.fonts?.ready?.catch(() => {}) ?? Promise.resolve(),
 ]);
 
-window.LumaKit = { theme, pointer, icon, marks, statusStrip, themeEditor, menu, dialog, keyboard, keypad, popup, settings, windowBar, suggest, toast, mini, split, context, value, insert, mvrimport, editPatch, tools, groupEditor, presetEditor, attrBoard, oops, cueSheet, grid, slab, setup, editCard, feeds: { FeedClient, SampleRing, drawLoop, applyDiff }, showroom: buildShowroom, ready };
+window.LumaKit = { theme, pointer, icon, marks, statusStrip, themeEditor, menu, dialog, keyboard, keypad, popup, settings, windowBar, suggest, toast, clipboard, mini, split, context, value, insert, mvrimport, editPatch, tools, groupEditor, presetEditor, attrBoard, oops, cueSheet, grid, slab, setup, editCard, feeds: { FeedClient, SampleRing, drawLoop, applyDiff }, showroom: buildShowroom, ready };
 ready.then(() => window.dispatchEvent(new Event('lumakit')));

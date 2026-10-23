@@ -338,6 +338,23 @@ password (accepted only while Admin has none).
   `maximized` (the window held full screen, or none). A deleted user's shells
   get `{"type":"ui","event":{"LoggedOut":…}}` and close.
 
+### Copy to the user's clipboard
+
+The NAV inspector copies a GUID, a path, an object target, a name or a Set line to the
+clipboard of the computer the user sits at — never the station's object clipboard (`Copy` /
+`Cut` / `Paste` of show objects, `Runtime.Users.{User}.clipboard`). The TUI has one door,
+`lumacore_terminal::repl::clipboard::copy(outbox, label, text)`, which queues the UI event
+`CopyText { label, text }` (`{"action":"copy_text",…}`); it reaches the client with the key's
+other UI events, as `ShellServerPacket::Ui` on the shell port and `{"type":"ui","event":…}` on
+`/ws/shell`. Each client writes it where it can:
+
+| Client | How the text reaches the clipboard |
+|---|---|
+| `lumacore-cli` (`apps/lumacore-cli/src/copy.rs`) | OSC 52 (`ESC ] 52 ; c ; <base64> BEL`, `lumacore_wire::clipboard::osc52`) to its own terminal, so it travels over SSH (tmux: `set-clipboard on`); plus the desktop clipboard (`arboard`) when the CLI runs on a desktop, for terminals without OSC 52. A text over `OSC52_MAX_TEXT` is refused for the terminal with a message saying so. |
+| The station's own console (`lumacore`, `run_repl`) | OSC 52 to its terminal (`clipboard::write_to_own_terminal`); the output says "Copied …" or why not. |
+| The page (`kit/clipboard.js`) | `navigator.clipboard.writeText` (https or localhost); else the older `document.execCommand('copy')` while the key press that asked still counts as the user's; else a toast that holds the text selected in a field for Ctrl+C. A toast says "Copied <label>". |
+| The desktop app | The page hands the text over its IPC (`LumaHost.copy` → `{"type":"copy","text":…}`); the app writes the OS clipboard (`arboard`) and answers `lumacoreApp.copied(ok)`; on `false` the page tries its own ways. |
+
 ## Static files
 
 The engine serves the WebUI (`lumacore-webui`, decisions §36 2): the files

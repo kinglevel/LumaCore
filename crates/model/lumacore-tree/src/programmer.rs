@@ -735,6 +735,10 @@ pub struct User {
     /// Saved and replicated, never undone (`ShowSubtree::Usage`).
     #[serde(default)]
     pub usage: crate::usage::Usage,
+    /// This user's NAV bookmarks: a letter → an object's GUID (decisions 0291). Saved and
+    /// replicated, never undone (`ShowSubtree::Bookmarks`).
+    #[serde(default)]
+    pub bookmarks: crate::bookmarks::Bookmarks,
 }
 
 /// The two undo subtrees of a user's work (decisions §29 "11c hardening"):
@@ -876,6 +880,7 @@ impl User {
             programmer: Programmer::new(),
             selected: Selected::default(),
             usage: Default::default(),
+            bookmarks: Default::default(),
         }
         .with_default_color(no)
     }
@@ -1067,6 +1072,10 @@ pub struct UserPreferences {
     /// Dim the interface behind a pop-up (decisions §30 "12f").
     #[serde(default = "default_true")]
     pub popup_dim: bool,
+    /// NAV's gesture log: the lines NAV put on the command line and what it copied, three
+    /// lines above the command line (decisions 0291; `L` in NAV toggles it).
+    #[serde(default = "default_true")]
+    pub nav_log: bool,
     /// Moving a main attribute brings its sub-attributes (decisions §30 "12f-a").
     #[serde(default)]
     pub sub_attributes_follow: SubAttributesFollow,
@@ -1345,6 +1354,7 @@ impl Default for UserPreferences {
             suggestions: SuggestionsMode::default(),
             hold_follows: true,
             popup_dim: true,
+            nav_log: true,
             sub_attributes_follow: SubAttributesFollow::Ask,
             notifications: BTreeMap::new(),
             notification_mode: default_notification_mode(),

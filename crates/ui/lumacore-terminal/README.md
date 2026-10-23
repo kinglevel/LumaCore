@@ -15,7 +15,8 @@ order. It turns keys into command lines and hands them to the state thread; it r
 
 - **Owns:** `SessionRegistry` (`session_manager`), `TuiApp` and its drawing, keys and commands
   (`repl`, `repl/tui_*`), the remote shell's ANSI buffer (`repl/command_line`), the TUI's colours by
-  role (`repl/tui_look`), `Gesture`.
+  role (`repl/tui_look`), NAV mode's tree, keys and drawing (`repl/tui_nav`), the clipboard door
+  (`repl/clipboard`), `Gesture`.
 - **Doesn't own:** the shell socket and the HTTP shell (`lumacore-station`'s `net/`), the state
   thread (`server/`), what a line does (`lumacore-objects`), the dialogs' content
   (`core::dialogs`), the suggestion engine (`lumacore-suggest`), the user's theme (the profile).
@@ -40,10 +41,13 @@ order. It turns keys into command lines and hands them to the state thread; it r
   dropped. [unchecked]
 - A dialog is the station's one dialog, drawn as a centred window in the profile's theme; the
   answer goes the way every client's does. [unchecked]
+- NAV draws `ls`'s rows (`lumacore_objects::tree_rows`) and the inspector `lumacore_views`
+  builds; it builds no rows of its own and changes nothing but through a line.
+  [test nav_rows_are_ls_rows]
 
 ## Edges
 
-- **Depends on:** lumacore-cmd-treeshell, lumacore-cmd-keys, lumacore-cmd-tags, lumacore-cmd-showfile, lumacore-cmd-station, lumacore-cmd-devices, lumacore-cmd-protocols, lumacore-objects, lumacore-state, lumacore-tree, lumacore-base, lumacore-wire,
+- **Depends on:** lumacore-views, lumacore-cmd-treeshell, lumacore-cmd-keys, lumacore-cmd-tags, lumacore-cmd-showfile, lumacore-cmd-station, lumacore-cmd-devices, lumacore-cmd-protocols, lumacore-objects, lumacore-state, lumacore-tree, lumacore-base, lumacore-wire,
   lumacore-syntax, lumacore-registry, lumacore-suggest.
 - **Used by:** lumacore-station.
 
@@ -53,6 +57,7 @@ order. It turns keys into command lines and hands them to the state thread; it r
 - [§30 "12b"](../../../docs/archive/decisions-2026-10.md) — dialogs, the TUI in the user's theme, the keyboard
 - [§30 "12b2"](../../../docs/archive/decisions-2026-10.md) — suggestions in the shell
 - [§30 "12f"](../../../docs/archive/decisions-2026-10.md) — the gesture channel
+- [0291](../../../docs/decisions/0291-nav-mode-ls-rows-and-an-inspector.md) — NAV mode: `ls`'s rows and an inspector
 - [§34](../../../docs/archive/decisions-2026-10.md#34-code-structure-and-file-headers-2026-10-15) — this crate (19), its README (18)
 
 ## Testing

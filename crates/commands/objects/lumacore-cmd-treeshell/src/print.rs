@@ -14,6 +14,7 @@
 //! Decisions:     §33 18.
 
 use lumacore_objects::AppState;
+use lumacore_objects::navigation::Navigation;
 use lumacore_objects::vfs;
 
 // ██╗      ██████╗  ██████╗ ██╗ ██████╗
@@ -24,13 +25,15 @@ use lumacore_objects::vfs;
 // ╚══════╝ ╚═════╝  ╚═════╝ ╚═╝ ╚═════╝
 // PART: LOGIC
 
-/// Helper: build the dot-path for a command argument relative to cwd.
-pub(crate) fn vfs_resolve_dot_path(state: &AppState, arg: Option<&str>) -> String {
-    // The exact parse (`vfs::resolve_path`: `/`, `Root.`, `..`, dots or slashes).
-    vfs::dot_path_from_segments(&vfs::resolve_path(
-        &state.navigation_path,
-        arg.unwrap_or("."),
-    ))
+/// The dot path a word's argument names from where the shell stands: the one parse of cd and
+/// ls (`Navigation::resolve_target`, decisions §31), so a name that isn't there is refused
+/// (E-SET-004) instead of read as another node (`cat 1` in ShowData, decisions 0291).
+pub(crate) fn vfs_resolve_dot_path(state: &AppState, arg: Option<&str>) -> Result<String, String> {
+    let target = arg.unwrap_or(".");
+    state
+        .resolve_target(target)
+        .map(|path| vfs::dot_path_from_segments(&path))
+        .map_err(|e| lumacore_objects::errors::render_code(format!("cannot access '{target}': No such node ({e})"), "E-SET-004"))
 }
 
 /// Pretty-print JSON with ANSI colors.

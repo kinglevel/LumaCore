@@ -7,6 +7,7 @@ description = "The terminals: one per Shell — line editing, suggestions, the T
 [dependencies]
 lumacore-registry = { path = "../../foundation/lumacore-registry" }
 lumacore-objects = { path = "../../model/lumacore-objects" }
+lumacore-views = { path = "../lumacore-views" }
 lumacore-cmd-showfile = { path = "../../commands/objects/lumacore-cmd-showfile" }
 lumacore-cmd-station = { path = "../../commands/objects/lumacore-cmd-station" }
 lumacore-cmd-devices = { path = "../../commands/objects/lumacore-cmd-devices" }

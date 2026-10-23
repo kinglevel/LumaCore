@@ -56,6 +56,9 @@ pub enum ShowSubtree {
     /// What the user with this GUID uses (decisions §30 "12b2"): saved and
     /// replicated, never undone — like `Playbacks`.
     Usage(uuid::Uuid),
+    /// The NAV bookmarks of the user with this GUID (decisions 0291): saved and replicated,
+    /// never undone — like `Usage`.
+    Bookmarks(uuid::Uuid),
     Protocols,
     EffectEngines,
     Variables,
@@ -80,7 +83,7 @@ impl ShowSubtree {
     pub fn is_undoable(&self) -> bool {
         !matches!(
             self,
-            ShowSubtree::Playbacks | ShowSubtree::Session | ShowSubtree::Usage(_)
+            ShowSubtree::Playbacks | ShowSubtree::Session | ShowSubtree::Usage(_) | ShowSubtree::Bookmarks(_)
         )
     }
 }
@@ -94,6 +97,7 @@ impl std::fmt::Display for ShowSubtree {
             ShowSubtree::Programmer(g) => write!(f, "Programmer(user {})", short(g)),
             ShowSubtree::Selection(g) => write!(f, "Selection(user {})", short(g)),
             ShowSubtree::Usage(g) => write!(f, "Usage(user {})", short(g)),
+            ShowSubtree::Bookmarks(g) => write!(f, "Bookmarks(user {})", short(g)),
             other => write!(f, "{other:?}"),
         }
     }

@@ -21,7 +21,9 @@ these functions; no client builds its own rows, and nothing here changes the sho
   (`patch::view`: the Devices draft for its holder, the live devices for everyone else; the one
   tree order, `patch::tree_order`), the Device Sheet (`devices::view`: every device in scope with
   its folders, the attributes in scope by feature group, each shown value's readout, state and
-  layers), the windows' live state (`window_state`: `StationSelf`, `screen_view`).
+  layers), the windows' live state (`window_state`: `StationSelf`, `screen_view`), the NAV
+  inspector (`inspector::view`: a tree path's identity, facts, declared properties with their
+  `Set` / `Reset` lines and links).
 - **Doesn't own:** the menu table (`lumacore_objects::menu_defs`, rows in the catalog), the objects
   and their properties (`lumacore-objects`), the window types and their rules
   (`lumacore_tree::window_types`), the feeds and their transport (`lumacore-http`, the server's
@@ -39,6 +41,8 @@ these functions; no client builds its own rows, and nothing here changes the sho
   `windows` feeds.
 - `devices::view` (with `devices::{Params, Layer}`) — the `devices` feed, sampled per window for the
   rows it shows (decisions device-sheet-window).
+- `inspector::view` — the TUI's NAV inspector for one tree path (decisions 0291); it reads the
+  settings `EditSetting` reads, with the line's datapool in place only while it reads.
 
 ## Rules
 
@@ -52,7 +56,8 @@ these functions; no client builds its own rows, and nothing here changes the sho
 ## Edges
 
 - **Depends on:** lumacore-objects, lumacore-tree, lumacore-base, lumacore-net, lumacore-render, lumacore-registry, lumacore-sysmon, lumacore-luma, lumacore-protocols.
-- **Used by:** lumacore-station (the console bridge, the state thread).
+- **Used by:** lumacore-station (the console bridge, the state thread), lumacore-terminal (NAV's
+  inspector).
 
 ## Decisions
 
@@ -61,6 +66,7 @@ these functions; no client builds its own rows, and nothing here changes the sho
   encoder bar and sequence sheet, the attribute board
 - [§34](../../../docs/archive/decisions-2026-10.md#34-code-structure-and-file-headers-2026-10-15) — this crate
   (20.7), its README (18), the catalog (21)
+- [0291](../../../docs/decisions/0291-nav-mode-ls-rows-and-an-inspector.md) — the NAV inspector
 
 ## Testing
 

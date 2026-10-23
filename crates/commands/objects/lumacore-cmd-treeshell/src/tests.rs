@@ -674,3 +674,30 @@ fn cd_takes_roots_numbers() {
     lumacore_objects::commands::navigate::cmd_cd(&mut state, &fl(&format!("cd {show}")));
     assert_eq!(state.path_string(), "/ShowData");
 }
+
+/// `ls` in `ShowData.DataPools` on the rig is one list (decisions 0291): `├──` before the
+/// declared node, `└──` on the datapool that comes last — never `└──` above another row.
+#[test]
+fn ls_draws_the_last_glyph_on_the_last_row() {
+    let mut state = lumacore_objects::demo::fresh_state();
+    run(&mut state, "cd ShowData.DataPools");
+    let ls = lumacore_objects::text::strip_ansi(&run(&mut state, "ls"));
+    let rows: Vec<&str> = ls.lines().skip(1).collect();
+    assert_eq!(rows.len(), 2, "{ls}");
+    assert!(rows[0].starts_with("├── DatapoolPriorityOrders"), "{ls}");
+    assert!(rows[1].starts_with("└── 1  \"Default\""), "{ls}");
+}
+
+/// `cat 1` in `ShowData` is `cd 1`'s node (Devices, by its number — decisions §33 54) under its
+/// own name, never labelled "1"; a name that isn't there is refused (decisions 0291).
+#[test]
+fn cat_reads_the_node_cd_reaches() {
+    let mut state = lumacore_objects::demo::fresh_state();
+    run(&mut state, "cd ShowData");
+    let cat = lumacore_objects::text::strip_ansi(&run(&mut state, "cat 1"));
+    assert!(cat.starts_with("Devices/") && cat.contains("Dmx") && cat.contains("Metadata"), "{cat}");
+    let none = lumacore_objects::text::strip_ansi(&run(&mut state, "cat Nothing"));
+    assert!(none.contains("No such node") && none.contains("E-SET-004"), "{none}");
+    let fixture = lumacore_objects::text::strip_ansi(&run(&mut state, "cat Devices.Dmx.Patch.Fixtures.101"));
+    assert!(fixture.starts_with("Fixture 101"), "{fixture}");
+}

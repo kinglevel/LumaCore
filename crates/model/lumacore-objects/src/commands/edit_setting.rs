@@ -110,6 +110,19 @@ fn object_fields(state: &mut AppState, word: &str, rest: &[&str]) -> Result<(Str
     Ok((title, fields))
 }
 
+/// Why a Meta fact (GUID, Path, Used by) can't be changed: the NAV inspector draws these as its
+/// own identity and link rows (decisions 0291).
+pub const FACT: &str = "a fact of the show";
+
+/// An object's settings as `EditSetting <words>` lists them (`["Group", "3"]`): the title and
+/// every cell — the one property registry the NAV inspector reads too (decisions 0291).
+pub fn settings_of(state: &mut AppState, words: &[&str]) -> Result<(String, Vec<SettingField>), String> {
+    let [word, rest @ ..] = words else {
+        return Err(render_code("Name an object.", "E-CMD-006"));
+    };
+    object_fields(state, word, rest)
+}
+
 /// The Meta tab's facts (decisions §12 "Tags hardened" 8): read only, from the identity walk.
 fn facts(state: &AppState, guid: uuid::Uuid) -> Vec<SettingField> {
     let walk = state.root.show_data.walk_identity();
@@ -144,7 +157,7 @@ fn facts(state: &AppState, guid: uuid::Uuid) -> Vec<SettingField> {
         home: String::new(),
         unit: String::new(),
         rights: String::new(),
-        readonly: "a fact of the show".to_string(),
+        readonly: FACT.to_string(),
     };
     vec![fact("GUID", guid.to_string()), fact("Path", path), fact("Used by", used)]
 }

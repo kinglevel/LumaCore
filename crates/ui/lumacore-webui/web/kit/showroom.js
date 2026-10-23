@@ -119,6 +119,17 @@ export function buildShowroom() {
   });
   root.append(section('Hold ring → menu', holdTile));
 
+  // Toasts: a line that goes by itself, and the copy fallback (the NAV inspector's copy when no
+  // clipboard can be reached): the text selected in a field, ready for Ctrl+C.
+  const toasts = div('lc-sr-row');
+  toasts.innerHTML = `
+    <luma-button label="A toast"></luma-button>
+    <luma-button icon="copy" label="Hold a text to copy"></luma-button>`;
+  const [plainBtn, holdBtn] = toasts.querySelectorAll('luma-button');
+  plainBtn.addEventListener('click', () => toast('Too small — hold to open Groups'));
+  holdBtn.addEventListener('click', () => toast('Copy GUID: Ctrl+C', { hold: '6f1d0c52-7a1e-4c0b-9d3e-000000000101', onCopy: () => toast('Copied GUID') }));
+  root.append(section('Toast — a line; one that holds a text to copy', toasts));
+
   // Split handle (12e): a mouse drags the line, a finger only the grip pill;
   // double-tap = 50 / 50; arrows / Home / End / Enter with the keyboard.
   const splitDemo = div('lc-sr-split');

@@ -37,7 +37,7 @@ use crate::files::{GROUPS, crate_roots, ratchet, sources, workspace};
 const TAGS: [(&str, Kind); 2] = [("// FILE: ", Kind::File), ("// PART: ", Kind::Part)];
 
 /// Files without a header yet: the count only goes down as files move.
-const HEADERLESS_AT_MOST: usize = 266;
+const HEADERLESS_AT_MOST: usize = 265;
 
 // *************************************************************************************************
 // Size
@@ -59,7 +59,6 @@ const LONG_FILES: &[(&str, &str)] = &[
     ("crates/model/lumacore-objects/src/commands/media.rs", "split in §34 / §33 3d (1529 lines on 2026-10-15)"),
     ("crates/model/lumacore-objects/src/commands/groups.rs", "split in §34 / §33 3d (1527 lines on 2026-10-15)"),
     ("crates/model/lumacore-tree/src/window_types.rs", "split in §34 / §33 3d (1344 lines on 2026-10-15)"),
-    ("crates/ui/lumacore-terminal/src/repl/tui_input.rs", "split in §34 / §33 3d (1341 lines on 2026-10-15)"),
     ("crates/model/lumacore-objects/src/commands/control.rs", "split in §34 / §33 3d (1313 lines on 2026-10-15)"),
     ("crates/ui/lumacore-http/src/websocket/feeds.rs", "split in §34 / §33 3d (1284 lines on 2026-10-15)"),
     ("crates/model/lumacore-tree/src/tree.rs", "split in §34 / §33 3d (1272 lines on 2026-10-15)"),
@@ -152,7 +151,7 @@ const EDGES: &[(&str, &[&str])] = &[
     // The station's three layers (decisions §34 7): state → objects → the station.
     ("lumacore-state", &["lumacore-fixtures", "lumacore-luma", "lumacore-drives", "lumacore-sysmon", "lumacore-base", "lumacore-tree", "lumacore-syntax", "lumacore-syntax-derive", "lumacore-gdtf", "lumacore-patch", "lumacore-render", "lumacore-wire", "lumacore-trace", "lumacore-registry"]),
     ("lumacore-objects", &["lumacore-fixtures", "lumacore-luma", "lumacore-drives", "lumacore-mvr", "lumacore-poolxml", "lumacore-sysmon", "lumacore-state", "lumacore-base", "lumacore-tree", "lumacore-syntax", "lumacore-syntax-derive", "lumacore-gdtf", "lumacore-patch", "lumacore-protocols", "lumacore-net", "lumacore-render", "lumacore-wire", "lumacore-trace", "lumacore-registry"]),
-    ("lumacore-terminal", &["lumacore-cmd-protocols", "lumacore-cmd-devices", "lumacore-cmd-station", "lumacore-cmd-showfile", "lumacore-suggest", "lumacore-cmd-treeshell", "lumacore-cmd-keys", "lumacore-cmd-tags", "lumacore-objects", "lumacore-state", "lumacore-tree", "lumacore-base", "lumacore-wire", "lumacore-syntax", "lumacore-registry"]),
+    ("lumacore-terminal", &["lumacore-views", "lumacore-cmd-protocols", "lumacore-cmd-devices", "lumacore-cmd-station", "lumacore-cmd-showfile", "lumacore-suggest", "lumacore-cmd-treeshell", "lumacore-cmd-keys", "lumacore-cmd-tags", "lumacore-objects", "lumacore-state", "lumacore-tree", "lumacore-base", "lumacore-wire", "lumacore-syntax", "lumacore-registry"]),
     // The line runtime: the drivers and listeners the show asks for (decisions §34 22.1).
     ("lumacore-lines", &["lumacore-objects", "lumacore-render", "lumacore-protocols", "lumacore-net", "lumacore-tree", "lumacore-base", "lumacore-registry"]),
     // The TCP shell port, hosting the terminals on a state thread's lanes (§34 24.2).

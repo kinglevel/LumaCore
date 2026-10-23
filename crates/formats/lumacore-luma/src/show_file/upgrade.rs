@@ -43,6 +43,9 @@ pub static STEPS: &[Step] = &[
     Step { from: 32, run: view_buttons_per_screen },
     // 33 → 34: one preset pool per DataPool (decisions 0288).
     Step { from: 33, run: one_preset_pool },
+    // 34 → 35: a user's NAV bookmarks and a profile's NavLog, both new with their defaults
+    // (decisions 0291).
+    Step { from: 34, run: nav_bookmarks_and_log },
 ];
 
 /// What an upgrade did: the format it came from, this build's, and each step's notes.
@@ -168,6 +171,12 @@ fn one_preset_pool(show: &mut Value) -> Vec<String> {
         }
     }
     notes
+}
+
+/// 34 → 35: nothing saved changes shape — a user's `bookmarks` and a profile's
+/// `preferences.nav_log` are new and read as their defaults (none; On).
+fn nav_bookmarks_and_log(_show: &mut Value) -> Vec<String> {
+    Vec::new()
 }
 
 // ██╗  ██╗███████╗██╗     ██████╗ ███████╗██████╗ ███████╗

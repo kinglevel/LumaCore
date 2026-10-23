@@ -603,7 +603,7 @@ pub fn step_category(
         | S::Assets
         | S::Tags => Some(OopsCategory::Show),
         S::Stations => Some(OopsCategory::Station),
-        S::Playbacks | S::Session | S::Usage(_) => None,
+        S::Playbacks | S::Session | S::Usage(_) | S::Bookmarks(_) => None,
     };
     // The most telling change wins: patch, then users, show, settings.
     let found: Vec<OopsCategory> = changes.iter().filter_map(|c| of(&c.subtree)).collect();

@@ -254,21 +254,13 @@ pub fn render_channel_map_offset(
     let rows: Vec<ChannelRow> = channels
         .iter()
         .map(|cf| ChannelRow {
-            offset: if cf.is_virtual {
-                Color::Yellow.paint("virt").to_string()
-            } else {
-                Color::Cyan
-                    .paint(format!("{:03}", cf.dmx_offset + 1))
-                    .to_string()
-            },
+            // Plain cells: the table measures colour codes as text, so a painted column
+            // stands out of line with its header (decisions 0291).
+            offset: if cf.is_virtual { "virt".to_string() } else { format!("{:03}", cf.dmx_offset + 1) },
             attribute: cf.attribute_name.clone(),
             attr_type: format!("{:?}", cf.attribute_type),
             bytes: cf.byte_count,
-            is_virtual: if cf.is_virtual {
-                Color::Yellow.paint("yes").to_string()
-            } else {
-                "no".to_string()
-            },
+            is_virtual: if cf.is_virtual { "yes" } else { "no" }.to_string(),
         })
         .collect();
 

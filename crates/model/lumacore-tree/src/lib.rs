@@ -29,6 +29,7 @@ pub mod tree;
 pub mod ui_keys;
 pub use lumacore_base::undo;
 pub mod universe_ops;
+pub mod bookmarks;
 pub mod usage;
 pub mod window_types;
 
@@ -59,6 +60,7 @@ pub use programmer::{
     ProfileContent, ProfileSettings, SuggestionsMode, UserPermissions, UserPreferences, UserProfile, UserRights, Verbosity, WindowPreset,
     WindowPresets, ProfileUi, GridState, GridSort, ViewButton, ButtonKind,
 };
+pub use bookmarks::Bookmarks;
 pub use usage::{Usage, UsageEntry};
 pub use runtime::{
     NodeRuntime, Claim, ClaimAsk, Clipboard, CommandsDone, DiscoveryPeerRuntime, EngineRuntime, JoinedSessionRuntime,

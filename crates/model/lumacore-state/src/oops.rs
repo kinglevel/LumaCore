@@ -85,6 +85,7 @@ fn with_subtree(
         S::Programmer(g) => w(&show.user_by_guid(*g).map(|u| u.programmer_values())),
         S::Selection(g) => w(&show.user_by_guid(*g).map(|u| u.selection())),
         S::Usage(g) => w(&show.user_by_guid(*g).map(|u| &u.usage)),
+        S::Bookmarks(g) => w(&show.user_by_guid(*g).map(|u| &u.bookmarks)),
         S::Protocols => w(&show.protocols),
         S::EffectEngines => w(&show.effect_engines),
         S::Variables => w(&show.variables),
@@ -146,6 +147,7 @@ impl<'a> UserIdentity<'a> {
             programmer: _,
             selected: _,
             usage: _,
+            bookmarks: _,
         } = user;
         Self {
             meta,
@@ -230,6 +232,7 @@ pub fn restore_subtree(
                 new.programmer = std::mem::take(&mut old.programmer);
                 new.selected = std::mem::take(&mut old.selected);
                 new.usage = std::mem::take(&mut old.usage);
+                new.bookmarks = std::mem::take(&mut old.bookmarks);
             }
             entry(subtree, &mut show.users, *g, user, |u| u.meta.identity.guid)?;
         }
@@ -250,6 +253,12 @@ pub fn restore_subtree(
             let usage: Option<lumacore_tree::Usage> = parse(subtree, data)?;
             if let (Some(u), Some(user)) = (usage, show.users.values_mut().find(|u| u.meta.identity.guid == *g)) {
                 user.usage = u;
+            }
+        }
+        S::Bookmarks(g) => {
+            let marks: Option<lumacore_tree::Bookmarks> = parse(subtree, data)?;
+            if let (Some(b), Some(user)) = (marks, show.users.values_mut().find(|u| u.meta.identity.guid == *g)) {
+                user.bookmarks = b;
             }
         }
         S::Protocols => show.protocols = parse(subtree, data)?,

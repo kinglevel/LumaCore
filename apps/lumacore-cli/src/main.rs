@@ -1,3 +1,5 @@
+mod copy;
+
 use std::io::{self, Read, Write};
 use std::net::TcpStream;
 use std::process::ExitCode;
@@ -7,7 +9,7 @@ use clap::Parser;
 use crossterm::cursor::{Hide, Show};
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
-use lumacore_wire::{RemoteRequest, RemoteShellCode, RemoteShellKey, ShellClientPacket, ShellServerPacket};
+use lumacore_wire::{RemoteRequest, RemoteShellCode, RemoteShellKey, ShellClientPacket, ShellServerPacket, UiEvent};
 
 #[derive(Parser, Debug)]
 #[command(
@@ -476,8 +478,10 @@ fn run_command_line(target: &str, shell_port: u16, user: &str) -> ShellOutcome {
     };
 
     let mut read_buf = Vec::<u8>::new();
+    // The user's clipboard (the NAV inspector's copies), open for the session.
+    let mut clipboard = copy::UserClipboard::default();
     loop {
-        if let Err(end) = drain_shell_packets(&mut stream, &mut read_buf) {
+        if let Err(end) = drain_shell_packets(&mut stream, &mut read_buf, &mut clipboard) {
             return end;
         }
 
@@ -505,7 +509,11 @@ fn lost(err: &io::Error) -> ShellOutcome {
     ShellOutcome::Error(format!("Lost the connection to the station ({err})"))
 }
 
-fn drain_shell_packets(stream: &mut TcpStream, read_buf: &mut Vec<u8>) -> Result<(), ShellOutcome> {
+fn drain_shell_packets(
+    stream: &mut TcpStream,
+    read_buf: &mut Vec<u8>,
+    clipboard: &mut copy::UserClipboard,
+) -> Result<(), ShellOutcome> {
     let mut chunk = [0u8; 8192];
     loop {
         match stream.read(&mut chunk) {
@@ -520,7 +528,7 @@ fn drain_shell_packets(stream: &mut TcpStream, read_buf: &mut Vec<u8>) -> Result
                 while let Some(pos) = read_buf.iter().position(|b| *b == b'\n') {
                     let line = String::from_utf8_lossy(&read_buf[..pos]).to_string();
                     read_buf.drain(..=pos);
-                    handle_shell_packet_line(&line)?;
+                    handle_shell_packet_line(&line, clipboard)?;
                 }
             }
             Err(err) if matches!(err.kind(), io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut) => {
@@ -532,7 +540,7 @@ fn drain_shell_packets(stream: &mut TcpStream, read_buf: &mut Vec<u8>) -> Result
     }
 }
 
-fn handle_shell_packet_line(line: &str) -> Result<(), ShellOutcome> {
+fn handle_shell_packet_line(line: &str, clipboard: &mut copy::UserClipboard) -> Result<(), ShellOutcome> {
     if line.trim().is_empty() {
         return Ok(());
     }
@@ -542,6 +550,12 @@ fn handle_shell_packet_line(line: &str) -> Result<(), ShellOutcome> {
         ShellServerPacket::Frame { ansi, .. } => {
             print!("{ansi}");
             let _ = io::stdout().flush();
+            Ok(())
+        }
+        // A copy for the user's clipboard: OSC 52 to this terminal, and the desktop's
+        // clipboard when the CLI runs on one. The TUI says "Copied" in its frames.
+        ShellServerPacket::Ui { event: UiEvent::CopyText { text, .. } } => {
+            let _ = clipboard.copy(&mut io::stdout(), &text);
             Ok(())
         }
         // The suggestion list is drawn by the station's TUI in the frames.

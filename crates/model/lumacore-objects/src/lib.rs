@@ -38,6 +38,7 @@ pub mod rights;
 pub mod self_ref;
 pub mod settings_props;
 pub mod tools;
+pub mod tree_rows;
 pub mod vfs;
 pub mod vfs_runtime;
 

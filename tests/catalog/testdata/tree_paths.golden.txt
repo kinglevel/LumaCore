@@ -114,8 +114,8 @@ $ cd Root.ShowData.DataPools
   @ /ShowData/DataPools · scope DataPools · claim Some("DataPools") · context DataPool · repl Fixture
 $ ls Root.ShowData.DataPools
   | DataPools/
-  | └── DatapoolPriorityOrders no datapool priority orders
-  | ├── 1  "Default"  [77 children]  (DataPool)
+  | ├── DatapoolPriorityOrders no datapool priority orders
+  | └── 1  "Default"  [77 children]  (DataPool)
   @ / · scope Root · claim None · context Fixture · repl Fixture
 $ cd Root.ShowData.Protocols
   | /ShowData/Protocols
@@ -337,15 +337,15 @@ $ cd Root.ShowData.DataPools.1
 $ ls Root.ShowData.DataPools.1
   | 1/
   | ├── Presets/            3 presets
-  | ├── Layouts             layouts
-  | ├── Filters             filters
-  | ├── Worlds              worlds
-  | ├── Macros              macros
-  | ├── DistributePresets   distribution presets
-  | ├── DynamicStates       dynamic states
-  | ├── Plugins             plugins
-  | ├── Timecodes/          timecodes
-  | ├── Priorities          local priorities
+  | ├── Layouts             no layouts
+  | ├── Filters             no filters
+  | ├── Worlds              no worlds
+  | ├── Macros              no macros
+  | ├── DistributePresets   no distribution presets
+  | ├── DynamicStates       no dynamic states
+  | ├── Plugins             no plugins
+  | ├── Timecodes/          no timecodes
+  | ├── Priorities          no local priorities
   | ├── Groups/             77 groups
   | ├── Sequences           no sequences
   | ├── TimingPresets       no timing presets
@@ -531,9 +531,9 @@ $ cd Root.ShowData.Playbacks.Live.Masters
   @ /ShowData/Playbacks/Live/Masters · scope Masters · claim None · context Fixture · repl Fixture
 $ ls Root.ShowData.Playbacks.Live.Masters
   | Masters/
-  | ├── 1  (Master)
-  | ├── 2  (Master)
-  | └── 3  (Master)
+  | ├── 1  2.1 Grand 100%  (Master)
+  | ├── 2  2.2 Highlight (everybody) 100%  (Master)
+  | └── 3  2.4 Solo (everybody) 100%  (Master)
   @ / · scope Root · claim None · context Fixture · repl Fixture
 $ cd Root.ShowData.DataPools.1.Presets
   | /ShowData/DataPools/1/Presets
@@ -1076,7 +1076,7 @@ $ enter claims
   @ /Runtime/Claims · scope Claims · claim None · context Fixture · repl Fixture
 $ ls claims
   | Claims/
-  | └── 1  (Claim)
+  | └── 1  Devices — Admin  (Claim)
   @ / · scope Root · claim None · context Fixture · repl Fixture
 $ cd showdata
   | /ShowData
@@ -1174,15 +1174,15 @@ $ ls ..
 $ ls Root.ShowData.DataPools.1
   | 1/
   | ├── Presets/            3 presets
-  | ├── Layouts             layouts
-  | ├── Filters             filters
-  | ├── Worlds              worlds
-  | ├── Macros              macros
-  | ├── DistributePresets   distribution presets
-  | ├── DynamicStates       dynamic states
-  | ├── Plugins             plugins
-  | ├── Timecodes/          timecodes
-  | ├── Priorities          local priorities
+  | ├── Layouts             no layouts
+  | ├── Filters             no filters
+  | ├── Worlds              no worlds
+  | ├── Macros              no macros
+  | ├── DistributePresets   no distribution presets
+  | ├── DynamicStates       no dynamic states
+  | ├── Plugins             no plugins
+  | ├── Timecodes/          no timecodes
+  | ├── Priorities          no local priorities
   | ├── Groups/             77 groups
   | ├── Sequences           no sequences
   | ├── TimingPresets       no timing presets
@@ -1233,8 +1233,8 @@ $ ls Root.ShowData.DataPools.1.Groups
   @ / · scope Root · claim None · context Fixture · repl Fixture
 $ ls Root.ShowData.DataPools
   | DataPools/
-  | └── DatapoolPriorityOrders no datapool priority orders
-  | ├── 1  "Default"  [77 children]  (DataPool)
+  | ├── DatapoolPriorityOrders no datapool priority orders
+  | └── 1  "Default"  [77 children]  (DataPool)
   @ / · scope Root · claim None · context Fixture · repl Fixture
 $ ls Root.ShowData.Assets
   | Assets/

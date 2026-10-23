@@ -47,7 +47,10 @@ pub(super) fn cmd_tree(state: &AppState, line: &FenceLine) -> String {
     }
     let path_arg = line.arg(0);
 
-    let dot_path = vfs_resolve_dot_path(state, path_arg);
+    let dot_path = match vfs_resolve_dot_path(state, path_arg) {
+        Ok(path) => path,
+        Err(e) => return e,
+    };
     let is_drives = lumacore_objects::tree_path::names_drive(&dot_path);
     // Default depth limit is 5 for Drives, 20 otherwise (unless -d was given)
     if is_drives && depth_given.is_none() {

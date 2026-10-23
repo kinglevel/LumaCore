@@ -442,6 +442,33 @@ pub fn info_fixture(state: &AppState, id_arg: Option<&str>) -> String {
     sheet.build()
 }
 
+/// A fixture's facts beside its properties (the NAV inspector's info rows, decisions 0291):
+/// its type, its mode and where it is patched — what `Info Fixture` heads its sheet with.
+pub fn fixture_facts(state: &AppState, id: u32) -> Vec<(&'static str, String)> {
+    let patch = &state.root.show_data.devices.dmx.patch;
+    let Some(fixture) = patch.fixture(id) else {
+        return Vec::new();
+    };
+    let mut facts = Vec::new();
+    if let Some(ft) = patch.fixture_types.values().find(|ft| ft.meta.guid() == fixture.mvr.fixture_type) {
+        facts.push(("Type", format!("{} ({})", ft.meta.name().unwrap_or("<unnamed>"), ft.manufacturer)));
+        if let Some((_, mode)) = ft.mode_of(fixture.mvr.revision, fixture.mvr.mode) {
+            facts.push(("Mode", mode.meta.name().unwrap_or("<unnamed>").to_string()));
+        }
+    }
+    let location = match fixture.primary_break() {
+        Some(b) => format!(
+            "Universe {} Addr {:03}–{:03}",
+            state.root.show_data.universe_id_for_guid(b.universe_id).unwrap_or(0),
+            b.start_address,
+            b.start_address + b.channel_count.saturating_sub(1)
+        ),
+        None => "not patched".to_string(),
+    };
+    facts.push(("Location", location));
+    facts
+}
+
 /// Build a section showing current programmer values for a fixture.
 fn build_programmer_section(
     state: &AppState,

@@ -244,7 +244,7 @@ The shape of every `.rs` file and crate (`structure.rs`; decisions §34,
 - **Why:** §34 — old files get their headers when their area is touched; §34 20's last step takes it
   to 0.
 - **Escape:** none
-- **Ratchet:** `HEADERLESS_AT_MOST` = 266
+- **Ratchet:** `HEADERLESS_AT_MOST` = 265
 
 ### files_stay_short
 - **Checks:** no file over 800 lines unless `LONG_FILES` names it with a reason, and no listed file

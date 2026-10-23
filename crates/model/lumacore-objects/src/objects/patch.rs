@@ -13,6 +13,8 @@ pub(crate) mod fixture;
 pub mod devices_meta;
 /// A universe in the Devices draft: its Delete and Move questions (§11 "Issue 11 hardening").
 mod universe_ask;
+/// `Info DataPool <n>`: its pools and their counts (decisions 0291).
+mod dp_info;
 /// The Patch setup dialog's menu row (decisions §34 "34g4 patch hardened" 9).
 pub mod menu;
 /// `DMX`: a universe's slots, the object (decisions §33 48, round 3 19).
@@ -677,11 +679,12 @@ pub static DATAPOOL: ObjectDef = ObjectDef {
         scope: crate::objects::on_master,
         reach: crate::objects::show_reach,
         rights: crate::rights::content,
-        planned: &[Verb::Info],
+        planned: &[],
     },
     pool: None,
     verbs: &[
         (Verb::List, datapool_list),
+        (Verb::Info, crate::commands::typed::typed::<dp_info::InfoDataPool>),
         // `DataPool 2 Group 3` calls the group in DataPool 2; bare
         // `DataPool 2` lists, as before.
         (Verb::Select, datapool_select),

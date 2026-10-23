@@ -42,8 +42,14 @@ pub(super) fn cmd_diff(state: &AppState, line: &FenceLine) -> String {
         );
     }
 
-    let dot1 = vfs_resolve_dot_path(state, Some(path_args[0]));
-    let dot2 = vfs_resolve_dot_path(state, Some(path_args[1]));
+    let dot1 = match vfs_resolve_dot_path(state, Some(path_args[0])) {
+        Ok(path) => path,
+        Err(e) => return e,
+    };
+    let dot2 = match vfs_resolve_dot_path(state, Some(path_args[1])) {
+        Ok(path) => path,
+        Err(e) => return e,
+    };
 
     let node1 = vfs::resolve_node(&dot1, &state.root);
     let node2 = vfs::resolve_node(&dot2, &state.root);

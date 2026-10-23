@@ -15,6 +15,9 @@ clap = { workspace = true }
 crossterm = { workspace = true }
 serde_json = { workspace = true }
 nu-ansi-term = { workspace = true }
+# The desktop clipboard beside OSC 52: terminals without OSC 52 (GNOME Terminal and other
+# VTE terminals) still get the copy when the CLI runs on a desktop; it fails quietly over SSH.
+arboard = { workspace = true }
 
 [lints]
 workspace = true

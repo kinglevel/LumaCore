@@ -53,7 +53,8 @@ The custom elements the kit registers (`customElements.define` in each file; ver
 | `theme.js` | Presets (`<html data-theme>`), tokens as colours, xterm's theme from the tokens |
 | `pointer.js` | The pointer core: `hold()` and the one `lift` gesture (tap, drag, lasso, context menu, spring) |
 | `feeds.js` | `FeedClient`: the one `/ws/feeds` socket ([http-api.md](../api/http-api.md)) |
-| `dialog.js`, `toast.js`, `context.js`, `menu.js` | The station's dialogs, toasts, the context menu, the window menu |
+| `dialog.js`, `toast.js`, `context.js`, `menu.js` | The station's dialogs, toasts (one variant holds a text selected for Ctrl+C), the context menu, the window menu |
+| `clipboard.js` | Copy to the user's clipboard (the `copy_text` UI event): the app's IPC, the browser's clipboard, the older copy command, the holding toast ([http-api.md](../api/http-api.md#copy-to-the-users-clipboard)) |
 | `editcard.js`, `editpatch.js`, `insert.js`, `mvrimport.js`, `groupeditor.js`, `attrboard.js`, `sheet.js`, `tools.js`, `value.js`, `sliderpanel.js` | The grid's edit card, Edit Patch, Insert fixtures, the MVR import dialog, the group editor, the attribute board, the object sheet, editor tools, the value dialog, the slider panel |
 | `split.js`, `minipane.js`, `phone.js` | The split tree, miniature panes, the phone's desk |
 | `oops.js` | The Oops window (`oops` feed) |

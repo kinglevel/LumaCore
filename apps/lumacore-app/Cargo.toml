@@ -13,6 +13,8 @@ lumacore-webui = { path = "../../crates/ui/lumacore-webui" }
 wry = { workspace = true }
 tao = { workspace = true }
 muda = { workspace = true }
+# The page's copy (the NAV inspector's copy keys) goes to the OS clipboard natively.
+arboard = { workspace = true }
 mdns-sd = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

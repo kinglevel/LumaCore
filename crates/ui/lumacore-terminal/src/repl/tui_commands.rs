@@ -392,13 +392,9 @@ impl TuiApp {
             self.push_nav_history(state.navigation_path.clone());
         }
 
-        // Auto-render NAV listing when entering Navigator mode
-        if state.shortcut_mode == ShortcutMode::Navigator && mode_before != ShortcutMode::Navigator
-        {
-            self.nav_cursor = 0;
-            self.nav_expanded.clear();
-            self.nav_flat_entries.clear();
-            self.render_nav_listing(state);
+        // Entering NAV starts its tree where the shell stands (decisions 0291).
+        if state.shortcut_mode == ShortcutMode::Navigator && mode_before != ShortcutMode::Navigator {
+            self.nav_reset(state);
         }
     }
 

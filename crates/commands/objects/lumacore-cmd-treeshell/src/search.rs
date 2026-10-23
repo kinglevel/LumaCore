@@ -79,7 +79,10 @@ pub(super) fn cmd_grep(state: &AppState, line: &FenceLine) -> String {
         );
     };
     let path_arg = line.arg(1);
-    let from = vfs_resolve_dot_path(state, path_arg);
+    let from = match vfs_resolve_dot_path(state, path_arg) {
+        Ok(path) => path,
+        Err(e) => return e,
+    };
 
     let results = vfs::grep_values(&state.root, &from, pattern);
 

@@ -964,6 +964,10 @@ luma-tiles { display: block; min-height: 0; overflow: auto; overscroll-behavior:
   color: var(--lc-text); font-size: var(--lc-fs); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
   opacity: 0; transition: opacity .25s; }
 .lc-toast.on { opacity: 1; transition: none; }
+/* A toast that holds a text to copy (toast(…, { hold })): the text selected in a read-only field. */
+.lc-toast.lc-toast-hold { pointer-events: auto; display: flex; align-items: center; gap: 10px; border-radius: var(--lc-radius); }
+.lc-toast-hold input { min-width: 0; width: min(60vw, 520px); min-height: var(--lc-hit); padding: 0 8px; border-radius: var(--lc-radius-sm);
+  border: 1px solid var(--lc-focus); background: var(--lc-surface); color: var(--lc-text); font: inherit; font-family: var(--lc-mono); font-size: var(--lc-fs-field); }
 
 /* ── luma-maxbar: a window held full screen (maxbar.js, 12c2) ───────────── */
 luma-maxbar { flex: none; height: var(--lc-close); display: flex; align-items: center; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); }

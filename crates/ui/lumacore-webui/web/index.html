@@ -874,6 +874,8 @@ window.lumacoreApp = {
   },
   // Quit Server and Client: Shutdown with its confirmation (Save / Don't Save).
   quitServer() { wsCommand('Shutdown'); },
+  // The app wrote a copy to the OS clipboard (ok) or couldn't.
+  copied(ok) { LumaKit.clipboard.appCopied(ok); },
   notice(text) {
     if (document.getElementById('conn-overlay').classList.contains('open'))
       document.getElementById('conn-notice').textContent = text;
@@ -1653,6 +1655,8 @@ function handleUiEvent(ev) {
     return;
   }
   if (ev.action === 'notice') return notice(ev.text, 5000, ev.level);
+  // The user's clipboard (the NAV inspector's copy keys; never the station's object clipboard).
+  if (ev.action === 'copy_text') return LumaKit.clipboard.copyText(ev.label, ev.text, { host: HOST });
   if (ev.action === 'feedback_settings') return loadFeedbackSettings();
   if (ev.action === 'connect') {
     if (APP) { loggedIn = false; return toApp({ type: 'connect', target: ev.target, user: ev.user, password: ev.password }); }

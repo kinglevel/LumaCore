@@ -33,7 +33,10 @@ use crate::words::LINES;
 pub(super) fn cmd_cat(state: &AppState, line: &FenceLine) -> String {
     use nu_ansi_term::{Color, Style};
 
-    let dot_path = vfs_resolve_dot_path(state, line.arg(0));
+    let dot_path = match vfs_resolve_dot_path(state, line.arg(0)) {
+        Ok(path) => path,
+        Err(e) => return e,
+    };
 
     match vfs::resolve_node(&dot_path, &state.root) {
         Some(vfs::NodeView::Object {
@@ -185,7 +188,10 @@ fn cmd_head_tail(state: &AppState, line: &FenceLine, is_head: bool) -> String {
     };
     let path_arg = line.arg(0);
 
-    let dot_path = vfs_resolve_dot_path(state, path_arg);
+    let dot_path = match vfs_resolve_dot_path(state, path_arg) {
+        Ok(path) => path,
+        Err(e) => return e,
+    };
     let dyn_children = vfs::dynamic_children_at(&dot_path, &state.root);
 
     match dyn_children {
@@ -261,7 +267,10 @@ fn cmd_head_tail(state: &AppState, line: &FenceLine, is_head: bool) -> String {
 pub(super) fn cmd_stat(state: &AppState, line: &FenceLine) -> String {
     use nu_ansi_term::{Color, Style};
 
-    let dot_path = vfs_resolve_dot_path(state, line.arg(0));
+    let dot_path = match vfs_resolve_dot_path(state, line.arg(0)) {
+        Ok(path) => path,
+        Err(e) => return e,
+    };
 
     match vfs::resolve_node(&dot_path, &state.root) {
         Some(vfs::NodeView::Object {

@@ -223,6 +223,8 @@ nucleo-matcher = "0.3.1"
 wry = "0.46"
 tao = "0.31"
 muda = "0.15"
+# The user's clipboard, natively (the CLI and the desktop app; text only, no image support)
+arboard = { version = "3.7", default-features = false }
 
 # Testing / benches
 tempfile = "3"

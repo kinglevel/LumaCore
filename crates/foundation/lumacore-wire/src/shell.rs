@@ -386,6 +386,12 @@ pub enum UiEvent {
     /// A short message for the user (`level`: info / error), e.g. the result
     /// of a UI key's double press ("Show \"x\" saved").
     Notice { text: String, level: String },
+    /// Put `text` on the user's clipboard, the one of the computer this
+    /// client runs on (the NAV inspector's copy keys), and say "Copied
+    /// `label`". Never the station's object clipboard (`Copy` / `Paste`). A
+    /// terminal writes OSC 52 ([`crate::clipboard::osc52`]); the page uses the
+    /// browser's clipboard or hands it to the app.
+    CopyText { label: String, text: String },
     /// The user's notification settings changed: the UI reloads them
     /// (`GET /api/feedback`).
     FeedbackSettings,

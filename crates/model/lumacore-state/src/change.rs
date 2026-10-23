@@ -104,6 +104,7 @@ pub fn subtrees(show: &ShowData) -> Vec<ShowSubtree> {
     out.extend(users.values().map(|u| S::Programmer(u.meta.identity.guid)));
     out.extend(users.values().map(|u| S::Selection(u.meta.identity.guid)));
     out.extend(users.values().map(|u| S::Usage(u.meta.identity.guid)));
+    out.extend(users.values().map(|u| S::Bookmarks(u.meta.identity.guid)));
     out
 }
 

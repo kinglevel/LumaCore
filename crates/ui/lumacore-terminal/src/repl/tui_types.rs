@@ -135,39 +135,6 @@ pub(super) struct DialogUi {
 }
 
 // *************************************************************************************************
-// NAV popup types
-// *************************************************************************************************
-pub(super) struct PopupField {
-    pub label: String,
-    pub value: String,
-    pub kind: FieldKind,
-}
-
-pub(super) enum FieldKind {
-    ReadOnly,
-    Text {
-        cmd_prefix: String,
-    },
-    Toggle {
-        cmd_prefix: String,
-        current: bool,
-    },
-    Enum {
-        cmd_prefix: String,
-        options: Vec<String>,
-        current_index: usize,
-    },
-}
-
-pub(super) struct NavPopup {
-    pub title: String,
-    pub fields: Vec<PopupField>,
-    pub cursor: usize,
-    pub scroll: usize,
-    pub editing: Option<String>,
-}
-
-// *************************************************************************************************
 // Key name parser
 // *************************************************************************************************
 /// A key name ("Ctrl-R", "F5") as crossterm types (the grammar is

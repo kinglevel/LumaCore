@@ -4,7 +4,7 @@ Built by `scripts/unix/docs_check --index` from every record's frontmatter; do n
 One file per binding decision; a reversal is a new record that supersedes the old one.
 The log these came from is frozen at `docs/archive/decisions-2026-10.md`; `source` cites its section and lines.
 
-Records: 212.
+Records: 213.
 
 ## attributes
 
@@ -475,6 +475,7 @@ Records: 212.
 | [0287](0287-view-bar-any-object-pool-windows.md) | The view bar holds any object; one pool window type per pool | built | [views::buttons tests, pools_every_pool_has_a_window_type, kit-viewbar.spec.ts] | [] | [session 2026-10-22, view bar round 1 — docs/dev/ui-kit/mockups/2026-10-22-view-bar/01-view-bar.html, approved] |
 | [0288](0288-one-preset-pool-follows-the-programmer.md) | One preset pool that follows the programmer | built | [objects::preset tests, a_preset_carries_the_tag_assigned_at_it, kit-presets.spec.ts] | [visions/presets.md "feature group pools", record 0105 Preset Parts(2)] | [session 2026-10-23, preset pool round 1 — docs/dev/ui-kit/mockups/2026-10-23-presets/01-presets.html, approved] |
 | [0290](0290-meow-license-consent-on-every-login.md) | Meow License consent on every login | built | [E-USER-010, a_login_waits_for_the_meow_license_and_consent_finishes_it, each_holder_waits_on_its_own_and_its_token_with_it, login-sysmon.spec.ts] | [] | [session 2026-10-23, "Meow consent A is good" — docs/dev/ui-kit/mockups/2026-10-23-meow-consent/01-consent.html, approved] |
+| [0291](0291-nav-mode-ls-rows-and-an-inspector.md) | NAV mode is ls's rows and an inspector | built | [nav_rows_are_ls_rows, every_object_opens, every_row_opens_by_its_path, fixture_101_has_identity_facts_properties_and_links, a_bookmark_survives_renumbering, ls_draws_the_last_glyph_on_the_last_row, copy.spec.ts] | [] | [session 2026-10-23, "all looks good i think" — docs/dev/ui-kit/mockups/2026-10-23-nav-mode/01-nav.html (round 1, layout A) and 02-inspector.html (round 2); research into four families of tools: file managers, dashboards, data explorers, inspectors] |
 
 ## undo
 

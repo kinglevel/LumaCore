@@ -63,6 +63,9 @@ pub enum Ipc {
     Fullscreen { on: Option<bool> },
     FocusSurface,
     OpenOverview,
+    /// Put `text` on the user's clipboard (the NAV inspector's copy keys); the
+    /// app answers `lumacoreApp.copied(ok)`. Never the station's object clipboard.
+    Copy { text: Option<String> },
 
     // ── Screens overview ──
     OverviewData,
@@ -128,6 +131,8 @@ mod tests {
             (r#"{"type":"power","command":"Shutdown"}"#, Ipc::Power { command: Some("Shutdown".into()) }),
             (r#"{"type":"fullscreen","on":null}"#, Ipc::Fullscreen { on: None }),
             (r#"{"type":"servers"}"#, Ipc::Servers),
+            (r#"{"type":"copy","text":"Set Group 1 \"Name\" \"Spots\""}"#, Ipc::Copy { text: Some(r#"Set Group 1 "Name" "Spots""#.into()) }),
+            (r#"{"type":"copy"}"#, Ipc::Copy { text: None }),
             (
                 r#"{"type":"overview_action","act":"send","no":3,"display":"HDMI-1"}"#,
                 Ipc::OverviewAction { act: Some(OverviewAct::Send), no: Some(3), display: Some("HDMI-1".into()) },

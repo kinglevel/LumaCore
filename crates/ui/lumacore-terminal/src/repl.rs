@@ -20,15 +20,17 @@
 //! Entry points:  TuiApp, run_tui, ClientView, RenderedShellFrame
 //! Decisions:     §23 "Step 8", §30 "12b"
 
+pub mod clipboard;
 mod command_line;
 mod tui_commands;
 mod tui_dialog;
 mod tui_draw;
 mod tui_input;
 mod tui_look;
+mod tui_nav;
 mod tui_types;
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::HashMap;
 use std::net::{SocketAddr, UdpSocket};
 use std::time::Duration;
 
@@ -114,14 +116,8 @@ struct TuiApp {
     history_search_prefix: Option<String>,
     /// Whether the shell requested a detach without destroying session state.
     detach_requested: bool,
-    /// Navigator mode: cursor index within flattened visible entries.
-    nav_cursor: usize,
-    /// Navigator mode: set of expanded dot-paths in the tree view.
-    nav_expanded: BTreeSet<String>,
-    /// Navigator mode: flattened visible entries for the tree view.
-    nav_flat_entries: Vec<tui_input::NavEntry>,
-    /// Navigator mode: property inspector popup.
-    nav_popup: Option<tui_types::NavPopup>,
+    /// NAV mode: the tree, the inspector, marks, filters and the gesture log (decisions 0291).
+    nav: tui_nav::Nav,
     /// The view key handling acts on (scroll, page size): the local terminal,
     /// or the focused terminal window of a remote client.
     view: ViewState,
@@ -306,10 +302,7 @@ impl TuiApp {
             last_input_snapshot: String::new(),
             history_search_prefix: None,
             detach_requested: false,
-            nav_cursor: 0,
-            nav_expanded: BTreeSet::new(),
-            nav_flat_entries: Vec::new(),
-            nav_popup: None,
+            nav: tui_nav::Nav::default(),
             view: ViewState::focused(),
             focus: UiFocus::Terminal,
             ui_outbox: Vec::new(),
@@ -342,7 +335,8 @@ impl TuiApp {
                 self.watch_output.clear();
             }
 
-            // Draw
+            // Draw (NAV's tree and inspector follow the show first)
+            self.nav_refresh(state);
             let _ = terminal.draw(|frame| self.draw(frame, state));
 
             // Calculate poll timeout
@@ -410,6 +404,16 @@ impl TuiApp {
                         break;
                     }
                     self.handle_event(evt, state);
+                }
+            }
+
+            // This console is its own client: a copy goes to its terminal as OSC 52.
+            let said = clipboard::write_to_own_terminal([&mut self.ui_outbox, &mut state.ui_requests], &mut std::io::stdout());
+            for line in said {
+                if state.shortcut_mode == crate::core::app_state::ShortcutMode::Navigator {
+                    self.nav.say(line);
+                } else {
+                    self.add_output(&line);
                 }
             }
 
