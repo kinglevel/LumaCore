@@ -1,0 +1,20 @@
+[package]
+name = "lumacore-cli"
+version.workspace = true
+edition.workspace = true
+
+# A client: it streams a station's terminal and compiles only the wire
+# contract (decisions §23 "Step 8") — never the `lumacore` station crate.
+[[bin]]
+name = "lumacore-cli"
+path = "src/main.rs"
+
+[dependencies]
+lumacore-wire = { path = "../../crates/foundation/lumacore-wire" }
+clap = { workspace = true }
+crossterm = { workspace = true }
+serde_json = { workspace = true }
+nu-ansi-term = { workspace = true }
+
+[lints]
+workspace = true

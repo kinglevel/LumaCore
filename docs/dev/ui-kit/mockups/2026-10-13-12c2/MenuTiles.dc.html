@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Menu tiles</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #0b0b0b; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; gap: 28px; padding: 28px; box-sizing: border-box">
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0">
+    <span style="font-size: 13px; color: #9c9c9c">Desktop / tablet · columns auto-fill (≥ 150 px each), box ≤ screen − 32 px, scrolls inside</span>
+    <div style="flex: 1; border-radius: 6px; background: color-mix(in srgb, #121212 60%, #000); position: relative; display: flex; align-items: flex-start; justify-content: center; padding-top: 40px">
+      <section style="width: {{boxW}}px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden">
+        <div style="height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 16px; border-bottom: 1px solid #424242">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect></svg>
+          <span style="font-size: 17px; font-weight: 500">Menu</span><span style="font-size: 13px; color: #9c9c9c; margin-right: auto">demo · 0.1.0</span>
+          <button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+        </div>
+        <div style="padding: 12px; display: grid; grid-template-columns: repeat({{cols}}, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{tiles}}" as="t" hint-placeholder-count="15">
+            <button type="button" style="height: 88px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 0 6px; box-shadow: {{t.mark}}">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.d}}"></path></svg>
+              <span style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%">{{t.name}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center">
+      <span style="font-size: 13px; color: #9c9c9c">Box width</span>
+      <sc-for list="{{widths}}" as="w" hint-placeholder-count="3">
+        <button type="button" onClick="{{w.pick}}" style="height: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid {{w.b}}; background: #1c1c1c; color: #d1d1d1; font: inherit; font-size: 13px">{{w.label}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width: 390px; display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 13px; color: #9c9c9c">Phone 390 · 2 columns, scrolls</span>
+    <div style="height: 806px; border-radius: 14px; border: 1px solid #303030; background: #121212; overflow: hidden; display: flex; flex-direction: column">
+      <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 16px; border-bottom: 1px solid #424242; background: #1c1c1c">
+        <span style="font-size: 17px; font-weight: 500; margin-right: auto">Menu</span>
+        <button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+      </div>
+      <div style="flex: 1; overflow: hidden; padding: 10px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; align-content: start; background: #1c1c1c">
+        <sc-for list="{{tiles}}" as="t" hint-placeholder-count="15">
+          <button type="button" style="height: 76px; border-radius: 6px; border: 1px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; font: inherit; display: flex; align-items: center; gap: 10px; padding: 0 12px; text-align: left">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{t.d}}"></path></svg>
+            <span style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{t.name}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { w: 900 }; }
+  renderVals() {
+    const s = this.state;
+    const T = [
+      ['Patch', 'M12 22v-5M9 8V2M15 8V2M18 8v5a6 6 0 0 1-12 0V8z', false],
+      ['Live Patch', 'M22 12h-4l-3 9L9 3l-3 9H2', false],
+      ['Connectors', 'M4 9h16M4 15h16M10 3 8 21M16 3l-2 18', false],
+      ['Desk lights', 'M12 3a9 9 0 1 0 9 9c0-1-1-2-2-2h-3a2 2 0 0 1-2-2V5c0-1-1-2-2-2z', false],
+      ['Network', 'M9 2h6v6H9zM3 16h6v6H3zM15 16h6v6h-6zM6 16v-4h12v4M12 12V8', true],
+      ['In & Out', 'M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4', false],
+      ['DMX Protocols', 'M12 12h.01M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14', true],
+      ['Settings', 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 3 15H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 9.7 4.2V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8', false],
+      ['Backup', 'M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8', true],
+      ['Quick Save', 'M15 2H6a2 2 0 0 0-2 2v12M8 6h12v14a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2zM11 6v4h6V6', true],
+      ['Show Creator', 'm21.6 6.6-3.2-3.2L3 18.8 6.2 22zM15 7l3 3M5 6v4M3 8h4M19 16v4M17 18h4', false],
+      ['Preferences', 'M12 22a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM12 10v4l2 2M10 2h4', false],
+      ['LumaSessions', 'M18 5a3 3 0 1 0 0-.01M6 12a3 3 0 1 0 0-.01M18 19a3 3 0 1 0 0-.01M8.6 13.5l6.8 4M15.4 6.5l-6.8 4', true],
+      ['Users & Profiles', 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8', true],
+      ['Screens', 'M3 4h18v12H3zM8 20h8M12 16v4', true]
+    ];
+    const tiles = T.map(([name, d, on], i) => ({ name, d, fg: on ? '#d1d1d1' : '#6a6a6a', bg: on ? '#303030' : '#262626', border: on ? '#424242' : '#303030', mark: i === 9 ? 'inset 3px 0 0 #00a60a' : 'none' }));
+    const cols = Math.max(2, Math.floor((s.w - 24 + 8) / (150 + 8)));
+    const widths = [[900, 'Desktop 900'], [720, 'Tablet portrait 720'], [560, 'Small 560']].map(([w, label]) => ({ label, b: s.w === w ? '#9a7a08' : '#424242', pick: () => this.setState({ w }) }));
+    return { tiles, cols, boxW: s.w, widths };
+  }
+}
+</script>
+</body>
+</html>

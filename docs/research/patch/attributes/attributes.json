@@ -1,0 +1,3595 @@
+[
+ {
+  "name": "BeamShaper",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "activation_group": "BeamShaper",
+  "pretty": "Beam Shaper",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "RatioHorizontal",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "RatioVertical",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Activates fixture's beam shaper.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "BeamShaperMacro",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "activation_group": "BeamShaper",
+  "pretty": "Beam Shaper Macro",
+  "definition": "Predefined presets for fixture's beam shaper positions.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "BeamShaperPos",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Angle",
+  "activation_group": "BeamShaper",
+  "pretty": "Beam Shaper <>",
+  "definition": "Indexing of fixture's beam shaper.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "BeamShaperPosRotate",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "AngularSpeed",
+  "activation_group": "BeamShaper",
+  "pretty": "Beam Shaper Rotate",
+  "definition": "Continuous rotation of fixture's beam shaper.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Effects(n)",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "pretty": "FX(n)",
+  "definition": "Generically predefined macros and effects of a fixture.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Effects(n)Adjust(m)",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "pretty": "FX(n) Adjust(m)",
+  "definition": "Controls parameter (m) of effect (n)",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Effects(n)Fade",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "pretty": "FX(n) Fade",
+  "definition": "Snapping or smooth look of running effects.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Effects(n)Pos",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Angle",
+  "pretty": "FX(n) Pos",
+  "definition": "Controls angle of indexed rotation of slot/effect in effect wheel/macro (n). This is the main attribute of effect wheel/macro (n) slot/effect control.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Effects(n)PosRotate",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "AngularSpeed",
+  "main_attribute": "Effects(n)Pos",
+  "pretty": "FX(n) Rotate",
+  "definition": "Controls speed and direction of slot/effect in effect wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Effects(n)Rate",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "pretty": "FX(n) Rate",
+  "definition": "Frequency of running effects.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "EffectsSync",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "pretty": "FX Sync",
+  "definition": "Sets offset between running effects and effects 2.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Frost(n)",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "pretty": "Frost(n)",
+  "definition": "The ability to soften the fixture's spot light with a frosted lens.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Frost(n)PulseClose",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Frost(n)",
+  "pretty": "Pulse Close (n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "DutyCycle",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "TimeOffset",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Sets frequency of frost's closing pulse.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Frost(n)PulseOpen",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Frost(n)",
+  "pretty": "Pulse Open (n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "DutyCycle",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "TimeOffset",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Sets frequency of frost's opening pulse",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Frost(n)Ramp",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Frost(n)",
+  "pretty": "Ramp (n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "DutyCycle",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "TimeOffset",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Sets frequency of frost's ramp.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Iris",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "pretty": "Iris",
+  "definition": "Controls the diameter of the fixture's beam.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IrisPulseClose",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Iris",
+  "pretty": "Pulse Close",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "DutyCycle",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "TimeOffset",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "MinimumOpening",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0,
+    "_physicalTo": 0
+   }
+  ],
+  "definition": "Sets frequency of iris's closing pulse.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IrisPulseOpen",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Iris",
+  "pretty": "Pulse Open",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "DutyCycle",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "TimeOffset",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "MinimumOpening",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0,
+    "_physicalTo": 0
+   }
+  ],
+  "definition": "Sets frequency of iris's opening pulse.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IrisRandomPulseClose",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Iris",
+  "pretty": "Random Pulse Close",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "MinimumOpening",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0,
+    "_physicalTo": 0
+   }
+  ],
+  "definition": "Sets frequency of iris's random closing pulse.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IrisRandomPulseOpen",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Iris",
+  "pretty": "Random Pulse Open",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "MinimumOpening",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0,
+    "_physicalTo": 0
+   }
+  ],
+  "definition": "Sets frequency of iris's random opening pulse.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IrisStrobe",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Iris",
+  "pretty": "Strobe",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "Duration",
+    "_physicalUnit": "Time",
+    "_physicalFrom": 0.3,
+    "_physicalTo": 0.3
+   },
+   {
+    "_default": true,
+    "_type": "TimeOffset",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "MinimumOpening",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0,
+    "_physicalTo": 0
+   }
+  ],
+  "definition": "Sets frequency of the iris's strobe feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IrisStrobeRandom",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Iris",
+  "pretty": "Random Strobe",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "Duration",
+    "_physicalUnit": "Time",
+    "_physicalFrom": "0.3",
+    "_physicalTo": "0.3"
+   },
+   {
+    "_default": true,
+    "_type": "MinimumOpening",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0,
+    "_physicalTo": 0
+   }
+  ],
+  "definition": "Sets frequency of the iris's random movement.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Prism(n)",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "activation_group": "Prism",
+  "pretty": "Prism(n)",
+  "definition": "The fixture’s prism wheel (n). Selects prisms in prism wheel (n). A different channel function sets the angle of the indexed position in the selected prism or the angular speed of its continuous rotation. This is the main attribute of prism wheel’s (n) wheel control.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Prism(n)Macro",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "main_attribute": "Prism(n)",
+  "activation_group": "Prism",
+  "pretty": "Prism(n) Macro",
+  "definition": "Macro functions of prism wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Prism(n)Pos",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "AngularSpeed",
+  "pretty": "Prism(n) Pos",
+  "definition": "Controls angle of indexed rotation of prisms in prism wheel (n). This is the main attribute of prism wheel’s 1 wheel slot control.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Prism(n)PosRotate",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "AngularSpeed",
+  "main_attribute": "Prism(n)Pos",
+  "activation_group": "Prism",
+  "pretty": "Rotate(n)",
+  "definition": "Controls the speed and direction of continuous rotation of prisms in prism wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Prism(n)SelectSpin",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "AngularSpeed",
+  "main_attribute": "Prism(n)",
+  "activation_group": "Prism",
+  "pretty": "Select Spin(n)",
+  "definition": "Selects prisms whose rotation is continuous in prism wheel (n) and controls the angular speed of the prism’s spin within the same channel function.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Shutter(n)",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "pretty": "Sh(n)",
+  "definition": "Controls the fixture´s mechanical or electronical shutter feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Shutter(n)Strobe",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Shutter(n)",
+  "pretty": "Strobe(n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "Duration",
+    "_physicalUnit": "Time",
+    "_physicalFrom": "0.025",
+    "_physicalTo": "0.025"
+   },
+   {
+    "_default": true,
+    "_type": "TimeOffset",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Controls the frequency of the fixture´s mechanical or electronical strobe shutter feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Shutter(n)StrobeEffect",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Shutter(n)",
+  "pretty": "Effect(n)",
+  "definition": "Controls the frequency of the fixture´s mechanical or electronical shutter effect feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Shutter(n)StrobePulse",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Shutter(n)",
+  "pretty": "Pulse(n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "DutyCycle",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "TimeOffset",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Controls the frequency of the fixture´s mechanical or electronical pulse shutter feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Shutter(n)StrobePulseClose",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Shutter(n)",
+  "pretty": "Pulse Close(n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "DutyCycle",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "TimeOffset",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Controls the frequency of the fixture´s mechanical or electronical closing pulse shutter feature. The pulse is described by a ramp function.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Shutter(n)StrobePulseOpen",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Shutter(n)",
+  "pretty": "Pulse Open(n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "DutyCycle",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   },
+   {
+    "_default": true,
+    "_type": "TimeOffset",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Controls the frequency of the fixture´s mechanical or electronical opening pulse shutter feature. The pulse is described by a ramp function.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Shutter(n)StrobeRandom",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Shutter(n)",
+  "pretty": "Random(n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "Duration",
+    "_physicalUnit": "Time",
+    "_physicalFrom": 0.025,
+    "_physicalTo": 0.025
+   }
+  ],
+  "definition": "Controls the frequency of the fixture´s mechanical or electronical random strobe shutter feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Shutter(n)StrobeRandomPulse",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Shutter(n)",
+  "pretty": "Random Pulse(n)",
+  "definition": "Controls the frequency of the fixture´s mechanical or electronical random pulse shutter feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Shutter(n)StrobeRandomPulseClose",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Shutter(n)",
+  "pretty": "Random Pulse Close(n)",
+  "definition": "Controls the frequency of the fixture´s mechanical or electronical random closing pulse shutter feature. The pulse is described by a ramp function.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Shutter(n)StrobeRandomPulseOpen",
+  "pattern": true,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "main_attribute": "Shutter(n)",
+  "pretty": "Random Pulse Open(n)",
+  "definition": "Controls the frequency of the fixture´s mechanical or electronical random opening pulse shutter feature. The pulse is described by a ramp function.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeDuration",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Time",
+  "pretty": "Strobe Duration",
+  "definition": "Controls the length of a strobe flash.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeFrequency",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "physical_unit": "Frequency",
+  "pretty": "Strobe Frequency",
+  "definition": "Controls the frequency of strobe flashes.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeModeEffect",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "main_attribute": "StrobeModeShutter",
+  "pretty": "StrobeM Effect",
+  "definition": "Strobe mode random shutter effect feature. Use this attribute together with StrobeFrequency to define the type of the shutter / strobe.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeModePulse",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "main_attribute": "StrobeModeShutter",
+  "pretty": "StrobeM Pulse",
+  "definition": "Strobe mode pulse. Use this attribute together with StrobeFrequency to define the type of the shutter / strobe.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeModePulseClose",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "main_attribute": "StrobeModeShutter",
+  "pretty": "StrobeM Pulse Close",
+  "definition": "Strobe mode closing pulse. Use this attribute together with StrobeFrequency to define the type of the shutter / strobe.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeModePulseOpen",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "main_attribute": "StrobeModeShutter",
+  "pretty": "StrobeM PulseOpen",
+  "definition": "Strobe mode opening pulse. Use this attribute together with StrobeFrequency to define the type of the shutter / strobe.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeModeRandom",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "main_attribute": "StrobeModeShutter",
+  "pretty": "StrobeM Random",
+  "definition": "Strobe mode random strobe. Use this attribute together with StrobeFrequency to define the type of the shutter / strobe.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeModeRandomPulse",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "main_attribute": "StrobeModeShutter",
+  "pretty": "StrobeM Random Pulse",
+  "definition": "Strobe mode random pulse. Use this attribute together with StrobeFrequency to define the type of the shutter / strobe.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeModeRandomPulseClose",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "main_attribute": "StrobeModeShutter",
+  "pretty": "StrobeM Random Pulse Close",
+  "definition": "Strobe mode random closing pulse. Use this attribute together with StrobeFrequency to define the type of the shutter / strobe.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeModeRandomPulseOpen",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "main_attribute": "StrobeModeShutter",
+  "pretty": "StrobeM Random Pulse Open",
+  "definition": "Strobe mode random opening pulse. Use this attribute together with StrobeFrequency to define the type of the shutter / strobe.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeModeShutter",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "pretty": "StrobeM Shutter",
+  "definition": "Strobe mode shutter. Use this attribute together with StrobeFrequency to define the type of the shutter / strobe.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeModeStrobe",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "main_attribute": "StrobeModeShutter",
+  "pretty": "StrobeM Strobe",
+  "definition": "Strobe mode strobe. Use this attribute together with StrobeFrequency to define the type of the shutter / strobe.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeRate",
+  "pattern": false,
+  "feature_group": "Beam",
+  "feature": "Beam",
+  "pretty": "Strobe Rate",
+  "definition": "Controls the time between strobe flashes.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CIE_Brightness",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "CIE",
+  "physical_unit": "Percent",
+  "activation_group": "ColorCIE",
+  "pretty": "B",
+  "definition": "Controls the fixture's CIE 1931 color attribute regarding the brightness (Y).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CIE_X",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "CIE",
+  "activation_group": "ColorCIE",
+  "pretty": "X",
+  "definition": "Controls the fixture's CIE 1931 color attribute regarding the chromaticity x.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CIE_Y",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "CIE",
+  "activation_group": "ColorCIE",
+  "pretty": "Y",
+  "definition": "Controls the fixture's CIE 1931 color attribute regarding the chromaticity y.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Color(n)",
+  "pattern": true,
+  "feature_group": "Color",
+  "feature": "Color",
+  "activation_group": "ColorRGB",
+  "pretty": "C(n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "The fixture’s color wheel (n). Selects colors in color wheel (n). This is the main attribute of color wheel’s (n) wheel control.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Color(n)WheelAudio",
+  "pattern": true,
+  "feature_group": "Color",
+  "feature": "Color",
+  "main_attribute": "Color(n)",
+  "activation_group": "ColorRGB",
+  "pretty": "Wheel Audio",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Controls audio-controlled functionality of color wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Color(n)WheelIndex",
+  "pattern": true,
+  "feature_group": "Color",
+  "feature": "Color",
+  "physical_unit": "Angle",
+  "main_attribute": "Color(n)",
+  "activation_group": "ColorRGB",
+  "pretty": "Wheel Index",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Controls angle of indexed rotation of color wheel (n)",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Color(n)WheelRandom",
+  "pattern": true,
+  "feature_group": "Color",
+  "feature": "Color",
+  "physical_unit": "Frequency",
+  "main_attribute": "Color(n)",
+  "activation_group": "ColorRGB",
+  "pretty": "Wheel Random",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Controls frequency of color wheel´s (n) random color slot selection.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Color(n)WheelSpin",
+  "pattern": true,
+  "feature_group": "Color",
+  "feature": "Color",
+  "physical_unit": "AngularSpeed",
+  "main_attribute": "Color(n)",
+  "activation_group": "ColorRGB",
+  "pretty": "Wheel Spin",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Controls the speed and direction of continuous rotation of color wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorEffects(n)",
+  "pattern": true,
+  "feature_group": "Color",
+  "feature": "Color",
+  "pretty": "Color FX(n)",
+  "definition": "Selects predefined color effects built into the fixture.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CTB",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Color",
+  "physical_unit": "Temperature",
+  "pretty": "CTB",
+  "definition": "Controls the fixture's \"Correct to blue\" wheel or mixing system.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CTC",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Color",
+  "physical_unit": "Temperature",
+  "pretty": "CTC",
+  "definition": "Controls the fixture's \"Correct to color\" wheel or mixing system.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CTO",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Color",
+  "physical_unit": "Temperature",
+  "pretty": "CTO",
+  "definition": "Controls the fixture's \"Correct to orange\" wheel or mixing system.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Tint",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Color",
+  "pretty": "Tint",
+  "definition": "Controls the fixture's \"Correct green to magenta\" wheel or mixing system.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoBoost_B",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "ColorCorrection",
+  "physical_unit": "None",
+  "pretty": "Boost B",
+  "color_cie": "0.15,0.06,7.2",
+  "definition": "Adjusts color boost blue of content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoBoost_G",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "ColorCorrection",
+  "physical_unit": "None",
+  "pretty": "Boost G",
+  "color_cie": "0.3,0.6,71.5",
+  "definition": "Adjusts color boost green of content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoBoost_R",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "ColorCorrection",
+  "physical_unit": "None",
+  "pretty": "Boost R",
+  "color_cie": "0.64,0.33,21.3",
+  "definition": "Adjusts color boost red of content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoColorKey_B",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "ColorKey",
+  "physical_unit": "None",
+  "pretty": "B",
+  "color_cie": "0.15,0.06,7.2",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoKeyColor_G",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "ColorKey",
+  "physical_unit": "None",
+  "pretty": "G",
+  "color_cie": "0.3,0.6,71.5",
+  "definition": "Adjusts green color for color keying.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoKeyColor_R",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "ColorKey",
+  "physical_unit": "None",
+  "pretty": "R",
+  "color_cie": "0.64,0.33,21.3",
+  "definition": "Adjusts red color for color keying.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoKeyIntensity",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "ColorKey",
+  "physical_unit": "Percent",
+  "pretty": "Intensity",
+  "definition": "Adjusts intensity of color keying.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoKeyTolerance",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "ColorKey",
+  "physical_unit": "None",
+  "pretty": "Tolerance",
+  "definition": "Adjusts tolerance of color keying.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "HSB_Brightness",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "HSB",
+  "physical_unit": "Percent",
+  "activation_group": "ColorHSB",
+  "pretty": "B",
+  "definition": "Controls the fixture's color attribute regarding the brightness.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "HSB_Hue",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "HSB",
+  "physical_unit": "Angle",
+  "activation_group": "ColorHSB",
+  "pretty": "H",
+  "definition": "Controls the fixture's color attribute regarding the hue.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "HSB_Quality",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "HSB",
+  "physical_unit": "Percent",
+  "activation_group": "ColorHSB",
+  "pretty": "Q",
+  "definition": "Controls the fixture's color attribute regarding the quality.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "HSB_Saturation",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "HSB",
+  "physical_unit": "Percent",
+  "activation_group": "ColorHSB",
+  "pretty": "S",
+  "definition": "Controls the fixture's color attribute regarding the saturation.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoBrightness",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "HSBC_Shift",
+  "physical_unit": "Percent",
+  "pretty": "B",
+  "definition": "Adjusts brightness of content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoContrast",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "HSBC_Shift",
+  "physical_unit": "Percent",
+  "pretty": "C",
+  "definition": "Adjusts contrast of content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoHueShift",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "HSBC_Shift",
+  "physical_unit": "Angle",
+  "pretty": "Hue Shift",
+  "definition": "Adjusts color hue shift of content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoSaturation",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "HSBC_Shift",
+  "physical_unit": "Percent",
+  "pretty": "S",
+  "definition": "Adjusts saturation of content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorRGB_Blue",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Indirect",
+  "activation_group": "ColorIndirect",
+  "pretty": "B",
+  "definition": "Controls the fixture's blue attribute for indirect RGB color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorRGB_Cyan",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Indirect",
+  "activation_group": "ColorIndirect",
+  "pretty": "C",
+  "definition": "Controls the fixture's cyan attribute for indirect CMY color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorRGB_Green",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Indirect",
+  "activation_group": "ColorIndirect",
+  "pretty": "G",
+  "definition": "Controls the fixture's green attribute for indirect RGB color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorRGB_Magenta",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Indirect",
+  "activation_group": "ColorIndirect",
+  "pretty": "M",
+  "definition": "Controls the fixture's magenta attribute for indirect CMY color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorRGB_Quality",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Indirect",
+  "activation_group": "ColorIndirect",
+  "pretty": "Q",
+  "definition": "Controls the fixture's quality attribute for indirect color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorRGB_Red",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Indirect",
+  "activation_group": "ColorIndirect",
+  "pretty": "R",
+  "definition": "Controls the fixture's red attribute for indirect RGB color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorRGB_Yellow",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "Indirect",
+  "activation_group": "ColorIndirect",
+  "pretty": "Y",
+  "definition": "Controls the fixture's yellow attribute for indirect CMY color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_B",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "B",
+  "color_cie": "0.15,0.06,7.2",
+  "definition": "Controls the intensity of the fixture's blue emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_BC",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "Light-Blue ",
+  "color_cie": "0.200,0.239,43.0",
+  "definition": "Controls the intensity of the fixture's light-blue emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_BM",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "Purple",
+  "color_cie": "0.254,0.117,17.9",
+  "definition": "Controls the intensity of the fixture's purple emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_C",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "C",
+  "color_cie": "0.225,0.329,78.7",
+  "definition": "Controls the intensity of the fixture's cyan emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_CW",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "CW",
+  "color_cie": "0.306,0.329,97.9",
+  "definition": "Controls the intensity of the fixture's cool white emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_G",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "G",
+  "color_cie": "0.3,0.6,71.5",
+  "definition": "Controls the intensity of the fixture's green emitters for direct additive color mixing",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_GC",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "Blue-Green",
+  "color_cie": "0.250,0.419,75.1",
+  "definition": "Controls the intensity of the fixture's blue-green emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_GY",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "Lime",
+  "color_cie": "0.372,0.543,82.1",
+  "definition": "Controls the intensity of the fixture's lime emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_M",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "M",
+  "color_cie": "0.321,0.154,28.5",
+  "definition": "Controls the intensity of the fixture's magenta emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_R",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "R",
+  "color_cie": "0.64,0.33,21.3",
+  "definition": "Controls the intensity of the fixture's red emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_RM",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "Pink",
+  "color_cie": "0.403,0.200,24.9",
+  "definition": "Controls the intensity of the fixture's pink emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_RY",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "Amber",
+  "color_cie": "0.477,0.460,57.0",
+  "definition": "Controls the intensity of the fixture's amber emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_UV",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "UV",
+  "color_cie": "0.176,0.005,0.6",
+  "definition": "Controls the intensity of the fixture's UV emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_W",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "White",
+  "color_cie": "0.313,0.329,100.0",
+  "definition": "Controls the intensity of the fixture's white emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_WW",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "WW",
+  "color_cie": "0.319,0.340,99.3",
+  "definition": "Controls the intensity of the fixture's warm white emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorAdd_Y",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "Y",
+  "color_cie": "0.419,0.505,92.8",
+  "definition": "Controls the intensity of the fixture's yellow emitters for direct additive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorMacro(n)",
+  "pattern": true,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "pretty": "Color Macro(n)",
+  "definition": "Selects predefined colors that are programmed in the fixture's firmware.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorMacro(n)Rate",
+  "pattern": true,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "pretty": "Color Macro(n) Rate",
+  "definition": "Controls the time between Color Macro steps.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorSub_B",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "B",
+  "color_cie": "0.15,0.06,7.2",
+  "definition": "Controls the insertion of the fixture's blue filter flag for direct subtractive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorSub_C",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "C",
+  "color_cie": "0.225,0.329,78.7",
+  "definition": "Controls the insertion of the fixture's cyan filter flag for direct subtractive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorSub_G",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "G",
+  "color_cie": "0.3,0.6,71.5",
+  "definition": "Controls the insertion of the fixture's green filter flag for direct subtractive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorSub_M",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "M",
+  "color_cie": "0.321,0.154,28.5",
+  "definition": "Controls the insertion of the fixture's magenta filter flag for direct subtractive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorSub_R",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "R",
+  "color_cie": "0.64,0.33,21.3",
+  "definition": "Controls the insertion of the fixture's red filter flag for direct subtractive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorSub_Y",
+  "pattern": false,
+  "feature_group": "Color",
+  "feature": "RGB",
+  "physical_unit": "ColorComponent",
+  "activation_group": "ColorRGB",
+  "pretty": "Y",
+  "color_cie": "0.419,0.505,92.8",
+  "definition": "Controls the insertion of the fixture's yellow filter flag for direct subtractive color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystemReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Anim Sytem Reset",
+  "definition": "Resets the fixture's animation system features.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)Mode",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Anim Mode",
+  "definition": "Changes control between selecting, indexing, and rotating the slots of animation wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheelShortcutMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Anim Shortcut Mode",
+  "definition": "Defines whether the animation wheel takes the shortest distance between two positions.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "BeamEffectIndexRotateMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Beam Effect Index Rotate Mode",
+  "definition": "Changes mode to control either index or rotation of the beam effects.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "BeamReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Beam Reset",
+  "definition": "Resets the fixture's beam features.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "BlackoutMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Blackout Mode",
+  "definition": "Close the light output under certain conditions (movement correction, gobo movement, etc.).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Blower(n)",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Blower(n)",
+  "definition": "Fog or hazer‘s blower feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ChromaticMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Chroma Mode",
+  "definition": "Selects chromatic behavior of the device.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Color(n)Mode",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "C(n) Mode",
+  "definition": "Changes control between selecting, continuous selection, half selection, random selection, color spinning, etc. in colors of color wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorCalibrationMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "CCalib Mode",
+  "definition": "Sets calibration mode (for example on/off).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorConsistency",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Color consistency",
+  "definition": "Controls consistent behavior of color.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorControl",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Color Ctrl",
+  "definition": "Controls special color related functions.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorMixMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Color Mix Mode",
+  "definition": "Changes control between selecting continuous selection, half selection, random selection, color spinning, etc. in color mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorMixMSpeed",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Color Mix MSpeed",
+  "definition": "Movement speed of the fixture's ColorMix presets.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorMixReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Color Mix Reset",
+  "definition": "Resets the fixture's color mixing system.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorModelMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "ColorModel",
+  "definition": "Controls color model (CMY/RGB/HSV...).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorSettingsReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Color Ctrl Rst",
+  "definition": "Resets settings of color control channel.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorUniformity",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "ColorUniform",
+  "definition": "Controls behavior of color uniformity.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorWheelReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Color Wheel Reset",
+  "definition": "Resets the fixture's color wheel.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorWheelSelectMSpeed",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Color Wheel Select MSpeed",
+  "definition": "Movement speed of the fixture's color wheel.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ColorWheelShortcutMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Color Wheel Shortcut Mode",
+  "definition": "Defines whether the color wheel takes the shortest distance between two colors.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Control(n)",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Ctrl(n)",
+  "definition": "Controls the channel of a fixture.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CRIMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "CRI Mode",
+  "definition": "Controls CRI settings of output.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CTBReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "CTB Reset",
+  "definition": "Resets the fixture's CTB.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CTCReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "CTC Reset",
+  "definition": "Resets the fixture's CTC.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CTOReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "CTO Reset",
+  "definition": "Resets the fixture's CTO.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CustomColor",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Custom Color",
+  "definition": "Custom color related functions (save, recall..).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "CyanMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Cyan Mode",
+  "definition": "Controls how Cyan is used within the fixture's cyan CMY-mixing feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "DimmerCurve",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Dim Curve",
+  "definition": "Selects different dimmer curves of the fixture.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "DimmerMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Dim Mode",
+  "definition": "Selects different modes of intensity.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "DimmerReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Dimmer Reset",
+  "definition": "Resets the fixture's dimmer.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "DisplayIntensity",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Display Int",
+  "definition": "Adjusts intensity of display",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "DMXInput",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "DMX Input",
+  "definition": "Selects DMX Input",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Dummy",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Dummy",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Fan(n)",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Fan(n)",
+  "definition": "Fog or hazer's Fan feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "FanMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Fan Mode",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Fans",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Fans",
+  "definition": "Controls a fixture or device fan.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "FixtureCalibrationReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Fixture Calibration Reset",
+  "definition": "Resets the fixture's calibration.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "FixtureGlobalReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Fixture Global Reset",
+  "definition": "Generally resets the entire fixture.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "FocusMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Focus Mode",
+  "definition": "Changes modes of the fixture’s focus - manual or auto- focus.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "FocusMSpeed",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Focus MSpeed",
+  "definition": "Movement speed of the fixture's focus.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "FocusReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Focus Reset",
+  "definition": "Resets the fixture's focus.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Fog(n)",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Fog(n)",
+  "definition": "Fog or hazer's Fog feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "FollowSpotMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "FollowSpot Mode",
+  "definition": "Selects follow spot control mode.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "FrameMSpeed",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Frame MSpeed",
+  "definition": "Movement speed of the fixture's shapers.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "FrameReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Frame Reset",
+  "definition": "Resets the fixture's shapers.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Frost(n)MSpeed",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Frost(n) MSpeed",
+  "definition": "Movement speed of the fixture's frost (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Function",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Function",
+  "definition": "Generally controls features of the fixture.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "GlobalMSpeed",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Global MSpeed",
+  "definition": "General speed of fixture's features.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)WheelMode",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "G(n) Mode",
+  "definition": "Changes control between selecting, indexing, and rotating the gobos of gobo wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "GoboWheel(n)MSpeed",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Gobo Wheel(n) MSpeed",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "GoboWheelReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "G Reset",
+  "definition": "Resets the fixture's gobo wheel.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "GoboWheelShortcutMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Gobo Shortcut Mode",
+  "definition": "Defines whether the gobo wheel takes the shortest distance between two positions.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Haze(n)",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Haze(n)",
+  "definition": "Fog or hazer's Haze feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IntensityMSpeed",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Intensity MSpeed",
+  "definition": "Movement speed of the fixture's intensity.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IntensityReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Intensity Reset",
+  "definition": "Resets the fixture's intensity.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IrisMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Iris Mode",
+  "definition": "Changes modes of the fixture’s iris - linear, strobe, pulse.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IrisMSpeed",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Iris MSpeed",
+  "definition": "Movement speed of the fixture's iris.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "IrisReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Iris Reset",
+  "definition": "Resets the fixture's iris.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "LampControl",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Lamp Ctrl",
+  "definition": "Controls the fixture's lamp on/lamp off feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "LampPowerMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Lamp Power Mode",
+  "definition": "Controls the energy consumption of the lamp.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "LEDFrequency",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "physical_unit": "Frequency",
+  "pretty": "LED Frequency",
+  "definition": "Controls LED frequency.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "LEDZoneMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "LED Zone Mode",
+  "definition": "Changes zones of LEDs.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "MagentaMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Magenta Mode",
+  "definition": "Controls how Magenta is used within the fixture's magenta CMY-mixing.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "NoFeature",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "NoFeature",
+  "definition": "Ranges without a functionality.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PanMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Pan Mode",
+  "definition": "Selects fixture's pan mode. Selects between a limited pan range (e.g. -270 to 270) or a continuous pan range.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PanReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Pan Reset",
+  "definition": "Resets the fixture's pan.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PanTiltMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "PanTilt Mode",
+  "definition": "Selects fixture's pan/tilt mode. Selects between a limited pan/tilt range or a continuous pan/tilt range.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PixelMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Pixel Mode",
+  "definition": "Controls behavior of LED pixels.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PositionModes",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Pos Modes",
+  "definition": "Selects the fixture's position mode.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PositionMSpeed",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Pos MSpeed",
+  "definition": "Movement speed of the fixture's pan/tilt.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PositionReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Pos Reset",
+  "definition": "Resets the fixture's pan/tilt.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Prism(n)MSpeed",
+  "pattern": true,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Prism(n) MSpeed",
+  "definition": "Movement speed of the fixture's prism wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ReflectorAdjust",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Reflector Adj",
+  "definition": "Movement speed of the fixture's frost.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ShutterReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Shutter Reset",
+  "definition": "Resets the fixture's shutter.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "StrobeMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Strobe Mode",
+  "definition": "Changes strobe style - strobe, pulse, random strobe, etc. - of the shutter attribute.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "TiltMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Tilt Mode",
+  "definition": "Selects fixture's pan mode. Selects between a limited tilt range (e.g. -130 to 130) or a continuous tilt range.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "TiltReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Tilt Reset",
+  "definition": "Resets the fixture's tilt.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "UVStability",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "UV Stab",
+  "definition": "Settings for UV stability color behavior.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "WaveLengthCorrection",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "WaveLength",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "WhiteCount",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "White Count",
+  "definition": "Controls if White LED is proportionally added to RGB.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "YellowMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Yellow Mode",
+  "definition": "Controls how Yellow is used within the fixture's yellow CMY-mixing feature.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ZoomMode",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Zoom Mode",
+  "definition": "Changes modes of the fixture´s zoom.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ZoomMSpeed",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Zoom MSpeed",
+  "definition": "Movement speed of the fixture's zoom.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ZoomReset",
+  "pattern": false,
+  "feature_group": "Control",
+  "feature": "Control",
+  "pretty": "Zoom Reset",
+  "definition": "Resets the fixture's zoom.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Dimmer",
+  "pattern": false,
+  "feature_group": "Dimmer",
+  "feature": "Dimmer",
+  "pretty": "Dim",
+  "definition": "Controls the intensity of a fixture.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "DigitalZoom",
+  "pattern": false,
+  "feature_group": "Focus",
+  "feature": "Focus",
+  "physical_unit": "Angle",
+  "pretty": "DZoom",
+  "definition": "Controls the image size within the defined projection. Used on digital projection based devices",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Focus(n)",
+  "pattern": true,
+  "feature_group": "Focus",
+  "feature": "Focus",
+  "pretty": "Focus(n)",
+  "definition": "Controls the sharpness of the fixture's spot light. Can blur or sharpen the edge of the spot.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Focus(n)Adjust",
+  "pattern": true,
+  "feature_group": "Focus",
+  "feature": "Focus",
+  "pretty": "Focus(n) Adjust",
+  "definition": "Autofocuses functionality using presets.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Focus(n)Distance",
+  "pattern": true,
+  "feature_group": "Focus",
+  "feature": "Focus",
+  "physical_unit": "Length",
+  "pretty": "Focus(n) Distance",
+  "definition": "Autofocuses functionality using distance.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Zoom",
+  "pattern": false,
+  "feature_group": "Focus",
+  "feature": "Focus",
+  "physical_unit": "Angle",
+  "pretty": "Zoom",
+  "definition": "Controls the spread of the fixture's beam/spot.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ZoomModeBeam",
+  "pattern": false,
+  "feature_group": "Focus",
+  "feature": "Focus",
+  "physical_unit": "Angle",
+  "pretty": "Zoom Beam",
+  "definition": "Selects beam mode of zoom.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ZoomModeSpot",
+  "pattern": false,
+  "feature_group": "Focus",
+  "feature": "Focus",
+  "physical_unit": "Angle",
+  "pretty": "Zoom Spot",
+  "definition": "Selects spot mode of zoom.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Percent",
+  "activation_group": "AnimationSystem(n)",
+  "pretty": "Anim System",
+  "definition": "This is the main attribute of the animation system insertion control. Controls the insertion of the fixture's animation system in the light output. Is used for animation effects where a disk is inserted into the light output.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)Audio",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "None",
+  "main_attribute": "AnimationSystem(n)",
+  "activation_group": "AnimationSystem(n)",
+  "pretty": "Anim System Audio",
+  "definition": "Controls audio-controlled functionality of animation system (n) insertion.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)Macro",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "None",
+  "pretty": "Anim System Macro",
+  "definition": "Selects predefined effects in animation system (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)Pos",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Angle",
+  "activation_group": "AnimationSystem(n)Pos",
+  "pretty": "Anim System Pos",
+  "definition": "This is the main attribute of the animation system spinning control. Controls angle of indexed rotation of animation system (n) disk.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)PosAudio",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "None",
+  "main_attribute": "AnimationSystem(n)Pos",
+  "activation_group": "AnimationSystem(n)Pos",
+  "pretty": "Anim System Rot Audio",
+  "definition": "Controls audio-controlled functionality of animation system (n) disk.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)PosRandom",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "None",
+  "main_attribute": "AnimationSystem(n)Pos",
+  "activation_group": "AnimationSystem(n)Pos",
+  "pretty": "Anim System Rot Random",
+  "definition": "Controls random speed of animation system (n) disk.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)PosRotate",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "AngularSpeed",
+  "main_attribute": "AnimationSystem(n)Pos",
+  "activation_group": "AnimationSystem(n)Pos",
+  "pretty": "Anim System Rotate",
+  "definition": "Controls the speed and direction of continuous rotation of animation system (n) disk.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)PosShake",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Frequency",
+  "main_attribute": "AnimationSystem(n)Pos",
+  "activation_group": "AnimationSystem(n)Pos",
+  "pretty": "Anim System Shake",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "Amplitude",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Controls frequency of the shake of animation system (n) disk.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)Ramp",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Frequency",
+  "main_attribute": "AnimationSystem(n)",
+  "activation_group": "AnimationSystem(n)",
+  "pretty": "Anim System Ramp",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "DutyCycle",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0.5,
+    "_physicalTo": 0.5
+   },
+   {
+    "_default": true,
+    "_type": "AmplitudeMin",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0,
+    "_physicalTo": 0
+   },
+   {
+    "_default": true,
+    "_type": "AmplitudeMax",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Sets frequency of animation system (n) insertion ramp.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)Random",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "None",
+  "main_attribute": "AnimationSystem(n)",
+  "activation_group": "AnimationSystem(n)",
+  "pretty": "Anim System Random",
+  "definition": "Controls frequency of animation system (n) random insertion.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationSystem(n)Shake",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Frequency",
+  "main_attribute": "AnimationSystem(n)",
+  "activation_group": "AnimationSystem(n)",
+  "pretty": "Anim System Shake",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "AmplitudeMin",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0,
+    "_physicalTo": 0
+   },
+   {
+    "_default": true,
+    "_type": "AmplitudeMax",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 1,
+    "_physicalTo": 1
+   }
+  ],
+  "definition": "Sets frequency of animation system (n) insertion shake.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "activation_group": "AnimationWheel(n)",
+  "pretty": "Anim(n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "This is the main attribute of the animation wheel's (n) wheel control. Selects slots in the animation wheel. A different channel function sets the angle of the indexed position in the selected slot or the angular speed of its continuous rotation. Is used for animation effects with multiple slots. If there is more than one animation wheel the wild-card (n) will be incremented and the number then indicates which wheel will be controlled.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)Audio",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "main_attribute": "AnimationWheel(n)",
+  "activation_group": "AnimationWheel(n)",
+  "pretty": "Anim Audio",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Controls audio-controlled functionality of animation wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)Macro",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "main_attribute": "AnimationWheel(n)",
+  "activation_group": "AnimationWheel(n)",
+  "pretty": "Anim FX",
+  "definition": "Selects predefined effects in animation wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)Pos",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Angle",
+  "activation_group": "AnimationWheel(n)Pos",
+  "pretty": "Anim Pos",
+  "definition": "Controls angle of indexed rotation of slots in animation wheel. This is the main attribute of animation wheel (n) wheel slot control.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)PosRotate",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "AngularSpeed",
+  "main_attribute": "AnimationWheel(n)Pos",
+  "activation_group": "AnimationWheel(n)Pos",
+  "pretty": "Anim Rotate",
+  "definition": "Controls the speed and direction of continuous rotation of slots in animation wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)PosShake",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Frequency",
+  "main_attribute": "AnimationWheel(n)Pos",
+  "activation_group": "AnimationWheel(n)Pos",
+  "pretty": "Anim Shake",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "Amplitude",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0.2,
+    "_physicalTo": 0.2
+   }
+  ],
+  "definition": "Controls frequency of the shake of slots in animation wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)Random",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Frequency",
+  "main_attribute": "AnimationWheel(n)",
+  "activation_group": "AnimationWheel(n)",
+  "pretty": "Anim Random",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Controls frequency of animation wheel (n) random slot selection.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)SelectEffects",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "main_attribute": "AnimationWheel(n)",
+  "activation_group": "AnimationWheel(n)",
+  "pretty": "Anim Select FX",
+  "definition": "Selects slots which run effects in animation wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)SelectShake",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Frequency",
+  "main_attribute": "AnimationWheel(n)",
+  "activation_group": "AnimationWheel(n)",
+  "pretty": "Anim Select Shake",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   },
+   {
+    "_default": true,
+    "_type": "Amplitude",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0.2,
+    "_physicalTo": 0.2
+   }
+  ],
+  "definition": "Selects slots which shake in animation wheel and controls the frequency of the slots shake within the same channel function.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "AnimationWheel(n)SelectSpin",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "AngularSpeed",
+  "main_attribute": "AnimationWheel(n)",
+  "activation_group": "AnimationWheel(n)",
+  "pretty": "Anim Select Spin",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Selects slots whose rotation is continuous in animation wheel and controls the angular speed of the slot spin within the same channel function",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "activation_group": "Gobo(n)",
+  "pretty": "G(n)",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "The fixture’s gobo wheel (n). This is the main attribute of gobo wheel’s (n) wheel control. Selects gobos in gobo wheel (n). A different channel function sets the angle of the indexed position in the selected gobo or the angular speed of its continuous rotation.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)Pos",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Angle",
+  "activation_group": "Gobo(n)Pos",
+  "pretty": "G(n) <>",
+  "definition": "Controls angle of indexed rotation of gobos in gobo wheel (n). This is the main attribute of gobo wheel’s (n) wheel slot control.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)PosRotate",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "AngularSpeed",
+  "main_attribute": "Gobo(n)Pos",
+  "activation_group": "Gobo(n)Pos",
+  "pretty": "Rotate",
+  "definition": "Controls the speed and direction of continuous rotation of gobos in gobo wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)PosShake",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Frequency",
+  "main_attribute": "Gobo(n)Pos",
+  "activation_group": "Gobo(n)Pos",
+  "pretty": "Shake",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "Amplitude",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0.2,
+    "_physicalTo": 0.2
+   }
+  ],
+  "definition": "Controls frequency of the shake of gobos in gobo wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)SelectEffects",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "main_attribute": "Gobo(n)",
+  "activation_group": "Gobo(n)",
+  "pretty": "Select Effects",
+  "definition": "Selects gobos which run effects in gobo wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)SelectShake",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Frequency",
+  "main_attribute": "Gobo(n)",
+  "activation_group": "Gobo(n)",
+  "pretty": "Select Shake",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   },
+   {
+    "_default": true,
+    "_type": "Amplitude",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0.2,
+    "_physicalTo": 0.2
+   }
+  ],
+  "definition": "Selects gobos which shake in gobo wheel (n) and controls the frequency of the gobo’s shake within the same channel function.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)SelectSpin",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "AngularSpeed",
+  "main_attribute": "Gobo(n)",
+  "activation_group": "Gobo(n)",
+  "pretty": "Select Spin",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Selects gobos whose rotation is continuous in gobo wheel (n) and controls the angular speed of the gobo’s spin within the same channel function. If there is more than one gobo wheel the wild-card (n) will be incremented and the number then indicates which wheel will be controlled.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)WheelAudio",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "main_attribute": "Gobo(n)",
+  "activation_group": "Gobo(n)",
+  "pretty": "Wheel Audio",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Controls audio-controlled functionality of gobo wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)WheelIndex",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Angle",
+  "main_attribute": "Gobo(n)",
+  "activation_group": "Gobo(n)",
+  "pretty": "Wheel Index",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Controls angle of indexed rotation of gobo wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)WheelRandom",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Frequency",
+  "main_attribute": "Gobo(n)",
+  "activation_group": "Gobo(n)",
+  "pretty": "Wheel Random",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Controls speed of gobo wheel´s (n) random gobo slot selection.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)WheelShake",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "Frequency",
+  "main_attribute": "Gobo(n)",
+  "activation_group": "Gobo(n)",
+  "pretty": "Wheel Shake",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   },
+   {
+    "_default": true,
+    "_type": "Amplitude",
+    "_physicalUnit": "Percent",
+    "_physicalFrom": 0.2,
+    "_physicalTo": 0.2
+   }
+  ],
+  "definition": "Controls frequency of the shake of gobo wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Gobo(n)WheelSpin",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Gobo",
+  "physical_unit": "AngularSpeed",
+  "main_attribute": "Gobo(n)",
+  "activation_group": "Gobo(n)",
+  "pretty": "Wheel Spin",
+  "sub_physical_units": [
+   {
+    "_default": true,
+    "_type": "PlacementOffset",
+    "_physicalUnit": "Degree",
+    "_physicalFrom": 270,
+    "_physicalTo": 270
+   }
+  ],
+  "definition": "Controls the speed and direction of continuous rotation of gobo wheel (n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "MediaContent(n)",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Media",
+  "pretty": "Media Content(n)",
+  "definition": "Selects file with media content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "MediaFolder(n)",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Media",
+  "pretty": "Media Folder(n)",
+  "definition": "Selects folder that contains media content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ModelContent(n)",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Media",
+  "physical_unit": "None",
+  "pretty": "Model Content(n)",
+  "definition": "Selects file with 3D model content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ModelFolder(n)",
+  "pattern": true,
+  "feature_group": "Gobo",
+  "feature": "Media",
+  "physical_unit": "None",
+  "pretty": "Model Folder(n)",
+  "definition": "Selects folder that contains 3D model content. For example 3D meshes for mapping.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PlayBegin",
+  "pattern": false,
+  "feature_group": "Gobo",
+  "feature": "Media",
+  "physical_unit": "Time",
+  "pretty": "Play Begin",
+  "definition": "Defines starting point of media content playback.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PlayEnd",
+  "pattern": false,
+  "feature_group": "Gobo",
+  "feature": "Media",
+  "physical_unit": "Time",
+  "pretty": "Play End",
+  "definition": "Defines end point of media content playback.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Playmode",
+  "pattern": false,
+  "feature_group": "Gobo",
+  "feature": "Media",
+  "pretty": "Playmode",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PlaySpeed",
+  "pattern": false,
+  "feature_group": "Gobo",
+  "feature": "Media",
+  "physical_unit": "Percent",
+  "pretty": "Play Speed",
+  "definition": "Adjusts playback speed of media content.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Pan",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "PanTilt",
+  "physical_unit": "Angle",
+  "activation_group": "PanTilt",
+  "pretty": "P",
+  "definition": "Controls the fixture's sideward movement (horizontal axis).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PanRotate",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "PanTilt",
+  "physical_unit": "AngularSpeed",
+  "pretty": "P Rotate",
+  "definition": "Controls the speed of the fixture's continuous pan movement (horizontal axis).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PositionEffect",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "PanTilt",
+  "pretty": "Pos FX",
+  "definition": "Selects the predefined position effects that are built into the fixture.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PositionEffectFade",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "PanTilt",
+  "pretty": "Pos FX Fade",
+  "definition": "Snaps or smooth fades with timing in running predefined position effects.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "PositionEffectRate",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "PanTilt",
+  "pretty": "Pos FX Rate",
+  "definition": "Controls the speed of the predefined position effects that are built into the fixture.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Tilt",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "PanTilt",
+  "physical_unit": "Angle",
+  "activation_group": "PanTilt",
+  "pretty": "T",
+  "definition": "Controls the fixture's upward and the downward movement (vertical axis).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "TiltRotate",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "PanTilt",
+  "physical_unit": "AngularSpeed",
+  "pretty": "T Rotate",
+  "definition": "Controls the speed of the fixture's continuous tilt movement (vertical axis).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Rot_X",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "Rotation",
+  "physical_unit": "Angle",
+  "activation_group": "Rot_XYZ",
+  "pretty": "Rot X",
+  "definition": "Defines rotation around X axis.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Rot_Y",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "Rotation",
+  "physical_unit": "Angle",
+  "activation_group": "Rot_XYZ",
+  "pretty": "Rot Y",
+  "definition": "Defines rotation around Y axis.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Rot_Z",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "Rotation",
+  "physical_unit": "Angle",
+  "activation_group": "Rot_XYZ",
+  "pretty": "Rot Z",
+  "definition": "Defines rotation around Z axis.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Scale_X",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "Scale",
+  "physical_unit": "Percent",
+  "activation_group": "Scale_XYZ",
+  "pretty": "Scale X",
+  "definition": "Scaling on X axis.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Scale_XYZ",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "Scale",
+  "physical_unit": "Percent",
+  "activation_group": "Scale_XYZ",
+  "pretty": "Scale XYZ",
+  "definition": "Unified scaling on all axis.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Scale_Y",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "Scale",
+  "physical_unit": "Percent",
+  "activation_group": "Scale_XYZ",
+  "pretty": "Scale Y",
+  "definition": "Scaling on Y axis.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Scale_Z",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "Scale",
+  "physical_unit": "Percent",
+  "activation_group": "Scale_XYZ",
+  "pretty": "Scale Z",
+  "definition": "Scaling on Y axis.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "XYZ_X",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "XYZ",
+  "physical_unit": "Length",
+  "activation_group": "XYZ",
+  "pretty": "X",
+  "definition": "Defines a fixture’s x-coordinate within an XYZ coordinate system.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "XYZ_Y",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "XYZ",
+  "physical_unit": "Length",
+  "activation_group": "XYZ",
+  "pretty": "Y",
+  "definition": "Defines a fixture’s y-coordinate within an XYZ coordinate system.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "XYZ_Z",
+  "pattern": false,
+  "feature_group": "Position",
+  "feature": "XYZ",
+  "physical_unit": "Length",
+  "activation_group": "XYZ",
+  "pretty": "Z",
+  "definition": "Defines a fixture‘s z-coordinate within an XYZ coordinate system.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Blade(n)A",
+  "pattern": true,
+  "feature_group": "Shapers",
+  "feature": "Shapers",
+  "activation_group": "Shaper",
+  "pretty": "Blade(n)A",
+  "definition": "1 of 2 shutters that shape the top/right/bottom/left of the beam.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Blade(n)B",
+  "pattern": true,
+  "feature_group": "Shapers",
+  "feature": "Shapers",
+  "activation_group": "Shaper",
+  "pretty": "Blade(n)B",
+  "definition": "2 of 2 shutters that shape the top/right/bottom/left of the beam.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Blade(n)Rot",
+  "pattern": true,
+  "feature_group": "Shapers",
+  "feature": "Shapers",
+  "physical_unit": "Angle",
+  "activation_group": "Shaper",
+  "pretty": "Blade(n) Rot",
+  "definition": "Rotates position of blade(n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "BladeSoft(n)A",
+  "pattern": true,
+  "feature_group": "Shapers",
+  "feature": "Shapers",
+  "physical_unit": "None",
+  "pretty": "BladeS(n)A",
+  "definition": "1 of 2 soft edge blades that shape the top/right/bottom/left of the beam.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "BladeSoft(n)B",
+  "pattern": true,
+  "feature_group": "Shapers",
+  "feature": "Shapers",
+  "physical_unit": "None",
+  "pretty": "BladeS(n)B",
+  "definition": "2 of 2 soft edge blades that shape the top/right/bottom/left of the beam.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "KeyStone(n)A",
+  "pattern": true,
+  "feature_group": "Shapers",
+  "feature": "Shapers",
+  "physical_unit": "None",
+  "pretty": "KS(n)A",
+  "definition": "1 of 2 corners that shape the top/right/bottom/left of the beam.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "KeyStone(n)B",
+  "pattern": true,
+  "feature_group": "Shapers",
+  "feature": "Shapers",
+  "physical_unit": "None",
+  "pretty": "KS(n)B",
+  "definition": "2 of 2 corners that shape the top/right/bottom/left of the beam.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ShaperMacros",
+  "pattern": false,
+  "feature_group": "Shapers",
+  "feature": "Shapers",
+  "pretty": "Shaper Macros",
+  "definition": "Predefined presets for shaper positions.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ShaperMacrosSpeed",
+  "pattern": false,
+  "feature_group": "Shapers",
+  "feature": "Shapers",
+  "pretty": "Shaper Macros Speed",
+  "definition": "Speed of predefined effects on shapers.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "ShaperRot",
+  "pattern": false,
+  "feature_group": "Shapers",
+  "feature": "Shapers",
+  "physical_unit": "Angle",
+  "activation_group": "Shaper",
+  "pretty": "Shaper Rot",
+  "definition": "Rotates position of blade assembly.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "FieldOfView",
+  "pattern": false,
+  "feature_group": "Video",
+  "feature": "Video",
+  "physical_unit": "Angle",
+  "pretty": "FOV",
+  "definition": "Defines field of view.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "InputSource",
+  "pattern": false,
+  "feature_group": "Video",
+  "feature": "Video",
+  "physical_unit": "None",
+  "pretty": "ISrc",
+  "definition": "Defines media input source e.g. a camera input.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "Video",
+  "pattern": false,
+  "feature_group": "Video",
+  "feature": "Video",
+  "pretty": "Video",
+  "definition": "Controls video features.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoBlendMode",
+  "pattern": false,
+  "feature_group": "Video",
+  "feature": "Video",
+  "physical_unit": "None",
+  "pretty": "BlendMode",
+  "definition": "Defines mode of video blending.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoCamera(n)",
+  "pattern": true,
+  "feature_group": "Video",
+  "feature": "Video",
+  "pretty": "Video Camera(n)",
+  "definition": "Selects the video camera(n).",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoEffect(n)Parameter(m)",
+  "pattern": true,
+  "feature_group": "Video",
+  "feature": "Video",
+  "pretty": "Video Effect(n) Parameter(m)",
+  "definition": "Controls parameter (m) of VideoEffect(n)Type.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoEffect(n)Type",
+  "pattern": true,
+  "feature_group": "Video",
+  "feature": "Video",
+  "pretty": "Video Effect(n) Type",
+  "definition": "Selects dedicated effects which are used for media.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ },
+ {
+  "name": "VideoSoundVolume(n)",
+  "pattern": true,
+  "feature_group": "Video",
+  "feature": "Video",
+  "physical_unit": "Percent",
+  "pretty": "Volume(n)",
+  "definition": "Adjusts sound volume.",
+  "source": "GDTF 1.2",
+  "in_gdtf": true
+ }
+]

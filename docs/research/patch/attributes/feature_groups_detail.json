@@ -1,0 +1,141 @@
+{
+ "merged": {
+  "Dimmer": [
+   "Dimmer"
+  ],
+  "Position": [
+   "PanTilt",
+   "XYZ",
+   "Rotation",
+   "Scale"
+  ],
+  "Gobo": [
+   "Gobo",
+   "Media"
+  ],
+  "Color": [
+   "Color",
+   "RGB",
+   "HSB",
+   "CIE",
+   "Indirect",
+   "ColorCorrection",
+   "HSBC_Shift",
+   "ColorKey"
+  ],
+  "Beam": [
+   "Beam"
+  ],
+  "Focus": [
+   "Focus"
+  ],
+  "Control": [
+   "Control"
+  ],
+  "Shapers": [
+   "Shapers"
+  ],
+  "Video": [
+   "Video"
+  ]
+ },
+ "gdtf_1_2_annex_b": {
+  "Dimmer": [
+   "Dimmer"
+  ],
+  "Position": [
+   "PanTilt",
+   "XYZ",
+   "Rotation",
+   "Scale"
+  ],
+  "Gobo": [
+   "Gobo",
+   "Media"
+  ],
+  "Color": [
+   "Color",
+   "RGB",
+   "HSB",
+   "CIE",
+   "Indirect",
+   "ColorCorrection",
+   "HSBC_Shift",
+   "ColorKey"
+  ],
+  "Beam": [
+   "Beam"
+  ],
+  "Focus": [
+   "Focus"
+  ],
+  "Control": [
+   "Control"
+  ],
+  "Shapers": [
+   "Shapers"
+  ],
+  "Video": [
+   "Video"
+  ]
+ },
+ "attribute_count_per_feature": {
+  "Beam": {
+   "Beam": 50
+  },
+  "Color": {
+   "CIE": 3,
+   "Color": 10,
+   "ColorCorrection": 3,
+   "ColorKey": 5,
+   "HSB": 4,
+   "HSBC_Shift": 4,
+   "Indirect": 7,
+   "RGB": 24
+  },
+  "Control": {
+   "Control": 85
+  },
+  "Dimmer": {
+   "Dimmer": 1
+  },
+  "Focus": {
+   "Focus": 7
+  },
+  "Gobo": {
+   "Gobo": 33,
+   "Media": 8
+  },
+  "Position": {
+   "PanTilt": 7,
+   "Rotation": 3,
+   "Scale": 4,
+   "XYZ": 3
+  },
+  "Shapers": {
+   "Shapers": 10
+  },
+  "Video": {
+   "Video": 8
+  }
+ },
+ "gdtf_activation_groups": [
+  "PanTilt",
+  "XYZ",
+  "Rot_XYZ",
+  "Scale_XYZ",
+  "ColorRGB",
+  "ColorHSB",
+  "ColorCIE",
+  "ColorIndirect",
+  "Gobo(n)",
+  "Gobo(n)Pos",
+  "AnimationWheel(n)",
+  "AnimationWheel(n)Pos",
+  "AnimationSystem(n)",
+  "AnimationSystem(n)Pos",
+  "Prism",
+  "BeamShaper",
+  "Shaper"
+ ]
+}

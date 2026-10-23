@@ -1,0 +1,232 @@
+<title>Miniature luma-grid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one bench — controls on top, four candidate panes side by side at the same size.
+   LumaCore Dark preset (kit/tokens.css); the console's single dark look on purpose. */
+:root {
+  --lc-bg:#121212; --lc-surface:#1c1c1c; --lc-raised:#303030; --lc-line:#424242; --lc-hair:#2a2a2a;
+  --lc-text:#d1d1d1; --lc-dim:#8a8a8a; --lc-accent:#9a7a08; --lc-accent-hi:#c9a227; --lc-on-accent:#f3ecd3;
+  --lc-info:#758ba0; --lc-ok:#3fbf4a; --lc-selected:#4a4021; --lc-alt:#171717; --lc-gap:#0a0a0a;
+  --lc-sel-line:#4d8fd6; --lc-sel-fill:#1d2e42;
+  --lc-font:'Source Sans 3','Segoe UI',system-ui,-apple-system,sans-serif;
+  --lc-mono:'JetBrains Mono',Menlo,Consolas,monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--lc-bg); color: var(--lc-text); }
+body { font-family: var(--lc-font); font-size: 15px; padding-inline: 16px; padding-block: 0 40px; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; }
+header { padding-block: 16px 12px; border-bottom: 1px solid var(--lc-line); margin-bottom: 14px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+.sub { color: var(--lc-dim); font-size: 14px; margin: 0; max-width: 80ch; line-height: 1.45; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: end; margin-bottom: 14px; }
+.seg { display: inline-flex; border: 1px solid var(--lc-line); border-radius: 6px; overflow: hidden; }
+.seg button { min-height: 44px; padding: 0 14px; border: 0; background: var(--lc-surface); cursor: pointer; border-right: 1px solid var(--lc-line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--lc-selected); color: var(--lc-on-accent); box-shadow: inset 0 -3px 0 var(--lc-accent-hi); }
+.field { display: grid; gap: 4px; font-size: 12px; color: var(--lc-dim); text-transform: uppercase; letter-spacing: .06em; }
+.field input { accent-color: var(--lc-accent); width: 170px; min-height: 30px; }
+.val { font-family: var(--lc-mono); font-size: 13px; color: var(--lc-text); text-transform: none; letter-spacing: 0; }
+.go { min-height: 44px; padding: 0 20px; border-radius: 6px; border: 1px solid transparent; background: var(--lc-accent); color: var(--lc-on-accent); font-weight: 600; cursor: pointer; }
+.bench { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+.cand { display: grid; gap: 6px; min-width: 0; max-width: 100%; }
+.cand h2 { margin: 0; font-size: 15px; font-weight: 600; }
+.cand h2 span { color: var(--lc-accent-hi); margin-right: 6px; }
+.cand p { margin: 0; color: var(--lc-dim); font-size: 13px; max-width: 34ch; line-height: 1.35; }
+.decide { margin-top: 18px; border-left: 3px solid var(--lc-accent); background: var(--lc-surface); padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 80ch; font-size: 14px; line-height: 1.45; }
+
+/* the pane (a miniature desk pane) */
+.pane { position: relative; background: var(--lc-bg); border: 3px solid var(--lc-gap); outline: 1px solid var(--lc-line); overflow: hidden; display: flex; flex-direction: column; max-width: 100%; }
+.pane .ph { height: 18px; flex: none; background: var(--lc-surface); font-size: 12px; line-height: 18px; padding: 0 5px; color: var(--lc-dim); white-space: nowrap; overflow: hidden; display: flex; gap: 6px; }
+.pane .ph b { color: var(--lc-text); font-weight: 500; }
+.pane .pb { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+
+/* full-size grid (A scales this) */
+.g { border-collapse: collapse; table-layout: fixed; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.g th, .g td { overflow: hidden; text-overflow: ellipsis; text-align: left; }
+.g.full { font-size: 14px; }
+.g.full th { height: 36px; padding: 0 10px; background: var(--lc-surface); color: var(--lc-dim); font-weight: 500; border: 1px solid var(--lc-line); }
+.g.full td { height: 44px; padding: 0 10px; border: 1px solid var(--lc-line); }
+.g tr:nth-child(even) td { background: var(--lc-alt); }
+.g td.n { text-align: right; color: var(--lc-dim); }
+.g tr.run td { background: var(--lc-selected); color: var(--lc-on-accent); }
+.g tr.sel td { background: var(--lc-sel-fill); }
+/* mini density (B, D) */
+.g.mini { width: 100%; }
+.g.mini th { background: var(--lc-surface); color: var(--lc-dim); font-weight: 500; border-bottom: 1px solid var(--lc-line); border-right: 1px solid var(--lc-hair); padding: 0 3px; }
+.g.mini td { border-bottom: 1px solid var(--lc-hair); border-right: 1px solid var(--lc-hair); padding: 0 3px; }
+.g.mini th:last-child, .g.mini td:last-child { border-right: 0; }
+.g.mini tr.run td { background: var(--lc-selected); }
+.g.mini tr.run td:first-child { box-shadow: inset 2px 0 0 var(--lc-accent-hi); }
+.g.mini tr.sel td:first-child { box-shadow: inset 2px 0 0 var(--lc-sel-line); }
+/* D's small graphics */
+.bar { display: block; height: 42%; min-height: 2px; border-radius: 1px; background: var(--lc-info); }
+.lvl { position: relative; }
+.lvl i { position: absolute; left: 0; top: 18%; bottom: 18%; background: color-mix(in srgb, var(--lc-accent-hi) 55%, transparent); border-radius: 1px; }
+.lvl.zero i { display: none; }
+.sw { display: block; height: 62%; border-radius: 2px; }
+.ic { display: block; height: 70%; aspect-ratio: 1; color: var(--lc-dim); }
+.ic.follow { color: var(--lc-info); }
+.prog { position: absolute; left: 0; bottom: 0; height: 2px; background: var(--lc-accent-hi); }
+tr.run { position: relative; }
+/* C: visual summary */
+.vs { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.vs .row { flex: 1; min-height: 0; display: flex; align-items: center; gap: 3px; padding: 0 3px; border-bottom: 1px solid var(--lc-hair); position: relative; }
+.vs .row.run { background: var(--lc-selected); }
+.vs .row.sel { box-shadow: inset 2px 0 0 var(--lc-sel-line); }
+.vs .k { font-family: var(--lc-mono); color: var(--lc-dim); text-align: right; flex: none; }
+.vs .blk { height: 55%; border-radius: 1px; flex: none; }
+.vs .fill { flex: 1; height: 55%; background: var(--lc-hair); position: relative; border-radius: 1px; }
+.vs .fill i { position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in srgb, var(--lc-accent-hi) 60%, transparent); border-radius: 1px; }
+.vs .row.run .fill i { background: var(--lc-accent-hi); }
+@media (prefers-reduced-motion: reduce) { .prog { transition: none !important; } }
+</style>
+
+<header>
+  <h1>Miniature &lt;luma-grid&gt;</h1>
+  <p class="sub">This is a round-4 bench for 12e. The same list is drawn four ways in a miniature pane of the same size. Each fills its pane edge to edge and keeps the live row in view (the running cue, or the selected fixtures). Drag the pane size, switch the list, and press <b>Go</b> to see the running cue move.</p>
+</header>
+
+<div class="controls">
+  <div class="field">List <span class="seg" id="list"><button data-v="seq" aria-pressed="true">Sequence</button><button data-v="fix" aria-pressed="false">Fixture sheet</button></span></div>
+  <label class="field">Pane width <input type="range" id="pw" min="110" max="560" value="200"><span class="val" id="pwv"></span></label>
+  <label class="field">Pane height <input type="range" id="ph" min="90" max="520" value="190"><span class="val" id="phv"></span></label>
+  <label class="field">Row height (B, C, D) <input type="range" id="rh" min="9" max="24" value="14"><span class="val" id="rhv"></span></label>
+  <button class="go" id="go" type="button">Go</button>
+</div>
+
+<div class="bench" id="bench"></div>
+
+<div class="decide">The four candidates:
+  <b>A</b> shrinks the full-screen grid to fit.
+  <b>B</b> is the grid at a mini density, with its columns stretched across the pane.
+  <b>C</b> draws the data as bars instead of a table.
+  <b>D</b> keeps the key columns as text and turns the others into small graphics: bars for times and levels, an icon for Trig, a swatch for colour.
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.innerHTML = x; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const GO = '<svg class="ic" viewBox="0 0 24 24" fill="currentColor" aria-label="Go"><path d="M7 4l13 8-13 8z"/></svg>';
+const FOLLOW = '<svg class="ic follow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Follow"><path d="M4 12h12M11 6l6 6-6 6M20 5v14"/></svg>';
+
+const CUE_NAMES = ['Preset look', 'Walk-in', 'House to half', 'Opening', 'Verse 1', 'Chorus', 'Verse 2', 'Chorus 2', 'Bridge', 'Breakdown', 'Build', 'Drop', 'Verse 3', 'Key change', 'Final chorus', 'Outro', 'Blackout', 'Bows', 'House up', 'Walk-out'];
+const cues = CUE_NAMES.map((n, i) => ({ no: i + 1, name: n, fade: [2, 3, 1, 5, 2, 3, 2, 3, 4, 1, 0.5, 0, 2, 3, 2, 6, 0, 2, 3, 5][i], delay: [0, 0, 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1, 0][i], trig: [3, 10, 16].includes(i) ? 'Follow' : 'Go', info: { 3: 'Pyro cue', 8: 'Slow', 13: 'Key change', 16: 'Snap' }[i] || '', part: [4, 11].includes(i) ? 2 : 1 }));
+const SWATCH = ['#f2efe6', '#e04040', '#f0a040', '#4070e0', '#40c0a0', '#c060d0', '#f2efe6', '#80b0ff'];
+const fixtures = Array.from({ length: 28 }, (_, i) => { const spot = i < 16; const no = spot ? 101 + i : 201 + (i - 16); return { no, name: (spot ? 'Spot ' : 'Wash ') + (spot ? i + 1 : i - 15), dim: [100, 80, 80, 0, 45, 45, 100, 0, 60, 60, 30, 30, 0, 0, 75, 75][i % 16], pan: (no * 7) % 180 - 90, tilt: (no * 3) % 90, color: SWATCH[(i * 3) % 8], gobo: i % 5 ? '—' : 'Dots' }; });
+
+// columns with registry weights and mini renderers
+const COLS = {
+  seq: [
+    { k: 'no', t: 'Cue', w: 1, r: 'num' }, { k: 'name', t: 'Name', w: 3.2, r: 'text' }, { k: 'fade', t: 'Fade', w: 1.3, r: 'bar', max: 6 },
+    { k: 'delay', t: 'Delay', w: 1.1, r: 'bar', max: 6 }, { k: 'trig', t: 'Trig', w: 0.8, r: 'icon' }, { k: 'info', t: 'Info', w: 2, r: 'text' }, { k: 'part', t: 'Part', w: 0.7, r: 'num' }],
+  fix: [
+    { k: 'no', t: 'Fix', w: 1, r: 'num' }, { k: 'name', t: 'Name', w: 2.2, r: 'text' }, { k: 'dim', t: 'Dim', w: 1.6, r: 'level' },
+    { k: 'pan', t: 'Pan', w: 1, r: 'num' }, { k: 'tilt', t: 'Tilt', w: 1, r: 'num' }, { k: 'color', t: 'Color', w: 0.9, r: 'swatch' }, { k: 'gobo', t: 'Gobo', w: 1, r: 'text' }]
+};
+const st = { list: 'seq', pw: 200, ph: 190, rh: 14, run: 4, prog: 0.35, sel: new Set([105, 106, 107, 108]) };
+const fmt = (c, v) => c.k === 'fade' || c.k === 'delay' ? (v ? v.toFixed(1) : '0') : c.k === 'dim' ? v + '%' : c.k === 'pan' || c.k === 'tilt' ? v + '°' : c.k === 'color' ? '' : v;
+const rows = () => st.list === 'seq' ? cues : fixtures;
+const isRun = (r) => st.list === 'seq' && r.no === st.run + 1;
+const isSel = (r) => st.list === 'fix' && st.sel.has(r.no);
+const live = () => { const R = rows(); const i = R.findIndex(r => isRun(r) || isSel(r)); return Math.max(0, i); };
+// the rows that fit, keeping the live row in view (auto-scroll: a little context above it)
+function windowRows(fit) { const R = rows(); const L = live(); let s = Math.max(0, L - Math.floor(fit / 3)); s = Math.min(s, Math.max(0, R.length - fit)); return R.slice(s, s + fit); }
+const trCls = r => isRun(r) ? 'run' : isSel(r) ? 'sel' : '';
+
+function paneShell(title) {
+  const p = h('div', 'pane'); p.style.width = st.pw + 'px'; p.style.height = st.ph + 'px';
+  p.append(h('div', 'ph', `<b>${title}</b>${st.list === 'seq' ? 'Cue ' + (st.run + 1) : st.sel.size + ' selected'}`));
+  const b = h('div', 'pb'); p.append(b); return [p, b];
+}
+const title = () => st.list === 'seq' ? 'Sequence 1' : 'Fixture sheet';
+const bodyH = () => st.ph - 6 - 18;
+
+// A: the full-screen grid, scaled until its width fits
+function candA() {
+  const [p, b] = paneShell(title());
+  const cols = COLS[st.list];
+  const unit = 70; const W = cols.reduce((s, c) => s + c.w * unit, 0);
+  const scale = (st.pw - 6) / W;
+  const fit = Math.max(1, Math.floor((bodyH() / scale - 36) / 44));
+  let s = `<table class="g full" style="width:${W}px"><colgroup>${cols.map(c => `<col style="width:${c.w * unit}px">`).join('')}</colgroup><tr>${cols.map(c => `<th>${c.t}</th>`).join('')}</tr>`;
+  windowRows(fit).forEach(r => { s += `<tr class="${trCls(r)}">${cols.map(c => c.r === 'swatch' ? `<td><span class="sw" style="background:${r[c.k]};height:20px"></span></td>` : `<td class="${c.r === 'num' || c.r === 'bar' || c.r === 'level' ? 'n' : ''}">${esc(fmt(c, r[c.k]))}</td>`).join('')}</tr>`; });
+  const wrap = h('div', null, s + '</table>'); wrap.style.transform = `scale(${scale})`; wrap.style.transformOrigin = 'top left';
+  b.append(wrap);
+  return [p, `text ≈ ${(14 * scale).toFixed(1)} px`];
+}
+// shared mini table for B and D
+function miniTable(graphic) {
+  const [p, b] = paneShell(title());
+  const cols = COLS[st.list]; const tw = cols.reduce((s, c) => s + c.w, 0);
+  const rh = st.rh, fs = Math.max(6, Math.min(13, Math.round(rh * 0.72)));
+  const fit = Math.max(1, Math.floor((bodyH() - rh) / rh));
+  let s = `<table class="g mini" style="font-size:${fs}px"><colgroup>${cols.map(c => `<col style="width:${(c.w / tw * 100).toFixed(2)}%">`).join('')}</colgroup><tr style="height:${rh}px">${cols.map(c => `<th>${c.t}</th>`).join('')}</tr>`;
+  windowRows(fit).forEach(r => {
+    s += `<tr class="${trCls(r)}" style="height:${rh}px">${cols.map((c, j) => {
+      const v = r[c.k];
+      const prog = j === 0 && isRun(r) ? `<span class="prog" style="width:${st.pw * st.prog}px"></span>` : '';
+      if (graphic && c.r === 'bar') return `<td><span class="bar" style="width:${Math.min(100, v / c.max * 100)}%${v ? '' : ';opacity:.25;width:2px'}"></span></td>`;
+      if (graphic && c.r === 'level') return `<td class="lvl${v ? '' : ' zero'}"><i style="width:${v}%"></i></td>`;
+      if (graphic && c.r === 'icon') return `<td>${v === 'Follow' ? FOLLOW : GO}</td>`;
+      if (c.r === 'swatch') return `<td><span class="sw" style="background:${v}"></span></td>`;
+      return `<td class="${c.r === 'num' || c.r === 'bar' || c.r === 'level' ? 'n' : ''}" style="position:relative">${esc(fmt(c, v))}${prog}</td>`;
+    }).join('')}</tr>`;
+  });
+  b.innerHTML = s + '</table>';
+  return [p, `text ${fs} px · ${fit} rows`];
+}
+const candB = () => miniTable(false);
+const candD = () => miniTable(true);
+// C: visual summary, no table
+function candC() {
+  const [p, b] = paneShell(title());
+  const rh = st.rh, fit = Math.max(1, Math.floor(bodyH() / rh));
+  const vs = h('div', 'vs');
+  const fs = Math.max(6, Math.min(12, Math.round(rh * 0.7)));
+  windowRows(fit).forEach(r => {
+    let inner;
+    if (st.list === 'seq') {
+      const w = Math.max(3, r.fade / 6 * 60);
+      inner = `<span class="k" style="font-size:${fs}px;width:${fs * 1.4}px">${r.no}</span><span class="fill"><i style="width:${isRun(r) ? st.prog * 100 : r.no <= st.run ? 100 : 0}%"></i></span><span class="blk" style="width:${w}px;background:var(--lc-info)"></span>${r.trig === 'Follow' ? `<span style="width:${rh * .7}px;height:${rh * .7}px">${FOLLOW}</span>` : ''}`;
+    } else {
+      inner = `<span class="k" style="font-size:${fs}px;width:${fs * 2.1}px">${r.no}</span><span class="fill"><i style="width:${r.dim}%"></i></span><span class="blk" style="width:${rh}px;background:${r.color}"></span>`;
+    }
+    const row = h('div', 'row ' + trCls(r), inner); row.style.flex = `0 0 ${rh}px`;
+    vs.append(row);
+  });
+  b.append(vs);
+  return [p, `${fit} rows`];
+}
+const CANDS = [
+  ['A', 'Scaled to fit', 'The full-screen grid, shrunk until its width fits the pane. Every column is there, but the text gets tiny fast.', candA],
+  ['B', 'Dense text', 'The grid at mini density: hairline cells, a one-line header, columns stretched by their registry weights. All text.', candB],
+  ['C', 'Visual summary', 'No table. Sequence: cue number, done or running progress, a fade bar, Follow marked. Fixture sheet: level bar and colour.', candC],
+  ['D', 'Hybrid (recommended)', 'The key columns stay text. Times and levels become bars, Trig an icon, Color a swatch. Each column declares its mini renderer.', candD]
+];
+function draw() {
+  $('#pwv').textContent = st.pw + ' px'; $('#phv').textContent = st.ph + ' px'; $('#rhv').textContent = st.rh + ' px';
+  const bench = $('#bench'); bench.innerHTML = '';
+  CANDS.forEach(([L, name, note, fn]) => {
+    const [pane, info] = fn();
+    const c = h('div', 'cand', `<h2><span>${L}</span>${name}</h2>`);
+    c.append(pane, h('p', null, `${note}<br><span style="color:var(--lc-text)">${info}</span>`));
+    bench.append(c);
+  });
+}
+$('#list').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; [...$('#list').children].forEach(x => x.setAttribute('aria-pressed', x === b)); st.list = b.dataset.v; draw(); });
+[['#pw', 'pw'], ['#ph', 'ph'], ['#rh', 'rh']].forEach(([id, k]) => $(id).addEventListener('input', e => { st[k] = +e.target.value; draw(); }));
+let t0 = performance.now(), raf;
+function tick(t) { const dur = cues[st.run].fade * 1000 || 300; st.prog = Math.min(1, (t - t0) / dur); draw(); if (st.prog < 1) raf = requestAnimationFrame(tick); }
+$('#go').onclick = () => {
+  if (st.list === 'fix') { const first = Math.min(...st.sel); const n = fixtures.findIndex(f => f.no === first); const next = fixtures[(n + 4) % fixtures.length].no; const i0 = fixtures.findIndex(f => f.no === next); st.sel = new Set(fixtures.slice(i0, i0 + 4).map(f => f.no)); draw(); return; }
+  st.run = (st.run + 1) % cues.length; st.prog = 0; t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
+};
+draw();
+})();
+</script>

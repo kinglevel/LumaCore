@@ -1,0 +1,20 @@
+[package]
+name = "lumacore-net"
+version.workspace = true
+edition.workspace = true
+description = "The station's leaf network I/O: NICs, sockets, mDNS, PTP, discovery state (decisions §34 20.6, 22)"
+
+[dependencies]
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-runtime = { path = "../../model/lumacore-runtime" }
+lumacore-protocols = { path = "../../model/lumacore-protocols" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+if-addrs = { workspace = true }
+socket2 = { workspace = true }
+mdns-sd = { workspace = true }
+hostname = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,60 @@
+/*
+ * LumaCore Obsidian color theme
+ *
+ * Stored in the repo at tools/obsidian-snippets/ and copied into
+ * .obsidian/snippets/ by the dev init scripts.
+ *
+ * After symlinking, enable this snippet in:
+ *   Settings > Appearance > CSS snippets
+ */
+
+/* ── Frontmatter formatting ─────────────────────────────────────── */
+
+/* Property names */
+.cm-s-obsidian .cm-hmd-frontmatter.cm-atom {
+  color: #af5fff;
+}
+
+/* Property values */
+.cm-s-obsidian .cm-hmd-frontmatter.cm-string {
+  color: #87d7ff;
+}
+
+/* Numbers in frontmatter */
+.cm-s-obsidian .cm-hmd-frontmatter.cm-number {
+  color: #ffaf5f;
+}
+
+/* Frontmatter delimiters (---) */
+.cm-s-obsidian .cm-hmd-frontmatter.cm-def {
+  color: #585858;
+}
+
+/* ── Category colors (Supercharged Links) ─────────────────────── */
+/* These target data attributes added by the Supercharged Links    */
+/* plugin based on each file's `category` frontmatter value.       */
+
+/* definition — violet */
+[data-link-category="definition"] {
+  color: #af5fff !important;
+}
+
+/* planning — blue */
+[data-link-category="planning"] {
+  color: #5fafff !important;
+}
+
+/* docs — green */
+[data-link-category="docs"] {
+  color: #5fd75f !important;
+}
+
+/* systemtest — orange */
+[data-link-category="systemtest"] {
+  color: #ffaf5f !important;
+}
+
+/* vision — cyan */
+[data-link-category="vision"] {
+  color: #5fd7d7 !important;
+}

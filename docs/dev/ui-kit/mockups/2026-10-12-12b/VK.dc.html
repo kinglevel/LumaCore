@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VK button and Keyboard mode</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #121212">
+  <p style="position: absolute; top: 20px; left: 24px; right: 24px; margin: 0; font-size: 13px; color: #9c9c9c">Keyboard mode is kept per device and per screen (app: client.json per screen window; browser tab: localStorage), default Auto. Tap VK = show / hide the chosen keyboard; hold VK = the mode menu. The built-in keyboard types into the command line; its word row comes from the registry. Layout: English (US).</p>
+
+  <div style="position: absolute; top: 60px; left: 24px; right: 24px; bottom: {{workBottom}}px; border-radius: 6px; background: #1c1c1c; border: 1px solid #262626; display: flex; align-items: center; justify-content: center; color: #424242; font-size: 15px">windows</div>
+
+  <sc-if value="{{kbOpen}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; left: 0; right: 0; bottom: 64px; height: 330px; background: #1c1c1c; border-top: 1px solid #424242; padding: 12px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+      <div style="display: flex; gap: 8px">
+        <sc-for list="{{words}}" as="w" hint-placeholder-count="10"><button type="button" onClick="{{w.tap}}" style="flex: 1; height: 44px; border-radius: 6px; border: 1px solid #424242; background: #262626; color: #9a7a08; font: inherit; font-size: 15px">{{w.t}}</button></sc-for>
+      </div>
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+        <div style="display: flex; gap: 8px; padding-left: {{r.indent}}px">
+          <sc-for list="{{r.keys}}" as="k" hint-placeholder-count="10"><button type="button" onClick="{{k.tap}}" style="flex: {{k.flex}}; height: 54px; border-radius: 6px; border: 1px solid #424242; background: {{k.bg}}; color: {{k.fg}}; font: inherit; font-size: 18px">{{k.t}}</button></sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 64px; background: #1c1c1c; border-top: 1px solid #424242; display: flex; align-items: center; gap: 12px; padding: 0 12px 0 20px; box-sizing: border-box">
+    <span class="mono" style="font-size: 16px; color: #9c9c9c">[Admin@desk1] Root&gt;</span>
+    <span class="mono" style="font-size: 16px; flex: 1">{{line}}<span style="display: inline-block; width: 9px; height: 18px; background: #9a7a08; vertical-align: middle; margin-left: 1px"></span></span>
+    <button type="button" onClick="{{tapVK}}" aria-label="VK — tap shows or hides, hold picks the mode" style="width: 64px; height: 52px; border-radius: 6px; border: 1px solid {{vkLine}}; background: {{vkBg}}; color: {{vkFg}}; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg>
+      <span style="font-size: 10px">{{vkLabel}}</span>
+    </button>
+    <button type="button" onClick="{{holdVK}}" style="height: 44px; padding: 0 12px; border-radius: 6px; border: 1px dashed #424242; background: transparent; color: #787878; font: inherit; font-size: 12px">(hold VK)</button>
+    <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #9c9c9c"><span style="width: 8px; height: 8px; border-radius: 4px; background: #00a60a"></span>ONLINE</span>
+  </div>
+
+  <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; right: 120px; bottom: 76px; width: 340px; border-radius: 6px; background: #262626; border: 1px solid #424242; overflow: hidden">
+      <div style="height: 44px; display: flex; align-items: center; padding: 0 14px; font-size: 13px; color: #9c9c9c; border-bottom: 1px solid #424242">Keyboard · this screen of this device</div>
+      <sc-for list="{{modes}}" as="m" hint-placeholder-count="4">
+        <button type="button" onClick="{{m.pick}}" style="width: 100%; min-height: 56px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; padding: 6px 14px; border: none; border-bottom: 1px solid #303030; background: {{m.bg}}; color: #d1d1d1; font: inherit; text-align: left"><span style="font-size: 15px">{{m.mark}} {{m.name}}</span><span style="font-size: 12px; color: #787878">{{m.note}}</span></button>
+      </sc-for>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { mode: 0, open: true, menu: false, line: 'Label Group 3 "Front wa' }; }
+  renderVals() {
+    const s = this.state;
+    const type = t => () => this.setState({ line: s.line + t });
+    const names = ['Auto', 'OS', 'Built-in', 'Off'];
+    const notes = ['built-in here (console, no OS keyboard); OS on phones and tablets', 'the phone or tablet keyboard; the bar stays above it', 'this keyboard; the OS one is suppressed', 'no on-screen keyboard (hardware keyboard)'];
+    const modes = names.map((name, i) => ({ name, note: notes[i], mark: i === s.mode ? '●' : '○', bg: i === s.mode ? 'color-mix(in srgb, #9a7a08 22%, #262626)' : 'transparent', pick: () => this.setState({ mode: i, menu: false, open: i === 0 || i === 2 }) }));
+    const words = ['At', 'Thru', '+', '−', 'Group', 'Fixture', 'Store', 'Label', 'Please', 'Oops'].map(t => ({ t, tap: type(t === 'Please' ? '' : ' ' + t + ' ') }));
+    const k = (t, flex, hi) => ({ t, flex: flex ?? 1, bg: hi ? '#00a60a' : '#303030', fg: hi ? '#f3ecd3' : '#d1d1d1', tap: t.length === 1 ? type(t.toLowerCase()) : t === 'space' ? type(' ') : t === '⌫' ? () => this.setState({ line: s.line.slice(0, -1) }) : t === 'Hide' ? () => this.setState({ open: false }) : t === '"' ? type('"') : () => {} });
+    const rows = [
+      { indent: 0, keys: [...'QWERTYUIOP'].map(c => k(c)).concat([k('⌫', 1.6)]) },
+      { indent: 24, keys: [...'ASDFGHJKL'].map(c => k(c)).concat([k('Please', 2.2, true)]) },
+      { indent: 0, keys: [k('⇧', 1.6), ...[...'ZXCVBNM'].map(c => k(c)), k('"'), k('⇧', 1.6)] },
+      { indent: 0, keys: [k('123', 1.4), k('Esc', 1.4), k('space', 6), k('◀'), k('▶'), k('EN', 1), k('Hide', 1.4)] }
+    ];
+    const kbOpen = s.open && s.mode !== 1 && s.mode !== 3;
+    return {
+      modes, words, rows, kbOpen, menuOpen: s.menu, line: s.line,
+      workBottom: kbOpen ? 406 : 76,
+      tapVK: () => this.setState({ open: !s.open, menu: false }),
+      holdVK: () => this.setState({ menu: !s.menu }),
+      vkLabel: names[s.mode] === 'Auto' ? 'VK' : names[s.mode],
+      vkBg: kbOpen ? 'color-mix(in srgb, #9a7a08 22%, #303030)' : '#303030',
+      vkFg: kbOpen ? '#d1d1d1' : '#9c9c9c',
+      vkLine: kbOpen ? '#9a7a08' : '#424242'
+    };
+  }
+}
+</script>
+</body>
+</html>

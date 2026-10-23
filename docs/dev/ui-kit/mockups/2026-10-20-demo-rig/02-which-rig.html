@@ -1,0 +1,80 @@
+<title>Demo Rig Shortlist</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1040px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.84rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wrap{overflow-x:auto}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.bad{color:var(--red)}.ok{color:var(--green)}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+tr.rec td{background:color-mix(in srgb,var(--gold) 10%,transparent)}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 2 · 2026-10-20</div>
+<h1>Which rig becomes the demo</h1>
+<p>After question 1 the reader takes every embedded GDTF (1 084 of 1 084 in the 186 files; 399 of a random 400 from the GDTF-DB). Each candidate below was then imported for real with the station's own lines — <code>Claim Root.ShowData.Devices · Import Mvr "x" · Import Mvr /Apply /Gone Recreate · Unclaim … /Keep</code> — and saved as a show file. The numbers are what came out.</p>
+</header>
+
+<section class="card">
+<h2>Finding 3 · Capture's rigs have no fixture semantics; the planning tools split in two</h2>
+<p>A Capture export carries one stripped GDTF per type whose every channel is the attribute <code>Dummy</code> — no Dimmer, no Pan, no Colour. The patch comes in (addresses, positions, numbers) but the programmer has nothing to say to such a fixture. Vectorworks and Depence embed the manufacturer's file.</p>
+<div class="wrap"><table>
+<tr><th>Embedded GDTFs</th><th class="n">Dummy only</th><th class="n">Real attributes</th></tr>
+<tr><td>Across the 186 files (1 137 GDTFs)</td><td class="n bad">584</td><td class="n ok">553</td></tr>
+<tr><td>Rig files: every type real · every type Dummy · mixed</td><td class="n">—</td><td class="n"><span class="ok">86</span> · <span class="bad">85</span> · 1</td></tr>
+</table></div>
+<pre>Capture, "Martin@MAC Quantum Profile [Bulb=LED].gdtf" (25 KB): Attributes: ["Dummy"] · 27 channels, all LogicalChannel Attribute="Dummy"
+Vectorworks, "Martin Professional@MAC Quantum Profile.gdtf" (1.2 MB): Shutter1, Dimmer, Pan, Tilt, Color1, Gobo1 … (2 modes, 37 channels)</pre>
+<p class="mute">So TI2024_3_3, SOPPGIROT, PGL Cluj and DHW23 from the first page are out as they stand: they would need their 6–14 types swapped for library files. The GDTF-DB copy has those (13 844 files; an index by manufacturer and name takes 34 s to build), and "a Dummy type gets the library's file by name" is a real Import MVR feature for later — on the roadmap, not for the demo.</p>
+</section>
+
+<section class="card">
+<h2>The shortlist · rigs with real GDTFs, imported for real</h2>
+<div class="wrap"><table>
+<tr><th>Rig (file)</th><th class="n">Fixtures</th><th class="n">Types</th><th class="n">Layers with fixtures</th><th class="n">Named groups</th><th class="n">Universes</th><th class="n">Show file</th><th class="n">Apply</th><th>References after import</th><th>Notes</th></tr>
+<tr class="rec"><td><b>The International 2024, via Depence</b><br><span class="mute">depencemvr.mvr · 1 MB · MVR 1.4</span></td><td class="n">1 675</td><td class="n">14</td><td class="n">6</td><td class="n">0</td><td class="n">89</td><td class="n">381 KB</td><td class="n">68 ms</td><td class="ok">ok · 2 377 objects, 8 761 links</td><td>860 Astera NYX bulbs, 198 Favolite, 108 Robe Pointe, 104 Aura XIP, 90 SixBar, 84 Atomic Dot …; 8 numbers twice in the file (clash rows, skipped), 1 camera without a GDTF (skipped)</td></tr>
+<tr><td><b>Sana Duri 2026 All</b><br><span class="mute">Vectorworks · 5 MB · 1.5</span></td><td class="n">542</td><td class="n">7</td><td class="n">2</td><td class="n">0 <span class="mute">(50 truss groups)</span></td><td class="n">65</td><td class="n">6.9 MB</td><td class="n">294 ms</td><td class="ok">ok</td><td>176 Bombtron, 90 Pixelbar P-20, 84 Strike M, 78 Aura XIP, 68 Laser Beam …; 87 Vectorworks design layers, two with fixtures</td></tr>
+<tr><td><b>Jireel · Avicii Arena 2026</b><br><span class="mute">FixtureTools · 4 MB · MVR 1.6</span></td><td class="n">389</td><td class="n">6</td><td class="n">1</td><td class="n">0</td><td class="n">63</td><td class="n">3.8 MB</td><td class="n">117 ms</td><td class="bad">168 address overlaps</td><td>the one 1.6 file with FixtureIDNumeric; the overlaps are the file's</td></tr>
+<tr><td><b>Pohjala</b><br><span class="mute">Vectorworks · 4 MB · 1.5</span></td><td class="n">346</td><td class="n">6</td><td class="n">4</td><td class="n">0</td><td class="n">43</td><td class="n">3.1 MB</td><td class="n">72 ms</td><td class="ok">ok</td><td>170 Bombtron, 71 Pixelbar, 66 Apollo, 33 Favo, 5 VL800; layers L-Fixtures L1/L3, L-Bombtrons L2/L3</td></tr>
+<tr><td><b>HOV1 Stockholm</b><br><span class="mute">Vectorworks · 5 MB · 1.5</span></td><td class="n">274</td><td class="n">9</td><td class="n">13</td><td class="n">0</td><td class="n">100</td><td class="n">1.6 MB</td><td class="n">97 ms</td><td class="bad">1 overlap</td><td>layers per truss (10 Lx3 … Lx6), 26 classes, 100 universes for 274 fixtures</td></tr>
+<tr><td><b>Amaze 2025 Rig</b><br><span class="mute">Vectorworks · 4 MB · 1.5</span></td><td class="n">257</td><td class="n">9</td><td class="n">1</td><td class="n ok">8, by type</td><td class="n">29</td><td class="n">9.4 MB</td><td class="n">192 ms</td><td class="ok">ok</td><td>the only rig with named fixture groups (Aura XIP, Atomic Dot, MAC Quantum Profile, JDC-1, Laser Beam, ROXX Cluster S2, Atomic Bold, P-20 Bars); full GDTFs with models → the biggest show file</td></tr>
+<tr><td><b>Glitched 2025 B-hall</b><br><span class="mute">Vectorworks · 5 MB · 1.5</span></td><td class="n">296</td><td class="n">9</td><td class="n">11</td><td class="n">12</td><td class="n">15</td><td class="n">—</td><td class="n">—</td><td class="bad">no fixture numbers at all</td><td>every row a clash until <code>/FidOffset</code> numbers them; the one file in the list that needs it</td></tr>
+</table></div>
+<pre>> Import Mvr "ti2024-depence.mvr"                                                   [66 ms]
+Review "ti2024-depence.mvr": 1684 rows — 1676 new, 8 clash · 1676 ticked
+> Import Mvr /Apply /Gone Recreate                                                  [68 ms]
+Applied "ti2024-depence.mvr": 1675 new in the draft — skipped Camera (no GDTF _Generic@Camera.gdtf in the zip or the show).
+MvrLayer 2 "Lights" · 0 groups, 467 fixtures · MvrLayer 4 "Lights floor" · 317 · MvrLayer 5 "Astera NYX" · 224 · MvrLayer 6 "Light Bulbs Slingor" · 636
+  References  ok (2377 objects, 8761 links)
+fixtures 1675 universes 89 types 14 · show file 381470 bytes</pre>
+<p class="mute">Groups: in 172 of the 186 files the MVR groups hold trusses and scene objects, not fixtures — the fixtures sit on layers. Only 14 files put fixtures in groups and only Amaze 2025 names them. The demo's groups will be LumaCore's own, built from layers, types and runs (question 4).</p>
+</section>
+
+<section>
+<h2>Which rig</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>The International 2024, via Depence</h3><p>The big one you asked for: 1 675 fixtures, 14 types with real attributes, 89 universes, in a 381 KB show file. Clean references. Its six layers (Lights, Lights floor, Astera NYX, Light Bulbs Slingor, 00 Main, Default) and 14 types give the groups.</p><ul><li>− no named groups in the file; 8 duplicate numbers and a camera to leave out</li><li>− 1 675 rows in every grid: the kit gets its first real stress test</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>Amaze 2025 Rig</h3><p>257 fixtures with the only named fixture groups in the collection, so the import's group path shows in the demo. 9.4 MB of manufacturer GDTFs with models in git.</p></div>
+<div class="opt"><span class="tag">C</span><h3>Sana Duri 2026 All</h3><p>542 fixtures, the biggest Vectorworks rig with a clean import; 6.9 MB; two layers.</p></div>
+<div class="opt"><span class="tag">D</span><h3>Pohjala</h3><p>346 fixtures, 3.1 MB, four named layers, clean; the smallest useful one.</p></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Coming next · the demo is a test fixture too</h2>
+<p>12 e2e files and 30 Rust test files build or load today's demo (six AuraXB on fixtures 101–106, groups All / Odd / Even, two universes, one sACN line). In a debug build, as the tests run, importing the 326-fixture Avicii rig costs 0.7 s and the 1 675-fixture TI rig 2.2 s per build. Question 3 is whether the rig joins that show, replaces it, or becomes a second show file the station opens as its demo while the tests keep the small one.</p>
+</section>
+</main>

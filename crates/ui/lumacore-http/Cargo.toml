@@ -1,0 +1,37 @@
+[package]
+name = "lumacore-http"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+axum = { workspace = true, features = ["ws"] }
+futures-util = { workspace = true }
+tokio-stream = { workspace = true }
+tokio = { workspace = true }
+tower-http = { workspace = true, features = ["set-header"] }
+tower = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+arc-swap = { workspace = true }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-trace = { path = "../../foundation/lumacore-trace" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+lumacore-webui = { path = "../lumacore-webui" }
+
+[dev-dependencies]
+ctor = { workspace = true }
+tokio = { workspace = true, features = ["time"] }
+tokio-tungstenite = { workspace = true }
+futures-util = { workspace = true }
+http-body-util = { workspace = true }
+tower = { workspace = true }
+tempfile = { workspace = true }
+uuid = { workspace = true }
+
+[features]
+default = []
+
+[lints]
+workspace = true

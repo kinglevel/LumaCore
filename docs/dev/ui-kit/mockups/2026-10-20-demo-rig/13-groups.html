@@ -1,0 +1,55 @@
+<title>Demo Groups</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 13 · 2026-10-20 · the demo itself</div>
+<h1>The demo's groups</h1>
+<p>The rig and the tree are decided (1–12). "More fixtures and groups" was the ask; the fixtures are 1 348 plus 23 folders. The groups can come from the Default DataPool you gave, which names this rig group by group.</p>
+</header>
+
+<section class="card">
+<h2>Facts</h2>
+<table>
+<tr><th>The Default pool's groups</th><td>87, with grid positions: Photon 245 · Icarus 284 · Blinder 344 · LedBar 66 · BL-100 32 · Deco LED 18 · Tornado 136 · Cyclone 50 · Aeco 30 IP 66 · OZONE 12 · TitanTubes 20 · Fresnel 12 · SoftLights 4 · PIXStick 8 · SMOKE 6 · Automation 9 · Fram 196 · LB Bakre 28 · L1 SW 1 32 · L1 IC 1 32 · Par upper · Par lower · Yoke · … Every fixture id they name is in the MVR (one for one for the type groups). 3 713 of their 11 393 items are fixtures; the rest are sub-fixture ids (<code>849.1</code>, <code>769.2.1</code>: Icarus LEDs 852, MAPPING 2 759, TYGTAK 120) — not a thing here (12), so those items are left out and a group made only of them is skipped.</td></tr>
+<tr><th>The XML</th><td><code>&lt;Group Name="Photon"&gt; &lt;SelectionData&gt; &lt;Item IDType="0" ID="840" X="87" Y="98" Z="0"/&gt; …</code>; the whole Groups element of the 310 MB file is 817 KB on its own.</td></tr>
+<tr><th>LumaCore groups</th><td>A DataPool object: members by GUID with a grid cell (<code>GroupMember { fixture, cell }</code>), order kept; <code>Store Group n "name"</code> from the selection; a group master mode.</td></tr>
+<tr><th>The other pools</th><td>Presets (25 pools), sequences, cues, macros, Pawterns, layouts wait for their LumaCore counterparts; the shape is known (page 3).</td></tr>
+</table>
+</section>
+
+<section>
+<h2>Where the groups come from</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>A small pool XML reader: <code>formats/lumacore-poolxml</code>, Groups first</h3><p><code>Import PoolXml "default-groups.xml" Groups [/Drive] [/DataPool]</code>: reads a DataPool XML export, makes one LumaCore group per exported group in the selected DataPool, members by fixture id (FID; a second-id item by its type), grid cell from X / Y, order kept; a group whose items are all sub-fixtures is reported and skipped. The demo builder runs it after the MVR import. Presets, sequences, macros are later parts of the same reader, each when its LumaCore object exists.</p><ul><li>+ the groups the show really used, 87 of them, with their grid</li><li>+ the reader is the first step toward reading a whole exported show, which this DataPool folder is</li><li>− a new format crate and a new word (lum.md: <code>Import PoolXml</code>) — a day</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>Groups by hand from the tree</h3><p>gen-demo stores one group per folder (23: Stage 1 Mainstage, ACME Icarus …) and per type with plain lines, no reader.</p><ul><li>+ nothing new to build</li><li>− not the show's groups; no grid positions; the DataPool data stays unused</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>Both: the reader, and folders as groups on import</h3><p>A, plus an Import MVR option that stores a group per folder (<code>/Groups</code>).</p><ul><li>− a folder is already a selectable node (<code>Fixture Media 7003</code>); a group per folder duplicates the tree</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Then</h2>
+<ul>
+<li>One show or two: today's six-AuraXB demo is a fixture for 12 e2e files and 30 Rust test files; this rig costs 2.2 s per build in a debug test.</li>
+<li>What is committed: the MVR (4.4 MB) and the groups extract (0.8 MB) with the show built by gen-demo, or the built show (8.6 MB a regeneration; 41 MB of demo history already).</li>
+<li>Names.</li>
+</ul>
+</section>
+</main>

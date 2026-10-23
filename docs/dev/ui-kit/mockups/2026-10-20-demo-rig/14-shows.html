@@ -1,0 +1,51 @@
+<title>Demo Show Files</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 14 · 2026-10-20 · the demo itself</div>
+<h1>One show or two, and what git carries</h1>
+<p>Today's demo is a test fixture as much as a showcase. The rig is 1 348 fixtures with 22 manufacturer GDTFs. The two facts pull apart.</p>
+</header>
+
+<section class="card">
+<h2>Facts</h2>
+<table>
+<tr><th>Today's demo</th><td>Six AuraXB on fixtures 101–106, two universes, one sACN line, groups All / Odd / Even, user LD; built by <code>core::demo::build</code> from lines, written by <code>gen-demo</code> to <code>library/shows/demo.luma</code> (1 MB, committed; the test <code>the_demo_show_builds_loads_and_is_committed</code> fails until it is regenerated after a show change).</td></tr>
+<tr><th>Who leans on it</th><td>12 e2e spec files name its fixtures and groups (<code>Fixture 101</code> ×22, <code>Group 1</code> ×16 …); 30 Rust test files call <code>demo::build</code>; the screenshots script starts a station with it; the sweep and the fuzzing seed from it.</td></tr>
+<tr><th>The rig's cost</th><td>Import + Apply + Keep: 0.5 s in release, <b>2.2 s in a debug build</b> (what every <code>cargo test</code> pays per <code>demo::build</code>); the show file 8.6 MB (22 GDTFs with models), load time to measure.</td></tr>
+<tr><th>Git</th><td><code>demo.luma</code> has 45 versions, 41 MB of history. At 8.6 MB a regeneration (every format bump) the rig would add that each time. The sources are small: the MVR 4.4 MB once, the groups extract 0.8 MB once.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>The shows</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>Two shows: the tests keep theirs, the rig is the showcase, built not committed</h3><p><code>demo.luma</code> stays what it is (the tests' six AuraXB, committed as today). The rig becomes <code>library/shows/ti2026.luma</code>, built by <code>gen-demo --rig</code> from two committed sources — <code>library/mvr/ti2026.mvr</code> (4.4 MB) and <code>library/poolxml/ti2026-groups.xml</code> (0.8 MB) — through the station's own lines (<code>Import Mvr</code>, <code>Import PoolXml … Groups</code>, <code>SaveShow</code>). The built file is gitignored; the station builds it on first start when missing (as the library tree is made on first write), the screenshots script and the demo test build it too. One test builds it and checks its counts (1 348 fixtures, 23 folders, 87 groups minus the skipped, 106 universes) without committing it.</p><ul><li>+ the test suite's cost and the repo's weight stay as they are; the showcase is as big as you like</li><li>+ the sources are the real files; a format bump costs nothing in git</li><li>− two shows to know about; the startup show setting decides which one a station opens</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>One show: the rig replaces the demo</h3><p>Every test and screenshot runs on the rig; the 12 e2e files and 30 Rust test files are rewritten to its numbers.</p><ul><li>− +2.2 s per <code>demo::build</code> in debug across the suites; 8.6 MB per regeneration in git, or the gitignore rule of A anyway</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>One show: the rig added beside the six AuraXB</h3><p>Fixtures 101–106 and groups 1–3 stay, the rig joins them; tests keep their numbers.</p><ul><li>− the same cost per build and in git as B; a demo that is two rigs</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Then</h2>
+<ul><li>Names: the file names a real production and real fixtures; what stays.</li></ul>
+</section>
+</main>

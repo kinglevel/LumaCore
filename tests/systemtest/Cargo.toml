@@ -1,0 +1,33 @@
+[package]
+name = "systemtest"
+version.workspace = true
+edition.workspace = true
+build = "build.rs"
+
+[[bin]]
+name = "systemtest"
+path = "src/main.rs"
+
+[dependencies]
+lumacore-protocols = { path = "../../crates/model/lumacore-protocols" }
+lumacore-station = { path = "../../apps/lumacore-station" }
+lumacore-objects = { path = "../../crates/model/lumacore-objects" }
+lumacore-base = { path = "../../crates/foundation/lumacore-base" }
+lumacore-tree = { path = "../../crates/model/lumacore-tree" }
+lumacore-artnet = { path = "../../crates/network/protocols/dmx/lumacore-artnet" }
+lumacore-osc = { path = "../../crates/network/protocols/data/lumacore-osc" }
+lumacore-net = { path = "../../crates/network/lumacore-net" }
+lumacore-render = { path = "../../crates/engine/lumacore-render" }
+lumacore-engines = { path = "../../crates/engine/lumacore-engines" }
+lumacore-wire = { path = "../../crates/foundation/lumacore-wire" }
+crossbeam-channel = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+
+[build-dependencies]
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

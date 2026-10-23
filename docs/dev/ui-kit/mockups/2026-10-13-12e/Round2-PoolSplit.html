@@ -1,0 +1,1182 @@
+<title>LumaCore 12e Touch Layout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a console-dark mockup bench — tabs of boards, each a live stage + the lines it would send.
+   Colours are LumaCore's Dark preset (kit/tokens.css); single dark look on purpose (the console's own). */
+:root {
+  --lc-bg:#121212; --lc-surface:#1c1c1c; --lc-raised:#303030; --lc-line:#424242;
+  --lc-text:#d1d1d1; --lc-dim:#8a8a8a; --lc-accent:#9a7a08; --lc-accent-hi:#c9a227;
+  --lc-info:#758ba0; --lc-ok:#00a60a; --lc-alert:#e10000; --lc-on-accent:#f3ecd3;
+  --lc-act-select:#c9a227; --lc-act-new:#3fbf4a; --lc-act-copy:#4d8fd6; --lc-act-cut:#e08a2c;
+  --lc-act-delete:#ff5a4a; --lc-act-io:#3fb0a6; --lc-act-neutral:#b0b0b0;
+  --lc-gap:#0a0a0a; --lc-hover:#3a3a3a; --lc-selected:#4a4021; --lc-scrim:rgba(0,0,0,.62);
+  --lc-font:'Source Sans 3','Segoe UI',system-ui,-apple-system,sans-serif;
+  --lc-mono:'JetBrains Mono',Menlo,Consolas,monospace;
+  --hit:44px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--lc-bg); color: var(--lc-text); }
+body { font-family: var(--lc-font); font-size: 15px; padding-inline: 16px; padding-block: 0 40px; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; }
+.noselect, .stage, .phone { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--lc-bg); padding-block: 14px 10px; border-bottom: 1px solid var(--lc-line); margin-inline: -16px; padding-inline: 16px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 2px; text-wrap: balance; }
+.sub { color: var(--lc-dim); font-size: 13px; margin: 0 0 10px; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.tabs button { flex: none; min-height: var(--hit); padding: 0 16px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-surface); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--lc-accent); border-color: transparent; color: var(--lc-on-accent); font-weight: 600; }
+.board { padding-block: 16px; display: grid; gap: 14px; }
+.board > * { min-width: 0; }
+.intro { max-width: 70ch; color: var(--lc-text); line-height: 1.45; margin: 0; }
+.intro b { color: var(--lc-accent-hi); font-weight: 600; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--lc-line); border-radius: 6px; overflow: hidden; }
+.seg button { min-height: var(--hit); padding: 0 14px; border: 0; background: var(--lc-surface); cursor: pointer; border-right: 1px solid var(--lc-line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--lc-selected); color: var(--lc-on-accent); box-shadow: inset 0 -3px 0 var(--lc-accent-hi); }
+.ctl-label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); margin-right: 6px; }
+.check { display: inline-flex; align-items: center; gap: 8px; min-height: var(--hit); cursor: pointer; }
+.check input { width: 22px; height: 22px; accent-color: var(--lc-accent); }
+.decide { border-left: 3px solid var(--lc-accent); background: var(--lc-surface); padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 80ch; font-size: 14px; line-height: 1.45; }
+.decide h3 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-accent-hi); }
+.decide ul { margin: 0; padding-left: 18px; }
+:focus-visible { outline: 2px solid var(--lc-accent-hi); outline-offset: 2px; }
+
+/* ── the log of lines ── */
+.log { border: 1px solid var(--lc-line); border-radius: 6px; background: var(--lc-gap); font-family: var(--lc-mono); font-size: 13px; }
+.log-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--lc-line); font-family: var(--lc-font); color: var(--lc-dim); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.log-head button { min-height: 32px; border: 1px solid var(--lc-line); background: var(--lc-surface); border-radius: 4px; padding: 0 10px; cursor: pointer; text-transform: none; letter-spacing: 0; }
+.log ol { list-style: none; margin: 0; padding: 6px 10px; max-height: 168px; overflow: auto; }
+.log li { padding: 3px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+.log li .p { color: var(--lc-dim); }
+.log li .n { color: var(--lc-dim); font-family: var(--lc-font); font-size: 13px; }
+.log li:first-child .l { color: var(--lc-accent-hi); }
+.log .empty { color: var(--lc-dim); font-family: var(--lc-font); }
+
+/* ── hold ring ── */
+.ring { position: fixed; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; pointer-events: none; z-index: 999;
+  background: conic-gradient(var(--lc-accent-hi) calc(var(--p) * 1turn), transparent 0); -webkit-mask: radial-gradient(circle, transparent 25px, #000 26px); mask: radial-gradient(circle, transparent 25px, #000 26px); opacity: .9; }
+@property --p { syntax: '<number>'; inherits: false; initial-value: 0; }
+.ring.run { animation: ringfill var(--dur) linear forwards; }
+@keyframes ringfill { from { --p: 0 } to { --p: 1 } }
+
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--lc-raised); border: 1px solid var(--lc-line); padding: 10px 16px; border-radius: 6px; z-index: 1000; font-size: 14px; max-width: calc(100vw - 32px); }
+
+/* ── stage frames ── */
+.stage { position: relative; border: 1px solid var(--lc-line); border-radius: 8px; overflow: hidden; background: var(--lc-bg); }
+.win-hdr { height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); font-size: 14px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lc-accent); }
+.phone-frame { width: 390px; max-width: 100%; margin-inline: auto; border: 10px solid #000; border-radius: 34px; overflow: hidden; background: var(--lc-bg); position: relative; }
+
+/* ── pool cells: desk ── */
+.pool { overflow-y: auto; touch-action: pan-y; }
+.pool.desk { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; padding: 8px; height: 470px; align-content: start; }
+.cell { position: relative; border-radius: 6px; cursor: pointer; text-align: left; }
+.desk .cell { height: 80px; padding: 6px 8px; border: 1px solid var(--lc-line); background: var(--lc-raised); display: flex; flex-direction: column; justify-content: space-between; }
+.desk .cell.empty { background: var(--lc-surface); border-color: transparent; }
+.desk .cell .no { font-size: 12px; color: var(--lc-dim); display: flex; justify-content: space-between; }
+.desk .cell .nm { font-size: 16px; font-weight: 500; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.desk .cell .cov { height: 4px; border-radius: 2px; background: var(--lc-info); }
+.cell.lit { outline: 2px solid var(--lc-accent-hi); outline-offset: -2px; }
+.cell.src { outline: 2px dashed var(--lc-act-copy); outline-offset: -2px; }
+.cell .held { color: var(--lc-act-delete); }
+/* ── pool cells: compact phone (the tight matrix) ── */
+.pool.compact { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 1px; padding: 0; background: var(--lc-gap); align-content: start; }
+.compact .cell { height: 52px; border-radius: 0; padding: 3px 4px; background: var(--lc-raised); display: flex; flex-direction: column; justify-content: space-between; border: 0; }
+.compact .cell.empty { background: var(--lc-surface); }
+.compact .cell .no { font-size: 12px; line-height: 1; color: var(--lc-dim); display: flex; justify-content: space-between; }
+.compact .cell .nm { font-size: 13px; font-weight: 500; line-height: 1.1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word; }
+.compact .cell .cov { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--lc-info); }
+.compact .cell.empty .cov { display: none; }
+
+/* ── selector (variant A) and sheet (variant C) ── */
+.overlay { position: absolute; inset: 0; z-index: 20; background: var(--lc-bg); display: flex; flex-direction: column; }
+.sel-head { display: flex; align-items: center; gap: 6px; padding: 6px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); }
+.sel-title { font-size: 16px; font-weight: 600; padding: 0 8px; flex: none; }
+.acts { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+.act { flex: none; min-height: 48px; min-width: 84px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
+.act svg { width: 18px; height: 18px; flex: none; }
+.act[aria-pressed="true"] { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; }
+.act.danger { color: var(--lc-act-delete); }
+.act.danger[aria-pressed="true"] { background: var(--lc-alert); color: var(--lc-on-accent); }
+.x { flex: none; width: 50px; height: 50px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; display: grid; place-items: center; }
+.sel-body { flex: 1; min-height: 0; }
+.sel-body .pool { height: 100%; }
+.desk-sel .pool.desk { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); height: 100%; }
+.desk-sel .pool.desk .cell { height: 96px; }
+.sel-foot { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: var(--lc-surface); border-top: 1px solid var(--lc-line); min-height: 50px; }
+.sel-foot .line { font-family: var(--lc-mono); font-size: 14px; }
+.sel-foot .line .p { color: var(--lc-dim); }
+.sel-foot .hint { margin-left: auto; color: var(--lc-dim); font-size: 13px; }
+.compact-sel .act { min-width: 64px; padding: 0 8px; font-size: 14px; }
+.compact-sel .act svg { display: none; }
+.compact-sel .sel-title { display: none; }
+.compact-sel .x { width: 48px; height: 48px; }
+.sheet { position: absolute; inset: 0; z-index: 20; background: var(--lc-scrim); display: flex; align-items: flex-end; justify-content: center; }
+.sheet-box { width: min(640px, 100%); background: var(--lc-surface); border: 1px solid var(--lc-line); border-radius: 12px 12px 0 0; display: flex; flex-direction: column; }
+.sheet-top { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-bottom: 1px solid var(--lc-line); }
+.sheet-top .t { font-size: 17px; font-weight: 600; flex: 1; }
+.sheet-prev { display: flex; gap: 16px; align-items: center; padding: 18px 16px; }
+.sheet-prev .big { width: 96px; height: 96px; border-radius: 8px; background: var(--lc-raised); border: 1px solid var(--lc-line); display: grid; place-items: center; font-size: 26px; font-weight: 600; flex: none; }
+.sheet-prev .facts { color: var(--lc-dim); line-height: 1.5; font-size: 14px; }
+.sheet-prev .facts b { color: var(--lc-text); font-size: 18px; font-weight: 600; display: block; }
+.sheet-acts { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 6px; padding: 8px; border-top: 1px solid var(--lc-line); }
+.sheet-acts .act { min-height: 60px; min-width: 0; flex-direction: column; gap: 2px; font-size: 13px; }
+.banner { position: absolute; left: 8px; right: 8px; top: 44px; z-index: 15; background: var(--lc-act-copy); color: #fff; border-radius: 6px; display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 14px; font-weight: 500; }
+.banner .x { background: transparent; border-color: rgba(255,255,255,.4); color: #fff; width: 44px; height: 44px; }
+.pool-wrap-phone .banner { top: 40px; }
+
+/* ── split board ── */
+.split-stage { height: 440px; display: flex; }
+.pane { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--lc-bg); display: flex; flex-direction: column; }
+.pane .body { flex: 1; display: grid; place-items: center; color: var(--lc-dim); font-size: 13px; text-align: center; padding: 8px; }
+.split { display: flex; flex: 1; min-width: 0; min-height: 0; }
+.split.h { flex-direction: row; } .split.v { flex-direction: column; }
+.handle { position: relative; flex: none; background: var(--lc-gap); z-index: 5; outline: none; }
+.split.h > .handle { width: 4px; cursor: col-resize; }
+.split.v > .handle { height: 4px; cursor: row-resize; }
+.handle::after { content: ''; position: absolute; touch-action: none; }
+.split.h > .handle::after { top: 0; bottom: 0; left: calc(50% - var(--band) / 2); width: var(--band); }
+.split.v > .handle::after { left: 0; right: 0; top: calc(50% - var(--band) / 2); height: var(--band); }
+.show-hit .handle::after { background: rgba(201,162,39,.18); }
+.handle:hover, .handle.active, .handle:focus-visible { background: var(--lc-accent); }
+.pill { position: absolute; z-index: 6; pointer-events: none; border-radius: 4px; background: var(--lc-raised); border: 1px solid var(--lc-line); display: none; }
+.grip-on .pill { display: block; }
+.split.h > .handle .pill { width: 12px; height: 44px; left: -4px; top: calc(50% - 22px); background-image: repeating-linear-gradient(0deg, var(--lc-dim) 0 2px, transparent 2px 6px); background-size: 4px 26px; background-repeat: no-repeat; background-position: center; }
+.split.v > .handle .pill { height: 12px; width: 44px; top: -4px; left: calc(50% - 22px); background-image: repeating-linear-gradient(90deg, var(--lc-dim) 0 2px, transparent 2px 6px); background-size: 26px 4px; background-repeat: no-repeat; background-position: center; }
+.handle.active .pill { border-color: var(--lc-accent-hi); }
+.ratio { font-family: var(--lc-mono); color: var(--lc-text); font-size: 13px; }
+
+/* ── phone board ── */
+.phone-scale { margin-inline: auto; transform-origin: top center; }
+.phone { position: relative; width: 390px; height: 800px; display: flex; flex-direction: column; background: var(--lc-bg); }
+.ph-status { height: 36px; flex: none; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 22px 4px; font-size: 13px; font-weight: 600; }
+.ph-top { height: 28px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 8px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); font-size: 13px; color: var(--lc-dim); }
+.ph-main { flex: 1; min-height: 0; display: flex; }
+.ph-side { width: 50px; flex: none; background: var(--lc-surface); border-right: 1px solid var(--lc-line); display: flex; flex-direction: column; gap: 4px; padding: 4px; }
+.ph-side span { height: 42px; border-radius: 4px; background: var(--lc-raised); display: grid; place-items: center; font-size: 12px; color: var(--lc-dim); }
+.ph-desk { flex: 1; min-width: 0; position: relative; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; background: var(--lc-gap); }
+.mini { position: relative; overflow: hidden; background: var(--lc-bg); display: flex; flex-direction: column; cursor: pointer; touch-action: pan-y; }
+.mini .mh { height: 18px; flex: none; background: var(--lc-surface); font-size: 12px; line-height: 18px; padding: 0 5px; color: var(--lc-dim); white-space: nowrap; overflow: hidden; }
+.mini .mb { flex: 1; padding: 3px; overflow: hidden; }
+.mini-cells { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; }
+.mini-cells i { height: 16px; background: var(--lc-raised); }
+.mini-rows i { display: block; height: 9px; margin-bottom: 3px; background: var(--lc-raised); border-radius: 1px; }
+.mini-rows i.on { background: var(--lc-accent); }
+.mini-term { font-family: var(--lc-mono); font-size: 12px; transform: scale(.6); transform-origin: top left; width: 166%; color: var(--lc-dim); line-height: 1.3; white-space: pre; }
+.full { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; background: var(--lc-bg); }
+.maxbar { height: 44px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 4px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); }
+.maxbar button { width: 44px; height: 44px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; font-size: 20px; }
+.maxbar .t { flex: 1; text-align: center; font-weight: 600; font-size: 15px; }
+.full-body { flex: 1; min-height: 0; overflow: hidden; position: relative; touch-action: pan-y; }
+.full-track { position: absolute; inset: 0; display: flex; transition: transform .22s ease; }
+.full-page { flex: none; width: 100%; height: 100%; overflow: auto; }
+.dots { position: absolute; bottom: 6px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--lc-line); }
+.dots i.on { background: var(--lc-accent-hi); }
+.big-rows { padding: 8px; display: grid; gap: 4px; }
+.big-rows div { min-height: 44px; border-radius: 4px; background: var(--lc-raised); display: flex; align-items: center; padding: 0 10px; gap: 10px; font-size: 15px; }
+.big-rows div.on { background: var(--lc-selected); box-shadow: inset 3px 0 0 var(--lc-accent-hi); }
+.big-rows div span { color: var(--lc-dim); font-family: var(--lc-mono); font-size: 13px; width: 36px; }
+.big-term { font-family: var(--lc-mono); font-size: 13px; padding: 8px; color: var(--lc-dim); white-space: pre-wrap; line-height: 1.5; }
+.ph-bar { height: 56px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 4px; background: var(--lc-surface); border-top: 1px solid var(--lc-line); }
+.ph-bar .b { width: 44px; height: 44px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); display: grid; place-items: center; font-size: 12px; font-weight: 600; cursor: pointer; flex: none; }
+.ph-bar .purr { color: var(--lc-accent-hi); }
+.ph-line { flex: 1; min-width: 0; height: 44px; background: var(--lc-gap); border-radius: 4px; display: flex; align-items: center; padding: 0 6px; cursor: text; overflow: hidden; }
+.ph-home { height: 22px; flex: none; display: grid; place-items: center; }
+.ph-home i { width: 130px; height: 5px; border-radius: 3px; background: var(--lc-dim); }
+.ph-sheet { position: absolute; inset: 0; z-index: 30; background: var(--lc-scrim); display: flex; align-items: flex-end; }
+.ph-sheet .box { width: 100%; background: var(--lc-surface); border-radius: 12px 12px 0 0; border-top: 1px solid var(--lc-line); padding: 8px; display: grid; gap: 6px; padding-bottom: 86px; }
+.ph-sheet .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); padding: 6px 6px 0; }
+.ph-sheet .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.ph-sheet .row button { min-height: 52px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 13px; }
+.ph-sheet .stat { display: flex; justify-content: space-between; font-size: 13px; color: var(--lc-dim); padding: 4px 6px; }
+.ph-toast { position: absolute; left: 50%; top: 45%; transform: translateX(-50%); background: var(--lc-raised); border: 1px solid var(--lc-line); padding: 8px 12px; border-radius: 6px; font-size: 13px; z-index: 40; white-space: nowrap; }
+.offscreen { position: fixed; left: -9999px; top: 0; font-size: 16px; }
+
+/* ── narrow line ── */
+.cl { font-family: var(--lc-mono); font-size: 15px; white-space: pre; display: inline-flex; }
+.cl span { display: inline-block; width: 1ch; text-align: center; }
+.cl .pr { color: var(--lc-dim); }
+.cl .kw { color: var(--lc-accent-hi); }
+.cl .cur { background: var(--lc-text); color: var(--lc-bg); }
+.cl .mk { color: var(--lc-act-copy); font-weight: 600; }
+.cl-row { display: grid; gap: 6px; }
+.cl-row .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); }
+.cl-box { background: var(--lc-gap); border: 1px solid var(--lc-line); border-radius: 4px; padding: 10px 8px; overflow-x: auto; }
+.cl-box .frame { display: inline-block; outline: 1px dashed var(--lc-line); outline-offset: 3px; }
+.field { display: grid; gap: 4px; font-size: 12px; color: var(--lc-dim); text-transform: uppercase; letter-spacing: .06em; }
+.field input, .field select { min-height: var(--hit); font: 16px var(--lc-mono); color: var(--lc-text); background: var(--lc-surface); border: 1px solid var(--lc-line); border-radius: 4px; padding: 0 10px; text-transform: none; letter-spacing: 0; }
+.field input[type=range] { padding: 0; accent-color: var(--lc-accent); }
+.wide { width: min(100%, 560px); }
+
+/* ── group editor ── */
+.ge { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 8px; padding: 8px; }
+.ge.stacked { grid-template-columns: 1fr; }
+.ge-list { display: flex; flex-direction: column; border: 1px solid var(--lc-line); border-radius: 6px; overflow: hidden; min-width: 0; }
+.slab { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); }
+.slab button { min-height: 44px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.slab button .ic { width: 10px; height: 10px; border-radius: 2px; }
+.ge-rows { position: relative; max-height: 400px; overflow-y: auto; touch-action: pan-y; }
+.ge-row { height: 48px; display: grid; grid-template-columns: 44px 34px 1fr 44px 44px; align-items: center; border-bottom: 1px solid var(--lc-line); background: var(--lc-bg); position: relative; }
+.ge-row:nth-child(even) { background: #161616; }
+.ge-row.sel { background: var(--lc-selected); }
+.ge-row.lift { z-index: 5; box-shadow: 0 6px 18px rgba(0,0,0,.6); background: var(--lc-raised); }
+.ge-row .grip { height: 48px; display: grid; place-items: center; cursor: grab; touch-action: none; color: var(--lc-dim); }
+.ge-row .o { font-family: var(--lc-mono); font-size: 13px; color: var(--lc-dim); }
+.ge-row .f { font-size: 15px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ge-row .f small { color: var(--lc-dim); font-size: 13px; margin-left: 6px; }
+.ge-row button.mv { height: 44px; border: 0; background: transparent; cursor: pointer; color: var(--lc-text); font-size: 16px; }
+.ge-row button.mv:disabled { color: var(--lc-line); cursor: default; }
+.ge-grid { position: relative; border: 1px solid var(--lc-line); border-radius: 6px; background: var(--lc-gap); display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; padding: 2px; align-content: start; min-width: 0; touch-action: none; }
+.ge-cell { aspect-ratio: 1; background: var(--lc-surface); border-radius: 3px; position: relative; display: grid; place-items: center; font-size: 13px; min-height: 36px; }
+.ge-fix { position: absolute; inset: 2px; border-radius: 4px; background: var(--lc-raised); border: 1px solid var(--lc-line); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: grab; touch-action: none; line-height: 1.1; }
+.ge-fix b { font-size: 14px; font-weight: 600; }
+.ge-fix span { font-size: 12px; color: var(--lc-accent-hi); font-family: var(--lc-mono); }
+.ge-fix.sel { border-color: var(--lc-accent-hi); background: var(--lc-selected); }
+.ge-fix.drag { z-index: 9; box-shadow: 0 6px 18px rgba(0,0,0,.6); }
+.ge-cell.over { background: var(--lc-hover); }
+
+@media (max-width: 640px) {
+  .ge { grid-template-columns: 1fr; }
+  .pool.desk { height: 400px; }
+  .split-stage { height: 380px; }
+}
+@media (prefers-reduced-motion: reduce) { .full-track { transition: none; } .ring.run { animation-duration: 1ms; } }
+/* ── round 2 ── */
+.desk .cell:not(.empty), .compact .cell:not(.empty) { background: color-mix(in srgb, var(--c) 42%, var(--lc-raised)); }
+.sheet-prev .big { background: color-mix(in srgb, var(--c, var(--lc-raised)) 45%, var(--lc-raised)); }
+.minipool { display: grid; gap: 1px; background: var(--lc-gap); }
+.minipool i { display: block; min-width: 0; overflow: hidden; background: color-mix(in srgb, var(--c) 72%, var(--lc-bg)); font-style: normal; }
+.minipool i.empty { background: var(--lc-surface); }
+.minipool i span { display: none; }
+.minipool.text i span { display: block; font-size: 12px; line-height: 1.1; padding: 2px 3px; color: var(--lc-text); word-break: break-word; }
+.mview { transform: scale(.62); transform-origin: top left; width: 161%; font-size: 12px; line-height: 1.4; }
+.mview div { display: flex; gap: 6px; white-space: nowrap; overflow: hidden; color: var(--lc-text); }
+.mview div b { color: var(--lc-dim); font-weight: 500; min-width: 2.4em; }
+.mview div.on { color: var(--lc-accent-hi); }
+.mview.mono { font-family: var(--lc-mono); color: var(--lc-dim); }
+.sheet-scroll { overflow: auto; height: 100%; touch-action: pan-y; }
+.fsheet { border-collapse: collapse; font-size: 14px; white-space: nowrap; min-width: 100%; }
+.fsheet th { text-align: left; color: var(--lc-dim); font-weight: 500; font-size: 13px; background: var(--lc-surface); position: sticky; top: 0; }
+.fsheet th, .fsheet td { padding: 12px 10px; border-bottom: 1px solid var(--lc-line); }
+.fsheet tr.on td { background: var(--lc-selected); }
+.touch-split .handle { pointer-events: none; }
+.touch-split .handle::after { display: none; }
+.touch-split .pill { display: block; pointer-events: auto; touch-action: none; cursor: grab; }
+.touch-split .pill::before { content: ''; position: absolute; }
+.touch-split .split.h > .handle .pill::before { left: -16px; top: -10px; width: 44px; height: 64px; }
+.touch-split .split.v > .handle .pill::before { top: -16px; left: -10px; height: 44px; width: 64px; }
+.show-hit.touch-split .pill::before { background: rgba(201,162,39,.28); }
+.tools-btn { margin-left: auto; }
+.tools-btn svg { width: 18px; height: 18px; }
+.tools-btn small { color: var(--lc-dim); }
+.tools-btn.on { background: var(--lc-selected); }
+.ge-right { position: relative; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.ge-right.with-rail { flex-direction: row; align-items: flex-start; }
+.ge-right.with-rail .ge-grid { flex: 1; }
+.rail { display: flex; flex-direction: column; gap: 4px; padding: 4px; background: var(--lc-surface); border: 1px solid var(--lc-line); border-radius: 6px; flex: none; width: 76px; max-height: 520px; overflow-y: auto; }
+.strip .rail { flex-direction: row; width: auto; overflow-x: auto; max-height: none; }
+.rail-btn { min-height: 52px; min-width: 64px; border: 1px solid var(--lc-line); background: var(--lc-raised); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; flex: none; padding: 2px; }
+.rail-btn b { font-size: 14px; }
+.rail-btn small { font-size: 12px; color: var(--lc-dim); line-height: 1.1; max-width: 64px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rail-btn.planned { opacity: .45; }
+.rail-x svg { width: 18px; height: 18px; }
+.rail-sep { flex: none; height: 1px; background: var(--lc-line); margin: 2px 4px; }
+.strip .rail-sep { width: 1px; height: auto; margin: 4px 2px; }
+.ctx-tools { position: absolute; left: 50%; top: calc(100% + 4px); transform: translateX(-50%); z-index: 8; min-height: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid var(--lc-accent-hi); background: var(--lc-surface); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
+.ctx-tools svg { width: 16px; height: 16px; }
+.ge-hint { color: var(--lc-dim); font-size: 13px; margin: 4px; }
+.tsheet { position: absolute; inset: 0; z-index: 30; background: var(--lc-scrim); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.tsheet.bottom { align-items: flex-end; padding: 0; }
+.tbox { width: min(560px, 100%); max-height: calc(100% - 32px); background: var(--lc-surface); border: 1px solid var(--lc-line); border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; }
+.tsheet.bottom .tbox { border-radius: 12px 12px 0 0; max-height: 85%; width: 100%; }
+.tbox.small { width: min(420px, 100%); }
+.tbox-top { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 14px; border-bottom: 1px solid var(--lc-line); }
+.tbox-title { font-weight: 600; font-size: 16px; flex: none; }
+.tsearch { flex: 1; min-width: 0; min-height: 44px; font: 16px var(--lc-font); color: var(--lc-text); background: var(--lc-gap); border: 1px solid var(--lc-line); border-radius: 6px; padding: 0 10px; }
+.tbox-top .tbox-title:last-child, .tbox-top .tbox-title + .x { margin-left: auto; }
+.tcats { display: flex; gap: 6px; overflow-x: auto; padding: 8px; border-bottom: 1px solid var(--lc-line); scrollbar-width: none; flex: none; }
+.tcats button { flex: none; min-height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; }
+.tcats button[aria-pressed="true"] { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; }
+.tlist { overflow-y: auto; padding: 6px; display: grid; gap: 4px; }
+.trow { min-height: 52px; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; text-align: left; }
+.trow .tl { font-size: 16px; }
+.trow .tc { font-size: 13px; color: var(--lc-dim); }
+.trow.planned { opacity: .5; }
+.task { padding: 14px; display: grid; gap: 10px; }
+.tchoices { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 6px; }
+.tchoices button { min-height: 56px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 15px; }
+.tchoices button[aria-pressed="true"] { background: var(--lc-selected); box-shadow: inset 0 -3px 0 var(--lc-accent-hi); color: var(--lc-on-accent); }
+.tnum { display: flex; align-items: center; gap: 10px; }
+.tnum button { width: 56px; height: 56px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); font-size: 22px; cursor: pointer; }
+.tval { font-size: 26px; font-family: var(--lc-mono); min-width: 2ch; text-align: center; }
+.tline { font-family: var(--lc-mono); font-size: 13px; background: var(--lc-gap); padding: 8px; border-radius: 4px; overflow-x: auto; white-space: nowrap; }
+.tline .p { color: var(--lc-dim); }
+.tfoot { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; border-top: 1px solid var(--lc-line); }
+.tfoot button { min-height: 60px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 16px; }
+.tfoot .run { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; font-weight: 600; }
+</style>
+
+<header>
+  <h1>12e touch layout</h1>
+  <p class="sub">Round 2: your picks from round 1 are in (§30 "12e artifact round 1" and "12e round 2"). Hold 500 ms (the profile's HoldTime), slop 8 px. Every gesture shows the line it would send.</p>
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-b="pool" aria-selected="true">Pool hold</button>
+    <button role="tab" data-b="split" aria-selected="false">Split handle</button>
+    <button role="tab" data-b="phone" aria-selected="false">Phone</button>
+    <button role="tab" data-b="group" aria-selected="false">Group editor</button>
+    <button role="tab" data-b="cmd" aria-selected="false">Command line</button>
+  </nav>
+</header>
+
+<!-- ═════════ Pool hold ═════════ -->
+<section class="board" id="b-pool">
+  <p class="intro">This is <b>&lt;luma-pool&gt;</b> with the round-1 picks: <b>hold an object</b> for its sheet (C). Colours come from each object's NodeMeta colour. An object with no colour uses the pool type's colour (Groups: blue). Tap a cell to select it. Move and Copy from the sheet arm a target tap.</p>
+  <div class="controls">
+    <span><span class="ctl-label">Design</span><span class="seg" id="pv-design"><button data-v="desk" aria-pressed="true">Desk</button><button data-v="compact" aria-pressed="false">Phone full screen</button><button data-v="mini" aria-pressed="false">Miniature 30 × 30</button></span></span>
+  </div>
+  <div class="controls" id="mini-ctl" hidden>
+    <label class="field">Pane width <input type="range" id="mini-w" min="120" max="1400" value="220"></label>
+    <label class="field">Columns <input type="range" id="mini-cols" min="8" max="40" value="30"></label>
+    <span class="ratio" id="mini-info"></span>
+  </div>
+  <div id="pool-host"></div>
+  <div class="log" data-log></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>The sheet: right preview and action row? Move / Copy: is the banner plus a target tap clear?</li>
+    <li>Phone full screen: the tight matrix with colour fills, number and name.</li>
+    <li>Miniature: colour only, and the name appears once a cell reaches 40 px. Drag <b>Pane width</b> to see it appear. Is 40 px the right point?</li>
+  </ul></div>
+</section>
+
+<!-- ═════════ Split handle ═════════ -->
+<section class="board" id="b-split" hidden>
+  <p class="intro">This is <b>B</b>, changed as you asked: on touch, only the <b>grip pill</b> can be grabbed (a 44 × 64 px hit area around it), and the hairline is not a target. With a mouse the whole thin line drags. Double-tap the pill to reset to 50 / 50. Releasing files one Oops step.</p>
+  <div class="controls">
+    <span><span class="ctl-label">Sizes</span><span class="seg" id="sv-size"><button data-v="touch" aria-pressed="false">Touch</button><button data-v="mouse" aria-pressed="false">Mouse</button></span></span>
+    <label class="check"><input type="checkbox" id="sv-hit"> Show the hit area</label>
+    <span class="ratio" id="sv-ratio"></span>
+  </div>
+  <div class="stage split-stage" id="split-host"></div>
+  <div class="log" data-log></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>The pill sits in the middle of each divider. Should it be placed somewhere else, for example near the top of a tall divider?</li>
+    <li>Is the hit area (44 × 64) right?</li>
+  </ul></div>
+</section>
+
+<!-- ═════════ Phone ═════════ -->
+<section class="board" id="b-phone" hidden>
+  <p class="intro">This is the miniature desk with the round-2 picks. The <b>pool</b> pane is colour only. The <b>sequence</b> and <b>fixture sheet</b> panes show their <b>declared mini view</b> (a few key columns). Hold a pane for full screen, then swipe. ⋯ holds the folded sidebar.</p>
+  <div class="controls">
+    <span><span class="ctl-label">Past the last pane</span><span class="seg" id="ph-end"><button data-v="stop" aria-pressed="true">Stop (springs back)</button><button data-v="wrap" aria-pressed="false">Wrap around</button></span></span>
+  </div>
+  <div id="phone-outer"><div class="phone-scale" id="phone-scale"><div class="phone-frame"><div class="phone" id="phone"></div></div></div></div>
+  <input class="offscreen" id="ph-input" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Phone command line">
+  <div class="log" data-log></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>Swipe end: stop or wrap? Try both with the toggle.</li>
+    <li>Mini views: sequence = cue number, name and the active mark; fixture sheet = fixture and dimmer. Right columns?</li>
+  </ul></div>
+</section>
+
+<!-- ═════════ Group editor ═════════ -->
+<section class="board" id="b-group" hidden>
+  <p class="intro">This is Group 3 "Front". The grip, ↑ and ↓ stay as approved. The <b>tools</b> follow your flow: tap <b>Tools</b>, a list opens, then tap a tool or ×. A tool with a parameter asks first. Try the three places the button and list can live. The tools that aren't built yet show as <i>planned</i>.</p>
+  <div class="controls">
+    <span><span class="ctl-label">Tools home</span><span class="seg" id="gv-home"><button data-v="sheet" aria-pressed="true">1 · Tools sheet</button><button data-v="rail" aria-pressed="false">2 · Tool rail</button><button data-v="ctx" aria-pressed="false">3 · Context bar</button></span></span>
+    <span><span class="ctl-label">Layout</span><span class="seg" id="gv-layout"><button data-v="desk" aria-pressed="true">Desk</button><button data-v="phone" aria-pressed="false">Phone</button></span></span>
+  </div>
+  <div id="ge-host"></div>
+  <div class="log" data-log></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li><b>1 · Tools sheet</b>: a Tools button in the slab opens one list with categories and search, plus your recent tools. It is the same in every editor and grows without limit.</li>
+    <li><b>2 · Tool rail</b>: the Tools button opens an icon rail beside the grid, grouped like a console toolbar (a strip on the phone).</li>
+    <li><b>3 · Context bar</b>: with members selected, a Tools button floats by the selection. It opens the same list as 1.</li>
+    <li>Every tool sends one line: <code>Grid Group 3 "Linearize" "LeftToRight"</code>.</li>
+  </ul></div>
+</section>
+
+<!-- ═════════ Command line ═════════ -->
+<section class="board" id="b-cmd" hidden>
+  <p class="intro">This is the bar's one-row line at a given width in columns (a phone is about 25). <b>Type</b> in the field and move the cursor: the 12e row shrinks the prompt and scrolls to keep the cursor in view. ‹ › mark the cut edges. The station draws this, so the TUI gets it too.</p>
+  <div class="controls">
+    <label class="field">Columns <input type="range" id="cl-cols" min="16" max="80" value="25"></label>
+    <span class="ratio" id="cl-colsv"></span>
+    <label class="field">Scope <select id="cl-scope"><option>Root</option><option selected>DataPools.1.Groups</option><option>Root.ShowData.DataPools.1.Groups</option></select></label>
+  </div>
+  <label class="field wide">Line <input id="cl-in" value='Store Group 3 /Merge "Front wash left"' autocomplete="off" spellcheck="false"></label>
+  <div class="cl-row"><span class="lbl">Today (approximately: the prompt is cut on the right, the line wraps and the one visible row shows its tail)</span><div class="cl-box"><span class="frame"><span class="cl" id="cl-today"></span></span></div></div>
+  <div class="cl-row"><span class="lbl">12e</span><div class="cl-box"><span class="frame"><span class="cl" id="cl-new"></span></span></div></div>
+  <div class="decide"><h3>The rule</h3><ul>
+    <li>The prompt takes the first form that leaves at least 12 columns for typing (or half the bar): <code>[admin@desk1] scope&gt; </code>, then <code>scope&gt; </code>, then <code>…end of scope&gt; </code>, then <code>&gt; </code>. The <code>&gt;</code> is never cut.</li>
+    <li>The line scrolls sideways and keeps the cursor 4 columns from either edge (fewer on a tiny bar). ‹ and › show where text is hidden.</li>
+  </ul></div>
+</section>
+
+<script>
+(() => {
+'use strict';
+const HOLD = 500, SLOP = 8, RING = 140, DBL = 300;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ── tabs ── */
+let board = 'pool';
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  board = b.dataset.b;
+  $$('#tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  $$('.board').forEach(s => s.hidden = s.id !== 'b-' + board);
+  if (board === 'phone') fitPhone();
+  if (board === 'split') layoutSplit();
+});
+function seg(id, fn) {
+  const el = $(id);
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    $$('button', el).forEach(x => x.setAttribute('aria-pressed', x === b));
+    fn(b.dataset.v);
+  });
+}
+
+/* ── log (one per board; shared list) ── */
+const lines = [];
+function log(line, note) {
+  lines.unshift({ line, note });
+  if (lines.length > 30) lines.pop();
+  drawLogs();
+}
+function drawLogs() {
+  $$('[data-log]').forEach(el => {
+    el.innerHTML = '';
+    const head = h('div', 'log-head', '<span>Lines the page would send</span>');
+    const clr = h('button', null, 'Clear'); clr.onclick = () => { lines.length = 0; drawLogs(); };
+    head.append(clr); el.append(head);
+    const ol = h('ol');
+    if (!lines.length) ol.append(h('li', 'empty', 'Nothing yet. Try a gesture.'));
+    lines.forEach(x => ol.append(h('li', null, (x.line ? `<span><span class="p">Root&gt; </span><span class="l">${esc(x.line)}</span></span>` : '') + (x.note ? `<span class="n">${esc(x.note)}</span>` : ''))));
+    el.append(ol);
+  });
+}
+drawLogs();
+
+let toastT;
+function toast(msg) {
+  let t = $('.toast'); if (!t) { t = h('div', 'toast'); document.body.append(t); }
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 1800);
+}
+
+/* ── the one hold recognizer (kit/pointer.js in miniature) ── */
+let ringEl = null;
+function ringStart(x, y) {
+  ringStop();
+  ringEl = h('div', 'ring'); ringEl.style.left = x + 'px'; ringEl.style.top = y + 'px';
+  ringEl.style.setProperty('--dur', (HOLD - RING) + 'ms');
+  document.body.append(ringEl);
+  requestAnimationFrame(() => ringEl && ringEl.classList.add('run'));
+}
+function ringStop() { if (ringEl) { ringEl.remove(); ringEl = null; } }
+let swallowUntil = 0;
+document.addEventListener('click', e => { if (performance.now() < swallowUntil) { e.stopPropagation(); e.preventDefault(); } }, true);
+document.addEventListener('contextmenu', e => { if (e.target.closest('.stage, .phone, .noselect')) e.preventDefault(); });
+let pressOwned = false; // one press arms one hold: the innermost target owns it
+function hold(el, { onHold, onTap, target = e => e.currentTarget }) {
+  el.addEventListener('pointerdown', e => {
+    if (e.button > 0 || pressOwned) return;
+    const t = target(e); if (!t) return;
+    pressOwned = true;
+    const x0 = e.clientX, y0 = e.clientY;
+    let fired = false, ringT, holdT;
+    const end = (tap) => {
+      clearTimeout(ringT); clearTimeout(holdT); ringStop();
+      el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up);
+      el.removeEventListener('pointercancel', cancel); el.removeEventListener('lostpointercapture', cancel);
+      setTimeout(() => pressOwned = false, 0);
+      if (tap && !fired && onTap) onTap(t, e);
+    };
+    const mv = ev => { if (!fired && Math.hypot(ev.clientX - x0, ev.clientY - y0) > SLOP) end(false); };
+    const up = () => end(true);
+    const cancel = () => end(false);
+    el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', cancel); el.addEventListener('lostpointercapture', cancel);
+    ringT = setTimeout(() => ringStart(x0, y0), RING);
+    holdT = setTimeout(() => {
+      fired = true; ringStop(); swallowUntil = performance.now() + 700;
+      end(false); onHold(t, { x: x0, y: y0, pointerId: e.pointerId, pointerType: e.pointerType });
+    }, HOLD);
+  });
+}
+
+/* ═════════ POOL ═════════ */
+const HUES = ['#b5432f', '#c27a12', '#a8911a', '#3c8f3c', '#2f8f85', '#3f73b0', '#7c56a8', '#a8456e'];
+const POOL_TYPE = '#2d5a8a'; // Groups' pool-type colour (004080)
+const NAMES = { 1: 'All', 2: 'Odd', 3: 'Front', 4: 'Back', 5: 'Spots', 6: 'Wash L', 7: 'Wash R', 9: 'Truss 1', 10: 'Truss 2', 11: 'Floor', 13: 'Blinders', 14: 'Strobes', 17: 'Side L', 18: 'Side R', 21: 'Audience', 25: 'Cyc' };
+const groups = {};
+Object.entries(NAMES).forEach(([n, name], i) => groups[n] = { name, color: i % 4 === 3 ? null : HUES[i % HUES.length], cover: [100, 50, 50, 30, 0, 0, 0, 0][i % 8], fixtures: 4 + (n * 3) % 17, held: n == 5 ? 'Bob' : '' });
+const BIG = {};
+const KINDS = ['Wash', 'Spot', 'Beam', 'Strobe', 'Front', 'Back', 'Side', 'Cyc'];
+for (let n = 1; n <= 1600; n++) { const r = (n * 2654435761 >>> 0) % 100; if (r < 62) BIG[n] = { name: KINDS[(n * 7) % 8] + ' ' + n, color: r % 7 === 0 ? null : HUES[(n * 5) % 8] }; }
+const colorOf = g => (g && g.color) || POOL_TYPE;
+const POOL_N = 60;
+const pv = { design: 'desk' };
+const ICON = {
+  Edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  Label: '<path d="M12 2H2v10l9.3 9.3a1 1 0 0 0 1.4 0l8.6-8.6a1 1 0 0 0 0-1.4Z"/><circle cx="7" cy="7" r="1.5"/>',
+  Store: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/>',
+  Delete: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+  Move: '<path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>',
+  Copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  Settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+  Tools: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4Z"/>'
+};
+const svg = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const X_ICON = svg('<path d="M6 6l12 12M18 6L6 18"/>');
+const ACTIONS = ['Edit', 'Label', 'Store', 'Delete', 'Move', 'Copy', 'Settings'];
+let pick = null; // armed Move/Copy {action, src}
+
+seg('#pv-design', v => { pv.design = v; $('#mini-ctl').hidden = v !== 'mini'; drawPool(); });
+
+function cellHtml(n, g, design) {
+  if (!g) return `<span class="no"><span>${n}</span></span><span class="nm"></span>`;
+  return `<span class="no"><span>${n}</span>${g.held ? `<span class="held">${design === 'desk' ? 'held by ' + esc(g.held) : '●'}</span>` : ''}</span><span class="nm">${esc(g.name)}</span>`;
+}
+function poolGrid(design) {
+  const grid = h('div', 'pool ' + design);
+  for (let n = 1; n <= POOL_N; n++) {
+    const g = groups[n];
+    const c = h('button', 'cell' + (g ? '' : ' empty'), cellHtml(n, g, design));
+    c.type = 'button'; c.dataset.no = n; c.setAttribute('aria-label', g ? `Group ${n} ${g.name}` : `Empty ${n}`);
+    if (g) c.style.setProperty('--c', colorOf(g));
+    grid.append(c);
+  }
+  return grid;
+}
+let poolStage;
+function drawPool() {
+  pick = null;
+  const host = $('#pool-host'); host.innerHTML = '';
+  if (pv.design === 'mini') return drawMini();
+  const phone = pv.design === 'compact';
+  const wrap = phone ? h('div', 'phone-frame pool-wrap-phone') : h('div');
+  poolStage = h('div', 'stage');
+  if (phone) { poolStage.style.border = '0'; poolStage.style.borderRadius = '0'; poolStage.style.height = '640px'; poolStage.style.display = 'flex'; poolStage.style.flexDirection = 'column'; }
+  poolStage.append(h('div', 'win-hdr', '<span class="dot"></span>Groups<span style="margin-left:auto;color:var(--lc-dim);font-size:13px">DataPool 1</span>'));
+  const grid = poolGrid(phone ? 'compact' : 'desk');
+  if (phone) grid.style.flex = '1';
+  poolStage.append(grid);
+  wrap.append(poolStage); host.append(wrap);
+  hold(grid, {
+    target: e => e.target.closest('.cell'),
+    onTap: c => poolTap(+c.dataset.no),
+    onHold: c => { const n = +c.dataset.no; if (groups[n]) openSheet(n); else toast('Empty cell: nothing to show'); }
+  });
+}
+function poolTap(n) {
+  if (pick) return finishPick(n);
+  if (groups[n]) log(`Group ${n}`, 'tap: the window\'s tap action (select)');
+}
+function runAction(a, n) {
+  if (a === 'Edit') log(`Edit Group ${n}`, 'opens the group editor (claims it)');
+  if (a === 'Label') log(`Label Group ${n}`, 'no name: the station asks (one dialog)');
+  if (a === 'Store') log(`Store Group ${n}`, 'used: the station asks Merge / Overwrite / Remove');
+  if (a === 'Delete') log(`Delete Group ${n}`, 'the one Delete ask (dispatch) comes first');
+  if (a === 'Settings') log(`EditSetting Group ${n}`, 'Name, Color, Icon, Note … (NodeMeta props)');
+}
+function runMoveCopy(a, from, to) {
+  log(`${a} Group ${from} At ${to}`, groups[to] ? (a === 'Move' ? 'target used: it pushes along' : 'target used: the station asks to overwrite') : '');
+  if (!groups[to]) { groups[to] = { ...groups[from] }; if (a === 'Move') delete groups[from]; }
+  drawPool();
+}
+function openSheet(n) {
+  const g = groups[n];
+  const sh = h('div', 'sheet');
+  const box = h('div', 'sheet-box');
+  const top = h('div', 'sheet-top', `<span class="t">Group ${n} · ${esc(g.name)}</span>`);
+  const x = h('button', 'x', X_ICON); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.onclick = () => sh.remove();
+  top.append(x);
+  const prev = h('div', 'sheet-prev', `<div class="big" style="--c:${colorOf(g)}">${n}</div><div class="facts"><b>${esc(g.name)}</b>${g.fixtures} fixtures · DataPool 1<br>Colour: ${g.color ? 'its own' : 'the pool type\'s'}${g.held ? `<br><span style="color:var(--lc-act-delete)">Held by ${esc(g.held)}</span>` : ''}</div>`);
+  const acts = h('div', 'sheet-acts');
+  ACTIONS.forEach(a => {
+    const b = h('button', 'act' + (a === 'Delete' ? ' danger' : ''), svg(ICON[a]) + a); b.type = 'button';
+    b.onclick = () => { sh.remove(); if (a === 'Move' || a === 'Copy') armPick(a, n); else runAction(a, n); };
+    acts.append(b);
+  });
+  box.append(top, prev, acts); sh.append(box);
+  sh.addEventListener('click', e => { if (e.target === sh) sh.remove(); });
+  poolStage.append(sh);
+}
+function armPick(a, n) {
+  pick = { action: a, src: n };
+  const bn = h('div', 'banner', `<span style="flex:1">${a} Group ${n}: tap the target</span>`);
+  const x = h('button', 'x', X_ICON); x.type = 'button'; x.setAttribute('aria-label', 'Cancel'); x.onclick = () => { pick = null; bn.remove(); markSrc(); };
+  bn.append(x); poolStage.append(bn); markSrc();
+}
+function markSrc() { $$('.stage > .pool .cell', $('#pool-host')).forEach(c => c.classList.toggle('src', !!pick && pick.src === +c.dataset.no)); }
+function finishPick(n) {
+  const p = pick; pick = null; poolStage.querySelector('.banner')?.remove();
+  if (n === p.src) { markSrc(); return; }
+  runMoveCopy(p.action, p.src, n);
+}
+/* the miniature: colour only, the name from 40 px up */
+function miniPool(cols, rows, width, opts = {}) {
+  const gap = 1, size = (width - gap * (cols - 1)) / cols;
+  const g = h('div', 'minipool' + (size >= 40 ? ' text' : ''));
+  g.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  g.style.width = width + 'px';
+  let html = '';
+  for (let n = 1; n <= cols * rows; n++) {
+    const o = BIG[n];
+    html += o ? `<i style="--c:${colorOf(o)};height:${size}px"><span>${esc(o.name)}</span></i>` : `<i class="empty" style="height:${size}px"></i>`;
+  }
+  g.innerHTML = html;
+  return { el: g, size };
+}
+function drawMini() {
+  const host = $('#pool-host');
+  const w = +$('#mini-w').value, cols = +$('#mini-cols').value;
+  const scroller = h('div'); scroller.style.overflowX = 'auto';
+  const st = h('div', 'stage'); st.style.width = (w + 2) + 'px';
+  st.append(h('div', 'win-hdr', '<span class="dot"></span>Groups · miniature'));
+  const { el, size } = miniPool(cols, 30, w);
+  st.append(el); scroller.append(st); host.append(scroller);
+  $('#mini-info').textContent = `cell ${size.toFixed(0)} px · name ${size >= 40 ? 'shown' : 'hidden (under 40 px)'}`;
+}
+['#mini-w', '#mini-cols'].forEach(id => $(id).addEventListener('input', () => { $('#pool-host').innerHTML = ''; drawMini(); }));
+drawPool();
+
+/* ═════════ SPLIT ═════════ */
+const coarse = matchMedia('(any-pointer: coarse)').matches;
+const sv = { size: coarse ? 'touch' : 'mouse', hit: false };
+$$('#sv-size button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === sv.size));
+seg('#sv-size', v => { sv.size = v; layoutSplit(); });
+$('#sv-hit').onchange = e => { sv.hit = e.target.checked; layoutSplit(); };
+const MIN = 120;
+const tree = { dir: 'h', ratio: 0.5, a: { leaf: 'Groups' }, b: { dir: 'v', ratio: 0.5, a: { leaf: 'Fixture sheet' }, b: { leaf: 'Sequence 1' } } };
+function buildSplit(node) {
+  if (node.leaf) {
+    const p = h('div', 'pane');
+    p.append(h('div', 'win-hdr', `<span class="dot"></span>${node.leaf}`), h('div', 'body', 'pane'));
+    return p;
+  }
+  const s = h('div', 'split ' + node.dir);
+  const A = buildSplit(node.a), B = buildSplit(node.b);
+  const hd = h('div', 'handle', '<span class="pill"></span>');
+  const pill = hd.firstChild;
+  const grab = sv.size === 'touch' ? pill : hd;
+  grab.tabIndex = 0; grab.setAttribute('role', 'separator');
+  grab.setAttribute('aria-orientation', node.dir === 'h' ? 'vertical' : 'horizontal');
+  const apply = () => { A.style.flex = node.ratio + ' 1 0'; B.style.flex = (1 - node.ratio) + ' 1 0'; grab.setAttribute('aria-valuenow', Math.round(node.ratio * 100)); $('#sv-ratio').textContent = 'last ratio ' + node.ratio.toFixed(2); };
+  apply();
+  s.append(A, hd, B);
+  const clamp = (r, size) => Math.min(Math.max(r, MIN / size), 1 - MIN / size);
+  let lastTap = 0;
+  grab.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    e.preventDefault(); e.stopPropagation(); grab.setPointerCapture(e.pointerId); hd.classList.add('active'); grab.focus({ preventScroll: true });
+    const r0 = node.ratio, x0 = e.clientX, y0 = e.clientY; let moved = false;
+    const rect = s.getBoundingClientRect(); const size = node.dir === 'h' ? rect.width : rect.height;
+    const mv = ev => {
+      const d = node.dir === 'h' ? ev.clientX - x0 : ev.clientY - y0;
+      if (Math.abs(d) > 2) moved = true;
+      node.ratio = clamp(r0 + d / size, size); apply();
+    };
+    const up = () => {
+      hd.classList.remove('active');
+      grab.removeEventListener('pointermove', mv); grab.removeEventListener('pointerup', up); grab.removeEventListener('pointercancel', up); grab.removeEventListener('lostpointercapture', up);
+      if (moved) { log('', `Layout saved (PUT with revision) · ratio ${node.ratio.toFixed(2)} · one Oops step`); lastTap = 0; return; }
+      const now = performance.now();
+      if (now - lastTap < DBL) { node.ratio = 0.5; apply(); log('', 'Double-tap: reset to 50 / 50 · one Oops step'); lastTap = 0; }
+      else lastTap = now;
+    };
+    grab.addEventListener('pointermove', mv); grab.addEventListener('pointerup', up); grab.addEventListener('pointercancel', up); grab.addEventListener('lostpointercapture', up);
+  });
+  grab.addEventListener('keydown', e => {
+    const rect = s.getBoundingClientRect(); const size = node.dir === 'h' ? rect.width : rect.height;
+    const k = e.key; let r = node.ratio;
+    const fwd = node.dir === 'h' ? 'ArrowRight' : 'ArrowDown', back = node.dir === 'h' ? 'ArrowLeft' : 'ArrowUp';
+    if (k === fwd) r += 0.05; else if (k === back) r -= 0.05; else if (k === 'Home') r = 0; else if (k === 'End') r = 1; else if (k === 'Enter') r = 0.5; else return;
+    e.preventDefault(); node.ratio = clamp(r, size); apply();
+    log('', `Keyboard · ratio ${node.ratio.toFixed(2)} · one Oops step`);
+  });
+  return s;
+}
+function layoutSplit() {
+  const host = $('#split-host'); host.innerHTML = '';
+  host.style.setProperty('--band', '12px');
+  host.classList.toggle('show-hit', sv.hit);
+  host.classList.toggle('touch-split', sv.size === 'touch');
+  host.append(buildSplit(tree));
+}
+layoutSplit();
+
+/* ═════════ NARROW LINE (shared by the phone and the Command line board) ═════════ */
+const KW = new Set(['Store', 'Group', 'Fixture', 'At', 'Thru', 'Edit', 'Label', 'Delete', 'Move', 'Copy', 'Go', 'Cue', 'Sequence', 'Set', 'Select']);
+function promptFor(cols, user, host, scope) {
+  const need = Math.max(Math.min(12, cols), Math.floor(cols / 2)); // typing room: 12 columns or half the bar
+  const room = cols - need;
+  const forms = [`[${user}@${host}] ${scope}> `, `${scope}> `];
+  for (const f of forms) if (f.length <= room) return f;
+  if (room >= 6) { const keep = room - 3; return '…' + scope.slice(scope.length - keep) + '> '; }
+  return '> ';
+}
+function tokenize(text) { // class per char
+  const cls = new Array(text.length).fill('');
+  const re = /[A-Za-z]+/g; let m;
+  while ((m = re.exec(text))) if (KW.has(m[0])) for (let i = m.index; i < m.index + m[0].length; i++) cls[i] = 'kw';
+  return cls;
+}
+function renderNew(el, cols, prompt, text, cur) {
+  const w = cols - prompt.length;
+  const margin = Math.min(4, Math.max(0, Math.floor((w - 1) / 3)));
+  const total = text.length + 1; // room for the cursor at the end
+  let off = 0;
+  if (total > w) {
+    off = Math.max(0, cur - (w - 1 - margin));
+    off = Math.min(off, total - w);
+  }
+  const cls = tokenize(text);
+  let out = '';
+  for (let i = 0; i < prompt.length; i++) out += `<span class="pr">${esc(prompt[i]) === ' ' ? '&nbsp;' : esc(prompt[i])}</span>`;
+  for (let j = 0; j < w; j++) {
+    const i = off + j;
+    const ch = i < text.length ? text[i] : ' ';
+    let c = cls[i] || '';
+    let shown = ch;
+    if (j === 0 && off > 0 && i !== cur) { shown = '‹'; c = 'mk'; }
+    if (j === w - 1 && off + w < total && i !== cur) { shown = '›'; c = 'mk'; }
+    if (i === cur) c = 'cur';
+    out += `<span class="${c}">${shown === ' ' ? '&nbsp;' : esc(shown)}</span>`;
+  }
+  el.innerHTML = out;
+}
+function renderToday(el, cols, full, text) {
+  const room = Math.min(full.length, Math.max(cols - 16, Math.floor(cols / 2)));
+  const prompt = full.slice(0, room);
+  const all = prompt + text + ' ';
+  const rows = Math.ceil(all.length / cols);
+  const vis = rows > 1 ? all.slice((rows - 1) * cols) : all;
+  let out = '';
+  for (let j = 0; j < cols; j++) { const ch = vis[j] ?? ' '; out += `<span class="${j < prompt.length && rows === 1 ? 'pr' : ''}">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`; }
+  el.innerHTML = out;
+}
+function drawCmd() {
+  const cols = +$('#cl-cols').value; $('#cl-colsv').textContent = cols + ' cols';
+  const scope = $('#cl-scope').value, inp = $('#cl-in');
+  const cur = inp.selectionStart ?? inp.value.length;
+  renderToday($('#cl-today'), cols, `[admin@desk1] ${scope}> `, inp.value);
+  renderNew($('#cl-new'), cols, promptFor(cols, 'admin', 'desk1', scope), inp.value, cur);
+}
+['input', 'keyup', 'click', 'select'].forEach(ev => $('#cl-in').addEventListener(ev, drawCmd));
+document.addEventListener('selectionchange', () => { if (document.activeElement === $('#cl-in')) drawCmd(); if (document.activeElement === $('#ph-input')) drawPhoneLine(); });
+$('#cl-cols').oninput = drawCmd; $('#cl-scope').onchange = drawCmd;
+drawCmd();
+
+/* ═════════ PHONE ═════════ */
+const ph = { end: 'stop', full: -1 };
+const CUES = ['Preset look', 'Opening', 'Verse 1', 'Chorus', 'Verse 2', 'Bridge', 'Finale', 'Blackout'];
+const FIX = [101, 102, 103, 104, 105, 106, 107, 108, 111, 112, 113, 114];
+const DIM = n => [100, 80, 80, 0, 45, 45, 100, 0, 60, 60, 30, 30][FIX.indexOf(n)] ?? 0;
+function compactPoolHtml() {
+  let s = '<div class="pool compact" style="height:100%">';
+  for (let n = 1; n <= POOL_N; n++) { const g = groups[n]; s += `<div class="cell${g ? '' : ' empty'}"${g ? ` style="--c:${colorOf(g)}"` : ''}>${cellHtml(n, g, 'compact')}</div>`; }
+  return s + '</div>';
+}
+const PANES = [
+  { t: 'Groups', mini: () => miniPool(16, 20, 150).el.outerHTML, full: compactPoolHtml },
+  { t: 'Sequence 1',
+    mini: () => `<div class="mview">${CUES.map((x, i) => `<div class="${i === 2 ? 'on' : ''}"><b>${i + 1}</b>${x}</div>`).join('')}</div>`,
+    full: () => `<div class="sheet-scroll"><table class="fsheet"><tr><th>Cue</th><th>Name</th><th>Fade</th><th>Delay</th><th>Trig</th><th>Info</th></tr>${CUES.map((x, i) => `<tr class="${i === 2 ? 'on' : ''}"><td>${i + 1}</td><td>${x}</td><td>${(i % 3) + 1}.0</td><td>0</td><td>Go</td><td>${i === 2 ? 'running' : ''}</td></tr>`).join('')}</table></div>` },
+  { t: 'Fixture sheet',
+    mini: () => `<div class="mview">${FIX.map(n => `<div><b>${n}</b>${DIM(n)}%</div>`).join('')}</div>`,
+    full: () => `<div class="sheet-scroll"><table class="fsheet"><tr><th>Fix</th><th>Name</th><th>Dim</th><th>Pan</th><th>Tilt</th><th>Color</th><th>Gobo</th></tr>${FIX.map(n => `<tr><td>${n}</td><td>${n < 110 ? 'Spot ' + (n - 100) : 'Wash ' + (n - 110)}</td><td>${DIM(n)}%</td><td>${(n * 7) % 90}°</td><td>${(n * 3) % 60}°</td><td>Open</td><td>—</td></tr>`).join('')}</table></div>` },
+  { t: 'Terminal', mini: () => `<div class="mview mono">admin&gt; Go<br>Cue 3 "Verse 1"<br>admin&gt; Group 3<br>8 selected</div>`, full: () => `<div class="big-term">[admin@desk1] Root&gt; Go\nSequence 1 Cue 3 "Verse 1"\n[admin@desk1] Root&gt; Group 3\n8 fixtures selected\n[admin@desk1] Root&gt; At 50\n</div>` }
+];
+seg('#ph-end', v => { ph.end = v; if (ph.full >= 0) openFull(ph.full, true); });
+function drawPhone() {
+  const p = $('#phone'); p.innerHTML = '';
+  p.append(h('div', 'ph-status', '<span>9:41</span><span>●●● 5G</span>'));
+  p.append(h('div', 'ph-top', '<span class="dot"></span>View 1 · Desk'));
+  const main = h('div', 'ph-main');
+  const desk = h('div', 'ph-desk');
+  PANES.forEach((pn, i) => {
+    const m = h('div', 'mini', `<div class="mh">${pn.t}</div><div class="mb">${pn.mini()}</div>`);
+    m.dataset.i = i; desk.append(m);
+  });
+  hold(desk, { target: e => e.target.closest('.mini'), onTap: () => phToast('Too small · hold to open'), onHold: m => openFull(+m.dataset.i) });
+  main.append(desk); p.append(main);
+  const bar = h('div', 'ph-bar');
+  const purr = h('button', 'b purr', 'PURR'); purr.type = 'button';
+  const line = h('div', 'ph-line', '<span class="cl" id="ph-cl"></span>');
+  line.onclick = () => $('#ph-input').focus();
+  const vk = h('button', 'b', 'VK'); vk.type = 'button'; vk.onclick = () => $('#ph-input').focus();
+  const more = h('button', 'b', '⋯'); more.type = 'button'; more.setAttribute('aria-label', 'More'); more.onclick = openMore;
+  bar.append(purr, line, vk, more); p.append(bar);
+  p.append(h('div', 'ph-home', '<i></i>'));
+  if (ph.full >= 0) openFull(ph.full, true);
+  drawPhoneLine();
+}
+function phToast(msg) {
+  const p = $('#phone'); p.querySelector('.ph-toast')?.remove();
+  const t = h('div', 'ph-toast', msg); p.append(t); setTimeout(() => t.remove(), 1400);
+}
+function openFull(i, quiet) {
+  ph.full = i;
+  const desk = $('.ph-desk'); desk.querySelector('.full')?.remove();
+  const f = h('div', 'full');
+  const mb = h('div', 'maxbar');
+  const prev = h('button', null, '‹'), next = h('button', null, '›'), x = h('button', null, '×');
+  [prev, next, x].forEach(b => b.type = 'button'); prev.setAttribute('aria-label', 'Previous pane'); next.setAttribute('aria-label', 'Next pane'); x.setAttribute('aria-label', 'Back to the desk');
+  const t = h('span', 't');
+  mb.append(prev, t, next, x);
+  const body = h('div', 'full-body');
+  const track = h('div', 'full-track');
+  PANES.forEach(pn => track.append(h('div', 'full-page', pn.full())));
+  const dots = h('div', 'dots', PANES.map(() => '<i></i>').join(''));
+  body.append(track, dots);
+  f.append(mb, body); desk.append(f);
+  const L = PANES.length;
+  const go = (j, how) => {
+    let k = j;
+    if (ph.end === 'wrap') k = (j + L) % L;
+    else if (j < 0 || j >= L) { k = ph.full; if (how) phToast(j < 0 ? 'First pane' : 'Last pane'); how = null; }
+    const changed = k !== ph.full;
+    ph.full = k; track.style.transform = `translateX(${-k * 100}%)`;
+    t.textContent = PANES[k].t;
+    $$('i', dots).forEach((d, n) => d.classList.toggle('on', n === k));
+    prev.disabled = ph.end === 'stop' && k === 0; next.disabled = ph.end === 'stop' && k === L - 1;
+    if (how && changed) log('Set Self Maximized On', `${how} → ${PANES[k].t} (HoldFollows on)`);
+  };
+  track.style.transition = 'none'; go(i); requestAnimationFrame(() => track.style.transition = '');
+  if (!quiet) log('Set Self Maximized On', `hold → ${PANES[i].t} full screen (HoldFollows on)`);
+  prev.onclick = () => go(ph.full - 1, '‹');
+  next.onclick = () => go(ph.full + 1, '›');
+  x.onclick = () => { f.remove(); ph.full = -1; log('Set Self Maximized Off', 'back to the desk'); };
+  body.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    const x0 = e.clientX, y0 = e.clientY, w = body.clientWidth; let dx = 0, horiz = null;
+    const mv = ev => {
+      dx = ev.clientX - x0; const dy = ev.clientY - y0;
+      if (horiz === null && Math.hypot(dx, dy) > SLOP) horiz = Math.abs(dx) > Math.abs(dy);
+      if (!horiz) return;
+      let d = dx;
+      const atEdge = ph.end === 'stop' && ((ph.full === 0 && dx > 0) || (ph.full === L - 1 && dx < 0));
+      if (atEdge) d = dx / 3; // rubber band
+      track.style.transition = 'none'; track.style.transform = `translateX(calc(${-ph.full * 100}% + ${d}px))`;
+    };
+    const up = () => {
+      body.removeEventListener('pointermove', mv); body.removeEventListener('pointerup', up); body.removeEventListener('pointercancel', up);
+      track.style.transition = '';
+      if (horiz && Math.abs(dx) > w * 0.2) go(ph.full + (dx < 0 ? 1 : -1), 'swipe'); else go(ph.full);
+    };
+    body.addEventListener('pointermove', mv); body.addEventListener('pointerup', up); body.addEventListener('pointercancel', up);
+  });
+}
+function openMore() {
+  const p = $('#phone');
+  const sh = h('div', 'ph-sheet');
+  const box = h('div', 'box');
+  box.append(h('div', 'grp', 'Sidebar'));
+  const r1 = h('div', 'row'); ['Menu', 'Oops', 'Lock', 'Meow'].forEach(x => r1.append(h('button', null, x)));
+  box.append(r1, h('div', 'grp', 'Views'));
+  const r2 = h('div', 'row'); ['View 1', 'View 2', 'View 3', 'View 4'].forEach(x => r2.append(h('button', null, x)));
+  box.append(r2, h('div', 'grp', 'Status'));
+  box.append(h('div', 'stat', '<span>desk1 · Master</span><span>Rig ● en0</span>'), h('div', 'stat', '<span>Show: demo</span><span>admin · Program</span>'));
+  sh.append(box); p.append(sh);
+  sh.addEventListener('click', e => {
+    if (e.target === sh) return sh.remove();
+    const b = e.target.closest('button'); if (!b) return;
+    const map = { Menu: 'Menu', Oops: 'Oops', Lock: 'DeskLock', Meow: '(Meow held)' };
+    log(map[b.textContent] || `View ${b.textContent.split(' ')[1]}`, '⋯ sheet'); sh.remove();
+  });
+}
+let phText = 'Group 3 Thru 7 At 50 Fade 2';
+const phIn = $('#ph-input'); phIn.value = phText;
+phIn.addEventListener('input', () => { phText = phIn.value; drawPhoneLine(); });
+phIn.addEventListener('keyup', drawPhoneLine);
+phIn.addEventListener('keydown', e => { if (e.key === 'Enter') { log(phIn.value, 'phone line'); phIn.value = ''; phText = ''; drawPhoneLine(); } });
+function drawPhoneLine() {
+  const el = $('#ph-cl'); if (!el) return;
+  const box = el.parentElement;
+  const probe = h('span', 'cl', '<span>M</span>'); box.append(probe);
+  const cw = probe.firstChild.getBoundingClientRect().width || 9; probe.remove();
+  const scale = $('#phone').getBoundingClientRect().width / 390 || 1;
+  const cols = Math.max(8, Math.floor((box.clientWidth - 12) / (cw / scale)));
+  const cur = document.activeElement === phIn ? (phIn.selectionStart ?? phText.length) : phText.length;
+  renderNew(el, cols, promptFor(cols, 'admin', 'desk1', 'DataPools.1.Groups'), phText, cur);
+}
+function fitPhone() {
+  const outer = $('#phone-outer'), sc = $('#phone-scale');
+  const avail = outer.clientWidth; const full = 410;
+  const s = Math.min(1, avail / full);
+  sc.style.transform = `scale(${s})`; sc.style.width = full + 'px';
+  outer.style.height = (820 * s) + 'px';
+  sc.style.marginLeft = Math.max(0, (avail - full * s) / 2) + 'px';
+  sc.style.transformOrigin = 'top left';
+  drawPhoneLine();
+}
+addEventListener('resize', () => { if (board === 'phone') fitPhone(); });
+drawPhone();
+
+/* ═════════ GROUP EDITOR ═════════ */
+const ge = { layout: 'desk', home: 'sheet', sel: null, rail: false };
+let members = [
+  { f: 104, name: 'Spot 4', x: 3, y: 0 }, { f: 101, name: 'Spot 1', x: 0, y: 0 }, { f: 102, name: 'Spot 2', x: 1, y: 0 },
+  { f: 103, name: 'Spot 3', x: 2, y: 0 }, { f: 111, name: 'Wash 1', x: 0, y: 2 }, { f: 112, name: 'Wash 2', x: 2, y: 2 },
+  { f: 113, name: 'Wash 3', x: 4, y: 2 }, { f: 114, name: 'Wash 4', x: 6, y: 2 }
+];
+const TOOLS = [
+  { cat: 'Order', id: 'Linearize', label: 'Linearize', ab: 'Lin', ask: { label: 'Order by', choices: ['Number', 'LeftToRight', 'TopToBottom'] } },
+  { cat: 'Gaps', id: 'RemoveGaps', label: 'Remove gaps', ab: 'Gaps' },
+  { cat: 'Gaps', id: 'RemoveOffset', label: 'Remove offset', ab: 'Offs' },
+  { cat: 'Align', id: 'Align', label: 'Align', ab: 'Algn', ask: { label: 'Align to', choices: ['Left', 'Center', 'Right'] } },
+  { cat: 'Transform', id: 'Transpose', label: 'Transpose', ab: 'Trsp' },
+  { cat: 'Transform', id: 'Rotate', label: 'Rotate', ab: 'Rot', ask: { label: 'Direction', choices: ['Right', 'Left'] } },
+  { cat: 'Transform', id: 'Flip', label: 'Flip', ab: 'Flip', ask: { label: 'Axis', choices: ['X', 'Y'] } },
+  { cat: 'Scale', id: 'Multiply', label: 'Multiply', ab: '×n', ask: { label: 'Factor', number: 2 } },
+  { cat: 'Scale', id: 'Divide', label: 'Divide', ab: '÷n', ask: { label: 'Divisor', number: 2 } },
+  { cat: 'Scale', id: 'MakeSymmetrical', label: 'Make symmetrical', ab: 'Sym', planned: true },
+  { cat: 'Pawterns', id: 'UsePawternPositions', label: 'Use Pawtern positions', ab: 'MAt', planned: true }
+];
+const CATS = ['All', 'Recent', 'Order', 'Gaps', 'Align', 'Transform', 'Scale', 'Pawterns'];
+let recent = [];
+seg('#gv-layout', v => { ge.layout = v; drawGE(); });
+seg('#gv-home', v => { ge.home = v; ge.rail = false; drawGE(); });
+let geStage;
+function dims() { return { cols: Math.max(8, ...members.map(m => m.x + 1)), rows: Math.max(4, ...members.map(m => m.y + 1)) }; }
+function drawGE() {
+  const host = $('#ge-host'); host.innerHTML = '';
+  const phone = ge.layout === 'phone';
+  const outer = phone ? h('div', 'phone-frame') : h('div');
+  const st = geStage = h('div', 'stage');
+  if (phone) { st.style.border = '0'; st.style.borderRadius = '0'; st.style.minHeight = '640px'; }
+  st.append(h('div', 'win-hdr', '<span class="dot"></span>Edit Group 3 "Front"<span style="margin-left:auto;color:var(--lc-dim);font-size:13px">claimed · exit releases</span>'));
+  const body = h('div', 'ge' + (phone ? ' stacked' : ''));
+  const list = h('div', 'ge-list');
+  const slab = h('div', 'slab');
+  const rem = h('button', null, '<span class="ic" style="background:var(--lc-act-delete)"></span>Remove'); rem.type = 'button';
+  rem.onclick = () => { if (ge.sel == null) return toast('Select a member first'); const m = members.find(x => x.f === ge.sel); members = members.filter(x => x !== m); log(`Group 3 - Fixture ${m.f}`, 'removes the member'); ge.sel = null; drawGE(); };
+  slab.append(rem);
+  if (ge.home !== 'ctx') {
+    const tb = h('button', 'tools-btn' + (ge.home === 'rail' && ge.rail ? ' on' : ''), svg(ICON.Tools) + `Tools <small>${TOOLS.length}</small>`); tb.type = 'button';
+    tb.onclick = () => { if (ge.home === 'sheet') openTools(); else { ge.rail = !ge.rail; drawGE(); } };
+    slab.append(tb);
+  }
+  const rows = h('div', 'ge-rows');
+  members.forEach((m, i) => {
+    const r = h('div', 'ge-row' + (ge.sel === m.f ? ' sel' : ''));
+    const grip = h('div', 'grip', '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>');
+    grip.setAttribute('aria-label', 'Drag to reorder');
+    const up = h('button', 'mv', '↑'), dn = h('button', 'mv', '↓');
+    up.type = dn.type = 'button'; up.disabled = i === 0; dn.disabled = i === members.length - 1;
+    up.setAttribute('aria-label', 'Move up'); dn.setAttribute('aria-label', 'Move down');
+    up.onclick = e => { e.stopPropagation(); moveTo(i, i - 1); };
+    dn.onclick = e => { e.stopPropagation(); moveTo(i, i + 1); };
+    r.append(grip, h('span', 'o', i + 1), h('span', 'f', `${m.f}<small>${m.name}</small>`), up, dn);
+    r.addEventListener('click', e => { if (e.target.closest('.grip, .mv')) return; ge.sel = ge.sel === m.f ? null : m.f; drawGE(); });
+    gripDrag(grip, r, i, rows);
+    rows.append(r);
+  });
+  list.append(slab, rows);
+  // grid (+ rail)
+  const right = h('div', 'ge-right' + (ge.home === 'rail' && ge.rail ? (phone ? ' strip' : ' with-rail') : ''));
+  if (ge.home === 'rail' && ge.rail) right.append(buildRail(phone));
+  const { cols, rows: R } = dims();
+  const grid = h('div', 'ge-grid'); grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  for (let y = 0; y < R; y++) for (let x = 0; x < cols; x++) {
+    const c = h('div', 'ge-cell'); c.dataset.x = x; c.dataset.y = y;
+    const m = members.find(q => q.x === x && q.y === y);
+    if (m) {
+      const fx = h('div', 'ge-fix' + (ge.sel === m.f ? ' sel' : ''), `<b>${m.f}</b><span>${members.indexOf(m) + 1}</span>`);
+      fx.dataset.f = m.f; cellDrag(fx, m, grid); c.append(fx);
+      if (ge.home === 'ctx' && ge.sel === m.f) {
+        const cb = h('button', 'ctx-tools', svg(ICON.Tools) + 'Tools'); cb.type = 'button';
+        cb.addEventListener('pointerdown', e => e.stopPropagation());
+        cb.onclick = e => { e.stopPropagation(); openTools(); };
+        c.append(cb);
+      }
+    }
+    grid.append(c);
+  }
+  right.append(grid);
+  if (ge.home === 'ctx' && ge.sel == null) right.append(h('p', 'ge-hint', 'Select a member (row or fixture) and Tools appears beside it.'));
+  body.append(list, right); st.append(body); outer.append(st); host.append(outer);
+}
+function buildRail(phone) {
+  const rail = h('div', 'rail');
+  let last = null;
+  TOOLS.forEach(t => {
+    if (last && last !== t.cat) rail.append(h('span', 'rail-sep'));
+    last = t.cat;
+    const b = h('button', 'rail-btn' + (t.planned ? ' planned' : ''), `<b>${t.ab}</b><small>${t.label}</small>`); b.type = 'button';
+    b.title = t.label + (t.planned ? ' (planned)' : '');
+    b.onclick = () => chooseTool(t, null);
+    rail.append(b);
+  });
+  const x = h('button', 'rail-btn rail-x', X_ICON); x.type = 'button'; x.setAttribute('aria-label', 'Close the tools');
+  x.onclick = () => { ge.rail = false; drawGE(); };
+  rail.append(x);
+  return rail;
+}
+function openTools() {
+  const phone = ge.layout === 'phone';
+  const sh = h('div', 'tsheet' + (phone ? ' bottom' : ''));
+  const box = h('div', 'tbox');
+  sh.append(box); geStage.append(sh);
+  sh.addEventListener('click', e => { if (e.target === sh) sh.remove(); });
+  drawToolList(box, sh, 'All', '');
+}
+function drawToolList(box, sh, cat, q) {
+  box.innerHTML = '';
+  const top = h('div', 'tbox-top');
+  const s = h('input', 'tsearch'); s.type = 'search'; s.placeholder = 'Search tools'; s.value = q; s.setAttribute('aria-label', 'Search tools');
+  const x = h('button', 'x', X_ICON); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.onclick = () => sh.remove();
+  top.append(h('span', 'tbox-title', 'Tools · Group 3'), s, x);
+  const cats = h('div', 'tcats');
+  CATS.forEach(c => {
+    if (c === 'Recent' && !recent.length) return;
+    const b = h('button', null, c); b.type = 'button'; b.setAttribute('aria-pressed', c === cat);
+    b.onclick = () => drawToolList(box, sh, c, s.value);
+    cats.append(b);
+  });
+  const listEl = h('div', 'tlist');
+  const fill = () => {
+    listEl.innerHTML = '';
+    const qq = s.value.trim().toLowerCase();
+    let items = cat === 'Recent' ? recent.map(id => TOOLS.find(t => t.id === id)) : TOOLS.filter(t => cat === 'All' || t.cat === cat);
+    if (qq) items = TOOLS.filter(t => (t.label + ' ' + t.cat).toLowerCase().includes(qq));
+    items.forEach(t => {
+      const b = h('button', 'trow' + (t.planned ? ' planned' : ''), `<span class="tl">${t.label}</span><span class="tc">${t.cat}${t.ask ? ' · asks' : ''}${t.planned ? ' · planned' : ''}</span>`);
+      b.type = 'button'; b.onclick = () => chooseTool(t, { box, sh });
+      listEl.append(b);
+    });
+    if (!items.length) listEl.append(h('p', 'ge-hint', 'No tool matches.'));
+  };
+  s.oninput = fill;
+  fill();
+  box.append(top, cats, listEl);
+}
+function chooseTool(t, ctx) {
+  if (t.planned) { toast(`${t.label} isn't built yet (planned)`); return; }
+  if (!t.ask) { runTool(t); ctx?.sh.remove(); if (ge.home === 'rail') { ge.rail = false; } drawGE(); return; }
+  // a tool with a parameter asks first
+  let box, sh;
+  if (ctx) { box = ctx.box; sh = ctx.sh; }
+  else { sh = h('div', 'tsheet' + (ge.layout === 'phone' ? ' bottom' : '')); box = h('div', 'tbox small'); sh.append(box); geStage.append(sh); sh.addEventListener('click', e => { if (e.target === sh) sh.remove(); }); }
+  let val = t.ask.number ?? t.ask.choices[0];
+  const draw = () => {
+    box.innerHTML = '';
+    const top = h('div', 'tbox-top', `<span class="tbox-title">${t.label}</span>`);
+    const x = h('button', 'x', X_ICON); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.onclick = () => sh.remove();
+    top.append(x);
+    const ask = h('div', 'task', `<div class="ctl-label">${t.ask.label}</div>`);
+    if (t.ask.choices) {
+      const row = h('div', 'tchoices');
+      t.ask.choices.forEach(c => { const b = h('button', null, c.replace(/([a-z])([A-Z])/g, '$1 $2')); b.type = 'button'; b.setAttribute('aria-pressed', c === val); b.onclick = () => { val = c; draw(); }; row.append(b); });
+      ask.append(row);
+    } else {
+      const row = h('div', 'tnum');
+      const minus = h('button', null, '−'), plus = h('button', null, '+'); minus.type = plus.type = 'button';
+      minus.onclick = () => { val = Math.max(2, val - 1); draw(); }; plus.onclick = () => { val = Math.min(16, val + 1); draw(); };
+      row.append(minus, h('span', 'tval', String(val)), plus);
+      ask.append(row);
+    }
+    const line = `Grid Group 3 "${t.id}" ${typeof val === 'number' ? val : '"' + val + '"'}`;
+    ask.append(h('div', 'tline', `<span class="p">Root&gt; </span>${esc(line)}`));
+    const foot = h('div', 'tfoot');
+    const cancel = h('button', null, 'Cancel'), run = h('button', 'run', 'Run'); cancel.type = run.type = 'button';
+    cancel.onclick = () => sh.remove();
+    run.onclick = () => { runTool(t, val); sh.remove(); if (ge.home === 'rail') ge.rail = false; drawGE(); };
+    foot.append(cancel, run);
+    box.append(top, ask, foot);
+  };
+  draw();
+}
+function runTool(t, val) {
+  const { cols, rows } = dims();
+  const maxX = Math.max(...members.map(m => m.x)), maxY = Math.max(...members.map(m => m.y));
+  const minX = Math.min(...members.map(m => m.x)), minY = Math.min(...members.map(m => m.y));
+  switch (t.id) {
+    case 'Linearize':
+      if (val === 'Number') members.sort((a, b) => a.f - b.f);
+      if (val === 'LeftToRight') members.sort((a, b) => a.y - b.y || a.x - b.x);
+      if (val === 'TopToBottom') members.sort((a, b) => a.x - b.x || a.y - b.y);
+      break;
+    case 'RemoveGaps': { const xs = [...new Set(members.map(m => m.x))].sort((a, b) => a - b), ys = [...new Set(members.map(m => m.y))].sort((a, b) => a - b); members.forEach(m => { m.x = xs.indexOf(m.x); m.y = ys.indexOf(m.y); }); break; }
+    case 'RemoveOffset': members.forEach(m => { m.x -= minX; m.y -= minY; }); break;
+    case 'Transpose': members.forEach(m => { [m.x, m.y] = [m.y, m.x]; }); break;
+    case 'Rotate': members.forEach(m => { const x = m.x, y = m.y; if (val === 'Right') { m.x = maxY - y; m.y = x; } else { m.x = y; m.y = maxX - x; } }); break;
+    case 'Flip': members.forEach(m => { if (val === 'X') m.x = maxX - m.x + minX; else m.y = maxY - m.y + minY; }); break;
+    case 'Multiply': members.forEach(m => { m.x *= val; m.y *= val; }); break;
+    case 'Divide': members.forEach(m => { m.x = Math.floor(m.x / val); m.y = Math.floor(m.y / val); }); break;
+  }
+  void cols; void rows;
+  recent = [t.id, ...recent.filter(x => x !== t.id)].slice(0, 4);
+  const arg = val == null ? '' : typeof val === 'number' ? ' ' + val : ` "${val}"`;
+  log(`Grid Group 3 "${t.id}"${arg}`, t.id === 'Align' ? 'one statement · one Oops step (no visible change in this mockup)' : 'one statement · one Oops step');
+}
+function moveTo(from, to) {
+  if (to < 0 || to >= members.length || from === to) return;
+  const [m] = members.splice(from, 1); members.splice(to, 0, m);
+  log(`Set Group 3 Fixture ${m.f} Order ${to + 1}`, 'one Oops step');
+  drawGE();
+}
+function gripDrag(grip, row, i, rows) {
+  grip.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    e.preventDefault(); grip.setPointerCapture(e.pointerId);
+    const y0 = e.clientY, H = row.offsetHeight; let target = i;
+    row.classList.add('lift');
+    const sibs = [...rows.children];
+    const mv = ev => {
+      const dy = ev.clientY - y0;
+      row.style.transform = `translateY(${dy}px)`;
+      target = Math.max(0, Math.min(members.length - 1, i + Math.round(dy / H)));
+      sibs.forEach((s, k) => { if (s === row) return; let sh = 0; if (k > i && k <= target) sh = -H; if (k < i && k >= target) sh = H; s.style.transform = sh ? `translateY(${sh}px)` : ''; s.style.transition = 'transform .12s'; });
+      const rr = rows.getBoundingClientRect();
+      if (ev.clientY < rr.top + 36) rows.scrollTop -= 8; else if (ev.clientY > rr.bottom - 36) rows.scrollTop += 8;
+    };
+    const up = () => {
+      grip.removeEventListener('pointermove', mv); grip.removeEventListener('pointerup', up); grip.removeEventListener('pointercancel', up); grip.removeEventListener('lostpointercapture', up);
+      sibs.forEach(s => { s.style.transform = ''; s.style.transition = ''; });
+      if (target !== i) moveTo(i, target); else { row.classList.remove('lift'); row.style.transform = ''; }
+    };
+    grip.addEventListener('pointermove', mv); grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up); grip.addEventListener('lostpointercapture', up);
+  });
+}
+function cellDrag(fx, m, grid) {
+  fx.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    e.preventDefault(); fx.setPointerCapture(e.pointerId);
+    const x0 = e.clientX, y0 = e.clientY; let moved = false, over = null;
+    const mv = ev => {
+      const dx = ev.clientX - x0, dy = ev.clientY - y0;
+      if (!moved && Math.hypot(dx, dy) > SLOP) { moved = true; fx.classList.add('drag'); }
+      if (!moved) return;
+      fx.style.transform = `translate(${dx}px, ${dy}px)`;
+      fx.style.pointerEvents = 'none';
+      const c = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.ge-cell');
+      fx.style.pointerEvents = '';
+      const ok = c && grid.contains(c) && !c.querySelector('.ge-fix:not(.drag)') ? c : null;
+      if (over !== ok) { over?.classList.remove('over'); over = ok; over?.classList.add('over'); }
+    };
+    const up = ev => {
+      fx.removeEventListener('pointermove', mv); fx.removeEventListener('pointerup', up); fx.removeEventListener('pointercancel', up); fx.removeEventListener('lostpointercapture', up);
+      over?.classList.remove('over');
+      if (!moved) { ge.sel = ge.sel === m.f ? null : m.f; drawGE(); return; }
+      if (over && ev.type === 'pointerup') { m.x = +over.dataset.x; m.y = +over.dataset.y; log(`Set Group 3 Fixture ${m.f} X ${m.x} Y ${m.y}`, 'one Oops step on release'); }
+      drawGE();
+    };
+    fx.addEventListener('pointermove', mv); fx.addEventListener('pointerup', up); fx.addEventListener('pointercancel', up); fx.addEventListener('lostpointercapture', up);
+  });
+}
+drawGE();
+})();
+</script>

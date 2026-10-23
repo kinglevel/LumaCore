@@ -1,0 +1,73 @@
+<title>Second Ids</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.bad{color:var(--red)}.ok{color:var(--green)}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 5 · 2026-10-20 · discussion only, nothing built</div>
+<h1>Second ids: a fixture without a fixture number</h1>
+<p>You set the folders to IDType Media so they carry no FID. That reopens the CIDs question (roadmap, 2026-10-19) with a concrete case, and it has one hard consequence for LumaCore: today a fixture <em>is</em> its number — the patch is <code>BTreeMap&lt;u32, Fixture&gt;</code> keyed by the FID — so a fixture without one cannot exist. This page is what a second id is, what is already built, what it costs, and the one question that decides it.</p>
+</header>
+
+<section class="card">
+<h2>A reference console's model · MVR's fields · LumaCore today</h2>
+<table>
+<tr><th></th><th>A reference console</th><th>MVR 1.6 file</th><th>LumaCore today</th></tr>
+<tr><th>The id</th><td>one <b>IDType</b> per fixture (Fixture, Channel, Universal, Houselights, NonDim, Media, Fog, Pyro, Marker, Camera, …), <b>FID</b> and <b>CID</b> as separate properties; the IDType says which keyword reaches it</td><td><code>FixtureID</code> (text) + <code>CustomIdType</code> + <code>CustomId</code></td><td>the pool key = FID; <code>Mvr.custom_id_type</code> + <code>custom_id</code>; <code>Luma.more_ids</code> (several); writable <code>"IDType"</code> / <code>"CID"</code></td></tr>
+<tr><th>A folder</th><td><code>ACME Icarus</code>: FID None, IDType Media, CID 7003 → <code>Media 7003</code>; its internal index is 7003 inside its parent</td><td><code>FixtureID ""</code>, <code>CustomId 7003</code>, <b>no CustomIdType</b> (the export drops the namespace)</td><td>a clash row, never written</td></tr>
+<tr><th>A fixture</th><td><code>Fixture 849</code>: FID 849, IDType Fixture, CID None</td><td><code>FixtureID 849</code>, <code>CustomId 0</code></td><td>key 849</td></tr>
+<tr><th>Uniqueness</th><td>per IDType; <code>Fixture 1</code> (an Aeco) and <code>Media 1</code> (Stage 1 Mainstage) coexist</td><td>none stated</td><td>per pool key</td></tr>
+<tr><th>The line</th><td><code>Media 7003</code>, <code>Channel 12</code> — the IDType is the keyword</td><td>—</td><td><code>Fixture Media 7003</code> — the kind inside the fixture's id (lum.md, built), <code>Fixture 4</code> = type 1</td></tr>
+</table>
+<p>Collisions are real in this rig, not theoretical: the folders' Media ids 1 … 9, 99 and 7003 are <b>all</b> also fixture numbers (the rig numbers 1 … 9 999). A second namespace is the only way these fixtures coexist in one patch.</p>
+</section>
+
+<section class="card">
+<h2>Already built on LumaCore's side</h2>
+<ul>
+<li>The grammar and resolver: <code>Fixture Houselights 4</code>, <code>Fixture Houselights 1 Thru 4 + Fixture 101</code> (lum.md "The second id"; <code>segment = OBJECT [ id-kind ] [ ids ]</code>, <code>LumShape::id_kinds</code>, the second-id walk).</li>
+<li>The data: <code>CustomIdType</code> (MVR's list: None, Fixture, Channel, Houselights, NonDim, Media, Fog, Effect, Pyro, Marker) + <code>CustomId</code> on every fixture; <code>MoreIds</code> for several; the properties <code>"IDType"</code> / <code>"CID"</code> / <code>"MoreIds"</code> on the Fixture object.</li>
+<li>Selections and group members already hold GUIDs, never numbers (<code>selected_fixtures: Vec&lt;Uuid&gt;</code>, <code>GroupMember.fixture: Uuid</code>): the number is only a handle on the line.</li>
+</ul>
+<p>What is <b>not</b> there: a fixture whose only id is a second id. Everything that reads the patch by number assumes the key is the FID:</p>
+<pre>patch.fixtures.get(n) / contains_key / keys / get_mut / remove / insert   87 sites in 34 files (tests aside)
+patch.fixtures.iter() / values()                                            37 sites
+the show file: Devices/Dmx/Patch/Fixtures/&lt;n&gt;/ … per key · FORMAT_VERSION 30 → 31</pre>
+</section>
+
+<section>
+<h2>What the pool key is, once a fixture may have no number</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>An internal slot; the ids are a typed list</h3><p>The patch stays <code>BTreeMap&lt;u32, Fixture&gt;</code> but the key is a slot given at insert (next free, stable, never shown, never on a line). A fixture's ids are one list <code>(IdType, n)</code>: <code>[(Fixture, 849)]</code>, <code>[(Media, 7003)]</code>, <code>[(Fixture, 4), (Channel, 12), (Fog, 3)]</code>; unique per type in the show; <code>Fixture 849</code> and <code>Fixture Media 7003</code> resolve through one index. <code>"IDType"</code> / <code>"CID"</code> / <code>"MoreIds"</code> fold into it. Export writes FixtureID from the Fixture id and CustomIdType + CustomId from the first other one; import reads both back.</p><ul><li>+ the reference model exactly; the folders import as they are; renumbering a fixture no longer moves it in the map</li><li>+ one door: <code>patch.by_id(IdType, n)</code>; a tidy rule keeps <code>fixtures.get(n)</code> out of commands</li><li>− the sweep: 87 sites, the show-file folder names, format 31, the demo regenerated; about two days</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>The key stays the FID; folders get hidden numbers</h3><p>A numberless fixture gets a key above the file's highest (10001 …) that is shown nowhere and written to no file; <code>Media 7003</code> still needs the index of A.</p><ul><li>− two kinds of key in one map; a "hidden" number leaks into <code>List Fixture</code>, ranges, <code>Fixture Thru</code></li><li>− renumbering a real fixture still moves it in the map (as today)</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>The patch keyed by GUID</h3><p><code>BTreeMap&lt;Uuid, Fixture&gt;</code>, the ids a typed list as in A.</p><ul><li>+ the key says nothing, so nothing can lean on it</li><li>− breaks "all collections are <code>BTreeMap&lt;u32&gt;</code>", the folder-per-number show-file layout, every sorted list by number; a bigger sweep for the same result as A</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Then, in order</h2>
+<ul>
+<li><b>The keyword</b>: <code>Fixture Media 7003</code> as lum.md has it, or the bare <code>Media 7003</code> — one namespace rule: <code>Effect</code> is §28's object, <code>Channel</code> / <code>Marker</code> / <code>Camera</code> are words other areas want; <code>Fixture &lt;kind&gt; n</code> never clashes.</li>
+<li><b>An untyped CustomId on import</b>: the export writes <code>CustomId 7003</code> and no <code>CustomIdType</code>, so the file does not say "Media". The preset gets <code>MvrIdType</code> (default Media) for numberless fixtures with a CustomId; the review shows "Media 7003" in the No cell; <code>/IdType</code> on the line overrides.</li>
+<li><b>What a folder does to a line</b>: <code>Fixture Media 1 At 50</code> programs the subtree, the sidebar tree shows nested fixtures, Move / Delete carry children.</li>
+<li>Groups from the Default pool, the show split for the tests, what is committed, the names (unchanged from page 3).</li>
+</ul>
+</section>
+</main>

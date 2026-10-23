@@ -1,0 +1,27 @@
+[package]
+name = "lumacore-luma"
+version.workspace = true
+edition.workspace = true
+description = "The .luma show file and the station's disk: the show file format, the one disk door, backups, the media store, the station config file (decisions §34 25.10)"
+
+[dependencies]
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+lumacore-sysmon = { path = "../../foundation/lumacore-sysmon" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-gdtf = { path = "../lumacore-gdtf" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+log = { workspace = true }
+uuid = { workspace = true }
+zip = { workspace = true }
+sha2 = { workspace = true }
+hostname = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

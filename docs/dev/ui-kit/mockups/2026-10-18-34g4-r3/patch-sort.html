@@ -1,0 +1,163 @@
+<title>Patch Sort cell</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the patch window's grid and function block, three ways for its Sort cell to work;
+   the kit's matte greys and olive gold, one dark look like the console. */
+:root {
+  color-scheme: dark;
+  --bg: #121212; --surface: #1c1c1c; --raised: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #8a8a8a; --gold: #9a7a08; --gold-text: #f3ecd3; --ok: #00a60a; --warn: #c27a12;
+  --ui: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+body { background: var(--bg); color: var(--text); font: 14px/1.4 var(--ui); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 32px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; }
+.cap { color: var(--dim); max-width: 80ch; margin: 6px 0 12px; }
+.cap b { color: var(--text); }
+.tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.tabs button { min-height: 40px; padding: 0 14px; border-radius: 5px; border: 1px solid var(--line); background: var(--raised); color: var(--dim); font: inherit; cursor: pointer; }
+.tabs button[aria-pressed="true"] { border-color: var(--gold); color: var(--text); background: color-mix(in srgb, var(--gold) 20%, var(--raised)); }
+.win { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--bg); }
+.bar { height: 34px; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: var(--surface); border-bottom: 1px solid var(--line); font-size: 13px; }
+.bar .sp { flex: 1; }
+.bar small { color: var(--dim); }
+.gwrap { overflow-x: auto; }
+.grid { display: grid; grid-template-columns: 64px minmax(110px, 1fr) minmax(130px, 1.2fr) 90px minmax(100px, 1fr); min-width: 520px; font-size: 13px; }
+.grid > span { padding: 0 10px; height: 34px; display: flex; align-items: center; border-bottom: 1px solid #262626; white-space: nowrap; overflow: hidden; }
+.grid .h { color: var(--dim); font-size: 12px; background: var(--surface); cursor: pointer; gap: 4px; }
+.grid .h.on { color: var(--text); }
+.grid .h.on::after { content: "▲"; font-size: 9px; color: var(--gold); }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.old { color: var(--dim); text-decoration: line-through; margin-right: 6px; }
+.new { color: var(--gold); font-weight: 600; }
+.slab { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 8px; border-top: 1px solid var(--line); background: var(--surface); }
+.slab button { min-height: 52px; border-radius: 5px; border: 1px solid var(--line); background: var(--raised); color: var(--text); font: inherit; font-size: 13px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px; }
+.slab button small { color: var(--dim); font-size: 11px; }
+.slab button.val { background: color-mix(in srgb, var(--raised) 70%, var(--bg)); }
+.slab button.val b { font-family: var(--mono); font-weight: 600; }
+.slab button.off { color: #5c5c5c; border-style: dashed; cursor: default; }
+.slab button.hl { border-color: var(--gold); }
+.line { padding: 8px 12px; border-top: 1px solid var(--line); font-family: var(--mono); font-size: 12.5px; color: var(--dim); min-height: 34px; overflow-wrap: anywhere; }
+.line b { color: var(--text); font-weight: 400; }
+.pick { position: fixed; z-index: 20; min-width: 200px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px; box-shadow: 0 12px 30px #000a; }
+.pick .h { padding: 6px 10px; color: var(--dim); font-size: 12px; }
+.pick button { display: block; width: 100%; min-height: 40px; text-align: left; border: none; border-radius: 4px; background: none; color: var(--text); font: inherit; padding: 0 10px; cursor: pointer; }
+.pick button:hover, .pick button:focus-visible { background: var(--raised); outline: none; }
+.pick button[aria-current="true"] { color: var(--gold); }
+.confirm { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 12px; border-top: 1px solid var(--gold); background: color-mix(in srgb, var(--gold) 12%, var(--surface)); font-size: 13px; }
+.confirm .sp { flex: 1; }
+.confirm button { min-height: 36px; padding: 0 14px; border-radius: 5px; border: 1px solid var(--line); background: var(--raised); color: var(--text); font: inherit; cursor: pointer; }
+.confirm button.go { background: var(--gold); color: var(--gold-text); border-color: transparent; font-weight: 600; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 14px; }
+.notes div { border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; background: var(--surface); color: var(--dim); min-width: 0; }
+.notes b { color: var(--text); display: block; margin-bottom: 4px; }
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+@media (max-width: 560px) { .slab { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+
+<h1>Patch Sort cell</h1>
+<p class="cap">The approved patch window has a <b>Sort · FID</b> cell in its function block, without saying what it does. Three ways it could work — try each: tap the Sort cell, pick a column.</p>
+
+<div class="tabs" role="group" aria-label="Variant">
+  <button type="button" data-v="A" aria-pressed="true">A · The grid's order</button>
+  <button type="button" data-v="B" aria-pressed="false">B · Renumber by a column</button>
+  <button type="button" data-v="C" aria-pressed="false">C · No Sort cell</button>
+</div>
+
+<div class="win">
+  <div class="bar"><b>Patch</b><small>Devices draft · you</small><span class="sp"></span><small id="cnt"></small></div>
+  <div class="gwrap"><div class="grid" id="grid"></div></div>
+  <div id="confirm"></div>
+  <div class="slab" id="slab"></div>
+  <div class="line" id="line">—</div>
+</div>
+
+<div class="notes" id="notes"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const BASE = [
+  [101, 'Wash 1', 'MAC Aura XB', '1.001', 'Truss 1'], [102, 'Wash 2', 'MAC Aura XB', '1.015', 'Truss 1'], [103, 'Wash 3', 'MAC Aura XB', '1.029', 'Truss 2'],
+  [201, 'Spot 1', 'Robe Spiider', '2.001', 'Truss 2'], [202, 'Spot 2', 'Robe Spiider', '1.120', 'Floor'], [203, 'Spot 3', 'Robe Spiider', '1.043', 'Floor'],
+  [301, 'Blinder 1', 'Molefay 4-Lite', '3.010', 'Truss 1'], [302, 'Blinder 2', 'Molefay 4-Lite', '1.100', 'Floor'],
+].map(([no, name, type, addr, grp]) => ({ no, name, type, addr, grp }));
+const COLS = [['no', 'FID'], ['name', 'Name'], ['type', 'Fixture type'], ['addr', 'Address'], ['grp', 'MVR group']];
+const LABEL = Object.fromEntries(COLS);
+const WORD = { no: 'FID', name: 'Name', type: 'FixtureType', addr: 'Address', grp: 'MvrGroup' };
+const st = { v: 'A', sort: 'no', rows: BASE.map(r => ({ ...r })), preview: null, line: '' };
+const addrKey = a => { const [u, s] = a.split('.').map(Number); return u * 1000 + s; };
+const cmp = k => (a, b) => k === 'no' ? a.no - b.no : k === 'addr' ? addrKey(a.addr) - addrKey(b.addr) : String(a[k]).localeCompare(String(b[k])) || a.no - b.no;
+
+function render() {
+  document.querySelectorAll('[data-v]').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === st.v));
+  const rows = [...st.rows].sort(cmp(st.v === 'B' ? 'no' : st.sort));
+  let h = COLS.map(([k, l]) => `<span class="h${(st.v === 'B' ? 'no' : st.sort) === k ? ' on' : ''}" data-h="${k}">${l}</span>`).join('');
+  for (const r of rows) {
+    const pv = st.preview?.get(r.no);
+    h += `<span class="num">${pv && pv !== r.no ? `<span class="old">${r.no}</span><span class="new">${pv}</span>` : r.no}</span><span>${esc(r.name)}</span><span>${esc(r.type)}</span><span class="num">${r.addr}</span><span>${esc(r.grp)}</span>`;
+  }
+  $('#grid').innerHTML = h;
+  $('#cnt').textContent = `${rows.length} fixtures`;
+  const sortCell = st.v === 'A' ? `<button type="button" class="val hl" data-sort><small>Sort</small><b>${LABEL[st.sort]}</b></button>`
+    : st.v === 'B' ? `<button type="button" class="hl" data-sort>Sort…<small>renumber by a column</small></button>`
+    : `<button type="button" class="off" title="Clone comes with part 6">Clone…</button>`;
+  $('#slab').innerHTML = `<button type="button">Insert fixtures…</button><button type="button">Patch to…</button><button type="button">Next free address</button><button type="button">Multipatch…</button>
+    <button type="button">Info</button>${sortCell}${st.v === 'C' ? '' : '<button type="button" class="off">Clone…</button>'}<button type="button" class="val"><small>Offset</small><b>0</b></button>`;
+  $('#line').innerHTML = st.line ? `<b>${esc(st.line)}</b>` : '—';
+  $('#confirm').innerHTML = st.preview ? `<div class="confirm"><span>${esc(st.pending)}</span><span class="sp"></span><button type="button" data-cancel>Cancel</button><button type="button" class="go" data-apply>Renumber</button></div>` : '';
+  $('#notes').innerHTML = {
+    A: `<div><b>What it is</b>A view setting: the column the grid sorts by. The same as tapping a header — it lives on your profile (your grid state), changes nothing in the show, and files no Oops step.</div>
+        <div><b>Why in the block</b>On a phone or a desk without a mouse the header is small; the cell shows the order at a glance and a tap picks another.</div>
+        <div><b>Line</b>The grid's own state line, like the header's sort (no show change).</div>`,
+    B: `<div><b>What it is</b>An action: the fixtures get new FIDs in the picked column's order — <code>Compact Fixture /By Address</code>, consecutive from the first FID, holes closed, GUIDs kept.</div>
+        <div><b>Before it runs</b>The grid previews old → new; Renumber sends the one line, one Oops step. Needs the draft (an FID isn't live).</div>
+        <div><b>Overlap</b>The context menu's Renumber… already does a selection; this one is the whole patch.</div>`,
+    C: `<div><b>What it is</b>No Sort cell: the header sorts (tap a header here), the block keeps its cells for actions.</div>
+        <div><b>Freed cell</b>The block gets room for another action later (Clone… shown in its place).</div>
+        <div><b>Line</b>The header's sort is the grid's own state, as today.</div>`,
+  }[st.v];
+}
+
+let pickEl = null;
+function closePick() { pickEl?.remove(); pickEl = null; }
+function openPick(btn) {
+  closePick();
+  const r = btn.getBoundingClientRect();
+  pickEl = document.createElement('div');
+  pickEl.className = 'pick';
+  pickEl.innerHTML = `<div class="h">${st.v === 'A' ? 'Sort the grid by' : 'Renumber the fixtures by'}</div>` + COLS.map(([k, l]) => `<button type="button" data-col="${k}"${st.sort === k && st.v === 'A' ? ' aria-current="true"' : ''}>${l}</button>`).join('');
+  document.body.append(pickEl);
+  pickEl.style.left = `${Math.min(r.left, innerWidth - pickEl.offsetWidth - 8)}px`;
+  pickEl.style.top = `${Math.max(8, r.top - pickEl.offsetHeight - 6)}px`;
+  pickEl.querySelector('button').focus();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('button, [data-h]');
+  if (pickEl && !e.target.closest('.pick') && !e.target.closest('[data-sort]')) closePick();
+  if (!b) return;
+  if (b.dataset.v) { st.v = b.dataset.v; st.preview = null; st.line = ''; st.rows = BASE.map(r => ({ ...r })); st.sort = 'no'; closePick(); return render(); }
+  if (b.dataset.sort != null) return openPick(b);
+  if (b.dataset.h) {
+    if (st.v === 'B') return;
+    st.sort = b.dataset.h; st.line = `(the grid's own sort: ${LABEL[st.sort]} — no show change)`; return render();
+  }
+  if (b.dataset.col) {
+    const k = b.dataset.col; closePick();
+    if (st.v === 'A') { st.sort = k; st.line = `Set GridColumns "patch.fixtures" "Sort" ${WORD[k]}   (your view; no show change, no Oops)`; return render(); }
+    const order = [...st.rows].sort(cmp(k));
+    const first = Math.min(...st.rows.map(r => r.no));
+    st.preview = new Map(order.map((r, i) => [r.no, first + i]));
+    st.pending = `Renumber every fixture by ${LABEL[k]}: ${first} Thru ${first + order.length - 1}`;
+    st.line = `Compact Fixture /By ${WORD[k]}   ← on Renumber`;
+    return render();
+  }
+  if (b.dataset.cancel != null) { st.preview = null; st.line = ''; return render(); }
+  if (b.dataset.apply != null) {
+    st.rows.forEach(r => { r.no = st.preview.get(r.no); });
+    st.preview = null; st.line = st.line.replace('   ← on Renumber', '   (one Oops step)'); return render();
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePick(); });
+render();
+</script>

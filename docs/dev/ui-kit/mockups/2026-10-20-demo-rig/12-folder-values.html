@@ -1,0 +1,55 @@
+<title>Values On A Folder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 12 · 2026-10-20 · discussion only</div>
+<h1>Where a value given to a folder lives</h1>
+<p>Your direction on 11: <code>Fixture Media 1</code> selects only the folder; <code>At 50</code> on it sends the value down to the fixtures; a value can also go to the folder itself; any fixture may contain fixtures; sub-fixtures of a fixture are never a thing here (the part / element system comes later) — a fixture is a fixture. This page pins the one word in that which decides the engine: "sends down".</p>
+</header>
+
+<section class="card">
+<h2>Facts</h2>
+<table>
+<tr><th>Values today</th><td>The programmer keys values by <code>(fixture GUID, attribute)</code>; presets and cues the same; the render plan resolves <code>(fixture, attribute)</code> per slot (<code>ValueTier</code>, <code>merge::resolve</code>). A folder has a GUID like any fixture, so <code>(folder GUID, "Dimmer")</code> is storable as is — what is new is only who reads it.</td></tr>
+<tr><th>The desk</th><td>The reference fans out: programming a parent writes each child's value; nothing is kept on the parent (values are per fixture / sub-fixture).</td></tr>
+<tr><th>MVR</th><td>Knows the tree (<code>ChildList</code>) and nothing about values; either reading exports the same file.</td></tr>
+<tr><th>Decided already</th><td>Values are one <code>Value</code> type across programmer, presets and cues; the merge is <code>park &gt; frozen programmers &gt; LTP of programmers and running sequences &gt; defaults</code>, compiled per change on the plan-compiler thread; the tick walks arrays only.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>"Sends the value down"</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>The folder holds the value; the fixtures below inherit it</h3><p><code>Fixture Media 1 At 50</code> stores Dimmer 50 on the folder. At compile time every fixture below that has no value of its own for Dimmer, in that programmer or cue, takes the nearest ancestor's. Store Preset / Store Cue keep the folder's value as one entry; a cue with "Stage 1 Mainstage Dimmer 50" is one line, not 1 255. Selecting one fixture and giving it 30 overrides it for that one. <code>Clear</code> on the folder clears the folder's value. Tagging a fixture elsewhere changes nothing; moving a fixture into a folder changes what it inherits.</p><ul><li>+ the tree <em>is</em> the programming structure — your words; stages, trusses and types become one-value handles with no group pool needed</li><li>+ small data (one entry), exact Oops, replication unchanged</li><li>− the plan compiler learns one walk (nearest ancestor per attribute); LTP between a folder value and a child's own value needs a rule (the child's own wins while it exists; a newer folder value does not take it)</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>Fan-out: the folder keeps nothing</h3><p><code>Fixture Media 1 At 50</code> writes 50 into each of the 1 255 fixtures' values, one Oops step; the folder stays empty. "Directly to the folder" then means the folder's own attributes only (a parent fixture that has channels).</p><ul><li>+ the desk's behaviour; no engine change</li><li>− a stage-level cue is 1 255 entries; nothing in the data says "the stage was set", only that every fixture was</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>Both, by a word</h3><p>A is the plain line; <code>/Down</code> (or <code>Fixture Media 1 Thru</code> — the folder's members) fans the value out into the fixtures when the operator wants per-fixture copies to tweak.</p><ul><li>+ A's data with the desk's gesture when wanted</li><li>− two things one line can mean; the word is a lum.md addition</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Then</h2>
+<ul>
+<li>Sub-fixtures: lum.md's dotted fixture ids (<code>Fixture 849.1</code>, the Parts(n) kind) go to the part / element system's page later; the MVR import ignores the exporter's sub-fixture ids in the Default pool's groups (852 "Icarus LEDs" items, 2 759 "MAPPING" items) until then.</li>
+<li>Any fixture may contain fixtures: the import nests exactly as <code>ChildList</code> says, Grouping or not; Insert fixtures… can place under any fixture.</li>
+<li>The demo itself: groups from the Default pool, one show or two, what is committed, names.</li>
+</ul>
+</section>
+</main>

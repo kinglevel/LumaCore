@@ -1,0 +1,201 @@
+<title>Import MVR Line</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the question (the built Patch dialog's slab and the Insert fixtures pattern, real
+   captures; what is decided), then three dialog frames in the console look — the way an .mvr gets
+   in from a browser and where the import's options sit. A: two steps (File · Options) then the
+   review in the grid; B: one dialog; C: pick, then the options on the review. */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --warn: #d08a2a; --blue: #4f8fd6; --sel: #223a5a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 88ch; line-height: 1.5; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; max-width: 100%; }
+figure img { width: 420px; max-width: 100%; border: 1px solid var(--line); border-radius: 8px; display: block; }
+figcaption { color: var(--dim); font-size: 12.5px; max-width: 420px; line-height: 1.4; }
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 13px; margin: 0; max-width: 92ch; min-width: 0; flex: 1 1 420px; line-height: 1.45; }
+.facts dt { color: var(--faint); } .facts dd { margin: 0; }
+.facts code, p code, .opt code { font-family: var(--mono); font-size: 12px; color: var(--gold-text); }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 92ch; line-height: 1.5; margin: 0; }
+.opts { display: flex; flex-direction: column; gap: 30px; }
+.opt { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.opt h3 { margin: 0; font-size: 15px; font-weight: 500; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.opt h3 .tag { font-size: 11px; border: 1px solid var(--gold); color: var(--gold-hi); border-radius: 9px; padding: 0 7px; }
+.opt p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.45; max-width: 100ch; }
+.opt ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--dim); line-height: 1.4; }
+.opt li::before { content: "＋ "; color: var(--ok-t); } .opt li.m::before { content: "－ "; color: var(--del); }
+.try { font-size: 12px; color: var(--faint); font-style: italic; }
+
+/* ── the dialog frames ── */
+.dlg { width: 100%; max-width: 980px; border-radius: 8px; border: 1px solid var(--line); background: var(--dlg); display: flex; flex-direction: column; font-size: 12.5px; overflow: hidden; user-select: none; }
+.t { flex: none; display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+.t .crumb { color: var(--dim); } .t b { font-weight: 500; font-size: 15px; }
+.t .steps { display: flex; gap: 6px; margin-left: 10px; }
+.t .steps span { height: 28px; padding: 0 10px; border: 1px solid var(--line); border-radius: 5px; display: inline-flex; align-items: center; gap: 6px; color: var(--dim); cursor: default; }
+.t .steps span.on { border-color: var(--gold-hi); color: var(--gold-text); } .t .steps span i { font-style: normal; color: var(--gold-hi); font-size: 11px; }
+.t .x { margin-left: auto; color: var(--dim); }
+.bar { flex: none; display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg span { height: 30px; padding: 0 12px; display: inline-flex; align-items: center; color: var(--dim); }
+.seg span.on { background: color-mix(in srgb, var(--gold) 40%, var(--cell)); color: var(--gold-text); }
+.btn { height: 32px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--cell); color: var(--text); display: inline-flex; align-items: center; gap: 6px; }
+.btn.gold { background: var(--gold-hi); color: #1a1500; border-color: var(--gold-hi); font-weight: 500; }
+.btn.ghost { background: none; color: var(--dim); }
+.body { display: flex; min-height: 0; }
+.body > * { min-width: 0; }
+.list { flex: 1 1 60%; min-width: 0; overflow: hidden; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+.list h4, .side h4 { margin: 0; padding: 8px 12px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 600; border-bottom: 1px solid var(--cell-line); display: flex; gap: 10px; align-items: center; }
+.list h4 .r { margin-left: auto; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--dim); }
+table { border-collapse: collapse; width: 100%; }
+th { text-align: left; font-weight: 500; color: var(--dim); padding: 7px 10px; border-bottom: 1px solid var(--line); background: var(--head); font-size: 12px; white-space: nowrap; }
+td { padding: 7px 10px; border-bottom: 1px solid var(--cell-line); font-variant-numeric: tabular-nums; }
+tr.on td { background: var(--sel); } tr.on td:first-child { box-shadow: inset 3px 0 0 var(--gold-hi); }
+td.dim { color: var(--dim); } td.mono { font-family: var(--mono); font-size: 11.5px; }
+.drop { margin: 10px 12px; border: 1px dashed var(--line); border-radius: 8px; padding: 14px; text-align: center; color: var(--dim); }
+.drop b { color: var(--gold-text); font-weight: 500; }
+.drop.hot { border-color: var(--gold-hi); background: color-mix(in srgb, var(--gold) 14%, transparent); color: var(--gold-text); }
+.side { flex: 0 0 330px; min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
+.phone .list { overflow: visible; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 5px 12px; padding: 10px 12px; font-size: 12.5px; }
+.kv dt { color: var(--faint); } .kv dd { margin: 0; }
+.kv dd.warn { color: var(--warn); } .kv dd.ok { color: var(--ok-t); }
+.tree { padding: 4px 12px 10px; color: var(--dim); font-size: 12px; line-height: 1.6; }
+.tree b { color: var(--text); font-weight: 500; }
+.foot { flex: none; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.foot .line { font-family: var(--mono); font-size: 11.5px; color: var(--dim); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.foot .line b { color: var(--gold-text); font-weight: 500; }
+.pill { position: absolute; right: 16px; top: 52px; background: var(--cell); border: 1px solid var(--gold-hi); border-radius: 14px; padding: 4px 10px; font-size: 12px; color: var(--gold-text); }
+.pill i { display: inline-block; width: 80px; height: 4px; border-radius: 2px; background: var(--line); vertical-align: middle; margin-left: 8px; overflow: hidden; }
+.pill i::after { content: ""; display: block; width: 62%; height: 100%; background: var(--gold-hi); }
+/* the options */
+.opts2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.fld { display: grid; grid-template-columns: 120px 1fr; gap: 6px 10px; padding: 8px 12px; align-items: center; border-bottom: 1px solid var(--cell-line); }
+.fld label { color: var(--dim); } .fld .v { height: 30px; border: 1px solid var(--line); border-radius: 5px; background: var(--cell); display: flex; align-items: center; padding: 0 9px; gap: 8px; }
+.fld .v small { color: var(--faint); margin-left: auto; }
+.fld .seg span { height: 28px; padding: 0 10px; }
+.grp { padding: 8px 12px; border-bottom: 1px solid var(--cell-line); }
+.grp h5 { margin: 0 0 6px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
+.mat { display: grid; grid-template-columns: 150px repeat(3, 64px); gap: 4px 6px; align-items: center; font-size: 12px; }
+.mat .h { color: var(--faint); text-align: center; font-size: 11px; }
+.mat .c { height: 26px; border: 1px solid var(--line); border-radius: 5px; display: grid; place-items: center; color: var(--dim); }
+.mat .c.on { background: color-mix(in srgb, var(--gold) 40%, var(--cell)); color: var(--gold-text); border-color: var(--gold-hi); }
+.mat .c.off { background: var(--cell); color: var(--faint); }
+.hint { color: var(--faint); font-size: 11.5px; padding: 6px 12px 10px; }
+/* C: the review strip over the grid */
+.strip { display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--gold-hi); background: color-mix(in srgb, var(--gold) 22%, var(--head)); flex-wrap: wrap; }
+.chip { height: 30px; padding: 0 10px; border: 1px solid var(--gold-hi); border-radius: 15px; background: var(--cell); color: var(--gold-text); display: inline-flex; align-items: center; gap: 6px; }
+.chip i { font-style: normal; color: var(--dim); }
+.grid { font-size: 12px; }
+.grid td.tk { background: color-mix(in srgb, var(--warn) 30%, var(--cell)); color: #ffe7c7; } .grid td.tk::before { content: "✓ "; color: var(--warn); }
+.grid td.of { border: 1px dashed var(--line); color: var(--dim); }
+.grid td.new { background: color-mix(in srgb, var(--ok) 25%, var(--cell)); color: var(--ok-t); }
+.grid td small { display: block; color: var(--faint); font-size: 10.5px; }
+.phone { width: 304px; height: 520px; border-radius: 22px; border: 6px solid #000; outline: 1px solid var(--line); background: var(--dlg); overflow: hidden; display: flex; flex-direction: column; font-size: 12px; flex: none; }
+.phone .t { height: 38px; padding: 0 10px; } .phone .t b { font-size: 13px; } .phone .t .steps { margin-left: 4px; } .phone .t .steps span { height: 24px; padding: 0 7px; font-size: 11px; }
+.phone .list { border-right: 0; } .phone td, .phone th { padding: 8px 8px; }
+.phone .foot { margin-top: auto; } .phone .btn { height: 44px; }
+.bar0 { flex: none; display: flex; gap: 5px; padding: 6px; border-top: 1px solid var(--line); }
+.bar0 div { flex: 1; height: 44px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10px; color: var(--dim); }
+.frames { display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-start; }
+.frames > .dlg { flex: 1 1 640px; position: relative; }
+</style>
+<style>
+pre { margin: 0; background: var(--head); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; font-family: var(--mono); font-size: 12px; line-height: 1.55; color: var(--text); overflow-x: auto; white-space: pre; }
+pre b { color: var(--gold-hi); font-weight: 500; } pre i { color: var(--faint); font-style: normal; }
+pre .bad { color: var(--del); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+table.v { border-collapse: collapse; font-size: 12.5px; max-width: 900px; }
+table.v th { text-align: left; color: var(--dim); font-weight: 500; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+table.v td { padding: 6px 10px; border-bottom: 1px solid var(--cell-line); vertical-align: top; }
+table.v td code { color: var(--gold-text); }
+.opt pre { max-width: 100ch; }
+</style>
+<main>
+  <header>
+    <h1>Import MVR · 2 · the line (a lum.md discussion)</h1>
+    <p>Question 1 fixed that the import is one line the dialog builds and runs — the File step names the file, the Options step the preset — and that a bare <code>Import Mvr</code> typed asks for the file and runs with the preset. This question names the words: how the file, the scope, the match key, the offsets and the None / Take / Offer matrix ride on one Lum line, and where the preset lives. lum.md is strict (§33): the grammar is the language, every example a test, a change to the grammar is a decision with its edge case named. Nothing here is built; the line's words are PENDING until 34g4 part 4.</p>
+  </header>
+
+  <section class="board">
+    <h2>What the grammar gives — and what it doesn't</h2>
+    <div class="cols">
+      <div>
+<pre>lum     = [ select-op ] [ verb [ phase ] ] [ if-early ] [ target ] { slot } [ if ] { <b>option</b> } ;
+<b>option</b>  = "/" NAME [ value ] ;       <i>(* whether it takes a value: declared on the option *)</i>
+value   = NUMBER | relative | spread | WORD | QUOTED | LINE | SELF-READ | <b>target</b> ;
+target  = item { set-op item } ;      <i>(* MvrGroup 3, Tag "Truss", MvrLayer 1 + 2 *)</i>
+WORD    = a word of the vocabulary — a choice is typed bare (Auto, Take), quoted is text</pre>
+        <p class="try">One value per option. A value may be a target, so <code>/Scope MvrGroup 3</code> is grammar today. A list of words after one option (<code>/Offer Addresses + Names</code>) is not: <code>+</code> is a set-op between ids, and a bare word list has no rule.</p>
+      </div>
+      <div>
+        <table class="v"><tr><th>Already a word</th><th>Where</th></tr>
+          <tr><td><code>/Drive "usb1"</code></td><td>every file word (§38)</td></tr>
+          <tr><td><code>/Mode</code>, <code>/Revision</code>, <code>/Every</code>, <code>/KeepSpacing</code>, <code>/Swap</code></td><td>Store Fixture … At DMX</td></tr>
+          <tr><td><code>/Merge</code>, <code>/Overwrite</code>, <code>/Keep</code>, <code>/Skip</code>, <code>/Force</code></td><td>Store, Copy, Move, Claim</td></tr>
+          <tr><td><code>Import Show "x" Patch Users</code></td><td>parts as bare words after the file</td></tr>
+          <tr><td><code>Set UserProfile "Suggestions" Auto</code></td><td>a profile preference: one declared property, a Choice</td></tr>
+          <tr><td><code>Import Mvr "Rig 2026 v3.mvr" /Drive "usb1"</code></td><td>lum.md "Drives", PENDING</td></tr>
+        </table>
+        <p class="try">Decided (point 10): the dialog's settings are "saved as the user's import preset". The one property registry says a preference is a declared <code>UserProfile</code> property, set by one <code>Set</code> line, shown in Users &amp; Profiles.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="board">
+    <h2>The options</h2>
+    <div class="opts" id="opts"></div>
+    <p class="decide">To decide: A, B or C. Recommended: <b>A · the preset is the profile's, the line names the file, the scope and what differs</b> — no grammar change, one value per option, every setting one declared property (the Options step is a settings form: each change one <code>Set UserProfile</code> line, like every settings cell), the matrix's six groups are six options with a three-word choice, the scope is a target. Macros and the TUI get the full line; a dialog user never types it.</p>
+  </section>
+</main>
+<script>
+const A = `<pre><b>Import Mvr</b> "Rig 2026 v3.mvr"                         <i>· your profile's preset, the whole patch</i>
+<b>Import Mvr</b> "Rig 2026 v3.mvr" /Drive "usb1" /Scope MvrGroup 3
+<b>Import Mvr</b> "Rig 2026 v3.mvr" /Scope Tag "Truss" /Match Name /Lost Delete
+<b>Import Mvr</b> "Rig 2026 v3.mvr" /FidOffset 100 /UniverseOffset 10 /X -4.2 /Z 2.1 /Rotate 90
+<b>Import Mvr</b> "Rig 2026 v3.mvr" /Addresses Take /Names None /NewFixtures Offer /IgnoreRotation
+
+<i>the preset: declared UserProfile properties, section "MVR import"</i>
+<b>Set UserProfile</b> "MvrMatch" Auto            <i>Auto · UUID · FID · Name</i>
+<b>Set UserProfile</b> "MvrAddresses" Offer       <i>None · Take · Offer — and MvrIds, MvrNames, MvrPosition, MvrRevisions, MvrNewFixtures (Take)</i>
+<b>Set UserProfile</b> "MvrLost" Mark             <i>Mark · Delete</i>
+<b>Set UserProfile</b> "MvrRotation" Take         <i>Take · Ignore</i>
+<b>Set UserProfile</b> "MvrFidOffset" 0           <i>and MvrUniverseOffset, MvrX / Y / Z (m), MvrRotate (°)</i></pre>`;
+const B = `<pre><b>Import Mvr</b> "Rig 2026 v3.mvr" /Take NewFixtures + Addresses /Offer Names + Position /Lost Delete
+<b>Import Mvr</b> "Rig 2026 v3.mvr" /Scope MvrGroup 3 /Offset -4.2 0 2.1 /Rotate 90
+
+<i>needs the grammar to change:</i>
+option  = "/" NAME [ value { "+" value } ] ;        <i class="bad">a + after an option's value: a list — or the next target's set-op?</i>
+<i class="bad">Fixture 1 /Something 3 + 4  — today: option value 3, then "+ 4" is an error; after: a list.</i>
+<i class="bad">/Offset -4.2 0 2.1 — three bare numbers after one option: a second new rule (a vector value).</i></pre>`;
+const C = `<pre><b>Store MvrPreset</b> "Festival"                   <i>a pool object on the profile</i>
+<b>Set MvrPreset</b> "Festival" "Addresses" Take
+<b>Set MvrPreset</b> "Festival" "Match" Name
+<b>Import Mvr</b> "Rig 2026 v3.mvr" /Preset "Festival"
+<b>Import Mvr</b> "Rig 2026 v3.mvr"                         <i>· the profile's default preset</i></pre>`;
+const OPTS = [
+  { id: 'a', tag: 'recommended', title: 'A · The preset is the profile\'s; the line names the file, the scope and what differs', frames: A,
+    text: 'Every setting of the Options step is a declared UserProfile property (section "MVR import"): the step is a settings form, each change one Set line, kept per profile like every preference, shown in Users & Profiles. Import Mvr "file" runs with the preset; its options override for this import: /Scope <target> (an MvrLayer, MvrGroup, MvrClass or Tag; absent = the whole patch), /Match, /Lost, /IgnoreRotation, /FidOffset, /UniverseOffset, /X /Y /Z /Rotate, and the six groups as options with a three-word choice (/Addresses Take, /Ids, /Names, /Position, /Revisions, /NewFixtures). One value per option: the grammar as it is.',
+    pros: ['No grammar change; every word a declared option or property, so completion, hints, the reference and the rights gate read them', 'The Options step is the settings pattern the kit has (one Set per change, no OK)', 'A macro or the TUI writes the full line; the scope is a target the resolver knows'],
+    cons: ['Twelve option words on one object (the reference lists them; a typed line rarely needs more than two)', 'The rig offset is four options, not one'] },
+  { id: 'b', title: 'B · /Take and /Offer with lists; /Offset with a vector', frames: B,
+    text: 'The matrix as two options taking a list of groups (/Take NewFixtures + Addresses /Offer Names + Position), the rig offset as one option with three numbers. Shorter lines; the grammar gains a list value and a vector value.',
+    pros: ['Reads like the dialog\'s matrix; one line says it all'],
+    cons: ['A grammar change with an edge case: after an option\'s value, + is a list — today it is an error, and in a target it is the set-op; a reader must know which', 'A vector value is a second new rule; every other option keeps one value', 'The six groups still need six property names for the preset'] },
+  { id: 'c', title: 'C · A named import preset object', frames: C,
+    text: 'MvrPreset is a pool object on the profile with the settings as its properties; Import Mvr names one with /Preset; the profile points at a default. The Options step edits the preset.',
+    pros: ['Several presets per user (a festival, a club)'],
+    cons: ['A new object, pool, verbs, window and tests for a setting a console keeps as one dialog memory', 'Two places for a value (the preset and a line override) — or no overrides at all', 'The profile\'s preferences are already the preset the decision names'] },
+];
+document.getElementById('opts').innerHTML = OPTS.map(o => `<div class="opt"><h3>${o.title}${o.tag ? `<span class="tag">${o.tag}</span>` : ''}</h3>${o.frames}<p>${o.text}</p><ul>${o.pros.map(p => `<li>${p}</li>`).join('')}${o.cons.map(c => `<li class="m">${c}</li>`).join('')}</ul></div>`).join('');
+</script>

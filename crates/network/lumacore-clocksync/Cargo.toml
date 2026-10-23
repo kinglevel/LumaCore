@@ -1,0 +1,16 @@
+[package]
+name = "lumacore-clocksync"
+version.workspace = true
+edition.workspace = true
+description = "The session clock sync: Time pings, the RTT filter and regression, the discipline of the session clock (decisions §24 \"Session clock\", §34 24.2)"
+
+[dependencies]
+lumacore-sysmon = { path = "../../foundation/lumacore-sysmon" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+serde_json = { workspace = true }
+log = { workspace = true }
+
+[lints]
+workspace = true

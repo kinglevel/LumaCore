@@ -1,0 +1,47 @@
+---
+paths:
+  - crates/ui/**
+  - crates/commands/objects/lumacore-cmd-devices/**
+  - tests/e2e/**
+  - docs/dev/ui-kit/**
+---
+
+# UI kit, windows, menus, dialogs, feeds
+
+Records: `ui-kit-only`, `descriptors-from-registries`, `one-server-held-dialog`, `pointer-core-one-lift-gesture`, `one-hold-one-owner`, `luma-grid`, `slab`, `menudef-luma-setup`, `window-types-rust-json`, `window-bar-and-self`, `window-presets-resets`, `client-feeds-one-socket`, `multiplatform-contracts`, `phone-desk-miniature`, `pool-window-unified`, `one-context-menu-from-the-registry`, `settings-typed-keyed-props`, `settings-home-icons`, `device-lock-theme-state`, `desklock`, `one-surface-login-lock-connect`, `keyboard-per-device`, `screenshots-client-capture`, `text-selection-rule`, `look-tokens-fonts-icons`, `theme-on-profile`, `one-suggestion-engine`, `narrow-command-line`, `device-grid-and-value-marks`, `device-sheet-window`, `top-bar-status-strip`, `view-bar-any-object-pool-windows`, `one-preset-pool-follows-the-programmer`, `meow-license-consent-on-every-login`.
+
+## Kit only
+
+- Every window, menu, dialog, pop-up, bar and plugin UI is built only from kit elements (`crates/ui/lumacore-webui/web/kit/`, `luma-*` custom elements drawn from server descriptors); every gesture is a command line. A window that needs a missing element waits: design it as a mockup artifact, get approval, add it to the kit and the Showroom, then use it. Never hand-build controls or markup outside the kit; no table markup outside `grid.js`; no hand-made New / Copy / Cut / Paste / Delete / Import / Export buttons outside `slab.js` (`tidy: table-ok` / `slab-ok (<reason>)` only where a window waits for its grid). Colours only from theme tokens, icons from the kit's Lucide sprite, font sizes only `--lc-fs*` tokens, `user-select` only in kit.css; tile grids only `<luma-tiles>`; overlays follow `.lc-box`; touch targets meet the minimum the tidy rule checks on coarse pointers. The frontend loads nothing from the internet (`web/vendor/`).
+- What any UI shows (menus and their rows, pools, attribute board, encoder, detail, sequence, window state) is built by `lumacore-views`; the HTTP feeds and the TUI read it; no client builds its own rows. The TUI wears the user's theme (`tui_look::role`), never a raw colour.
+
+## Pointer, lists, actions
+
+- Every drag is the pointer core's one `lift` gesture (`kit/pointer.js`): tap selects, a drag on an item lifts it, on empty ground lassos, hold-and-release is the context menu, a plain finger scrolls, a pager or tab under a lifted item springs after the hold time; every hold uses the profile's `HoldTime`; never a per-window pointer handler.
+- Every list of objects is `<luma-grid>` (rows by GUID, columns from the registry, selection + / − / Thru / lasso, one line naming its rows, the edit card for many fields) with its actions in `<luma-slab>` (fixed order, standard icons, `--lc-act-*` colours, the power toggle look A); `Set <Object> 1 Thru 3 + 5 "<Prop>" <value>` is one line for many rows. One context menu for every list, built from the registry (`/api/object-menus`). Pools are one window (`buildPoolPanel`) on the `pools` feed; hold opens the object sheet; never a pool-specific endpoint or client-only state. Grid tools are `Grid <owner> "<Tool>"` rows.
+- A value anywhere (the device grid, the encoder bar, the programmer) is painted by `kit/marks.js` with the `--lc-v-*` tokens: text = where it comes from, a ground = what happens to it, bars = which layers hold data; never a value colour of a window's own. A list of devices is `<luma-device-grid>` (it extends `<luma-grid>`; the `devices` feed); every gesture on it is a selection or value line.
+- Presets are one pool per DataPool (`Preset <n>`); the one Presets window follows the encoder bar's feature group and the lit tags, the station filters (`pools` feed `feature` / `tags`); never a pool per preset type.
+- The right sidebar is the view bar on the `viewbar` feed: a button holds any object (`ViewButton <screen>.<n>`), a tap is that object's own line, assigning is one `Assign … At ViewButton` line; each pool is its own window type on the one pool window.
+- The top bar is `<luma-status-strip>`: the mark, the Show tab, the facts from `Status.strip`, the modes as word indicators that are the UI keys themselves (`data-key`), the clock. A mode key or a connection status lives there, never in the sidebar or the command line bar.
+
+## Dialogs, menus, windows, settings
+
+- Every question the station asks is one server-held dialog (`core::dialogs`): a command returns `DispatchResult::Ask` with buttons that are command-line templates; each client's `Status.dialogs` carries its own; the answer closes it on every client first, then the line runs as the answering user; one-shot paths are refused with the flag. Never a client-only confirm, a browser dialog or a second ask path. Dangerous lines are station asks (`Set Station Online Off`, `HoldOutput On`, `Leave` / `Claim LumaSession`, deleting lines / networks / stations / several rows; `/NoConfirmation`).
+- Menus: `Menu "<name>" [/Tab x]` opens a `MenuDef` from `core::menu_defs` (tabs, grid columns from the declared props, slab templates, bound cells, power toggle), drawn by `<luma-setup>`; the same line closes it; `/Tab` is kept on the profile; rows come from feeds built by `lumacore_views::menu_rows`. Every setup menu is a `MenuDef` on the frame; every menu overlay is gone.
+- How a window type is built is declared in the Rust registry and sent as JSON (`/api/window-types`, the `windows` feed); the show keeps only the floor plan. No KDL / hand-written layout files. Window-bar items are `Set` / command lines; state reads go through `Self.<Property>`, resolved where the line starts; a line from a window carries `Command.window`; never write window settings through the layout PUT. Window-settings presets are `WindowPreset` on the profile, never "Preset". F12 is full screen of the windows (`Sidebars`).
+- Settings are typed (`lumacore_wire::FieldInput`, `SettingField.section`): `EditSetting Window n` / `User "x"` / `<object> n` draw in `<luma-settings>`, every change one `Set` line; `SettingKind::Link` carries a pick list; named numbers, never a magic number. A settings cell shows its kind badge and its home as an icon (show file / user / station; gold where the cell's home differs from its tab's). Station / interface / network-map / show settings are keyed properties in the one registry. Numbers take relative input; an unparseable value is E-CMD-008, never 0.
+
+## Devices, lock, login, keyboard
+
+- A device is one app install (`client.json`) or one browser tab (sessionStorage); its id rides on the shell hello. The station keeps per device `Locked` and `NormalTheme`; `DeskLock` (F9 / Pause) locks it; a locked device's lines are refused (E-LOCK-001, `allowed_while_locked`); pop-ups queue as "n waiting". The station's page logs in with the kit's `<luma-surface>` (countdown, `?autologin=now`); `GET /api/station` and the open `station` feed work before login. Admin's password is always `admin` (E-USER-001). Every login (the page, the app, autologin, a shell's hello, `Login`, a user switch; never a DeskLock unlock) waits for the Meow License: one station dialog from `consent::ask` (topic `consent`) whose buttons are `Consent` / `Logout`; until then only those and `Login` run (E-USER-010) and the token opens no REST or feed; the page keeps its surface behind the dialog. The desktop app is a basic client: the connect page from the WebUI, then one OS window per screen on the station's page.
+- The built-in keyboard's layouts are data files (`web/kit/layouts/*.json`); the screen's `Keyboard` mode lives on the device; the VK button toggles it (hold = mode). Meow = Shift by default. Text is selectable only in inputs, terminals and `.lc-selectable`.
+- Suggestions: one engine (`crates/commands/lumacore-suggest`; `Suggest` / `LineEdit` packets; `<luma-suggest>`; the TUI overlay); Enter runs the line as typed; per-user Usage on `ShowData.Users.{n}`.
+
+## Feeds and screenshots
+
+- Everything live in a page rides `/ws/feeds` (opens without a login; `sub` / `unsub`; State vs Samples with `seq` and explicit `gap`; counter-driven State feeds are shared builds rebuilt when `lumacore_http::Revisions` move, never a timer; JSON columnar, binary DMX; limits declared in the hub). `/ws/shell` is the page's shell. No other `/ws/` route, no SSE, no fetch on a timer (tidy). The feeds are catalog rows (`FEEDS`).
+- `Screenshot [Screen n] [User x]` (F11 / PrintScreen) asks the clients viewing those screens; the page renders itself and uploads to `POST /api/screenshots`; `./scripts/unix/screenshots` captures every window type, menu and overlay into `target/screenshots/`; verify UI work with it and in Chrome against the approved mockup. Check phone and tablet with `tests/e2e/tests/multiplatform.spec.ts` and `phone.spec.ts`; a kit file runs on all four Playwright projects before a step is done.
+
+## Phone
+
+- A phone is a short side under the threshold in `kit/phone.js`: panes stay in place in miniature, hold = full screen (mirrored as `Set Self Maximized` when `HoldFollows` is on), the frame folds its chrome and slab, one sheet look for every phone pop-up.

@@ -1,0 +1,17 @@
+[package]
+name = "lumacore-trace"
+version.workspace = true
+edition.workspace = true
+description = "The Perfetto trace collector and the trace macros of every crate (decisions §23 \"Step 8\", §34 20)"
+
+[dependencies]
+serde_json = { workspace = true }
+tracy-client = { workspace = true, optional = true }
+
+# Which backend the macros record into: the top crate turns them on, every crate's zones follow.
+[features]
+tracy = ["dep:tracy-client"]
+perfetto = []
+
+[lints]
+workspace = true

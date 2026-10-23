@@ -1,0 +1,23 @@
+[package]
+name = "lumacore-app"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "lumacore-app"
+path = "src/main.rs"
+
+[dependencies]
+lumacore-wire = { path = "../../crates/foundation/lumacore-wire" }
+lumacore-webui = { path = "../../crates/ui/lumacore-webui" }
+wry = { workspace = true }
+tao = { workspace = true }
+muda = { workspace = true }
+mdns-sd = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+
+[lints]
+workspace = true

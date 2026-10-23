@@ -1,0 +1,368 @@
+<title>RunTool and EditTool</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a console screen (top bar · sidebar · windows · view bar · command line) above a test
+   panel; the kit's matte greys with its olive gold, and one orange that means EditTool. */
+:root {
+  color-scheme: dark;
+  --bg: #121212; --surface: #1c1c1c; --raised: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #8a8a8a; --gold: #9a7a08; --gold-text: #f3ecd3; --ok: #00a60a; --alert: #e10000;
+  --edit: #e8780c;            /* EditTool */
+  --edit-ink: #1a0f02;        /* text on a solid orange bar */
+  --chrome: var(--surface); --chrome-ink: var(--text); --chrome-line: var(--line);
+  --ui: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+body { background: var(--bg); color: var(--text); font: 14px/1.4 var(--ui); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 32px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
+.cap { color: var(--dim); max-width: 78ch; margin: 6px 0 14px; }
+.cap b { color: var(--text); }
+
+/* ── EditTool on: the chrome turns orange (three looks to test) ── */
+.desk.edit.solid { --chrome: var(--edit); --chrome-ink: var(--edit-ink); --chrome-line: color-mix(in srgb, var(--edit) 70%, #000); }
+.desk.edit.tint { --chrome: color-mix(in srgb, var(--edit) 26%, var(--surface)); --chrome-ink: #ffd9b0; --chrome-line: color-mix(in srgb, var(--edit) 60%, var(--line)); }
+/* Edge (chosen 2026-10-19): only the line changes — a 2 px orange line, tinted toward the line
+   colour; the bars keep their own fill. --edge-mix sets how strong it is (the test panel's slider). */
+.desk { --edge-mix: 55%; }
+.desk.edit.edge { --edge: color-mix(in srgb, var(--edit) var(--edge-mix), var(--line)); --chrome-line: var(--edge); }
+.desk.edit.edge .wbar, .desk.edit.edge .top { box-shadow: inset 0 -2px 0 var(--edge); }
+.desk.edit.edge .side.l { box-shadow: inset -2px 0 0 var(--edge); }
+.desk.edit.edge .side.r { box-shadow: inset 2px 0 0 var(--edge); }
+/* Tab focus: the focused window's bar is brighter and it carries a gold frame (orange in EditTool). */
+.win { position: relative; }
+.win.focus::after { content: ""; position: absolute; inset: 0; border: 2px solid var(--gold); pointer-events: none; z-index: 4; }
+.desk.edit .win.focus::after { border-color: color-mix(in srgb, var(--edit) 80%, #fff); }
+.win.focus .wbar { color: var(--text); background: color-mix(in srgb, var(--text) 8%, var(--chrome)); }
+.cursor { box-shadow: inset 0 0 0 2px var(--gold) !important; }
+.desk.edit .cursor { box-shadow: inset 0 0 0 2px #fff !important; }
+
+.desk { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; display: grid; grid-template-columns: 56px minmax(0, 1fr) 56px; grid-template-rows: 36px minmax(0, 1fr) 38px; height: 600px; max-height: calc(100dvh - 40px); background: #0b0b0b; user-select: none; -webkit-user-select: none; }
+.top { grid-column: 1 / -1; background: var(--chrome); color: var(--chrome-ink); border-bottom: 1px solid var(--chrome-line); display: flex; align-items: center; gap: 12px; padding: 0 12px; transition: background .15s; }
+.top .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+.top .sp { flex: 1; }
+.top .mode { font-weight: 700; letter-spacing: .06em; font-size: 12px; }
+.scr { display: flex; gap: 4px; }
+.scr button { height: 26px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--chrome-line); background: transparent; color: inherit; font: inherit; font-size: 12px; cursor: pointer; }
+.scr button[aria-pressed="true"] { background: color-mix(in srgb, var(--chrome-ink) 16%, transparent); font-weight: 600; }
+.side { background: var(--chrome); color: var(--chrome-ink); display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 0; transition: background .15s; }
+.side.l { border-right: 1px solid var(--chrome-line); }
+.side.r { border-left: 1px solid var(--chrome-line); }
+.key { width: 44px; height: 44px; border-radius: 5px; border: 1px solid var(--chrome-line); background: color-mix(in srgb, var(--chrome-ink) 7%, transparent); color: inherit; font: 600 10px/1.1 var(--ui); cursor: pointer; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2px; }
+.key.on { background: var(--edit); color: var(--edit-ink); border-color: transparent; }
+.desk.edit.solid .key.on { background: var(--edit-ink); color: var(--edit); }
+.key svg { width: 18px; height: 18px; }
+.wins { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 3px; background: #050505; min-height: 0; position: relative; }
+.win { background: var(--bg); display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.win.full { position: absolute; inset: 0; z-index: 5; }
+.wbar { height: 30px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: var(--chrome); color: var(--chrome-ink); border-bottom: 1px solid var(--chrome-line); font-size: 12.5px; transition: background .15s; }
+.wbar b { font-weight: 600; }
+.wbar small { opacity: .75; }
+.wbar .sp { flex: 1; }
+.wbody { flex: 1; min-height: 0; overflow: auto; padding: 6px; position: relative; touch-action: none; }
+.cmd { grid-column: 1 / -1; background: var(--surface); border-top: 1px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 0 12px; font-family: var(--mono); font-size: 12.5px; min-width: 0; }
+.cmd .pr { color: var(--gold); flex: none; }
+.cmd.focus { box-shadow: inset 0 2px 0 var(--gold); }
+.cmd.focus .ln::after { content: "▏"; color: var(--gold); animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.cmd .ln { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
+.cmd .chip { flex: none; font-family: var(--ui); font-size: 11px; font-weight: 700; letter-spacing: .06em; padding: 3px 8px; border-radius: 10px; border: 1px solid var(--line); color: var(--dim); }
+.cmd .chip.edit { background: var(--edit); color: var(--edit-ink); border-color: transparent; }
+
+/* pool */
+.pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 4px; }
+.cell { aspect-ratio: 1; max-width: 100%; border-radius: 4px; border: 1px solid var(--line); background: color-mix(in srgb, var(--c, #3a3a3a) 38%, var(--raised)); position: relative; padding: 4px 5px; display: flex; flex-direction: column; justify-content: space-between; font-size: 11.5px; cursor: pointer; }
+.cell.empty { background: transparent; border-style: dashed; border-color: #2c2c2c; cursor: default; }
+.cell .no { color: var(--dim); font-size: 10.5px; }
+.cell.picked { outline: 2px solid var(--edit); outline-offset: -2px; box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--edit) 16%, transparent); }
+.cell.ghost { opacity: .35; }
+.cell.drop { outline: 2px dashed var(--edit); outline-offset: -2px; }
+/* sequence sheet / grid rows */
+.rows { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; }
+.row { display: grid; grid-template-columns: 52px minmax(0, 1fr) 56px 56px; gap: 6px; align-items: center; height: 30px; padding: 0 8px; background: var(--surface); border-radius: 3px; cursor: pointer; }
+.row.head { background: none; color: var(--dim); font-size: 11.5px; height: 22px; cursor: default; }
+.row.cur { box-shadow: inset 3px 0 0 var(--ok); }
+.row.picked { background: color-mix(in srgb, var(--edit) 20%, var(--surface)); box-shadow: inset 0 0 0 1px var(--edit); }
+.row.ug { grid-template-columns: 44px minmax(0, 1fr) 80px 70px; }
+.row.sel { background: color-mix(in srgb, var(--gold) 30%, var(--surface)); }
+.row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.lasso { position: absolute; border: 1px dashed var(--edit); background: color-mix(in srgb, var(--edit) 14%, transparent); pointer-events: none; z-index: 3; }
+.ring { position: fixed; width: 44px; height: 44px; margin: -22px 0 0 -22px; pointer-events: none; z-index: 30; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--gold); animation: spin .5s linear forwards; }
+@keyframes spin { to { transform: rotate(270deg); } }
+/* context menu */
+.cm { position: fixed; z-index: 40; min-width: 210px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 4px; box-shadow: 0 12px 30px #000a; }
+.cm .h { padding: 6px 10px; font-weight: 600; font-size: 12.5px; }
+.cm button { display: block; width: 100%; text-align: left; height: 34px; border: none; background: none; color: var(--text); font: inherit; padding: 0 10px; border-radius: 4px; cursor: pointer; }
+.cm button:hover, .cm button:focus-visible { background: var(--raised); outline: none; }
+.cm .del { color: var(--alert); }
+.cm hr { border: none; border-top: 1px solid var(--line); margin: 4px 2px; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--raised); border: 1px solid var(--line); padding: 8px 14px; border-radius: 6px; z-index: 50; font-size: 13px; }
+
+/* test panel */
+.test { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-top: 14px; }
+.box { border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; background: var(--surface); min-width: 0; }
+.box .t { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; }
+.box ul { margin: 0; padding-left: 18px; color: var(--dim); }
+.box li { margin: 3px 0; }
+.box li b { color: var(--text); font-weight: 600; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.seg button { height: 32px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--line); background: var(--raised); color: var(--text); font: inherit; cursor: pointer; }
+.seg button[aria-pressed="true"] { border-color: var(--edit); color: #ffd9b0; }
+.q { border: 1px dashed var(--edit); color: #ffd9b0; }
+button:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+@media (max-width: 700px) {
+  .desk { grid-template-columns: 48px minmax(0, 1fr); height: 760px; }
+  .side.r { display: none; }
+  .wins { grid-template-columns: minmax(0, 1fr); grid-template-rows: repeat(4, minmax(0, 1fr)); }
+  .key { width: 38px; height: 38px; font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) { .ring { animation: none; } .top, .side, .wbar { transition: none; } }
+</style>
+
+<h1>RunTool and EditTool</h1>
+<p class="cap">One tool for the whole user, in every window, dialog and screen. <b>RunTool</b> (default): a tap runs the object (a group selects its fixtures, a cue goes), a hold takes the window to full screen. <b>EditTool</b>: a tap picks, a drag on an object moves it, a drag on empty space lassos, right-click or hold opens the context menu. Press the <b>EditTool</b> key on the sidebar (or <b>`</b> here — the real hotkey is a UI key you bind). Picks are per screen: both Group pools on Screen 1 share them; Screen 2 has its own. <b>Tab</b> focuses the next window (click the screen first).</p>
+
+<div class="desk edge" id="desk">
+  <div class="top"><span class="dot"></span><b>Tower</b><span>Admin</span><span class="sp"></span><span class="mode" id="tmode">RUNTOOL</span>
+    <div class="scr" role="group" aria-label="Screen"><button type="button" data-scr="1" aria-pressed="true">Screen 1</button><button type="button" data-scr="2" aria-pressed="false">Screen 2</button></div></div>
+  <div class="side l">
+    <button type="button" class="key" title="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+    <button type="button" class="key" id="tool" aria-pressed="false" title="EditTool: tap to toggle (bare EditTool)">Edit<br>Tool</button>
+    <button type="button" class="key">Blind</button>
+    <button type="button" class="key">High<br>light</button>
+    <button type="button" class="key">Solo</button>
+  </div>
+  <div class="wins" id="wins">
+    <div class="win" data-win="1"><div class="wbar"><b>Groups</b><small>DataPool 1</small><span class="sp"></span><small data-cnt="g"></small></div><div class="wbody" data-kind="g"><div class="pool" data-pool="1"></div></div></div>
+    <div class="win" data-win="2"><div class="wbar"><b>Groups</b><small>DataPool 1 · a second window</small><span class="sp"></span><small data-cnt="g"></small></div><div class="wbody" data-kind="g"><div class="pool" data-pool="2"></div></div></div>
+    <div class="win" data-win="3"><div class="wbar"><b>Sequence sheet</b><small>Sequence 1 · Main</small><span class="sp"></span><small data-cnt="c"></small></div><div class="wbody" data-kind="c"><div class="rows" id="cues"></div></div></div>
+    <div class="win" data-win="4"><div class="wbar"><b>Universes</b><small>Patch · a setup grid</small><span class="sp"></span><small data-cnt="u"></small></div><div class="wbody" data-kind="u"><div class="rows" id="unis"></div></div></div>
+  </div>
+  <div class="side r">
+    <button type="button" class="key">View<br>1</button><button type="button" class="key">View<br>2</button><button type="button" class="key">View<br>3</button>
+  </div>
+  <div class="cmd"><span class="pr">Admin&gt;</span><span class="ln" id="ln">Tap a group (runs it), hold a window (full screen) — then turn on EditTool</span><span class="chip" id="chip">RUNTOOL</span></div>
+</div>
+
+<div class="test">
+  <div class="box"><div class="t">Indicator to test</div>
+    <div class="seg" role="group" aria-label="Indicator look">
+      <button type="button" data-look="edge" aria-pressed="true">Orange edge line (chosen)</button>
+      <button type="button" data-look="tint" aria-pressed="false">Orange tint</button>
+      <button type="button" data-look="solid" aria-pressed="false">Solid orange bars</button>
+    </div>
+    <label style="display:flex;align-items:center;gap:10px;margin-top:10px">Edge strength <input id="mix" type="range" min="25" max="100" value="55" style="flex:1;min-width:0"> <span id="mixv" class="num">55%</span></label>
+    <ul style="margin-top:10px"><li>The edge is a 2 px line, tinted toward the line colour; the bars keep their own fill. The slider sets how strong.</li><li>Solid and Tint stay here to compare.</li></ul>
+  </div>
+  <div class="box"><div class="t">What each window does</div>
+    <ul>
+      <li><b>Group pools</b> — Run: <span class="num">Group 3</span>. Edit: tap picks (both pools show it), drag a group onto a slot = <span class="num">Move Group 3 At 9</span>, drag on empty space lassos.</li>
+      <li><b>Sequence sheet</b> — Run: <span class="num">Goto Cue 3</span>. Edit: picks cues, lasso, the menu.</li>
+      <li><b>Universes</b> — Edit: picks rows. Run: <span class="q">open — select as today, or run its action?</span></li>
+    </ul>
+  </div>
+  <div class="box"><div class="t">Window focus with Tab</div>
+    <ul>
+      <li><b>Tab</b> focuses the next window, <b>Meow+Tab</b> (Shift) the one before; the focused window has a frame.</li>
+      <li>In it, <b>arrows</b> move a cursor, <b>Enter</b> taps (runs in RunTool, picks in EditTool), the <b>Menu key</b> opens the menu in EditTool.</li>
+      <li>On the command line Tab completes what you typed; on an empty line it goes to the windows.</li>
+    </ul>
+  </div>
+  <div class="box"><div class="t">Esc: back to normal</div>
+    <ul>
+      <li>Every <b>Esc</b> puts you on the command line and undoes one layer, the top one first:</li>
+      <li>1 a menu or dialog closes · 2 a full-screen window comes back · 3 the picks clear · 4 EditTool goes off (RunTool).</li>
+      <li>Press it a few times and you are always in the normal state with the command line selected.</li>
+    </ul>
+  </div>
+  <div class="box"><div class="t">Still open</div>
+    <ul><li>What a setup grid's tap does in RunTool.</li><li>The hotkey's default binding (a UI key; F9–F12 are core keys, F1–F8 stay free).</li><li>How picks show across windows of one screen.</li><li>The per-user settings of the tool.</li></ul>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const desk = $('#desk');
+const GROUPS = { 1: ['All', '#4a7fc1'], 2: ['Odd', '#c1844a'], 3: ['Even', '#c1844a'], 5: ['Front', '#4ab08a'], 6: ['Back', '#4ab08a'], 9: ['Truss', '#8a6bd1'], 10: ['Floor', '#8a6bd1'] };
+const CUES = [[1, 'Preset'], [2, 'Walk in'], [3, 'Open'], [4, 'Song 1 verse'], [5, 'Song 1 chorus'], [6, 'Blackout']];
+const UNIS = [[1, 'Truss', 'HTP', 6], [2, 'Floor', 'HTP', 3], [3, 'Spare', 'LTP', 0]];
+const st = { focus: 0, tabbed: false, cursor: { g: 1, c: 1, u: 1 }, edit: false, screen: 1, look: 'edge', cur: 3, grid: new Set([1]), picks: { 1: { g: new Set(), c: new Set(), u: new Set() }, 2: { g: new Set(), c: new Set(), u: new Set() } } };
+const picks = () => st.picks[st.screen];
+const ids = list => { const n = [...list].sort((a, b) => a - b), out = []; for (let i = 0; i < n.length;) { let j = i; while (j + 1 < n.length && n[j + 1] === n[j] + 1) j++; out.push(j > i ? `${n[i]} Thru ${n[j]}` : `${n[i]}`); i = j + 1; } return out.join(' + '); };
+const line = t => { $('#ln').textContent = t; };
+function toast(t) { const el = document.createElement('div'); el.className = 'toast'; el.textContent = t; document.body.append(el); setTimeout(() => el.remove(), 1600); }
+
+function render() {
+  desk.classList.toggle('edit', st.edit);
+  desk.classList.remove('solid', 'tint', 'edge'); desk.classList.add(st.look);
+  $('#tool').classList.toggle('on', st.edit); $('#tool').setAttribute('aria-pressed', st.edit);
+  $('#tmode').textContent = $('#chip').textContent = st.edit ? 'EDITTOOL' : 'RUNTOOL';
+  $('#chip').classList.toggle('edit', st.edit);
+  const p = picks();
+  for (const pool of $$('[data-pool]')) {
+    pool.innerHTML = Array.from({ length: 12 }, (_, i) => i + 1).map(n => {
+      const g = GROUPS[n];
+      return g ? `<div class="cell${p.g.has(n) ? ' picked' : ''}" data-id="${n}" style="--c:${g[1]}"><span class="no">${n}</span><span>${g[0]}</span></div>` : `<div class="cell empty" data-id="${n}" data-empty="1"><span class="no">${n}</span></div>`;
+    }).join('');
+  }
+  $('#cues').innerHTML = `<div class="row head"><span>Cue</span><span>Name</span><span>Fade</span><span>Trig</span></div>` + CUES.map(([n, name]) => `<div class="row${n === st.cur ? ' cur' : ''}${p.c.has(n) ? ' picked' : ''}" data-id="${n}"><span class="num">${n}</span><span>${name}</span><span class="num">2.0</span><span>Go</span></div>`).join('');
+  $('#unis').innerHTML = `<div class="row ug head"><span>No</span><span>Name</span><span>Merge</span><span>Fixtures</span></div>` + UNIS.map(([n, name, m, f]) => `<div class="row ug${p.u.has(n) ? ' picked' : ''}${!st.edit && st.grid.has(n) ? ' sel' : ''}" data-id="${n}"><span class="num">${n}</span><span>${name}</span><span>${m}</span><span class="num">${f}</span></div>`).join('');
+  for (const el of $$('[data-cnt]')) { const k = el.dataset.cnt; el.textContent = st.edit && p[k].size ? `${p[k].size} picked` : ''; }
+  // Tab focus: the focused window's frame and its cursor.
+  $$('.win').forEach(w => w.classList.toggle('focus', +w.dataset.win === st.focus));
+  const fw = $(`.win[data-win="${st.focus}"]`);
+  if (fw) { const k = fw.querySelector('.wbody').dataset.kind; fw.querySelector(`.wbody [data-id="${st.cursor[k]}"]:not(.head)`)?.classList.add('cursor'); }
+}
+// Tab / Meow+Tab: the next / previous window; arrows move its cursor; Enter taps it.
+document.addEventListener('keydown', e => {
+  if (e.target.closest('input')) return;
+  const fw = () => $(`.win[data-win="${st.focus}"]`);
+  if (e.key === 'Tab') {
+    e.preventDefault(); closeMenu();
+    // On the command line Tab completes what you typed; on an empty line it goes to the windows
+    // (this mockup's line is always empty). Esc comes back.
+    cmdFocus(false);
+    st.focus = st.focus ? ((st.focus - 1 + (e.shiftKey ? 3 : 1)) % 4) + 1 : (e.shiftKey ? 4 : 1);
+    line(`Window ${st.focus} focused   (Tab · Meow+Tab back · Esc to the command line)`); render(); return;
+  }
+  if (!st.focus) return;
+  const body = fw().querySelector('.wbody'), k = body.dataset.kind;
+  const items = [...body.querySelectorAll('[data-id]:not(.head)')].map(n => +n.dataset.id);
+  const i = items.indexOf(st.cursor[k]);
+  const cols = k === 'g' ? Math.max(1, Math.round(body.clientWidth / 68)) : 1;
+  const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[e.key];
+  if (step) { e.preventDefault(); st.cursor[k] = items[Math.max(0, Math.min(items.length - 1, i + step))]; render(); return; }
+  if (e.key === 'Enter') { e.preventDefault(); const it = body.querySelector(`[data-id="${st.cursor[k]}"]:not(.head)`); tap({ body, kind: k, id: it && !it.dataset.empty ? st.cursor[k] : null }); return; }
+  if (e.key === 'ContextMenu' && st.edit) { e.preventDefault(); const p = picks()[k]; if (!p.size) { p.add(st.cursor[k]); render(); } const r = body.getBoundingClientRect(); openMenu(k, r.left + 20, r.top + 20); }
+});
+const WORD = { g: 'Group', c: 'Cue', u: 'Universe' };
+function toggleTool() { st.edit = !st.edit; closeMenu(); line(st.edit ? 'EditTool' : 'Off EditTool'); render(); }
+$('#tool').addEventListener('click', toggleTool);
+document.addEventListener('keydown', e => { if (e.key === '`') { e.preventDefault(); toggleTool(); } if (e.key === 'Escape') { e.preventDefault(); esc(); } });
+// Esc: the command line gets the keys, and one layer goes, the top one first (menu → full screen →
+// picks → EditTool). A few presses always reach the normal state.
+function esc() {
+  const step = cm ? (closeMenu(), 'menu closed')
+    : $('.win.full') ? ($$('.win.full').forEach(w => w.classList.remove('full')), 'full screen left')
+    : Object.values(picks()).some(s => s.size) ? (Object.values(picks()).forEach(s => s.clear()), 'picks cleared')
+    : st.edit ? (st.edit = false, 'EditTool off')
+    : 'normal state';
+  st.focus = 0;
+  cmdFocus(true);
+  line(`Esc · ${step}${step === 'normal state' ? '' : ' — Esc again for the next'}`);
+  render();
+}
+function cmdFocus(on) { $('.cmd').classList.toggle('focus', on); }
+$$('[data-scr]').forEach(b => b.addEventListener('click', () => { st.screen = +b.dataset.scr; $$('[data-scr]').forEach(x => x.setAttribute('aria-pressed', x === b)); closeMenu(); render(); }));
+$('#mix').addEventListener('input', e => { desk.style.setProperty('--edge-mix', `${e.target.value}%`); $('#mixv').textContent = `${e.target.value}%`; });
+$$('[data-look]').forEach(b => b.addEventListener('click', () => { st.look = b.dataset.look; $$('[data-look]').forEach(x => x.setAttribute('aria-pressed', x === b)); render(); }));
+
+// ── One gesture engine for every window: tap · hold · drag (move or lasso) · right-click ──
+const HOLD = 500, SLOP = 8;
+let g = null, ringEl = null;
+const ring = (x, y) => { ringEl?.remove(); ringEl = document.createElement('div'); ringEl.className = 'ring'; ringEl.style.left = `${x}px`; ringEl.style.top = `${y}px`; document.body.append(ringEl); };
+const unring = () => { ringEl?.remove(); ringEl = null; };
+for (const body of $$('.wbody')) {
+  body.addEventListener('pointerdown', e => {
+    if (e.button === 2) return;
+    closeMenu();
+    const it = e.target.closest('[data-id]:not(.head)');
+    g = { body, kind: body.dataset.kind, x: e.clientX, y: e.clientY, it, id: it && !it.dataset.empty ? +it.dataset.id : null, moved: false, add: e.shiftKey };
+    try { body.setPointerCapture(e.pointerId); } catch (_) {}
+    ring(e.clientX, e.clientY);
+    g.timer = setTimeout(() => { if (!g || g.moved) return; unring(); const h = g; g = null; held(h, e.clientX, e.clientY); }, HOLD);
+  });
+  body.addEventListener('pointermove', e => {
+    if (!g || g.body !== body) return;
+    if (!g.moved && Math.hypot(e.clientX - g.x, e.clientY - g.y) < SLOP) return;
+    if (!g.moved) { g.moved = true; clearTimeout(g.timer); unring(); if (!st.edit) { g = null; return; } g.mode = g.id != null && g.kind === 'g' ? 'move' : 'lasso'; }
+    if (g.mode === 'lasso') drawLasso(e); else drawMove(e);
+  });
+  const up = e => {
+    if (!g || g.body !== body) return;
+    clearTimeout(g.timer); unring();
+    const h = g; g = null;
+    body.querySelector('.lasso')?.remove();
+    if (h.moved) { if (h.mode === 'move') endMove(h, e); return; }
+    tap(h);
+  };
+  body.addEventListener('pointerup', up);
+  body.addEventListener('pointercancel', () => { if (g) clearTimeout(g.timer); unring(); g = null; });
+  body.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const it = e.target.closest('[data-id]:not(.head)');
+    held({ body, kind: body.dataset.kind, it, id: it && !it.dataset.empty ? +it.dataset.id : null }, e.clientX, e.clientY, true);
+  });
+}
+function tap(h) {
+  const p = picks()[h.kind];
+  if (!st.edit) {
+    if (h.id == null) return;
+    if (h.kind === 'g') line(`Group ${h.id}`);
+    else if (h.kind === 'c') { st.cur = h.id; line(`Goto Cue ${h.id}`); }
+    else { st.grid = new Set([h.id]); line(`Universe ${h.id}   ← RunTool in a setup grid: open`); }
+    render(); return;
+  }
+  if (h.id == null) { p.clear(); line(`${WORD[h.kind]}: nothing picked`); render(); return; }
+  p.has(h.id) ? p.delete(h.id) : p.add(h.id);
+  line(p.size ? `${p.size} ${WORD[h.kind]}${p.size > 1 ? 's' : ''} picked · ${ids(p)}` : 'nothing picked');
+  render();
+}
+function held(h, x, y, right = false) {
+  if (!st.edit && !right) {
+    // RunTool: a hold takes the window to full screen (Esc or a hold brings it back).
+    const w = h.body.closest('.win'); const on = !w.classList.contains('full');
+    $$('.win').forEach(x => x.classList.remove('full')); w.classList.toggle('full', on);
+    line(on ? `Set Window ${w.dataset.win} "Maximized" On` : `Set Window ${w.dataset.win} "Maximized" Off`); return;
+  }
+  if (!st.edit && right) { toast('RunTool: right-click opens nothing — turn on EditTool for the menu'); return; }
+  const p = picks()[h.kind];
+  if (h.id != null && !p.has(h.id)) { p.clear(); p.add(h.id); render(); }
+  if (!p.size) return;
+  openMenu(h.kind, x, y);
+}
+function drawLasso(e) {
+  const r = g.body.getBoundingClientRect();
+  let el = g.body.querySelector('.lasso'); if (!el) { el = document.createElement('div'); el.className = 'lasso'; g.body.append(el); }
+  const x0 = Math.min(g.x, e.clientX), x1 = Math.max(g.x, e.clientX), y0 = Math.min(g.y, e.clientY), y1 = Math.max(g.y, e.clientY);
+  Object.assign(el.style, { left: `${x0 - r.left + g.body.scrollLeft}px`, top: `${y0 - r.top + g.body.scrollTop}px`, width: `${x1 - x0}px`, height: `${y1 - y0}px` });
+  const hit = [...g.body.querySelectorAll('[data-id]:not(.head):not([data-empty])')].filter(n => { const b = n.getBoundingClientRect(); return b.right > x0 && b.left < x1 && b.bottom > y0 && b.top < y1; }).map(n => +n.dataset.id);
+  const p = picks()[g.kind];
+  if (!g.add) p.clear(); hit.forEach(i => p.add(i));
+  line(`${p.size} ${WORD[g.kind]}${p.size === 1 ? '' : 's'} picked · ${ids(p)}`);
+  render(); g.body.append(el);
+}
+function drawMove(e) {
+  $$('.cell.drop').forEach(c => c.classList.remove('drop'));
+  const over = document.elementFromPoint(e.clientX, e.clientY)?.closest('.cell');
+  if (over && +over.dataset.id !== g.id) over.classList.add('drop');
+  $$(`[data-pool] .cell[data-id="${g.id}"]`).forEach(c => c.classList.add('ghost'));
+}
+function endMove(h, e) {
+  const over = document.elementFromPoint(e.clientX, e.clientY)?.closest('.cell');
+  $$('.cell.drop, .cell.ghost').forEach(c => c.classList.remove('drop', 'ghost'));
+  if (!over || +over.dataset.id === h.id) { render(); return; }
+  const to = +over.dataset.id, a = GROUPS[h.id], b = GROUPS[to];
+  GROUPS[to] = a; if (b) GROUPS[h.id] = b; else delete GROUPS[h.id];
+  const p = picks().g; if (p.has(h.id)) { p.delete(h.id); p.add(to); }
+  line(`Move Group ${h.id} At ${to}${b ? '   (the two swap)' : ''}`); render();
+}
+// ── the one context menu (EditTool) ──
+let cm = null;
+function closeMenu() { cm?.remove(); cm = null; }
+function openMenu(kind, x, y) {
+  closeMenu();
+  const p = picks()[kind], n = p.size, w = WORD[kind], obj = `${w} ${ids(p)}`;
+  cm = document.createElement('div'); cm.className = 'cm'; cm.setAttribute('role', 'menu');
+  cm.innerHTML = `<div class="h">${n} ${w}${n > 1 ? 's' : ''} · ${ids(p)}</div>
+    <button type="button" data-l="Edit ${obj}">Edit…</button><button type="button" data-l="Move ${obj} At …">Renumber…</button><button type="button" data-l="Label ${obj} …">Label…</button>
+    <hr><button type="button" class="del" data-l="Delete ${obj}">Delete ${n > 1 ? `${n} ${w}s` : w}</button>`;
+  document.body.append(cm);
+  cm.style.left = `${Math.min(x, innerWidth - cm.offsetWidth - 8)}px`; cm.style.top = `${Math.min(y, innerHeight - cm.offsetHeight - 8)}px`;
+  cm.addEventListener('click', e => { const b = e.target.closest('[data-l]'); if (b) { line(b.dataset.l); closeMenu(); } });
+  cm.querySelector('button').focus();
+}
+document.addEventListener('pointerdown', e => { if (cm && !cm.contains(e.target)) closeMenu(); }, true);
+cmdFocus(true);
+render();
+</script>

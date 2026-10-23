@@ -1,0 +1,609 @@
+<title>Insert Fixtures</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one column of boards — step 1 Choose (the picker, the channel map with Sort by, the
+   file's details), step 2 Place (the form beside the DMX sheet), the same search on the command
+   line, the Fixture types tab. The console look of the locked round 2 Patch mockups (single dark). */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --del: #e05a5a; --note: #2fa3b8; --new: #4f8fd6; --sel: #2d3a52;
+  --fx-a: #3b5f8a; --fx-b: #4b6b3a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+header h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 80ch; line-height: 1.5; }
+.board { display: flex; flex-direction: column; gap: 10px; }
+.board > h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board > .why { color: var(--dim); margin: 0; line-height: 1.5; max-width: 84ch; }
+.icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+code { font-family: var(--mono); font-size: 12px; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+
+.dlg { border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.title { min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 6px 4px 6px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.crumb .up { color: var(--dim); } .crumb .sep { color: var(--faint); font-size: 14px; } .crumb .here { font-weight: 500; }
+.steps { display: inline-flex; gap: 6px; margin-left: 8px; }
+.step { height: 30px; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; color: var(--dim); cursor: pointer; font-family: inherit; }
+.step[aria-pressed="true"] { color: var(--gold-text); background: var(--gold); border-color: transparent; }
+.x { margin-left: auto; width: 50px; height: 44px; display: grid; place-items: center; border-radius: 6px; color: var(--text); background: none; border: 0; }
+.x .icon { width: 22px; height: 22px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; flex-wrap: wrap; }
+.seg button { font: inherit; color: var(--dim); background: var(--cell); border: 0; border-right: 1px solid var(--line); height: 44px; padding: 0 14px; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--head); color: var(--text); box-shadow: inset 0 -3px 0 var(--gold-hi); }
+.seg.small button { height: 32px; padding: 0 10px; font-size: 12.5px; }
+.toggle { height: 44px; display: inline-flex; align-items: center; gap: 8px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--dim); font: inherit; cursor: pointer; }
+.toggle[aria-pressed="true"] { color: var(--text); border-color: var(--gold-hi); }
+
+/* Step 1 */
+.searchrow { display: flex; gap: 8px; padding: 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; align-items: center; }
+.search { flex: 1 1 320px; min-width: 0; height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--gold-hi); background: var(--head); }
+.search input { flex: 1; min-width: 0; background: none; border: 0; color: var(--text); font: inherit; font-size: 16px; outline: none; }
+/* One frame for both views: the left part changes (the show's list, or Manufacturer · Type · Revision); Mode and the channel map never move. */
+.details[hidden] { display: none; }
+.chooser { display: grid; grid-template-columns: minmax(0, 1fr) 250px 300px; }
+.cleft { min-width: 0; display: flex; border-right: 0; }
+.cleft > .col, .cpane { flex: 1; min-width: 0; }
+.cpane { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr) minmax(0, 1fr); }
+.cleft [hidden], #where[hidden] { display: none !important; }
+@media (max-width: 960px) { .chooser { grid-template-columns: minmax(0, 1fr); } .chooser > .col .list { height: 240px; } }
+.list.tall { height: 380px; }
+.toggle.small { height: 30px; padding: 0 10px; font-size: 12.5px; margin-left: auto; }
+.slots { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.slots th { position: sticky; top: 0; background: var(--dlg); text-align: left; font-weight: 400; color: var(--dim); padding: 7px 10px; border-bottom: 1px solid var(--line); font-size: 12px; }
+.slots td { padding: 6px 10px; border-bottom: 1px solid var(--cell-line); vertical-align: middle; }
+.slots td.no { color: var(--dim); width: 1%; text-align: right; }
+.slots tr { cursor: pointer; }
+.slots tr.on td { background: var(--sel); }
+.slots tr.on td:first-child { box-shadow: inset 3px 0 0 var(--gold-hi); }
+.slots td small { color: var(--dim); display: block; font-size: 11.5px; }
+.slot.mine { cursor: grab; touch-action: none; }
+.slot.ghost { box-shadow: inset 0 0 0 2px var(--gold-hi); }
+.slot.ghostbad { box-shadow: inset 0 0 0 2px var(--del); }
+.opendemo { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.opendemo .lab { color: var(--dim); }
+.cols { display: grid; grid-template-columns: minmax(140px, .7fr) minmax(220px, 1.2fr) minmax(190px, 1fr) minmax(180px, 1fr) minmax(250px, 1.35fr); }
+.col { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+.col:last-child { border-right: 0; }
+.colhead { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 4px 6px 4px 12px; border-bottom: 1px solid var(--cell-line); background: var(--head); flex-wrap: wrap; }
+.colhead h3 { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); flex: 1; }
+.list { display: flex; flex-direction: column; overflow-y: auto; height: 380px; }
+.it { text-align: left; font: inherit; color: var(--text); background: none; border: 0; border-bottom: 1px solid var(--cell-line); padding: 8px 12px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; cursor: pointer; min-height: 50px; align-content: center; }
+.it small { color: var(--dim); font-size: 12px; grid-column: 1; }
+.it .src { grid-column: 2; grid-row: 1 / span 2; align-self: center; color: var(--dim); display: flex; gap: 4px; }
+.it:hover { background: var(--cell); }
+.it[aria-selected="true"] { background: var(--sel); box-shadow: inset 3px 0 0 var(--gold-hi); }
+.it mark { background: none; color: var(--gold-hi); font-weight: 600; }
+.badge { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 9px; font-size: 11px; margin-left: 6px; vertical-align: 1px; white-space: nowrap; }
+.b-show { background: color-mix(in srgb, var(--ok) 22%, transparent); color: #7fdc85; }
+.b-lib { background: color-mix(in srgb, var(--new) 22%, transparent); color: #9cc3f0; }
+.b-newer { background: color-mix(in srgb, var(--gold-hi) 25%, transparent); color: var(--gold-hi); }
+.b-quiet { color: var(--faint); }
+.cmap { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.cmap td { padding: 5px 10px; border-bottom: 1px solid var(--cell-line); white-space: nowrap; }
+.cmap td.ch { color: var(--dim); text-align: right; width: 1%; }
+.cmap td.ft { color: var(--faint); font-size: 11.5px; }
+.cmap tr.grp td { background: var(--head); color: var(--gold-hi); font-size: 11.5px; letter-spacing: .04em; padding: 6px 10px; }
+.cmap tr.grp td small { color: var(--faint); margin-left: 6px; letter-spacing: 0; }
+.details { border-top: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); }
+.details > div { padding: 8px 12px; border-right: 1px solid var(--cell-line); border-bottom: 1px solid var(--cell-line); display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.details > div:nth-child(4n) { border-right: 0; }
+.details .k { font-size: 11.5px; color: var(--faint); text-transform: uppercase; letter-spacing: .05em; }
+.details .v { font-size: 13px; overflow-wrap: anywhere; line-height: 1.4; }
+.details .desc { grid-row: span 3; }
+.details .desc .v { color: var(--dim); max-height: 132px; overflow-y: auto; }
+.thumb { width: 64px; height: 64px; border-radius: 4px; background: var(--cell); border: 1px solid var(--cell-line); display: grid; place-items: center; color: var(--faint); font-size: 11px; }
+.foot { border-top: 1px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 8px; flex-wrap: wrap; }
+.line { flex: 1 1 360px; min-width: 0; font-family: var(--mono); font-size: 12.5px; color: var(--dim); background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+.line b { color: var(--text); font-weight: 400; }
+.go { height: 52px; min-width: 150px; border-radius: 6px; border: 0; background: var(--gold); color: var(--gold-text); font: inherit; font-size: 16px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 18px; }
+.go.ghost { background: var(--cell); color: var(--text); border: 1px solid var(--line); font-weight: 400; }
+.go.small { height: 40px; min-width: 0; font-size: 13px; padding: 0 12px; }
+
+/* Step 2: the form beside the DMX sheet */
+.place { display: grid; grid-template-columns: minmax(330px, .9fr) minmax(0, 1.5fr); }
+.fields { display: grid; grid-template-columns: 112px minmax(0, 1fr) 118px; border-right: 1px solid var(--line); align-content: start; }
+.fields > div { padding: 0 10px; min-height: 48px; display: flex; align-items: center; border-bottom: 1px solid var(--cell-line); min-width: 0; }
+.fields .k { color: var(--dim); font-size: 13px; background: var(--head); }
+.fields .v input { width: 100%; min-width: 0; height: 36px; border-radius: 4px; border: 1px solid var(--cell-line); background: var(--cell); color: var(--text); font: inherit; padding: 0 10px; font-variant-numeric: tabular-nums; }
+.fields .v .chosen { color: #7fdc85; }
+.fields .v .ro { color: var(--dim); }
+.fields .a { padding: 0 6px 0 0; gap: 4px; }
+.fields .a .mini { flex: 1; }
+.fields .wide { grid-column: 2 / span 2; }
+.fields .sugg { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; padding: 6px 10px 8px 122px; min-height: 0; }
+.mini { height: 36px; padding: 0 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--cell); color: var(--text); font: inherit; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+.fields .sugg.free { padding-top: 0; }
+.fields .sugg.free .lab { color: var(--faint); font-size: 12px; align-self: center; }
+.chipbtn.fc { color: #7fdc85; border-color: #2f4a2f; background: #1f2a1f; }
+.chipbtn.fc.on { color: var(--gold-hi); border-color: var(--gold-hi); }
+.chipbtn { height: 30px; padding: 0 10px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); color: var(--dim); font: inherit; font-size: 12.5px; cursor: pointer; }
+.sheetwrap { display: flex; flex-direction: column; min-width: 0; }
+.sheetbar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--cell-line); background: var(--head); flex-wrap: wrap; }
+.sheetbar .u { font-size: 15px; min-width: 110px; text-align: center; }
+.sheetbar .legend { margin-left: auto; display: flex; gap: 12px; font-size: 12px; color: var(--dim); flex-wrap: wrap; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+.sheet { overflow: auto; max-height: 470px; padding: 6px 8px 8px; }
+.srow { display: grid; grid-template-columns: 58px repeat(var(--cols), minmax(26px, 1fr)); gap: 2px; margin-bottom: 2px; }
+.srow .lab { font-family: var(--mono); font-size: 11px; color: var(--faint); display: flex; align-items: center; }
+.slot { height: 34px; border-radius: 3px; background: var(--cell); border: 1px solid transparent; font-size: 10.5px; color: var(--faint); font-variant-numeric: tabular-nums; display: flex; flex-direction: column; justify-content: flex-end; padding: 1px 3px; cursor: pointer; position: relative; overflow: hidden; font-family: inherit; text-align: left; }
+.slot:hover { border-color: var(--line); }
+.slot .fid { position: absolute; top: 1px; left: 3px; font-size: 10.5px; color: var(--text); white-space: nowrap; }
+.slot.taken { background: var(--fx-a); color: #c9d6e8; cursor: default; }
+.slot.taken.alt { background: var(--fx-b); color: #d1e0c4; }
+.slot.mine { background: color-mix(in srgb, var(--gold) 70%, var(--cell)); color: var(--gold-text); }
+.slot.clash { background: color-mix(in srgb, var(--del) 55%, var(--cell)); color: #fff; }
+.slot.past { opacity: .25; cursor: default; }
+.result { border-top: 1px solid var(--cell-line); padding: 8px 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+.result span { border-radius: 4px; border: 1px solid var(--cell-line); background: var(--head); padding: 4px 8px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.result span.warn { border-color: var(--del); color: #f2a3a3; }
+
+/* The command line */
+.cmd { border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; max-width: 780px; }
+.cmd .row { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--cell-line); font-size: 13px; }
+.cmd .row.on { background: var(--sel); }
+.cmd .row small { color: var(--dim); }
+.cmd .bar { font-family: var(--mono); font-size: 14px; padding: 12px; white-space: pre; overflow-x: auto; border-top: 1px solid var(--line); }
+.cmd .bar .ghost { color: var(--faint); }
+.caret { display: inline-block; width: 2px; height: 18px; background: var(--gold-hi); vertical-align: -3px; margin: 0 1px; }
+
+/* Fixture types tab */
+.ft .grid { overflow-x: auto; }
+.ft table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.ft th { text-align: left; font-weight: 400; color: var(--dim); padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.ft th small { display: block; font-size: 10.5px; color: var(--faint); font-family: var(--mono); }
+.ft td { padding: 8px 10px; border-bottom: 1px solid var(--cell-line); white-space: nowrap; max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+.slab { border-top: 1px solid var(--line); padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.slab .sb { height: 52px; min-width: 120px; flex: 1 1 120px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: var(--text); }
+.slab .sb.hi { border-color: var(--gold-hi); }
+.slab .sb.dis { color: var(--faint); border-style: dashed; }
+dl.rules { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 13px; }
+dl.rules dt { color: var(--faint); } dl.rules dd { margin: 0; line-height: 1.45; }
+table.map { border-collapse: collapse; font-size: 12.5px; }
+table.map td, table.map th { padding: 5px 10px; border-bottom: 1px solid var(--cell-line); text-align: left; vertical-align: top; }
+table.map th { color: var(--dim); font-weight: 400; }
+.tablewrap { overflow-x: auto; }
+
+@media (max-width: 1100px) {
+  .cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .col { border-bottom: 1px solid var(--line); }
+  .list { height: 260px; }
+  .place { grid-template-columns: minmax(0, 1fr); }
+  .fields { border-right: 0; border-bottom: 1px solid var(--line); }
+  .details { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .details > div:nth-child(4n) { border-right: 1px solid var(--cell-line); }
+  .details .desc { grid-column: 1 / -1; grid-row: auto; }
+}
+@media (max-width: 560px) {
+  .cols { grid-template-columns: minmax(0, 1fr); }
+  .fields { grid-template-columns: 92px minmax(0, 1fr) 96px; }
+  .fields .sugg { padding-left: 10px; }
+  .go { flex: 1 1 100%; }
+  .srow { grid-template-columns: 50px repeat(var(--cols), minmax(22px, 1fr)); }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M12 22v-5M9 8V2M15 8V2M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><path d="M14 2v6h6"/></symbol>
+  <symbol id="i-show" viewBox="0 0 24 24"><path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"/><path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9M12 3v6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+</svg>
+
+<main>
+<header>
+  <h1>Insert fixtures · round 3 · v6</h1>
+  <p>Mockup for the 34g4 round 3 hardening (decisions §34, 2026-10-18). Patch › Draft › Insert fixtures… opens two steps built from kit elements: <b>1 Choose</b> a type, revision and mode, reading its channel map and the file's details; <b>2 Place</b> them on the DMX sheet. Every field writes part of one <code>Store Fixture</code> line, shown live; nothing happens until Create. Data: this station's real <code>library/gdtf/</code> and the demo show (six MAC Aura XB at 1.001).</p>
+</header>
+
+<section class="board" aria-labelledby="h1">
+  <h2 id="h1">1 · Choose — type, revision, mode</h2>
+  <p class="why">Two views of the same choice (it opens on the No list, Details off; the left part changes, Mode and the channel map stay put): the <b>No list</b> — the show's fixture types by number (No, Name, Manufacturer, Revision, its modes as chips with their footprint, Used); tap a mode chip to pick type and mode at once — and <b>Manufacturer · Type · Mode</b>, the columns, which also reach the library's files (Show / Library / Both). Both views keep the channel map and the details. The search covers manufacturer, type, short name, revision text and mode names (the one suggestion engine). Each type shows where it comes from: <svg class="icon" style="width:14px;height:14px;vertical-align:-2px"><use href="#i-show"/></svg> in this show, <svg class="icon" style="width:14px;height:14px;vertical-align:-2px"><use href="#i-file"/></svg> a file in <code>library/gdtf/</code>. The channel map sorts by <b>Structure</b> (the GDTF geometry tree), <b>Channels</b> (DMX order) or <b>Feature group</b> (Dimmer, Position, Color, Beam, Focus, Control — GDTF's groups). Details shows the file's metadata.</p>
+  <div class="dlg">
+    <div class="title">
+      <div class="crumb"><svg class="icon"><use href="#i-plug"/></svg><span class="up">Patch</span><span class="sep">›</span><span class="here">Insert fixtures</span></div>
+      <div class="steps"><button class="step" aria-pressed="true"><b>1</b> Choose</button><button class="step" id="s2" aria-pressed="false"><b>2</b> Place</button></div>
+      <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="searchrow">
+      <label class="search"><svg class="icon"><use href="#i-search"/></svg><input id="q" type="text" value="" placeholder="Search name, manufacturer, mode…" aria-label="Search types"></label>
+      <div class="seg" role="group" aria-label="View"><button id="v-list" aria-pressed="true">No list</button><button id="v-cols" aria-pressed="false">Manufacturer · Type · Mode</button></div>
+      <div class="seg" role="group" aria-label="Where" id="where"><button id="w-show" aria-pressed="true">Show</button><button id="w-lib" aria-pressed="false">Library</button><button id="w-both" aria-pressed="false">Both</button></div>
+      <button class="toggle" id="used" aria-pressed="false">Used only</button>
+      <button class="toggle" id="det" aria-pressed="false">Details</button>
+    </div>
+    <div class="chooser">
+      <div class="cleft">
+        <div class="col" id="lview"><div class="colhead"><h3>Fixture types in this show</h3><button class="toggle small" id="to-lib">Library…</button></div><div class="list" id="l-slots"></div></div>
+        <div class="cpane" id="cview">
+          <div class="col"><div class="colhead"><h3>Manufacturer</h3></div><div class="list" id="l-man"></div></div>
+          <div class="col"><div class="colhead"><h3>Type</h3></div><div class="list" id="l-type"></div></div>
+          <div class="col"><div class="colhead"><h3>Revision</h3></div><div class="list" id="l-rev"></div></div>
+        </div>
+      </div>
+      <div class="col"><div class="colhead"><h3>Mode</h3></div><div class="list" id="l-mode"></div></div>
+      <div class="col"><div class="colhead"><h3 id="cm-h">Channel map</h3>
+        <div class="seg small" role="group" aria-label="Sort by"><button id="sb-structure" aria-pressed="true">Structure</button><button id="sb-channels" aria-pressed="false">Channels</button><button id="sb-feature" aria-pressed="false">Feature group</button></div></div>
+        <div class="list" id="l-map"></div></div>
+    </div>
+    <div class="details" id="details"></div>
+    <div class="foot">
+      <div class="line" id="line1"></div>
+      <button class="go" id="next">Next · Place <svg class="icon"><use href="#i-arrow"/></svg></button>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="board" aria-labelledby="h2">
+  <h2 id="h2">2 · Place — how many, where, under what</h2>
+  <p class="why">The form on the left, the DMX sheet on the right: the universe's 512 slots with the fixtures already patched there, and the new block in gold where it would land. Tap a free slot to put the block's first fixture there, <b>drag one fixture</b> to give it its own address (only that one moves; it adds a Patch line after the Store), or <b>Shift (Meow) + drag</b> to move the whole block; it snaps to slots and turns red where it would overlap; ← → changes universe. A block that runs onto other fixtures or past 512 shows red here and in the grid afterwards — Create still runs it and both fixtures of an overlap are parked until resolved (decided: resolve it in the patch, no question). Under First FID and Address, the <b>free chips</b> — the same as the renumber / address value dialog's — offer blocks that fit the quantity.</p>
+  <div class="dlg">
+    <div class="title">
+      <div class="crumb"><svg class="icon"><use href="#i-plug"/></svg><span class="up">Patch</span><span class="sep">›</span><span class="here">Insert fixtures</span></div>
+      <div class="steps"><button class="step" id="s1" aria-pressed="false"><b>1</b> Choose</button><button class="step" aria-pressed="true"><b>2</b> Place</button></div>
+      <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="place">
+      <div class="fields">
+        <div class="k">Type</div><div class="v wide"><span class="chosen" id="f-type"></span>&nbsp;<span class="ro" id="f-rev"></span></div>
+        <div class="k">Mode</div><div class="v wide"><span class="chosen" id="f-mode"></span>&nbsp;<span class="ro" id="f-foot"></span></div>
+        <div class="k">Name</div><div class="v wide"><input id="f-name" type="text" value="Aura"></div>
+        <div class="sugg" id="sugg"></div>
+        <div class="k">Quantity</div><div class="v wide"><input id="f-qty" type="text" inputmode="numeric" value="6"></div>
+        <div class="k">First FID</div><div class="v wide"><input id="f-fid" type="text" inputmode="numeric" value="201"></div>
+        <div class="sugg free" id="fid-chips"></div>
+        <div class="k">Address</div><div class="v wide"><input id="f-adr" type="text" value="1.085"></div>
+        <div class="sugg free" id="adr-chips"></div>
+        <div class="k">Offset</div><div class="v wide"><input id="f-off" type="text" inputmode="numeric" value="0"></div>
+        <div class="k">MVR group</div><div class="v wide"><input id="f-grp" type="text" value="Truss 2"></div>
+        <div class="k">Class</div><div class="v wide"><input id="f-cls" type="text" value="" placeholder="none"></div>
+        <div class="k">IDType · CID</div><div class="v wide"><input id="f-id" type="text" value="" placeholder="none — e.g. Houselights 4"></div>
+      </div>
+      <div class="sheetwrap">
+        <div class="sheetbar">
+          <button class="mini" id="u-prev" aria-label="Previous universe"><svg class="icon"><use href="#i-left"/></svg></button>
+          <span class="u" id="u-label">Universe 1</span>
+          <button class="mini" id="u-next" aria-label="Next universe"><svg class="icon"><use href="#i-right"/></svg></button>
+          <span class="legend"><span><i class="sw" style="background:var(--fx-a)"></i>patched</span><span><i class="sw" style="background:var(--gold)"></i>new</span><span><i class="sw" style="background:var(--del)"></i>overlap</span></span>
+        </div>
+        <div class="sheet" id="sheet"></div>
+        <div class="result" id="result"></div>
+      </div>
+    </div>
+    <div class="foot">
+      <div class="line" id="line2"></div>
+      <button class="go ghost" id="back">‹ Choose</button>
+      <button class="go" id="create"><svg class="icon"><use href="#i-check"/></svg>Create</button>
+    </div>
+  </div>
+</section>
+
+<section class="board" aria-labelledby="h3">
+  <h2 id="h3">The same search on the command line</h2>
+  <p class="why">One engine, one ranking: <code>/Type</code> + Tab suggests the show's types first, then library files; a library file is imported first. <code>/Mode</code> then suggests that type's modes with their footprints.</p>
+  <div class="cmd">
+    <div class="row on"><svg class="icon"><use href="#i-show"/></svg><span>MAC Aura XB <span class="badge b-show">in show · FixtureType 1</span></span><small>Martin · 2 modes · 6 used</small></div>
+    <div class="row"><svg class="icon"><use href="#i-file"/></svg><span>MAC Aura <span class="badge b-lib">library</span></span><small>Martin_Professional@MAC_Aura@20230201NoMeas.gdtf</small></div>
+    <div class="row"><svg class="icon"><use href="#i-file"/></svg><span>MAC Quantum Profile <span class="badge b-lib">library</span></span><small>MAC Quantum Profile.gdtf</small></div>
+    <div class="bar"><span>Store Fixture 201 Thru 206 /Type au</span><span class="caret"></span><span class="ghost">ra XB" /Mode "Standard"</span></div>
+  </div>
+</section>
+
+<section class="board" aria-labelledby="h4">
+  <h2 id="h4">Fixture types tab — GDTF's own fields</h2>
+  <p class="why">The columns follow GDTF's FixtureType (its attribute names under each header), plus the show's own Note and Tags. A reference console's tab has the same core — Source, ShortName, LongName, Description, Manufacturer, Used, CanHaveChildren, Version, OriginalFileName — plus console-only ones (Scribble, Appearance, Color, SpecialPurpose, MVRObjectType) that LumaCore covers elsewhere or leaves out. Import opens step 1 on Library with Import instead of Next; Upload from this device puts a file into <code>library/gdtf/</code> first.</p>
+  <div class="dlg ft">
+    <div class="title">
+      <div class="crumb"><svg class="icon"><use href="#i-plug"/></svg><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Fixture types</span></div>
+      <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="grid"><table>
+      <thead><tr><th>No</th><th>Name<small>Name</small></th><th>Short<small>ShortName</small></th><th>Long name<small>LongName</small></th><th>Manufacturer<small>Manufacturer</small></th><th>Description<small>Description</small></th><th>Revision in use<small>Revision@Text</small></th><th>Revisions</th><th>Modes<small>DMXMode</small></th><th>Used</th><th>Children<small>CanHaveChildren</small></th><th>GDTF<small>DataVersion</small></th><th>Type ID<small>FixtureTypeID</small></th><th>File</th><th>Note</th><th>Tags</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>MAC Aura XB</td><td>MACAurXB</td><td>MAC Aura XB</td><td>Martin Professional</td><td>Official Martin Professional File (no measurements)</td><td>20230201NoMeas · 2023-06-02</td><td>1</td><td>Standard 14 · Extended 25</td><td>6</td><td>Yes</td><td>1.2</td><td>D179FD28-…</td><td>AuraXB.gdtf · 0.9 MB</td><td></td><td></td></tr>
+        <tr><td>2</td><td>Robin BMFL WashBeam</td><td>BMFL WashBeam</td><td>Robin BMFL WashBeam</td><td>Robe Lighting</td><td>The strong-arm of the BMFL family – the superbly powerful BMFL WashBeam…</td><td>2023-06-21 Wiring objects revision <span class="badge b-newer">newer in library</span></td><td>37 in file</td><td>Mode 1 48 · Mode 2 41</td><td>0</td><td>Yes</td><td>1.2</td><td>8F468525-…</td><td>Robin BMFL WashBeam.gdtf · 1.6 MB</td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+    <div class="slab">
+      <div class="sb dis">New</div><div class="sb">Copy</div><div class="sb dis">Cut</div><div class="sb dis">Paste</div>
+      <div class="sb">Delete</div><div class="sb">Oops</div>
+      <div class="sb hi"><svg class="icon"><use href="#i-download"/></svg>Import</div><div class="sb"><svg class="icon"><use href="#i-upload"/></svg>Upload from this device</div><div class="sb dis">Export</div>
+    </div>
+  </div>
+</section>
+
+<section class="board" aria-labelledby="h5">
+  <h2 id="h5">Rules this mockup shows</h2>
+  <dl class="rules">
+    <dt>One line</dt><dd>Create runs exactly the line at the bottom: <code>Store Fixture … /Type … /Mode … [/Revision n] [/Address u.aaa] [/Offset n]</code>, with <code>Import FixtureType "…"</code> first for a library type. One Oops step each.</dd>
+    <dt>Channel map</dt><dd>Read from the chosen mode: offsets per break, attribute (its pretty name and GDTF name), the geometry it sits on and its feature (from the GDTF attribute table). Structure groups by geometry (Base › Yoke › Head › Beams, Auras), Feature group by Dimmer / Position / Color / Beam / Focus / Control / Shapers / Video; a virtual channel (no DMX) shows "Virtual".</dd>
+    <dt>Details</dt><dd>From the file: Description, ShortName / LongName, FixtureTypeID, GDTF version, the newest revision's text, date and uploader id, file name and size, a thumbnail when the file has one.</dd>
+    <dt>Two views</dt><dd>No list (the show's types by number; the default, Details off) and Manufacturer · Type · Mode (with the library); both with the channel map and the details; "Library…" in the list jumps to the columns on Library.</dd>
+    <dt>Drag</dt><dd>A new fixture drags on its own (same drag engine as the DMX map): only it moves and the line gains <code>; Patch Fixture n At u.aaa</code>. Shift (Meow) + drag, the Address field or a free chip moves the whole block.</dd>
+    <dt>DMX sheet</dt><dd>The same DMX map element the Universes tab's Map view and Edit Patch use (zoomed in): rows of 16 or 20 slots, a fixture's first slot labelled with its FID, the new block in gold, overlaps red. Tapping a free slot sets Address.</dd>
+    <dt>Red, not asked</dt><dd>A block that would overlap or pass 512 is red here and in the grid; Create still runs it, and an overlap parks both fixtures until resolved.</dd>
+    <dt>Free chips</dt><dd>First FID and Address show free blocks that fit the quantity (with the footprint and offset), from the one free-value index the value dialog and the command line use.</dd>
+  </dl>
+</section>
+</main>
+
+<script>
+const SHOW = 'show', LIB = 'lib';
+// Real data: library/gdtf/ on this station and the demo show (FixtureType 1 = MAC Aura XB, 6 used at 1.001).
+const TYPES = [
+  { man: 'Martin Professional', name: 'MAC Aura XB', short: 'MACAurXB', where: [SHOW, LIB], file: 'AuraXB.gdtf', size: '0.9 MB', no: 1, used: 6, id: 'D179FD28-256E-47E8-9EB7-21748CD9DB6D', dv: '1.2', desc: 'Official Martin Professional File (no measurements)', thumb: true,
+    revs: [{ text: '20230201NoMeas, Uploaded to GDTF Share.', date: '2023-06-02', user: '4163', in: SHOW }],
+    modes: [{ name: 'Standard', ch: 14, used: 6 }, { name: 'Extended', ch: 25 }] },
+  { man: 'Martin Professional', name: 'MAC Aura', short: 'MACAur', where: [LIB], file: 'Martin_Professional@MAC_Aura@20230201NoMeas.gdtf', size: '1.0 MB', id: '3C42E48F-9781-45EF-8D4D-D39CAE915133', dv: '1.2', desc: 'Official Martin Professional File (no measurements)', thumb: true,
+    revs: [{ text: '20230201NoMeas, Uploaded to GDTF Share.', date: '2023-06-02', user: '4163', in: LIB }],
+    modes: [{ name: 'Standard', ch: 14 }, { name: 'Extended', ch: 25 }] },
+  { man: 'Martin Professional', name: 'MAC Quantum Profile', short: 'MACQuaPro', where: [LIB], file: 'MAC Quantum Profile.gdtf', size: '1.0 MB', id: '704D7B2C-7650-0000-B72C-C1C739AA3D46', dv: '1.2', desc: 'Official Martin Professional File (no measurements)', thumb: true,
+    revs: [{ text: '20230316NoMeas, Uploaded to GDTF Share.', date: '2023-03-16', user: '4163', in: LIB }],
+    modes: [{ name: 'Basic', ch: 19 }, { name: 'Extended', ch: 27 }] },
+  { man: 'Martin Professional', name: 'MAC Viper Profile', short: 'MACVipPro', where: [SHOW, LIB], no: 4, used: 0, file: 'Martin_Professional@MAC_Viper_Profile@20230516NoMeas.gdtf', size: '1.1 MB', id: '00000000-EA4A-0000-BC47-3E4FBB861C6E', dv: '1.2', desc: 'Official Martin Professional File (no measurements)', thumb: true,
+    revs: [{ text: '20230516NoMeas, Uploaded to GDTF Share.', date: '2023-05-16', user: '4163', in: LIB }],
+    modes: [{ name: 'Basic', ch: 26 }, { name: 'Extended', ch: 34 }] },
+  { man: 'Robe Lighting', name: 'Robin BMFL WashBeam', short: 'BMFL WashBeam', where: [SHOW, LIB], file: 'Robin BMFL WashBeam.gdtf', size: '1.6 MB', no: 2, used: 0, id: '8F468525-A7B9-4972-888B-272016F70CC2', dv: '1.2', thumb: true,
+    desc: 'The strong-arm of the BMFL™ family - the superbly powerful BMFL WashBeam comes with extra bright output and an abundance of great features, e.g newly developed framing shutters, super wide front lens and animation wheel.',
+    revs: [{ text: '2023-06-21 3D models revision', date: '2023-06-21', user: '1734', in: LIB, newer: true }, { text: '2023-06-21 Wiring objects revision', date: '2023-06-21', user: '1734', in: SHOW }],
+    modes: [{ name: 'Mode 1 - Standard 16 bit', ch: 48 }, { name: 'Mode 2 - Reduced', ch: 41 }] },
+  { man: 'GLP', name: 'JDC-1', short: 'JDC1', where: [SHOW, LIB], no: 3, used: 8, file: 'JDC-1.gdtf', size: '64 KB', id: 'DC0E7A24-9F0C-40DF-B9C1-1C9BFB427964', dv: '1.2', thumb: false,
+    desc: 'When you look for a strobe, you look for power and the JDC1 from GLP delivers power in excess through a versatile and highly creative design… The JDC1 is hybrid redefined.',
+    revs: [{ text: 'glp1', date: '2025-07-23', user: '48560 · GDTF Builder V1.9.4', in: LIB }, { text: 'GLP JDC-1', date: '2025-07-23', user: '48560', in: LIB }],
+    modes: [{ name: 'DMX Mode 1 (Compressed Pro)', ch: 14 }, { name: 'DMX Mode 2 (Normal)', ch: 23 }] },
+  { man: 'Clay Paky', name: 'Alpha Spot QWO 800', short: 'AS QWO', where: [LIB], file: 'allWorking.gdtf', size: '137 KB', id: '704D7B2C-7F05-0000-402D-C1C737F13F46', dv: '1.0', desc: 'Clay Paky Alpha Spot QWO 800', thumb: false,
+    revs: [{ text: 'corrected channel functions of first gobo wheel', date: '2019-09-16', user: '0', in: LIB }, { text: 'changed pan/tilt attribute linking', date: '2019-02-25', user: '0', in: LIB }],
+    modes: [{ name: 'Standard Mode (32 ch)', ch: 32 }] },
+];
+// GDTF attribute table (from the gathered dataset): pretty name, feature group · feature.
+const ATTR = {
+  Shutter1: ['Sh1', 'Beam', 'Beam'], Dimmer: ['Dim', 'Dimmer', 'Dimmer'], Zoom: ['Zoom', 'Focus', 'Focus'],
+  Pan: ['P', 'Position', 'PanTilt'], Tilt: ['T', 'Position', 'PanTilt'], Control1: ['Ctrl1', 'Control', 'Control'],
+  Color1: ['C1', 'Color', 'Color'], Color2: ['C2', 'Color', 'Color'], ColorAdd_R: ['R', 'Color', 'RGB'], ColorAdd_G: ['G', 'Color', 'RGB'],
+  ColorAdd_B: ['B', 'Color', 'RGB'], ColorAdd_W: ['White', 'Color', 'RGB'], CTC: ['CTC', 'Color', 'Color'],
+  Effects1: ['FX1', 'Beam', 'Beam'], Effects1Rate: ['FX1 Rate', 'Beam', 'Beam'], Effects2: ['FX2', 'Beam', 'Beam'], Effects2Rate: ['FX2 Rate', 'Beam', 'Beam'], EffectsSync: ['FX Sync', 'Beam', 'Beam'],
+};
+const GROUP_ORDER = ['Dimmer', 'Position', 'Gobo', 'Color', 'Beam', 'Focus', 'Control', 'Shapers', 'Video'];
+// The MAC Aura XB's real channel maps: offset, attribute, geometry (and the geometry path for Structure).
+const GEO = { Base: 'Base', Yoke: 'Base › Yoke', Head: 'Base › Yoke › Head', Beams: 'Head › Beams 1–4', Auras: 'Head › Auras' };
+const MAPS = {
+  'MAC Aura XB|Standard': [['1','Shutter1','Head'],['2','Dimmer','Head'],['3','Zoom','Head'],['4,5','Pan','Yoke'],['6,7','Tilt','Head'],['8','Control1','Base'],['9','Color1','Head'],['10','ColorAdd_R','Head'],['11','ColorAdd_G','Head'],['12','ColorAdd_B','Head'],['13','ColorAdd_W','Head'],['14','CTC','Head']],
+  'MAC Aura XB|Extended': [['1','Shutter1','Beams'],['2','Dimmer','Beams'],['3','Zoom','Head'],['4,5','Pan','Yoke'],['6,7','Tilt','Head'],['8','Control1','Base'],['9','Color1','Beams'],['10','ColorAdd_R','Beams'],['11','ColorAdd_G','Beams'],['12','ColorAdd_B','Beams'],['13','ColorAdd_W','Beams'],['14','CTC','Beams'],['15','Effects1','Base'],['16','Effects1Rate','Base'],['17','Effects2','Base'],['18','Effects2Rate','Base'],['19','EffectsSync','Base'],['20','Shutter1','Auras'],['21','Dimmer','Auras'],['22','Color2','Auras'],['23','ColorAdd_R','Auras'],['24','ColorAdd_G','Auras'],['25','ColorAdd_B','Auras']],
+};
+MAPS['MAC Aura|Standard'] = MAPS['MAC Aura XB|Standard']; MAPS['MAC Aura|Extended'] = MAPS['MAC Aura XB|Extended'];
+// Patched in universe 1 (the demo show) and a second universe with something on it.
+const PATCHED = { 1: Array.from({ length: 6 }, (_, i) => ({ fid: 101 + i, start: 1 + i * 14, len: 14, alt: i % 2 })), 2: [{ fid: 301, start: 1, len: 48 }, { fid: 302, start: 49, len: 48, alt: 1 }] };
+
+const st = { view: 'list', last: 'list', rule: 'always', empty: false, q: '', where: 'show', used: false, man: null, type: 'MAC Aura XB', rev: 0, mode: 'Standard', sort: 'structure', details: false, u: 1, moved: {} };
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const hl = s => { const q = st.q.trim(); if (!q) return esc(s); const i = s.toLowerCase().indexOf(q.toLowerCase()); return i < 0 ? esc(s) : esc(s.slice(0, i)) + '<mark>' + esc(s.slice(i, i + q.length)) + '</mark>' + esc(s.slice(i + q.length)); };
+const icon = (id, label) => `<svg class="icon" aria-label="${label}" role="img"><use href="#i-${id}"/></svg>`;
+const type = () => TYPES.find(x => x.name === st.type);
+function visible() {
+  const q = st.q.trim().toLowerCase();
+  return TYPES.filter(t => !(st.empty && !t.where.includes(LIB)) && (st.where === 'both' || t.where.includes(st.where === 'show' ? SHOW : LIB))
+    && (!st.used || t.used)
+    && (!q || [t.man, t.name, t.short, t.file, ...t.modes.map(m => m.name), ...t.revs.map(r => r.text)].join(' ').toLowerCase().includes(q)))
+    .sort((a, b) => (b.where.includes(SHOW) - a.where.includes(SHOW)) || a.name.localeCompare(b.name));
+}
+function channelMap(t) {
+  const map = MAPS[`${t.name}|${st.mode}`];
+  if (!map) return `<div class="it"><small>Read from ${esc(t.file)} when this mode is picked.</small></div>`;
+  const row = r => { const a = ATTR[r[1]] || [r[1], 'Control', 'Control']; return `<tr><td>${esc(a[0])} <span class="b-quiet">${esc(r[1])}</span></td><td class="ft">${st.sort === 'feature' ? esc(r[2]) : `${esc(a[1])} · ${esc(a[2])}`}</td><td class="ch">${esc(r[0])}</td></tr>`; };
+  let body = '';
+  if (st.sort === 'channels') body = map.map(row).join('');
+  else {
+    const key = r => st.sort === 'structure' ? r[2] : (ATTR[r[1]] || [0, 'Control'])[1];
+    const keys = [...new Set(map.map(key))];
+    if (st.sort === 'feature') keys.sort((a, b) => GROUP_ORDER.indexOf(a) - GROUP_ORDER.indexOf(b));
+    for (const k of keys) {
+      const rows = map.filter(r => key(r) === k);
+      body += `<tr class="grp"><td colspan="3">${esc(k)}<small>${st.sort === 'structure' ? esc(GEO[k] || k) : `${rows.length} channels`}</small></td></tr>` + rows.map(row).join('');
+    }
+  }
+  return `<table class="cmap"><tbody>${body}</tbody></table>`;
+}
+function slotList() {
+  const q = st.q.trim().toLowerCase();
+  const rows = st.empty ? [] : TYPES.filter(t => t.where.includes(SHOW) && (!q || [t.man, t.name, t.short, ...t.modes.map(m => m.name)].join(' ').toLowerCase().includes(q))).sort((a, b) => a.no - b.no);
+  if (!rows.length) return `<div class="it"><small>${st.empty ? 'This show has no fixture types yet — Library… picks a file.' : 'No type in the show matches.'}</small></div>`;
+  return `<table class="slots"><thead><tr><th>No</th><th>Name</th><th>Manufacturer</th><th>Revision</th><th>Modes</th><th>Used</th></tr></thead><tbody>` +
+    rows.map(t => { const r = t.revs.find(x => x.in === SHOW) || t.revs[0];
+      return `<tr class="${st.type === t.name ? 'on' : ''}" data-slotrow="${esc(t.name)}"><td class="no">${t.no}</td><td>${hl(t.name)}<small>${esc(t.short)}</small></td><td>${hl(t.man)}</td><td>${esc(r.text.slice(0, 24))}${t.revs.some(x => x.newer) ? '<span class="badge b-newer">newer</span>' : ''}<small>${esc(r.date)}</small></td>
+      <td>${t.modes.length}<small>${t.modes.map(m => m.ch).join(' / ')} ch</small></td><td>${t.used || 0}</td></tr>`; }).join('') + '</tbody></table>';
+}
+function render() {
+  $('lview').hidden = st.view !== 'list'; $('cview').hidden = st.view === 'list'; $('where').hidden = st.view === 'list';
+  $('v-list').setAttribute('aria-pressed', st.view === 'list'); $('v-cols').setAttribute('aria-pressed', st.view !== 'list');
+  if (st.view === 'list') $('l-slots').innerHTML = slotList();
+  const ts = visible();
+  const mans = [...new Set(ts.map(t => t.man))];
+  if (st.man && !mans.includes(st.man)) st.man = null;
+  $('l-man').innerHTML = [`<button class="it" data-man="" aria-selected="${!st.man}">All manufacturers<small>${ts.length} types</small></button>`]
+    .concat(mans.map(m => `<button class="it" data-man="${esc(m)}" aria-selected="${st.man === m}">${hl(m)}<small>${ts.filter(t => t.man === m).length} types</small></button>`)).join('');
+  const shown = ts.filter(t => !st.man || t.man === st.man);
+  if (!shown.some(t => t.name === st.type)) { st.type = shown[0]?.name || null; st.rev = 0; st.mode = shown[0]?.modes[0].name; }
+  $('l-type').innerHTML = shown.map(t => `<button class="it" data-type="${esc(t.name)}" aria-selected="${st.type === t.name}">
+      <span>${hl(t.name)}</span><span class="src">${t.where.includes(SHOW) ? icon('show', 'in this show') : ''}${t.where.includes(LIB) ? icon('file', 'library file') : ''}</span>
+      <small>${esc(t.man)} · ${t.modes.length} modes${t.no ? ` · FixtureType ${t.no}` : ''}${t.used ? ` · ${t.used} used` : ''}</small></button>`).join('') || '<div class="it"><small>No type matches.</small></div>';
+  const t = type();
+  $('l-rev').innerHTML = t ? t.revs.map((r, i) => `<button class="it" data-rev="${i}" aria-selected="${st.rev === i}">
+      <span>${hl(r.text)}${i === 0 ? '<span class="badge b-quiet">newest</span>' : ''}${r.newer ? '<span class="badge b-newer">newer in library</span>' : ''}</span>
+      <small>${esc(r.date)} · ${r.in === SHOW ? 'in this show' : 'library file'}</small></button>`).join('') : '';
+  $('l-mode').innerHTML = t ? t.modes.map(m => `<button class="it" data-mode="${esc(m.name)}" aria-selected="${st.mode === m.name}">
+      <span>${hl(m.name)}</span><small>DMX footprint ${m.ch}${m.used ? ` · ${m.used} used` : ''}</small></button>`).join('') : '';
+  $('cm-h').textContent = t ? `Channel map · ${(t.modes.find(m => m.name === st.mode) || t.modes[0]).ch} ch` : 'Channel map';
+  $('l-map').innerHTML = t ? channelMap(t) : '';
+  for (const s of ['structure', 'channels', 'feature']) $('sb-' + s).setAttribute('aria-pressed', st.sort === s);
+  const r = t?.revs[st.rev];
+  $('details').hidden = !st.details || !t;
+  if (t) $('details').innerHTML = `
+    <div class="desc"><span class="k">Description</span><span class="v">${esc(t.desc)}</span></div>
+    <div><span class="k">File</span><span class="v">${esc(t.file)}</span></div>
+    <div><span class="k">File size · GDTF</span><span class="v">${esc(t.size)} · ${esc(t.dv)}</span></div>
+    <div><span class="k">Thumbnail</span><span class="v"><span class="thumb">${t.thumb ? 'thumbnail.png' : 'none'}</span></span></div>
+    <div><span class="k">Short · long name</span><span class="v">${esc(t.short)} · ${esc(t.name)}</span></div>
+    <div><span class="k">Revision</span><span class="v">${esc(r?.text)} · ${esc(r?.date)}</span></div>
+    <div><span class="k">Uploaded by</span><span class="v">GDTF user ${esc(r?.user)}</span></div>
+    <div><span class="k">FixtureTypeID</span><span class="v" style="font-family:var(--mono);font-size:12px">${esc(t.id)}</span></div>
+    <div><span class="k">In this show</span><span class="v">${t.no ? `FixtureType ${t.no} · ${t.used} fixtures` : 'no'}</span></div>
+    <div><span class="k">Manufacturer</span><span class="v">${esc(t.man)}</span></div>`;
+  const lib = t && (!t.where.includes(SHOW) || r?.newer);
+  $('line1').innerHTML = t ? (lib ? `<b>Import FixtureType "${esc(t.file)}"</b>; ` : '') + `Store Fixture … /Type ${t.no && !lib ? t.no : `"${esc(t.name)}"`}${st.rev ? ` /Revision ${t.revs.length - st.rev}` : ''} /Mode "${esc(st.mode)}"` : '';
+  place();
+}
+function cols() { return window.matchMedia('(max-width: 560px)').matches ? 10 : window.matchMedia('(max-width: 1100px)').matches ? 16 : 20; }
+function place() {
+  const t = type() || TYPES[0];
+  const m = t.modes.find(x => x.name === st.mode) || t.modes[0];
+  $('f-type').textContent = t.name; $('f-rev').textContent = `· ${(t.revs[st.rev] || t.revs[0]).text}`;
+  $('f-mode').textContent = m.name; $('f-foot').textContent = `· footprint ${m.ch}`;
+  const qty = Math.max(1, Math.min(48, parseInt($('f-qty').value, 10) || 1));
+  const fid = parseInt($('f-fid').value, 10) || 201;
+  const off = Math.max(0, parseInt($('f-off').value, 10) || 0);
+  const name = $('f-name').value.trim() || t.name;
+  const adr = $('f-adr').value.trim();
+  const [u, a] = adr.includes('.') ? adr.split('.').map(Number) : [null, null];
+  if (u) st.u = u;
+  // The new block.
+  const mine = [];
+  for (let i = 0; i < qty && a; i++) { const o = st.moved[fid + i]; mine.push({ fid: fid + i, u: o ? o.u : u, start: o ? o.s : a + i * (m.ch + off), len: m.ch, own: !!o }); }
+  MINE = mine;
+  // The sheet.
+  const n = cols(), taken = PATCHED[st.u] || [];
+  const at = s => taken.find(f => s >= f.start && s < f.start + f.len);
+  const mineAll = s => mine.filter(f => f.u === st.u && s >= f.start && s < f.start + f.len), mineAt = s => mineAll(s).pop() || null;
+  let html = '';
+  for (let row = 0; row * n < 512; row++) {
+    html += `<div class="srow" style="--cols:${n}"><span class="lab">${st.u}:${String(row * n + 1).padStart(3, '0')}</span>`;
+    for (let c = 1; c <= n; c++) {
+      const s = row * n + c;
+      if (s > 512) { html += '<span></span>'; continue; }
+      const p = at(s), q = mineAt(s);
+      const cls = (p && q) || mineAll(s).length > 1 ? 'clash mine' : q ? 'mine' : p ? `taken${p.alt ? ' alt' : ''}` : '';
+      const label = q && q.start === s ? q.fid : p && p.start === s ? p.fid : '';
+      html += `<button type="button" class="slot ${cls}" data-slot="${s}" ${q ? `data-mfid="${q.fid}"` : ''} ${p && !q ? 'tabindex="-1"' : ''} aria-label="${st.u}.${String(s).padStart(3, '0')}${p ? ` fixture ${p.fid}` : ''}">${label ? `<span class="fid">${label}</span>` : ''}${s}</button>`;
+    }
+    html += '</div>';
+  }
+  $('sheet').innerHTML = html;
+  $('u-label').textContent = `Universe ${st.u}`;
+  // Every fixture's range.
+  $('result').innerHTML = (a ? mine : Array.from({ length: qty }, (_, i) => ({ fid: fid + i }))).map(f => {
+    if (!f.start) return `<span>${f.fid} · unpatched</span>`;
+    const end = f.start + f.len - 1, past = end > 512;
+    const hit = (PATCHED[u] || []).some(p => f.start < p.start + p.len && end >= p.start);
+    return `<span class="${past || hit ? 'warn' : ''}">${f.fid} · ${f.u || u}.${String(f.start).padStart(3, '0')}–${String(Math.min(end, 999)).padStart(3, '0')}${past ? ' past 512' : hit ? ' overlaps' : ''}</span>`;
+  }).join('');
+  const lib = !t.where.includes(SHOW) || t.revs[st.rev]?.newer;
+  const id = $('f-id').value.trim(), grp = $('f-grp').value.trim(), cls = $('f-cls').value.trim();
+  $('line2').innerHTML = (lib ? `<b>Import FixtureType "${esc(t.file)}"</b>; ` : '') +
+    `<b>Store Fixture ${fid}${qty > 1 ? ` Thru ${fid + qty - 1}` : ''} "${esc(name)}"</b> /Type ${t.no && !lib ? t.no : `"${esc(t.name)}"`} /Mode "${esc(m.name)}"` +
+    (adr ? ` /Address ${esc(adr)}` : '') + (off ? ` /Offset ${off}` : '') + (grp ? ` /MvrGroup "${esc(grp)}"` : '') + (cls ? ` /MvrClass "${esc(cls)}"` : '') + (id ? ` /CustomId "${esc(id)}"` : '') +
+    mine.filter(f => f.own).map(f => `; <b>Patch Fixture ${f.fid} At ${f.u}.${String(f.start).padStart(3, '0')}</b>`).join('');
+  const base = t.name.split(' ').slice(-1)[0];
+  // Free chips: FIDs that fit the quantity (after 100, then empty hundreds), addresses that fit the block.
+  const usedF = new Set(Object.values(PATCHED).flat().map(f => f.fid)), fits = s => { for (let i = 0; i < qty; i++) if (usedF.has(s + i)) return false; return true; };
+  const fc = []; for (let s = 101; s < 1000 && fc.length < 2; s++) if (fits(s)) { fc.push(s); s = Math.floor(s / 100) * 100 + 100; }
+  for (let h = 100; h < 1000 && fc.length < 4; h += 100) if (![...usedF].some(x => x > h && x < h + 100) && !fc.includes(h + 1)) fc.push(h + 1);
+  $('fid-chips').innerHTML = `<span class="lab">Free:</span>` + fc.map(s => `<button type="button" class="chipbtn fc ${s === fid ? 'on' : ''}" data-fid="${s}">${qty > 1 ? `${s}–${s + qty - 1}` : s}</button>`).join('');
+  const ac = freeAddresses(m.ch, qty, off);
+  $('adr-chips').innerHTML = `<span class="lab">Free:</span>` + ac.map(v => `<button type="button" class="chipbtn fc ${v === adr ? 'on' : ''}" data-adr="${v}">${v}</button>`).join('') + `<button type="button" class="chipbtn" data-adr="">Unpatched</button>`;
+  $('sugg').innerHTML = [base, t.short, t.name, `${t.man.split(' ')[0]} ${base}`].filter((v, i, all) => v && all.indexOf(v) === i)
+    .map(s => `<button type="button" class="chipbtn" data-name="${esc(s)}">${esc(s)}</button>`).join('');
+}
+function freeAddresses(len, qty, off) {
+  const out = [];
+  for (const u of [1, 2, 3, 4]) {
+    const taken = PATCHED[u] || [], need = qty * len + (qty - 1) * off;
+    for (let s = 1; s + need - 1 <= 512; s++) if (!taken.some(p => s < p.start + p.len && s + need - 1 >= p.start)) { out.push(`${u}.${String(s).padStart(3, '0')}`); break; }
+    if (out.length >= 3) break;
+  }
+  return out;
+}
+function freeAddress(len, qty, off) {
+  for (const u of [1, 2, 3]) {
+    const taken = PATCHED[u] || [];
+    const need = qty * len + (qty - 1) * off;
+    for (let s = 1; s + need - 1 <= 512; s++) {
+      if (!taken.some(p => s < p.start + p.len && s + need - 1 >= p.start)) return `${u}.${String(s).padStart(3, '0')}`;
+    }
+  }
+  return '';
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.man !== undefined) { st.man = b.dataset.man || null; render(); }
+  else if (b.dataset.type) { st.type = b.dataset.type; st.rev = 0; st.mode = type().modes[0].name; render(); }
+  else if (b.dataset.rev) { st.rev = +b.dataset.rev; render(); }
+  else if (b.dataset.mode) { st.mode = b.dataset.mode; render(); }
+  else if (b.id === 'v-list' || b.id === 'v-cols') { st.view = st.last = b.id === 'v-list' ? 'list' : 'cols'; render(); }
+  else if (b.id === 'to-lib') { st.view = st.last = 'cols'; st.where = 'lib'; for (const x of ['show', 'lib', 'both']) $('w-' + x).setAttribute('aria-pressed', st.where === x); render(); }
+  else if (b.dataset.sb) { st.sort = b.dataset.sb; render(); }
+  else if (b.dataset.rule) { st.rule = b.dataset.rule; document.querySelectorAll('[data-rule]').forEach(x => x.setAttribute('aria-pressed', x === b)); }
+  else if (b.id === 'empty') { st.empty = !st.empty; b.setAttribute('aria-pressed', st.empty); b.textContent = st.empty ? 'Empty show: on' : 'Empty show: off'; render(); }
+  else if (b.id === 'reopen') {
+    st.view = st.rule === 'remember' ? st.last : st.rule === 'always' ? 'list' : (st.empty ? 'cols' : 'list');
+    if (st.view === 'cols' && st.empty) { st.where = 'lib'; for (const x of ['show', 'lib', 'both']) $('w-' + x).setAttribute('aria-pressed', st.where === x); }
+    st.q = ''; $('q').value = ''; render(); $('opened').textContent = `Opened on: ${st.view === 'list' ? 'the No list' : 'Manufacturer · Type · Mode' + (st.where === 'lib' ? ' (Library)' : '')}`; $('h1').scrollIntoView({ behavior: 'smooth' });
+  }
+  else if (b.dataset.fid) { $('f-fid').value = b.dataset.fid; place(); }
+  else if (b.dataset.adr !== undefined) { $('f-adr').value = b.dataset.adr; place(); }
+  else if (b.dataset.name) { $('f-name').value = b.dataset.name; place(); }
+  else if (b.dataset.slot) { if (!b.classList.contains('taken')) { $('f-adr').value = `${st.u}.${String(b.dataset.slot).padStart(3, '0')}`; place(); } }
+  else if (b.id.startsWith('sb-')) { st.sort = b.id.slice(3); render(); }
+  else if (b.id.startsWith('w-')) { st.where = b.id.slice(2); for (const x of ['show', 'lib', 'both']) $('w-' + x).setAttribute('aria-pressed', st.where === x); render(); }
+  else if (b.id === 'used') { st.used = !st.used; b.setAttribute('aria-pressed', st.used); render(); }
+  else if (b.id === 'det') { st.details = !st.details; b.setAttribute('aria-pressed', st.details); render(); }
+  else if (b.id === 'u-prev') { st.u = Math.max(1, st.u - 1); place(); }
+  else if (b.id === 'u-next') { st.u = st.u + 1; place(); }
+  else if (b.id === 'adr-free') { const t = type() || TYPES[0], m = t.modes.find(x => x.name === st.mode) || t.modes[0]; $('f-adr').value = freeAddress(m.ch, parseInt($('f-qty').value, 10) || 1, parseInt($('f-off').value, 10) || 0); place(); }
+  else if (b.id === 'adr-none') { $('f-adr').value = ''; place(); }
+  else if (b.id === 'fid-free') { $('f-fid').value = '107'; place(); }
+  else if (b.id === 'next' || b.id === 's2') $('h2').scrollIntoView({ behavior: 'smooth' });
+  else if (b.id === 'back' || b.id === 's1') $('h1').scrollIntoView({ behavior: 'smooth' });
+});
+document.addEventListener('click', e => { const tr = e.target.closest('[data-slotrow]'); if (tr && !e.target.closest('button')) { st.type = tr.dataset.slotrow; st.rev = 0; st.mode = type().modes[0].name; render(); } });
+let drag = null, dragged = false, MINE = [];
+document.addEventListener('pointerdown', e => {
+  const sl = e.target.closest('.slot.mine'); if (!sl) return;
+  const [u, a] = $('f-adr').value.split('.').map(Number); if (!a) return;
+  const f = MINE.find(x => x.fid === +sl.dataset.mfid); if (!f) return;
+  // A drag moves that one fixture; Shift (Meow) + drag moves the whole block.
+  drag = e.shiftKey ? { block: true, off: +sl.dataset.slot - a, x: e.clientX, y: e.clientY, moved: false } : { fid: f.fid, off: +sl.dataset.slot - f.start, x: e.clientX, y: e.clientY, moved: false };
+  e.preventDefault();
+});
+document.addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 5) return;
+  drag.moved = true;
+  const el = document.elementFromPoint(e.clientX, e.clientY), sl = el && el.closest('.slot'); if (!sl) return;
+  const start = Math.max(1, +sl.dataset.slot - drag.off);
+  if (drag.block) { const v = `${st.u}.${String(start).padStart(3, '0')}`; if ($('f-adr').value !== v) { $('f-adr').value = v; place(); } return; }
+  const o = st.moved[drag.fid];
+  if (!o || o.s !== start || o.u !== st.u) { st.moved[drag.fid] = { u: st.u, s: start }; place(); }
+});
+document.addEventListener('pointerup', () => { if (drag && drag.moved) { dragged = true; setTimeout(() => { dragged = false; }, 0); } drag = null; });
+document.addEventListener('click', e => { if (dragged && e.target.closest('.slot')) { e.stopImmediatePropagation(); } }, true);
+$('q').addEventListener('input', e => { st.q = e.target.value; render(); });
+for (const id of ['f-name', 'f-qty', 'f-fid', 'f-id', 'f-grp', 'f-cls', 'f-adr', 'f-off']) $(id).addEventListener('input', place);
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(place, 150); });
+render();
+</script>

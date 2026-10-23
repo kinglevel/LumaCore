@@ -1,0 +1,127 @@
+<title>Drive Root and Library</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --warn: #d08a2a; --sel: #223a5a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 88ch; line-height: 1.5; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 13px; margin: 0; max-width: 100ch; min-width: 0; flex: 1 1 420px; line-height: 1.45; }
+.facts dt { color: var(--faint); } .facts dd { margin: 0; }
+code, pre { font-family: var(--mono); font-size: 12px; color: var(--gold-text); }
+pre { margin: 0; background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; line-height: 1.55; color: var(--text); }
+pre b { color: var(--gold-text); font-weight: 500; } pre i { font-style: normal; color: var(--faint); } pre em { font-style: normal; color: var(--del); } pre u { text-decoration: none; color: var(--ok-t); }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 100ch; line-height: 1.5; margin: 0; }
+.opts { display: flex; flex-direction: column; gap: 30px; }
+.opt { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.opt h3 { margin: 0; font-size: 15px; font-weight: 500; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.opt h3 .tag { font-size: 11px; border: 1px solid var(--gold); color: var(--gold-hi); border-radius: 9px; padding: 0 7px; }
+.opt p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.45; max-width: 100ch; }
+.opt ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--dim); line-height: 1.4; }
+.opt li::before { content: "＋ "; color: var(--ok-t); } .opt li.m::before { content: "－ "; color: var(--del); }
+.frames { display: flex; gap: 18px; flex-wrap: wrap; align-items: stretch; }
+.frames > pre { flex: 1 1 380px; min-width: 0; }
+.dlg { flex: 1 1 560px; min-width: 0; border-radius: 8px; border: 1px solid var(--line); background: var(--dlg); display: flex; flex-direction: column; font-size: 12.5px; overflow: hidden; user-select: none; }
+.t { flex: none; display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px; border-bottom: 1px solid var(--line); }
+.t .crumb { color: var(--dim); } .t b { font-weight: 500; font-size: 14px; } .t .x { margin-left: auto; color: var(--dim); }
+.body { display: flex; min-height: 0; flex: 1; }
+.rail { flex: 0 0 180px; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
+.rail h4, .list h4 { margin: 0; padding: 8px 12px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); font-weight: 600; border-bottom: 1px solid var(--cell-line); }
+.drv { display: flex; flex-direction: column; gap: 2px; padding: 8px 12px; border-bottom: 1px solid var(--cell-line); }
+.drv b { font-weight: 500; display: flex; gap: 6px; align-items: center; } .drv small { color: var(--dim); } .drv i { font-style: normal; color: var(--faint); font-size: 11px; }
+.drv.on { background: var(--sel); box-shadow: inset 3px 0 0 var(--gold-hi); }
+.drv.dev { margin-top: auto; border-top: 1px solid var(--line); border-bottom: 0; color: var(--gold-text); }
+.list { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+.crumbs { display: flex; gap: 4px; align-items: center; padding: 6px 12px; border-bottom: 1px solid var(--cell-line); font-family: var(--mono); font-size: 11.5px; color: var(--dim); flex-wrap: wrap; }
+.crumbs span { padding: 3px 7px; border-radius: 5px; border: 1px solid transparent; }
+.crumbs span.jump { border-color: var(--line); color: var(--text); } .crumbs span.on { color: var(--gold-text); border-color: var(--gold-hi); }
+.crumbs .lib { margin-left: auto; border: 1px solid var(--gold-hi); color: var(--gold-text); }
+table { border-collapse: collapse; width: 100%; }
+th { text-align: left; font-weight: 500; color: var(--dim); padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--head); font-size: 12px; white-space: nowrap; }
+td { padding: 6px 10px; border-bottom: 1px solid var(--cell-line); font-variant-numeric: tabular-nums; }
+tr.on td { background: var(--sel); } tr.on td:first-child { box-shadow: inset 3px 0 0 var(--gold-hi); }
+td.dim { color: var(--dim); } td.star { color: var(--gold-text); }
+.foot { flex: none; display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-top: 1px solid var(--line); }
+.foot .line { font-family: var(--mono); font-size: 11.5px; color: var(--dim); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn { height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--cell); color: var(--text); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.btn.gold { background: var(--gold-hi); color: #1a1500; border-color: var(--gold-hi); font-weight: 500; } .btn.ghost { background: none; color: var(--dim); }
+</style>
+
+<main>
+  <header>
+    <h1>Drives · 3 · two ways onto a drive: its root and its library</h1>
+    <p>Decided so far: model C (the drive list, found volumes plus added folders, the one library tree on each), and A for the ids (kind + ordinal, bound to the volume and remembered). The user: "we need two ways onto a drive, its root and the library path, so a user can browse the whole drive and get to the library folder easily — suggestion?" A drive is a whole volume (people keep other things on a stick: the venue's PDFs, an MVR exported from Vectorworks into some folder); the library is <code>LumaCore/library/</code> on it, where the station's files go and where every dialog starts. What is the drive node in the tree, and how do the dialogs and the tree shell jump between the two?</p>
+  </header>
+
+  <section class="board">
+    <h2>The ground</h2>
+    <dl class="facts">
+      <dt>The tree</dt><dd>Under <code>Root.Drives</code> every step is a name the disk knows; the tree shell walks real folders (<code>ls</code>, <code>cat</code>, <code>cp</code>, <code>mv</code>, <code>rm</code>, <code>tree</code> with its 300 ms / 2,000-line budget). Nothing else enters it.</dd>
+      <dt>Lines name library files</dt><dd><code>LoadShow "rig"</code>, <code>Import FixtureType "x.gdtf"</code>, <code>Import Mvr "y.mvr"</code>: a file name relative to the word's library folder (sub-folders allowed, no <code>..</code>); with a drive: <code>… /Drive usb1</code> (question 4 fixes the form) = that drive's <code>LumaCore/library/&lt;folder&gt;/</code>. A line never needs the volume root; a file elsewhere on the stick is copied into the library first (the tree shell's <code>cp</code>, or the dialog's pick).</dd>
+      <dt>The dialogs</dt><dd>One file element for every load and save (question 5): the drives rail, crumbs, the list by kind. It opens on the drive's library folder of the kind (Import MVR: <code>mvr/</code>); the question is how it reaches the rest of the volume.</dd>
+      <dt>Unix</dt><dd>The tree shell is a fenced Unix sub-grammar (§33 18). Unix says <code>~</code> for "my home": a short way to the place you work in, while <code>/</code> stays the root.</dd>
+    </dl>
+  </section>
+
+  <section class="board">
+    <h2>The options</h2>
+    <div class="opts" id="opts"></div>
+    <p class="decide">Suggestion, recommended: <b>A · the drive node is the volume; the library is a marked folder in it; <code>~usb1</code> is the short way there</b> — <code>Root.Drives.usb1</code> lists the whole stick, with <code>LumaCore</code> first and marked ★ library (the tree shell: <code>ls Root.Drives.usb1</code>; <code>cd ~usb1</code> = its library, <code>cd ~</code> = the local library, Unix's home); the dialogs open on the library folder of their kind and their crumbs are the jump: tap the drive's name for the whole volume, the ★ Library crumb to come back; a file picked outside the library is copied in (asked once: "Copy rig.mvr into usb1's library?") so the line stays a library name. A drive's Info shows both paths. B puts the library at the node and the volume under a reserved child, which makes the real folder <code>LumaCore/library</code> appear twice in the tree; C lists every drive twice in the rail, which doubles the list for the rare case.</p>
+  </section>
+</main>
+
+<script>
+const picker = (crumbs, rows, line) => `<div class="dlg">
+  <div class="t"><span class="crumb">Patch ›</span><b>Import MVR</b><span class="x">✕</span></div>
+  <div class="body"><div class="rail"><h4>Drives</h4><div class="drv"><b>local-library</b><small>Internal · 140 GB free</small></div><div class="drv on"><b>usb1 <i>USB</i></b><small>KINGSTON · 28 GB free</small></div><div class="drv"><b>ssda <i>SSD</i></b><small>Data · 1.6 TB free</small></div><div class="drv"><b>smb1 <i>SMB</i></b><small>Shows NAS · 9 TB</small></div><div class="drv dev"><b>⤒ This device</b><small>upload from the browser</small></div></div>
+    <div class="list">${crumbs}<table><tr><th>Name</th><th>Fixtures</th><th>Size</th><th>Modified</th></tr>${rows}</table></div></div>
+  <div class="foot"><span class="line">${line}</span><span class="btn ghost">Cancel</span><span class="btn gold">Next · Options</span></div></div>`;
+const libRows = `<tr class="on"><td>Rig 2026 v3.mvr</td><td>148</td><td class="dim">184 MB</td><td class="dim">today 14:02</td></tr><tr><td>Rig 2026 v2.mvr</td><td>140</td><td class="dim">181 MB</td><td class="dim">yesterday</td></tr>`;
+const volRows = `<tr><td class="star">★ LumaCore <small style="color:var(--faint)">· the library</small></td><td></td><td class="dim">folder</td><td class="dim">today</td></tr><tr><td>Vectorworks exports</td><td></td><td class="dim">folder</td><td class="dim">2026-10-18</td></tr><tr><td>Venue PDFs</td><td></td><td class="dim">folder</td><td class="dim">2026-09-30</td></tr><tr class="on"><td>Rig 2026 v4 draft.mvr</td><td>150</td><td class="dim">186 MB</td><td class="dim">today 16:40</td></tr>`;
+const OPTS = [
+  { id: 'a', tag: 'recommended', title: 'A · The drive node is the volume; the library is a marked folder; ~usb1 is the short way',
+    pre: `<pre><b>Root.Drives.usb1</b>                      <i>the whole stick</i>
+  <u>★ LumaCore</u>/library/  shows/ gdtf/ mvr/ media/ …   <i>the library, marked</i>
+  Vectorworks exports/ · Venue PDFs/ · Rig 2026 v4 draft.mvr
+
+<i>tree shell</i>   ls Root.Drives.usb1            <i>everything on it</i>
+             cd <b>~usb1</b>                        <i>= Root.Drives.usb1.LumaCore.library</i>
+             cd <b>~</b>                            <i>= the local library</i>
+             cp "Rig 2026 v4 draft.mvr" ~usb1/mvr
+<i>a line</i>     Import Mvr "Rig 2026 v3.mvr" /Drive usb1     <i>library-relative, as every file word</i>
+<i>Info Drive usb1</i>   Path /media/rolle/KINGSTON · Library …/LumaCore/library · USB · 28 GB free</pre>`,
+    frames: [picker(`<div class="crumbs"><span class="jump">usb1</span>›<span class="jump">LumaCore</span>›<span class="jump">library</span>›<span class="on">mvr</span><span class="lib">★ Library</span></div>`, libRows, 'Import Mvr "Rig 2026 v3.mvr" /Drive usb1'),
+      picker(`<div class="crumbs"><span class="on">usb1</span><span style="color:var(--faint)">— the whole drive</span><span class="lib">★ Library</span></div>`, volRows, 'Copy "Rig 2026 v4 draft.mvr" into usb1\'s library, then Import Mvr … /Drive usb1')],
+    text: 'The dialog opens on the kind\'s library folder; its crumbs are the two ways: tap the drive\'s name and the list is the whole volume (folders first, the library marked ★), tap ★ Library to come back. A file picked outside the library is copied into the right library folder first, asked once, so the line stays a library name. The tree shell has Unix\'s home for it.',
+    pros: ['A drive is a drive: what every OS and every person expects of Root.Drives.usb1', 'The library is one real folder, in the tree once, marked wherever it shows', '~usb1 and ~ are two characters to type; the crumb is one tap'],
+    cons: ['The dialog has two places to be; the crumbs must make the state plain (the ★ Library crumb lit)', 'Copy-in on a pick outside the library is a step (one ask, then it is a library file)'] },
+  { id: 'b', title: 'B · The drive node is the library; the whole volume is a reserved child',
+    pre: `<pre><b>Root.Drives.usb1</b>                      <i>= LumaCore/library on the stick</i>
+  shows/ gdtf/ mvr/ media/ …
+  <b>Volume</b>/                               <i>reserved: the whole stick</i>
+    LumaCore/library/ <em>(again)</em> · Vectorworks exports/ · Venue PDFs/
+<i>tree shell</i>   cd Root.Drives.usb1.Volume</pre>`,
+    frames: [picker(`<div class="crumbs"><span class="jump">usb1</span>›<span class="on">mvr</span><span class="lib">Whole drive ›</span></div>`, libRows, 'Import Mvr "Rig 2026 v3.mvr" /Drive usb1')],
+    text: 'The library first: the node is the library, so Root.Drives.usb1.mvr is short; a reserved child Volume opens the rest of the stick.',
+    pros: ['Short tree paths to library files', 'Dialogs need no "where am I"'],
+    cons: ['The library folder appears twice in the tree (at the node and under Volume)', 'A reserved name (Volume) in a real folder tree; a user folder called Volume collides'] },
+  { id: 'c', title: 'C · Two entries per drive in the rail: library and whole drive',
+    pre: `<pre><b>Root.Drives.usb1</b>            <i>the library</i>
+<b>Root.Drives.usb1-volume</b>     <i>the whole stick</i></pre>`,
+    frames: [picker(`<div class="crumbs"><span class="on">usb1</span>›<span class="on">mvr</span></div>`, libRows, 'Import Mvr "Rig 2026 v3.mvr" /Drive usb1').replace('<div class="drv on"><b>usb1 <i>USB</i></b><small>KINGSTON · 28 GB free</small></div>', '<div class="drv on"><b>usb1 <i>USB</i></b><small>KINGSTON · library</small></div><div class="drv"><b>usb1-volume</b><small>KINGSTON · whole drive</small></div>')],
+    text: 'Every drive is two rows in the rail and two nodes in the tree: its library and its whole volume.',
+    pros: ['No crumb state: the row says which'], cons: ['Doubles the rail and the drive list for a rare case', 'Two ids for one stick in lines and the AssetRoot map'] },
+];
+document.getElementById('opts').innerHTML = OPTS.map(o => `<div class="opt"><h3>${o.title}${o.tag ? `<span class="tag">${o.tag}</span>` : ''}</h3><div class="frames">${o.pre}${o.frames.join('')}</div><p>${o.text}</p><ul>${o.pros.map(p => `<li>${p}</li>`).join('')}${o.cons.map(c => `<li class="m">${c}</li>`).join('')}</ul></div>`).join('');
+</script>

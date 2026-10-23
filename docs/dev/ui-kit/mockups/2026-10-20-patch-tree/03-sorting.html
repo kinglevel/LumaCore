@@ -1,0 +1,55 @@
+<title>Sorting Into The Tree</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.bad{color:var(--red)}.ok{color:var(--green)}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Patch tree · 40d hardening · question 3 · 2026-10-20</div>
+<h1>Sorting fixtures into the tree: select, then drag onto a node</h1>
+<p>Your redirection: the sidebar as it is (nodes only), the Live patch pane shows fixtures and never a folder or a group, and fixtures get into the tree by selecting them and dragging them onto the sidebar's nodes. The lab is reworked that way (v2, same link): <a href="https://claude.ai/artifact/7adZasu5Sfbk9v5HE1ARK8">Patch tree lab</a>. Below, the suggestions that fall out of it, each a rule you can accept or change; the question at the end is the one that touches the words.</p>
+</header>
+
+<section class="card">
+<h2>Suggestions</h2>
+<table>
+<tr><th>1 · The pane</th><td>A flat list of fixtures, scoped by the sidebar's pick: <strong>Deep</strong> (the default) shows everything beneath the node, <strong>Direct</strong> only the fixtures that sit on it (a stage picked Direct shows nothing — its fixtures are in its folders; the count says so). "Patch · all" is every fixture; "No MVR node" the ones outside every node.</td></tr>
+<tr><th>2 · Where a fixture is</th><td>A new column <strong>MVR node</strong>: the node the fixture sits in (its name; the full path on hover), sortable — sorted by it the flat list falls into its folders without any folder row. The default order stays the tree's (a node's fixtures together, in their order), by number / name / address when that header is tapped.</td></tr>
+<tr><th>3 · The drag</th><td>Select rows (tap, Thru, ± , lasso) and lift them onto a sidebar node; the node lights gold under the pointer, a chip follows the pointer ("6 fixtures → Smoke"), the drop runs one line: <code>Assign Fixture 1216 Thru 1221 At Fixture Media 9</code> — the shape <code>Assign … At MvrGroup 2</code> has today, widened to a folder fixture (E-PATCH-011's list grows by one kind). One Oops step. Dropping on the layer row puts them on the layer itself; "No MVR node" is not a drop target (a fixture leaves the tree only by Delete).</td></tr>
+<tr><th>4 · Moving a node</th><td>Drag a sidebar node onto another: the one nesting ask ("Fixture Media 7003 "ACME Icarus" becomes a child of Fixture Media 2 "Stage 2 Keylights" (286 fixtures)?"), then <code>Move Fixture Media 7003 At Fixture Media 2 /NoConfirmation</code>. At a node nests, At a number renumbers; a folder At a number is refused.</td></tr>
+<tr><th>5 · Without a pointer to drag with</th><td>The context menu of selected rows: <strong>Move into…</strong> picks the node from a list (the lab has it); on a phone, where the tree is a sheet, that is the only way. The line is the same.</td></tr>
+<tr><th>6 · New fixtures</th><td>Insert fixtures… and <code>Store Fixture</code> land under the picked node: the dialog runs the store, then <code>Assign Fixture 30001 Thru 30004 At Fixture Media 1</code> as the second statement of the same line — no new flag, no new syntax. With "all" picked they land in no node, as today.</td></tr>
+<tr><th>7 · The node's own menu</th><td>In the sidebar, as today for a group: Move…, Rename…, New folder here (a Grouping-type fixture under it, its next free Generic id), Delete — the Delete question is the one below.</td></tr>
+<tr><th>8 · Counts and words</th><td>Sidebar counts are fixtures only ("1 348 fixtures · 23 folders"); <code>ls</code>, the tree chip and the list bar follow. <code>List Fixture Media 1</code> lists the node's fixtures (Deep), <code>Info Fixture Media 1</code> works, <code>Delete Fixture Media 7006 /NoConfirmation</code> finds its fixture — the three captures on page 1 fixed.</td></tr>
+</table>
+</section>
+
+<section class="card">
+<h2>Question 3 · what does Delete do with what is under a node? (try the three in the lab's top bar)</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>Ask, with both ways out</h3>
+<pre>Delete Fixture Media 1 "Stage 1 Mainstage"
+— 9 folders and 1 246 fixtures under it?
+[Delete all]  [Keep them: move up to Fixture Layer]  [Cancel]</pre>
+<p><code>/NoConfirmation</code> = Delete all; <code>/KeepChildren</code> the other answer, as <code>Delete Tag 1.1 /KeepChildren</code> has it. What stays moves up one level, its order kept.</p></div>
+<div class="opt"><span class="tag">B</span><h3>The subtree goes with the node, always</h3><p>"Delete … and the 1 246 fixtures under it?" — Delete | Cancel. Keeping the fixtures means dragging them out first.</p><p class="mute">Likely the desk's behaviour (to verify when the bridge is up).</p></div>
+<div class="opt"><span class="tag">C</span><h3>Refused while it holds anything</h3><p>"Fixture Media 1 holds 1 255 — empty it first." Only an empty node can go.</p></div>
+</div>
+</section>
+</main>

@@ -1,0 +1,201 @@
+#!/usr/bin/env bash
+# The plan runner: build what you name, then run what you name, in a fixed
+# order. The lumacore-scripts launcher's Plan pane writes this command line;
+# start_server and start_developer are presets of it.
+#
+# Usage:
+#   ./scripts/unix/dev [--stop] [--build server,cli,app] [--tracy]
+#                      [--run server,tracy,meownitor,web,app,cli-window,cli]
+#                      [--show demo] [--user Admin] [--clean-start] [--debug | --ship]
+#                      [--cmd "list fixture"]
+#
+#   --stop          stop everything first (stop_developer: server, CLI,
+#                   Meownitor, Tracy, app)
+#   --build         build these (server gets perfetto,http; --tracy adds Tracy)
+#   --run server    (re)start the server in the background with the web UI
+#                   (--show, --clean-start) and wait for health
+#   --run tracy     the Tracy profiler window (implies --tracy for a server build)
+#   --run meownitor the Meownitor in a terminal window
+#   --run web       the web UI in the default browser
+#   --run app       the desktop app, in the background (attaches to the
+#                   running server, or connects to any station)
+#   --run cli-window  the CLI (--user) in a terminal window
+#   --run cli       the CLI (--user, --cmd) in this terminal — always last
+#
+# Steps run in that order; the first failure stops the plan. A binary a run
+# step needs but nobody built is built first. Without a display the window
+# steps are skipped (cli-window becomes cli).
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+
+usage() { sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; }
+
+DEBUG=0
+STOP=0
+TRACY=0
+CLEAN=0
+SHOW=""
+USER_NAME="Admin"
+CMD_LINE=""
+BUILD_LIST=""
+RUN_LIST=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --debug) DEBUG=1 ;;
+        --ship) SHIP=1 ;;
+        --stop) STOP=1 ;;
+        --tracy) TRACY=1 ;;
+        --clean-start) CLEAN=1 ;;
+        --show) SHOW="${2:?--show needs a name}"; shift ;;
+        --user) USER_NAME="${2:?--user needs a name}"; shift ;;
+        --cmd|-C) CMD_LINE="${2:?--cmd needs a line}"; shift ;;
+        --CmdHelp) CMD_LINE="help ${2:?--CmdHelp needs a word}"; shift ;;
+        --build) BUILD_LIST="${BUILD_LIST:+$BUILD_LIST,}${2:?--build needs a list}"; shift ;;
+        --run) RUN_LIST="${RUN_LIST:+$RUN_LIST,}${2:?--run needs a list}"; shift ;;
+        -h|--help) usage; exit 0 ;;
+        *) die "Unknown argument: $1 (see --help)" ;;
+    esac
+    shift
+done
+lc_profile "$DEBUG"
+
+# The plan's two sets, as space-separated words: macOS's /bin/bash is 3.2, which has no
+# associative arrays. `on SET word` tests, `add` / `drop` change one.
+BUILD="" RUN=""
+on() { case " ${!1} " in *" $2 "*) return 0 ;; esac; return 1; }
+add() { on "$1" "$2" || eval "$1=\"\${$1} \$2\""; }
+drop() { local v=" ${!1} "; v="${v// $2 / }"; eval "$1=\"\$v\""; }
+IFS=',' read -ra items <<< "$BUILD_LIST"
+for i in ${items[@]+"${items[@]}"}; do
+    case "$i" in
+        server|cli|app) add BUILD "$i" ;;
+        all) add BUILD server; add BUILD cli; add BUILD app ;;
+        "") ;;
+        *) die "Unknown --build item: $i (server, cli, app)" ;;
+    esac
+done
+IFS=',' read -ra items <<< "$RUN_LIST"
+for i in ${items[@]+"${items[@]}"}; do
+    case "$i" in
+        server|tracy|meownitor|web|app|cli-window|cli) add RUN "$i" ;;
+        "") ;;
+        *) die "Unknown --run item: $i (server, tracy, meownitor, web, app, cli-window, cli)" ;;
+    esac
+done
+on RUN tracy && TRACY=1
+[ -n "$CMD_LINE" ] && ! on RUN cli && die "--cmd needs --run cli"
+if [ -z "${BUILD// /}" ] && [ -z "${RUN// /}" ] && [ "$STOP" -eq 0 ]; then
+    usage
+    die "Nothing to do: name --build and/or --run items"
+fi
+
+# Without a desktop the window steps can't open: say so once, up front.
+if ! has_display; then
+    for w in tracy meownitor web app; do
+        on RUN "$w" && { log "No display: skipping --run $w"; drop RUN "$w"; }
+    done
+    if on RUN cli-window; then
+        log "No display: the CLI attaches here instead of a window"
+        drop RUN cli-window
+        add RUN cli
+    fi
+fi
+
+# A run step needs its binary: build it when nobody asked and it's missing.
+needs() {
+    local what="$1" bin="$2"
+    if ! on BUILD "$what" && [ ! -x "$bin" ]; then
+        log "$(basename "$bin") isn't built — building it for --run"
+        add BUILD "$what"
+    fi
+}
+on RUN server && needs server "$SERVER_BIN"
+for c in meownitor cli-window cli; do
+    on RUN "$c" && needs cli "$CLI_BIN"
+done
+on RUN app && needs app "$APP_BIN"
+# wait_healthy asks through the CLI.
+on RUN server && needs cli "$CLI_BIN"
+
+# ── 1. Stop ─────────────────────────────────────────────────────────
+if [ "$STOP" -eq 1 ]; then
+    log "${C_STEP}Stop everything${C_OFF}"
+    "$REPO_ROOT/scripts/unix/stop_developer" || die "Stop failed"
+fi
+
+# ── 2. Build ────────────────────────────────────────────────────────
+EXTRA=""
+[ "$TRACY" -eq 1 ] && EXTRA="tracy"
+if [ -n "${BUILD// /}" ] && ! have_cargo; then
+    for b in $BUILD; do
+        case "$b" in server) bin="$SERVER_BIN" ;; cli) bin="$CLI_BIN" ;; app) bin="$APP_BIN" ;; esac
+        reuse_without_cargo "$bin"
+    done
+else
+    on BUILD server && { build_server "$EXTRA" || die "Build failed!"; }
+    on BUILD cli && { build_cli || die "Build failed!"; }
+    on BUILD app && { build_app || die "Build failed!"; }
+fi
+if on BUILD server && ! on RUN server && [ -n "$(server_pids)" ]; then
+    log "Note: a lumacore-server is running ($(echo $(server_pids))) — it still runs the old binary (tick Run server to restart it)"
+fi
+
+# ── 3. Server ───────────────────────────────────────────────────────
+if on RUN server; then
+    args=(start --no-build)
+    [ -n "$SHOW" ] && args+=(--show "$SHOW")
+    [ "$DEBUG" -eq 1 ] && args+=(--debug)
+    [ "$SHIP" -eq 1 ] && args+=(--ship)
+    [ "$CLEAN" -eq 1 ] && args+=(--clean-start)
+    "$REPO_ROOT/scripts/unix/server" "${args[@]}" || die "The server didn't start"
+elif { on RUN meownitor || on RUN web || on RUN cli-window || on RUN cli; } && ! server_healthy; then
+    log "Note: no healthy server on 127.0.0.1 — tick Run server, or the clients wait for one"
+fi
+
+# ── 4. Windows ──────────────────────────────────────────────────────
+MEOWNITOR_CMD="$CLI_BIN --target 127.0.0.1 --meownitor"
+CLI_CMD="$CLI_BIN --target 127.0.0.1 --user $USER_NAME"
+
+if on RUN tracy; then
+    # Opened first so its big window lands behind the terminals.
+    if command -v tracy-profiler &>/dev/null; then
+        log "Opening Tracy (tracy-profiler)"
+        tracy-profiler >/dev/null 2>&1 &
+    elif command -v tracy-capture &>/dev/null; then
+        log "Opening Tracy capture → /tmp/lumacore-trace.tracy"
+        open_terminal "tracy-capture -o /tmp/lumacore-trace.tracy -f" "Tracy Capture" || true
+    elif command -v Tracy &>/dev/null; then
+        log "Opening Tracy"
+        Tracy >/dev/null 2>&1 &
+    else
+        log "Tracy not found — skipping (build v0.11.1: docs/dev/build/profiling.md)"
+    fi
+fi
+if on RUN meownitor; then
+    log "Opening the Meownitor: $MEOWNITOR_CMD"
+    open_terminal "$MEOWNITOR_CMD" "MEOWNITOR" || true
+fi
+if on RUN web; then
+    log "Opening the web UI: http://127.0.0.1:$HTTP_PORT/"
+    open_url "http://127.0.0.1:$HTTP_PORT/" || true
+fi
+if on RUN app; then
+    app_args=(--no-build --bg)
+    [ "$DEBUG" -eq 1 ] && app_args+=(--debug)
+    [ "$SHIP" -eq 1 ] && app_args+=(--ship)
+    "$REPO_ROOT/scripts/unix/app" "${app_args[@]}" || die "The app didn't start"
+fi
+if on RUN cli-window; then
+    log "Opening the CLI: $CLI_CMD"
+    open_terminal "$CLI_CMD" "LumaCore CLI" || true
+fi
+
+log_ok "Plan done${PROFILE:+ ($PROFILE)}."
+
+# ── 5. The CLI here, last ───────────────────────────────────────────
+if on RUN cli; then
+    cli=("$CLI_BIN" --target 127.0.0.1 --user "$USER_NAME")
+    [ -n "$CMD_LINE" ] && cli+=(--cmd "$CMD_LINE")
+    log "Attaching the CLI here (user $USER_NAME)"
+    exec "${cli[@]}"
+fi

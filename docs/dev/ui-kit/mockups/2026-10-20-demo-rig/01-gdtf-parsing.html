@@ -1,0 +1,144 @@
+<title>Demo Rig Hardening</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4;--accent:#2a4d7a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;--accent:#8fb4e6;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;--accent:#8fb4e6;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:980px;margin:0 auto;display:grid;gap:28px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:68ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.wrap{overflow-x:auto}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.bad{color:var(--red)}.ok{color:var(--green)}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+.grid2{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 1 of several · 2026-10-20</div>
+<h1>Before any rig goes in the demo: the GDTF parser refuses most of the rigs' fixture types</h1>
+<p>The 186 MVR files in <code>../ExternalData/BombeeRigMetadata/mvr/</code> were read with <code>lumacore-mvr</code>, and every GDTF embedded in them was fed to the station's importer (<code>lumacore_gdtf::importer::import_gdtf_bytes</code>, the <code>gdtf</code> 0.2.0 crate underneath). Two things stop a demo built from any of them today. One is fixed already; the other is this question.</p>
+</header>
+
+<section class="card">
+<h2>The collection</h2>
+<div class="grid2">
+<div>
+<table>
+<tr><th>Files</th><td class="n">186</td></tr>
+<tr><th>Fixtures in them</th><td class="n">41 153</td></tr>
+<tr><th>Median fixtures per file</th><td class="n">176</td></tr>
+<tr><th>Files with ≥ 200 fixtures</th><td class="n">80</td></tr>
+<tr><th>Files with ≥ 500 fixtures</th><td class="n">13</td></tr>
+<tr><th>Largest</th><td>TI2024_3_3 · 1 678 fixtures · 88 universes · 1 MB</td></tr>
+</table>
+</div>
+<div>
+<table>
+<tr><th>MVR 1.4 / 1.5 / 1.6</th><td class="n">93 / 90 / 3</td></tr>
+<tr><th>Provider named</th><td>Vectorworks 47 · FixtureTools 2 · unnamed 137 (Capture, Depence)</td></tr>
+<tr><th>Every GDTF embedded</th><td class="n">161 files</td></tr>
+<tr><th>No addresses at all</th><td class="n">26 files</td></tr>
+<tr><th>All 186 read by <code>lumacore-mvr</code></th><td class="ok">yes, 0 errors</td></tr>
+</table>
+</div>
+</div>
+</section>
+
+<section class="card">
+<h2>Finding 1 · fixed while scanning: the number sits in <code>FixtureID</code>, not <code>FixtureIDNumeric</code></h2>
+<p>MVR 1.6 added <code>FixtureIDNumeric</code>; the 183 older files (and most 1.6 exporters) write <code>&lt;FixtureID&gt;4005&lt;/FixtureID&gt;</code> only. The crate read only the numeric tag, so every row of every real file came in without a number:</p>
+<pre>> Import Mvr "soppgirot.mvr"
+Review "soppgirot.mvr": 326 rows — 326 clash · 0 ticked
+     —  Clash    Robin Pointe   Robe@Robin Pointe [Bulb=HRI 2…  6.121   ✕ no fixture number: the file has none (FidOffset gives one)</pre>
+<p>Now the text is the number when it parses as one (<code>scene.rs</code>, one test). After it:</p>
+<pre>> Import Mvr "soppgirot.mvr"
+Review "soppgirot.mvr": 326 rows — 326 new · 326 ticked
+> Import Mvr "ti2024.mvr"
+Review "ti2024.mvr": 1678 rows — 1670 new, 8 clash · 1670 ticked
+    4056  Clash    MAC Quantum Profile   96.001   ✕ Fixture 4056 twice in the file</pre>
+<p class="mute">Two smaller things seen on the way, for the build step rather than a question: <code>Import Mvr 1 Thru 9999 /Apply</code> refuses on the first number the review lacks ("No review row 1") where the one range rule says to visit only existing numbers; and Apply repeats a failing type's error once per row instead of once per type.</p>
+</section>
+
+<section class="card">
+<h2>Finding 2 · the question: Apply writes nothing, because the embedded GDTFs don't parse</h2>
+<pre>> Import Mvr /Apply
+Applied "dhw23.mvr": nothing in the draft — skipped MAC Quantum Profile (Error: Import failed:
+  Invalid GDTF file: invalid xml: FixtureType[0].AttributeDefinitions.Attributes[0].Attribute[0]:
+  missing field `@PhysicalUnit` [E-CMD-008]); MAC Quantum Profile (…same…); … ×207</pre>
+<p>Every GDTF inside the 186 files, through the importer:</p>
+<div class="grid2">
+<div>
+<table>
+<tr><th>Embedded GDTFs</th><td class="n">1 084</td></tr>
+<tr><th class="ok">Parse</th><td class="n ok">412 · 38 %</td></tr>
+<tr><th class="bad">Refused</th><td class="n bad">672 · 62 %</td></tr>
+<tr><th>Rig files where every type parses</th><td class="n">55</td></tr>
+<tr><th>Rig files where no type parses</th><td class="n bad">93</td></tr>
+<tr><th>Mixed · no GDTF</th><td class="n">19 · 19</td></tr>
+</table>
+</div>
+<div>
+<table>
+<tr><th class="n">672</th><th>Why the parser refused</th><th>The spec</th></tr>
+<tr><td class="n">482</td><td><code>Attribute</code> without <code>PhysicalUnit</code></td><td>default <code>None</code></td></tr>
+<tr><td class="n">73</td><td><code>Axis</code> geometry without <code>Position</code></td><td>a matrix, identity when absent in practice</td></tr>
+<tr><td class="n">45</td><td><code>DMXChannel</code> without <code>Highlight</code></td><td>optional, default <code>None</code></td></tr>
+<tr><td class="n">43</td><td><code>FeatureGroup</code> without <code>Pretty</code></td><td>a display string</td></tr>
+<tr><td class="n">16</td><td>Attribute <code>Color</code> = <code>-nan(ind)</code></td><td>a Windows exporter's NaN; no colour</td></tr>
+<tr><td class="n">11</td><td>Gamut points like <code>{0.3127,…</code></td><td>a malformed list; ignore the gamut</td></tr>
+<tr><td class="n">2</td><td>ChannelSet <code>DMXFrom="-1"</code></td><td>out of range; skip the set</td></tr>
+</table>
+</div>
+</div>
+<p>Who writes them: Capture and Depence export a <em>stripped</em> GDTF per type (one <code>description.xml</code> of 2–25 KB, primitive models, <code>DataVersion 1.0 / 1.1</code>) and leave out every attribute that has a default. Vectorworks embeds the manufacturer's file, which parses. The same importer on a random 400 of the 13 844 files in <code>../ExternalData/GDTF-DB/community</code>: <span class="ok">393 parse</span>, 7 refused (NaN colours, odd gamut points, one oversized CRI, one odd Laser geometry). So the strictness is the <code>gdtf</code> crate's, not a LumaCore rule, and it bites exactly the files a lighting designer hands you from the planning tools.</p>
+<pre class="mute">Capture's export of a MAC Quantum Profile, description.xml:
+&lt;Attribute Name="Dummy" Pretty="Dummy" Feature="Control.Control"/&gt;            ← no PhysicalUnit
+&lt;DMXChannel DMXBreak="1" Offset="1" Default="0/1" Geometry="Dummy_1_1" Highlight="None"&gt;
+Vectorworks' embed of the manufacturer file:
+&lt;Attribute Feature="Beam.Beam" Name="Shutter1" PhysicalUnit="None" Pretty="Sh1"/&gt;</pre>
+</section>
+
+<section>
+<h2>What to do about the parser</h2>
+<div class="opts">
+<div class="opt rec">
+<span class="tag">A · Recommended</span>
+<h3>Fork the crate into the repo and give it the spec's defaults</h3>
+<p><code>gdtf</code> 0.2.0 (MIT, cpdt/gdtf-rs) copied to <code>vendor/gdtf/</code>, pinned with <code>[patch.crates-io]</code>; the seven cases above become serde defaults and lenient value parsers (NaN colour → none, a bad gamut → skipped, a bad channel set → skipped with a warning the import reports). <code>lumacore-gdtf</code> stays as it is (16 uses of the crate's types across 2 000 lines).</p>
+<ul><li>+ a day; every refused class is one attribute with a default</li><li>+ the lenient cases are listed in one place, testable with the stripped files as fixtures</li><li>− a vendored third-party crate to carry (we own it from here; upstream looks quiet)</li></ul>
+</div>
+<div class="opt">
+<span class="tag">B</span>
+<h3>LumaCore's own GDTF reader</h3>
+<p>Like <code>lumacore-mvr</code>: a small DOM over quick-xml inside <code>lumacore-gdtf</code>, reading only what the show uses (modes, channels, functions, sets, wheels, emitters, geometry names, the matrices), lenient by construction.</p>
+<ul><li>+ no third-party model of GDTF in the tree; one crate per format, like MVR</li><li>+ the long-run shape</li><li>− two to three days before any rig goes in the demo; the importer, channel map, validator and details rewrite with it</li></ul>
+</div>
+<div class="opt">
+<span class="tag">C</span>
+<h3>Pre-clean the XML before the crate sees it</h3>
+<p>Inject the missing attributes into <code>description.xml</code> as text before parsing.</p>
+<ul><li>+ no fork</li><li>− a text rewrite of XML in front of a strict parser; brittle, and the value cases (NaN, gamut, DMXFrom) need real parsing anyway</li></ul>
+</div>
+</div>
+<p class="mute" style="margin-top:12px">Whatever is chosen, the stripped Capture types have no measurements and primitive models; that is fine for the demo (the console needs modes, channels and functions) and is the same data the designer's console gets.</p>
+</section>
+
+<section class="card">
+<h2>Next questions, once the parser takes the files</h2>
+<ul>
+<li>Which rig becomes the demo: a shortlist with each one imported for real (fixtures, universes, layers, groups, show-file size) — candidates today: SOPPGIROT AVICII (326 fixtures · 19 layers · 31 groups · 29 universes · 0.4 MB), PGL Cluj-Napoca (332 · 8 · 26 · 19 · 0.3 MB), DHW23 Mainstage (207 · 7 · 38 · 12 · 1 MB), TI2024 (1 678 · 5 · 24 · 88 · 1 MB).</li>
+<li>How the demo is built: <code>gen-demo</code> importing <code>library/mvr/demo.mvr</code> through <code>Import Mvr</code> (the file committed) versus a hand-written line list as today.</li>
+<li>What the demo gets beyond the patch: groups per MVR group, per layer, per type; which become group masters; users; what waits for presets.</li>
+<li>Whose rig it is: the file names a real production; what stays (fixture names, positions) and what is renamed.</li>
+</ul>
+</section>
+</main>

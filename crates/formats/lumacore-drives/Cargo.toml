@@ -1,0 +1,12 @@
+[package]
+name = "lumacore-drives"
+version.workspace = true
+edition.workspace = true
+description = "This station's drives: the volumes the OS mounts, the library tree on a drive, the ids (decisions §38)"
+
+[dependencies]
+lumacore-luma = { path = "../lumacore-luma" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+
+[lints]
+workspace = true

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Core keys F9–F12</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 36px 48px; background: #121212; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; flex-direction: column; gap: 6px">
+    <h1 style="margin: 0; font-size: 28px; font-weight: 500">Core keys — F9 to F12, never letters</h1>
+    <p style="margin: 0; font-size: 14px; color: #9c9c9c">Console-aligned (F9 / Pause lock, F10 shortcuts, F11 / Print Screen screenshot). Core keys can't be taken by Bind. F1–F8 stay free for executors and user keys. Meow = Alt by default (Shift is the usual console modifier on a keyboard).</p>
+  </div>
+
+  <div style="display: flex; gap: 10px">
+    <sc-for list="{{row}}" as="k" hint-placeholder-count="12">
+      <button type="button" onClick="{{k.pick}}" style="flex: 1; height: 64px; border-radius: 6px; border: 1px solid {{k.border}}; background: {{k.bg}}; color: {{k.fg}}; font: inherit; font-size: 18px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">{{k.t}}<span style="font-size: 11px; color: {{k.sub}}">{{k.s}}</span></button>
+    </sc-for>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+    <sc-for list="{{cards}}" as="c" hint-placeholder-count="4">
+      <section style="border-radius: 6px; background: #1c1c1c; border: 1px solid {{c.border}}; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <span style="display: flex; align-items: center; gap: 10px"><span class="mono" style="height: 36px; min-width: 52px; padding: 0 10px; border-radius: 5px; background: #303030; border: 1px solid #424242; display: flex; align-items: center; justify-content: center; font-size: 16px">{{c.key}}</span><span style="font-size: 13px; color: #9c9c9c">{{c.ref}}</span></span>
+        <sc-for list="{{c.lines}}" as="l" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border-radius: 5px; background: #262626">
+            <span class="mono" style="font-size: 13px; color: #e0c25a">{{l.combo}}</span>
+            <span style="font-size: 15px">{{l.does}}</span>
+            <span class="mono" style="font-size: 12px; color: #787878">{{l.line}}</span>
+          </div>
+        </sc-for>
+      </section>
+    </sc-for>
+  </div>
+
+  <span style="font-size: 13px; color: #787878">Dropped defaults (typing the words still works): F1 help · F2 list · F3–F5 list fixture / universe / output · F9 cd fixture · F10 cd universe · Shift+F10 · Meow+B / V / X. Ctrl+L and Ctrl+H stay (terminal). Tap a key above to find its card.</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { sel: 'F9' }; }
+  renderVals() {
+    const sel = this.state.sel;
+    const core = ['F9', 'F10', 'F11', 'F12'];
+    const row = ['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12'].map(t => {
+      const c = core.includes(t);
+      const on = t === sel;
+      return { t, s: c ? 'core' : 'executors later', pick: () => c && this.setState({ sel: t }),
+        bg: c ? (on ? 'rgba(154,122,8,.25)' : '#303030') : '#1c1c1c',
+        border: c ? (on ? '#9a7a08' : '#424242') : '#262626', fg: c ? '#d1d1d1' : '#787878', sub: c ? '#e0c25a' : '#5a5a5a' };
+    });
+    const cards = [
+      { key: 'F9', ref: 'Usual: F9 / Pause = desk lock', lines: [
+        { combo: 'F9  ·  Pause', does: 'DeskLock — lock / unlock this device', line: 'Toggle DeskLock' },
+        { combo: 'Meow+F9', does: 'Normal theme — held = while held, tap = toggle', line: 'Toggle NormalTheme' } ] },
+      { key: 'F10', ref: 'Usual: F10 = keyboard shortcuts on / off', lines: [
+        { combo: 'F10', does: 'Shortcut mode KBD / PRG / NAV', line: 'Shortcuts' },
+        { combo: 'Meow+F10', does: 'View bar only', line: '(page: view bar)' } ] },
+      { key: 'F11', ref: 'Usual: F11 / Print = screenshot', lines: [
+        { combo: 'F11  ·  Print Screen', does: 'Screenshot of my screens', line: 'Screenshot' },
+        { combo: 'Meow+F11', does: 'Shutdown menu (Lock tile inside)', line: 'Menu Shutdown' } ] },
+      { key: 'F12', ref: 'Usual: unused', lines: [
+        { combo: 'F12', does: 'Hide / show the sidebars and view bar of this window', line: '(page: sidebars)' },
+        { combo: 'Meow+F12', does: 'Native OS full screen of this window (macOS native full screen, never just maximize)', line: '(app: native full screen)' } ] }
+    ].map(c => ({ ...c, border: c.key === sel ? '#9a7a08' : '#303030' }));
+    return { row, cards };
+  }
+}
+</script>
+</body>
+</html>

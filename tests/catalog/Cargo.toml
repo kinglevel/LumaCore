@@ -1,0 +1,29 @@
+[package]
+name = "lumacore-catalog-tests"
+version.workspace = true
+edition.workspace = true
+publish = false
+description = "Tests of the whole catalog (decisions §34 25.15): every row's rules, the lum.md examples, the Lum words and the generated reference, against the station's catalog"
+
+[dev-dependencies]
+lumacore-station = { path = "../../apps/lumacore-station" }
+lumacore-objects = { path = "../../crates/model/lumacore-objects" }
+lumacore-registry = { path = "../../crates/foundation/lumacore-registry" }
+lumacore-syntax = { path = "../../crates/foundation/lumacore-syntax" }
+ctor = { workspace = true }
+lumacore-tree = { path = "../../crates/model/lumacore-tree" }
+lumacore-views = { path = "../../crates/ui/lumacore-views" }
+lumacore-suggest = { path = "../../crates/commands/lumacore-suggest" }
+lumacore-net = { path = "../../crates/network/lumacore-net" }
+lumacore-wire = { path = "../../crates/foundation/lumacore-wire" }
+lumacore-protocols = { path = "../../crates/model/lumacore-protocols" }
+lumacore-fixtures = { path = "../../crates/model/lumacore-fixtures" }
+lumacore-patch = { path = "../../crates/model/lumacore-patch" }
+lumacore-luma = { path = "../../crates/formats/lumacore-luma" }
+uuid = { workspace = true }
+lumacore-base = { path = "../../crates/foundation/lumacore-base" }
+lumacore-cmd-showfile = { path = "../../crates/commands/objects/lumacore-cmd-showfile" }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

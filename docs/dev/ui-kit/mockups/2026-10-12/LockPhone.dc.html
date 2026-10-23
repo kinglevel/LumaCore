@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lock on a phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.lock-bg{background-image:url(./lockbg.jpg);background-size:cover;background-position:40% center}
+</style>
+</helmet>
+<div class="lock-bg" style="width: 390px; height: 844px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #121212">
+  <div style="position: absolute; inset: 0; background: rgba(10,10,10,.4)"></div>
+  <div style="position: absolute; top: 70px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 4px">
+    <span style="font-size: 17px; color: #9c9c9c">Monday 12 October</span>
+    <span style="font-size: 88px; font-weight: 300; line-height: 1">12:41</span>
+    <span style="font-size: 14px; color: #9c9c9c; display: flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #9a7a08"></span>phone-bob · "Festival"</span>
+  </div>
+  <div style="position: absolute; top: 300px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 12px">
+    <span style="width: 108px; height: 108px; border-radius: 50%; border: 3px solid #758ba0; background: #303030; display: flex; align-items: center; justify-content: center; font-size: 38px; font-weight: 300">BO</span>
+    <span style="font-size: 22px">Bob <span style="font-size: 12px; padding: 3px 7px; border-radius: 4px; background: rgba(48,48,48,.85); color: #9c9c9c; vertical-align: middle">LD</span></span>
+    <label style="width: 280px; height: 48px; border-radius: 24px; background: rgba(28,28,28,.8); border: 1px solid #424242; display: flex; align-items: center; padding: 0 6px 0 18px; font-size: 16px; color: #787878">Password<span style="margin-left: auto; width: 38px; height: 38px; border-radius: 50%; background: #9a7a08; color: #f3ecd3; display: flex; align-items: center; justify-content: center">→</span></label>
+  </div>
+  <div style="position: absolute; bottom: 110px; left: 0; right: 0; display: flex; justify-content: center; gap: 22px">
+    <sc-for list="{{users}}" as="u" hint-placeholder-count="3">
+      <span style="display: flex; flex-direction: column; align-items: center; gap: 6px"><span style="width: 56px; height: 56px; border-radius: 50%; border: 2px solid rgba(120,120,120,.5); background: rgba(48,48,48,.9); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 300">{{u.ini}}</span><span style="font-size: 13px">{{u.name}}</span></span>
+    </sc-for>
+  </div>
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 24px; display: flex; flex-direction: column; gap: 10px; align-items: center">
+    <span style="display: flex; gap: 14px; font-size: 12px; color: #9c9c9c"><span>● DMX running</span><span>● Member of desk1</span></span>
+    <span style="height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid #424242; background: rgba(28,28,28,.8); display: flex; align-items: center; font-size: 14px">Servers…</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { users: [{ ini: 'AD', name: 'Admin' }, { ini: 'AN', name: 'Ann' }, { ini: 'GU', name: 'Guest' }] };
+  }
+}
+</script>
+</body>
+</html>

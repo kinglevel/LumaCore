@@ -1,0 +1,118 @@
+<title>Drive Names and Identity</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --warn: #d08a2a; --sel: #223a5a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 88ch; line-height: 1.5; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 13px; margin: 0; max-width: 100ch; min-width: 0; flex: 1 1 420px; line-height: 1.45; }
+.facts dt { color: var(--faint); } .facts dd { margin: 0; }
+code, pre { font-family: var(--mono); font-size: 12px; color: var(--gold-text); }
+pre { margin: 0; background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; line-height: 1.55; color: var(--text); }
+pre b { color: var(--gold-text); font-weight: 500; } pre i { font-style: normal; color: var(--faint); } pre em { font-style: normal; color: var(--del); } pre u { text-decoration: none; color: var(--ok-t); }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 100ch; line-height: 1.5; margin: 0; }
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 22px; }
+.opt { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.opt h3 { margin: 0; font-size: 15px; font-weight: 500; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.opt h3 .tag { font-size: 11px; border: 1px solid var(--gold); color: var(--gold-hi); border-radius: 9px; padding: 0 7px; }
+.opt p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.45; }
+.opt ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--dim); line-height: 1.4; }
+.opt li::before { content: "＋ "; color: var(--ok-t); } .opt li.m::before { content: "－ "; color: var(--del); }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th { text-align: left; font-weight: 500; color: var(--dim); padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--head); white-space: nowrap; }
+td { padding: 6px 10px; border-bottom: 1px solid var(--cell-line); vertical-align: top; }
+td code { white-space: nowrap; }
+.kinds { max-width: 100ch; }
+</style>
+
+<main>
+  <header>
+    <h1>Drives · 2 · the names and what keeps them</h1>
+    <p>Model C is taken: <code>Root.Drives</code> is the drive list — the local library, the volumes the station finds, the folders you add — each with the one library tree, every file dialog with the same rail. The user: "root.drives.ssda, root.drives.ssdb, root.drives.local-library, root.drives.usb1 (external drive), root.drives.smb1 etc." So the names are <b>kind + ordinal</b>, not the volume's label and not a bare number. This question fixes the kinds, the ordinal, and what makes <code>usb1</code> still <code>usb1</code> after the stick was out and in again, or after a restart — because lines keep them (<code>LoadShow "x" /Drive usb1</code> in a macro), the AssetRoot map keeps them, and a person reads them.</p>
+  </header>
+
+  <section class="board">
+    <h2>The ground</h2>
+    <div class="row">
+      <pre><i>what the OS tells us about a volume</i>
+Linux    /proc/mounts: device (/dev/sdb1), mount point (/media/rolle/KINGSTON), fs type (vfat, exfat, ext4, cifs, nfs)
+         /dev/disk/by-uuid, by-label, by-id (the serial: usb-Kingston_DataTraveler_…); /sys/block/sdb/removable, rotational
+macOS    /Volumes/&lt;label&gt;; diskutil: Volume UUID, Protocol (USB, SATA, Apple_APFS …), Removable, Internal, Network (smb://)
+Windows  drive letters; GetDriveType: REMOVABLE, FIXED, REMOTE; the volume serial; the bus (USB) from the device
+
+<i>so every volume has</i>  a <b>kind</b> (the bus or the protocol) · a <b>stable id</b> (UUID / serial) · a <b>label</b> (KINGSTON) · a mount path</pre>
+      <dl class="facts">
+        <dt>Names in the tree</dt><dd>Under <code>Root.Drives</code> a step is a name (<code>Step::Name</code>, like <code>Protocols.DMXProtocols.Sacn</code>): <code>Root.Drives.usb1.shows.rig.luma</code>. Names are case-insensitive, no spaces, so the tree shell's <code>ls Root.Drives.usb1.mvr</code> and <code>cp</code> work as they do.</dd>
+        <dt>Names on a line</dt><dd>The drive word is the same name: <code>Drive "usb1"</code>, <code>Info Drive usb1</code>, <code>LoadShow "rig" /Drive usb1</code> (question 3 decides the line's form; whichever it is, the id is what is typed).</dd>
+        <dt>The label</dt><dd>A volume's label (KINGSTON, LaCie 2TB) is its display name — shown beside the id everywhere, never the id: labels have spaces, repeat (two sticks called "USB"), and change.</dd>
+        <dt>Station-local</dt><dd>The list is this station's (like NICs). A show never names a drive; an AssetRoot's station map names one. A LumaSession member's <code>usb1</code> is its own stick.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="board">
+    <h2>The kinds — the prefix of every id</h2>
+    <table class="kinds">
+      <tr><th>Prefix</th><th>What</th><th>How it is found</th><th>Ordinal</th><th>Example</th></tr>
+      <tr><td><code>local-library</code></td><td>the station's own <code>library/</code></td><td>always there, Drive 1</td><td>none (one)</td><td><code>Root.Drives.local-library</code></td></tr>
+      <tr><td><code>ssd</code> / <code>hdd</code></td><td>a fixed internal disk beyond the system one (a second SSD in a console, a data HDD)</td><td>a mounted fixed volume that is not the boot volume; rotational says hdd</td><td>letters, like Linux's sda sdb: <code>ssda</code>, <code>ssdb</code>, <code>hdda</code></td><td><code>Root.Drives.ssda</code></td></tr>
+      <tr><td><code>usb</code></td><td>a removable volume on USB (stick, SSD in a case, card reader)</td><td>bus USB, or the OS says removable</td><td>numbers: <code>usb1</code>, <code>usb2</code></td><td><code>Root.Drives.usb1</code></td></tr>
+      <tr><td><code>smb</code> / <code>nfs</code></td><td>a network share the OS has mounted, or one added as a folder with a share path</td><td>fs type cifs / smbfs / nfs, or the folder you add points at <code>//nas/shows</code></td><td>numbers: <code>smb1</code></td><td><code>Root.Drives.smb1</code></td></tr>
+      <tr><td><code>folder</code></td><td>a plain folder you add (a path on the same disk, anything else)</td><td>Add folder…</td><td>numbers: <code>folder1</code></td><td><code>Root.Drives.folder1</code></td></tr>
+      <tr><td><code>cloud</code></td><td>later: a cloud bucket</td><td>—</td><td>numbers</td><td>planned</td></tr>
+    </table>
+    <p style="margin:0;color:var(--dim);max-width:100ch;line-height:1.5;font-size:13px">The prefix is the kind the station sees; a person can rename the <b>label</b>, never the id. A kind the OS can't tell (a USB SSD some systems report as fixed) can be corrected once from the Drives menu (<code>Set Drive ssdb "Kind" USB</code> → it becomes the next free <code>usb</code> id, remembered).</p>
+  </section>
+
+  <section class="board">
+    <h2>The options — what keeps an id</h2>
+    <div class="opts" id="opts"></div>
+    <p class="decide">To decide: A, B or C. Recommended: <b>A · the id is bound to the volume and remembered</b> — the first time the station sees a volume it gets the next free id of its kind (<code>usb1</code>) and the station writes <code>volume id → drive id</code> into its settings (with the label and the kind); the same stick is <code>usb1</code> every time, on every day, in this station; a new stick is <code>usb2</code> even while <code>usb1</code> is out. Lines in macros, the AssetRoot map and a person's memory hold; the Drives menu lists absent drives greyed and lets you Forget one (its id is free again). B is the established way — the ids are slots, the first stick in is <code>usb1</code> — simple, but <code>usb1</code> in a macro means "whatever is in first" and an AssetRoot can point at the wrong stick; C makes the label the id and breaks on spaces, duplicates and renames.</p>
+  </section>
+</main>
+
+<script>
+const OPTS = [
+  { id: 'a', tag: 'recommended', title: 'A · The id is bound to the volume and remembered',
+    pre: `<pre>Mon  stick KINGSTON in     → <b>usb1</b>   <i>(new: next free usb id; remembered: uuid 3F2A… = usb1 "KINGSTON")</i>
+     stick SanDisk in      → <b>usb2</b>
+     KINGSTON out          → usb1 <i>absent, greyed in the menu</i>
+Tue  SanDisk in first      → <b>usb2</b>   <i>(its own id, usb1 stays free for KINGSTON)</i>
+     KINGSTON in           → <b>usb1</b>
+     Forget usb2 (menu)    → usb2 free; SanDisk next time = usb2 again <i>(next free)</i>
+smb  //nas/shows added     → <b>smb1</b>   <i>(added drives are remembered by their path)</i>
+ssd  second SSD, serial …  → <b>ssda</b>   <i>(by serial / volume UUID)</i></pre>`,
+    text: 'The station keeps a table volume id → drive id (+ kind, label, last seen) in its settings. A volume seen before gets its id back; a new one the next free id of its kind. Absent drives stay in the list greyed ("usb1 KINGSTON · out since 14:02"); Forget frees the id. Lines that name a drive mean one physical thing.',
+    pros: ['usb1 is always that stick: macros, AssetRoots and people can rely on it', 'A new stick never steals an id while the old one is out', 'Nothing to configure: the first sight assigns'],
+    cons: ['Ids grow (usb7) on a station that sees many sticks — Forget, or Forget all absent, keeps the list short', 'A reformatted stick is a new volume: a new id (the label hints)'] },
+  { id: 'b', title: 'B · The id is a slot: first in, first id',
+    pre: `<pre>Mon  KINGSTON in           → <b>usb1</b>
+     SanDisk in            → <b>usb2</b>
+     KINGSTON out          → <i>usb1 gone; SanDisk stays usb2</i>
+Tue  SanDisk in first      → <b>usb1</b>   <em>(the same stick is usb1 today)</em>
+     KINGSTON in           → <b>usb2</b></pre>`,
+    text: 'The established way: ids are the order of appearance now; nothing is remembered. The list is always short and gapless.',
+    pros: ['No table, nothing to forget, the list is always usb1, usb2…', 'What console users know'],
+    cons: ['usb1 in a macro means "whatever is in first"', 'An AssetRoot mapped to usb1 points at the wrong stick on another day', 'A stick out and in again can change id while the dialog is open'] },
+  { id: 'c', title: 'C · The label is the id',
+    pre: `<pre>KINGSTON in                → <b>Root.Drives.kingston</b>
+"My USB" in                → <b>Root.Drives.my-usb</b>   <i>(spaces to dashes)</i>
+a second "USB" stick       → <em>usb-2 ?</em>
+the user renames the label → <em>the id changes; macros break</em></pre>`,
+    text: 'The volume\'s label, sanitised, is the id; the kind is a column.',
+    pros: ['Reads like the thing on the table'], cons: ['Labels repeat, carry spaces and change; the id must be made up anyway', 'Not what the user asked for (kind + ordinal)'] },
+];
+document.getElementById('opts').innerHTML = OPTS.map(o => `<div class="opt"><h3>${o.title}${o.tag ? `<span class="tag">${o.tag}</span>` : ''}</h3>${o.pre}<p>${o.text}</p><ul>${o.pros.map(p => `<li>${p}</li>`).join('')}${o.cons.map(c => `<li class="m">${c}</li>`).join('')}</ul></div>`).join('');
+</script>

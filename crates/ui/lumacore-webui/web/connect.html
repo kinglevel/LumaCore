@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="darkreader-lock">
+  <title>LumaCore</title>
+  <!-- The app icon (a copy of images/brand/prompt-icon.svg) -->
+  <link rel="icon" type="image/svg+xml" href="/kit/icon.svg">
+  <!-- The app's connect page (decisions §30 "12a3", the Connect board): bundled
+       with the app, built only from kit elements (the same kit files the
+       station serves). It finds servers and connects; the station's own page
+       then shows its lock / login surface. Talks to the app over IPC
+       (window.ipc → app.rs `on_home_message`; the app calls `home.*`). -->
+  <link rel="stylesheet" href="/vendor/fonts/fonts.css">
+  <link rel="stylesheet" href="/kit/tokens.css">
+  <link rel="stylesheet" href="/kit/kit.css">
+  <script type="module" src="/kit/kit.js"></script>
+</head>
+<body>
+<div id="ctx" hidden></div>
+<script type="module">
+const send = msg => window.ipc.postMessage(JSON.stringify(msg));
+const kit = await new Promise(r => window.LumaKit ? r(window.LumaKit) : window.addEventListener('lumakit', () => r(window.LumaKit), { once: true }));
+await kit.ready;
+const { openDialog } = kit.dialog;
+
+let servers = [];
+let local = null;        // {running, owned, station}
+let lastKey = null;
+let autoStart = true;
+let kiosk = false;
+let countTimer = null;
+
+const surface = document.createElement('luma-surface');
+document.body.append(surface);
+
+// The dot (§30 "12b2 hardening", Servers list): green = its beacon is fresh,
+// amber "not answering N s" = late (> 1.5 s; the app drops it after 4 s),
+// grey = wrong version.
+function serverRows() {
+  const own = local?.station?.id;
+  return servers.filter(s => !(own && s.id && s.id === own)).map(s => {
+    const current = (s.id && s.id === lastKey) || `${s.host}:${s.port}` === lastKey;
+    const late = !s.wrong_version && s.not_answering_s != null;
+    return {
+      name: s.name || s.host,
+      info: `${s.host}:${s.port}${s.show ? ` · ${s.show}` : ''}${s.version ? ` · v${s.version}` : ''}`,
+      note: s.wrong_version ? 'wrong version — update the app [E-WIRE-001]'
+        : late ? `not answering ${s.not_answering_s} s` : current ? 'last' : 'OK',
+      warn: !!s.wrong_version || late, ok: !s.wrong_version && !late && !current, off: !!s.wrong_version,
+      dot: s.wrong_version ? 'off' : late ? 'warn' : 'ok',
+      current,
+      server: s,
+    };
+  });
+}
+
+function render(extra = {}) {
+  const running = local?.running;
+  const name = local?.station?.name || 'Local server';
+  surface.update({
+    mode: 'connect',
+    subtitle: 'LumaCore · this computer',
+    hint: '',
+    servers: {
+      searching: servers.length ? '' : 'Searching… (mDNS and LumaCore beacons)',
+      local: {
+        text: running ? `${name} is running${local.station?.show ? ` · ${local.station.show}` : ''}` : 'No server running on this computer',
+        actions: [
+          { label: running ? 'Connect' : 'Start local server', action: 'start', primary: true },
+          { label: 'Clean start…', action: 'clean' },
+        ],
+      },
+      rows: serverRows(),
+      address: true,
+      toggles: [
+        { name: 'auto_start', label: 'Connect to the last server at launch', on: autoStart },
+        { name: 'kiosk', label: 'Keyboard: Built-in on every screen (console / kiosk)', on: kiosk },
+      ],
+    },
+    ...extra,
+  });
+}
+
+function stopCount() { clearInterval(countTimer); countTimer = null; }
+
+function countdown(plan) {
+  stopCount();
+  const to = plan.local ? `Starting the local server · ${plan.user}` : `Connecting to ${plan.name || plan.host} as ${plan.user}`;
+  const info = plan.local ? 'this computer' : plan.host;
+  const end = Date.now() + plan.seconds * 1000;
+  const tick = () => {
+    const left = Math.max(0, (end - Date.now()) / 1000);
+    surface.update({ busy: null, countdown: { seconds: left, total: plan.seconds, to, info } });
+    if (left <= 0) go();
+  };
+  const go = () => { stopCount(); send({ type: 'autostart_go' }); };
+  surface.onnow = go;
+  tick();
+  countTimer = setInterval(tick, 250);
+}
+function cancelCount() { stopCount(); send({ type: 'autostart_cancel' }); surface.update({ countdown: null, busy: null }); render(); }
+
+function busy(text) { stopCount(); surface.update({ countdown: null, busy: text }); }
+
+function parseAddr(text) {
+  const m = text.trim().match(/^\[?([^\]]+?)\]?(?::(\d+))?$/);
+  return m ? { host: m[1], port: Number(m[2]) || 47656 } : null;
+}
+
+surface.addEventListener('surface-now', () => surface.onnow?.());
+surface.addEventListener('surface-stop', () => {
+  if (countTimer) return cancelCount();
+  send({ type: 'cancel' });
+  surface.update({ busy: null });
+  render();
+});
+surface.addEventListener('surface-local', e => {
+  if (e.detail.action === 'clean') send({ type: 'clean_start' });
+  else send({ type: 'start_local' });
+});
+surface.addEventListener('surface-server', e => {
+  const row = serverRows()[e.detail.index];
+  if (!row) return;
+  if (row.server.wrong_version) return surface.update({ error: `${row.name}: wrong version — update the app [E-WIRE-001]` });
+  busy(`Connecting to ${row.name}…`);
+  send({ type: 'open', host: row.server.host, port: row.server.port });
+});
+surface.addEventListener('surface-address', e => {
+  const a = parseAddr(e.detail.text);
+  if (!a) return;
+  busy(`Connecting to ${a.host}…`);
+  send({ type: 'open', host: a.host, port: a.port });
+});
+surface.addEventListener('surface-toggle', e => {
+  if (e.detail.name === 'auto_start') { autoStart = e.detail.on; send({ type: 'auto_start', on: autoStart }); }
+  if (e.detail.name === 'kiosk') { kiosk = e.detail.on; send({ type: 'kiosk', on: kiosk }); }
+  render();
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && countTimer) { e.preventDefault(); cancelCount(); }
+});
+
+// ── The app's questions, in the standard dialog ─────────────────────────────
+async function confirmClean(st) {
+  const v = await openDialog({
+    title: 'Clean start', meta: 'local server only',
+    text: (st.running
+      ? `Clean start the local server${st.show ? ` (show "${st.show}")` : ''}: an empty show, no startup show and default settings?`
+      : 'Start the local server clean: an empty show, no startup show and default settings?')
+      + ' Show files stay on disk.' + (st.dirty ? ' The show has unsaved changes.' : ''),
+    buttons: st.dirty
+      ? [{ label: 'Save, then clean start', value: 'save', kind: 'primary' }, { label: "Don't save", value: 'nosave', kind: 'danger' }, { label: 'Cancel', value: null }]
+      : [{ label: 'Clean start', value: 'go', kind: 'danger' }, { label: 'Cancel', value: null }],
+    note: 'CleanStart: this computer forgets its screens for the local server',
+  });
+  if (v) send({ type: 'clean_start_go', save: v === 'save' ? true : v === 'nosave' ? false : null });
+}
+
+async function confirmStop(st) {
+  const v = await openDialog({
+    title: 'Shutdown',
+    text: `Quit LumaCore and shut down the local server${st.show ? ` (show "${st.show}")` : ''}?` + (st.dirty ? ' The show has unsaved changes.' : ''),
+    buttons: st.dirty
+      ? [{ label: 'Save', value: 'save', kind: 'primary' }, { label: "Don't save", value: 'nosave', kind: 'danger' }, { label: 'Cancel', value: null }]
+      : [{ label: 'Shutdown', value: 'go', kind: 'danger' }, { label: 'Cancel', value: null }],
+  });
+  if (!v) return send({ type: 'cancel_quit' });
+  send({ type: 'stop_local', save: v === 'save' ? true : v === 'nosave' ? false : null });
+}
+
+async function confirmOther(st) {
+  const buttons = st.dirty
+    ? [{ label: 'Save and replace', value: 'save', kind: 'primary' }, { label: "Don't save", value: 'nosave', kind: 'danger' }]
+    : [{ label: 'Shut it down, start mine', value: 'go', kind: 'primary' }];
+  buttons.push({ label: 'Use it', value: 'use', disabled: !st.usable }, { label: 'Cancel', value: null });
+  const v = await openDialog({
+    title: 'Another LumaCore is running here', meta: st.usable ? '' : 'E-WIRE-001', metaWarn: !st.usable,
+    text: `The local server is another version than this app: ${st.reason}. Use it, or shut it down and start this app's server?`,
+    rows: [{ k: 'Running', v: `build ${st.build}${st.pid ? ` · pid ${st.pid}` : ''}` }, ...(st.show ? [{ k: 'Its show', v: `${st.show}${st.dirty ? ' (unsaved changes)' : ''}` }] : [])],
+    buttons,
+    note: 'Use it only when the client protocol matches · shutting it down asks Save / Don\'t save first',
+  });
+  if (v === 'use') send({ type: 'other_use' });
+  else if (v) send({ type: 'other_replace', save: v === 'save' ? true : v === 'nosave' ? false : null });
+  else send({ type: 'other_cancel' });
+}
+
+async function confirmHung(st) {
+  const v = await openDialog({
+    title: "The server doesn't stop", meta: 'waited 10 s', metaWarn: true,
+    text: st.pid
+      ? `The local server (pid ${st.pid}) is still running. Force stop sends it SIGTERM (it keeps an autosave and says goodbye on the wire), then SIGKILL after 5 s.`
+      : 'The local server is still running and did not say its pid (an older LumaCore). Stop it yourself, then try again.',
+    buttons: [
+      ...(st.pid ? [{ label: 'Force stop', value: 'force', kind: 'danger' }] : []),
+      { label: 'Keep waiting', value: 'wait', kind: st.pid ? 'plain' : 'primary' },
+      { label: 'Cancel', value: null },
+    ],
+    note: 'Force stop → SIGTERM, then SIGKILL after 5 s — only on this click',
+  });
+  if (v === 'force') send({ type: 'force_stop' });
+  else if (v === 'wait') send({ type: 'keep_waiting' });
+  else send({ type: 'hung_cancel' });
+}
+
+// ── Called by the app ───────────────────────────────────────────────────────
+window.home = {
+  // {servers, local, last_key, auto_start, kiosk, view, message, error}
+  state(s) {
+    if ('servers' in s) servers = s.servers;
+    if ('local' in s) local = s.local;
+    if ('last_key' in s) lastKey = s.last_key;
+    if ('auto_start' in s) autoStart = s.auto_start;
+    if ('kiosk' in s) kiosk = s.kiosk;
+    if (s.view) { stopCount(); surface.update({ countdown: null, busy: null }); }
+    const extra = {};
+    if ('message' in s || 'error' in s) extra.error = s.error || s.message || '';
+    render(extra);
+  },
+  countdown,
+  busy,
+  confirmStop,
+  confirmClean,
+  confirmOther,
+  confirmHung,
+};
+
+render();
+send({ type: 'ready' });
+</script>
+</body>
+</html>

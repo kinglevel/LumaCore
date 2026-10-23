@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# The headers every .rs file is laid out with (decisions §34): prints an ANSI Shadow banner
+# with its tag line, or a Section's star box, to paste into a file. Never draw one by hand —
+# tidy re-renders every tag line and fails when the art differs.
+#
+# Usage: ./scripts/unix/headers LOGIC                 a Part (TYPES INIT REGISTRY COMMANDS LOGIC
+#                                                    VIEWS IO HELPERS TESTS)
+#        ./scripts/unix/headers --file groups         a file's title banner (its module name)
+#        ./scripts/unix/headers --section "Store" "Into a group of your DataPool."
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$HOME/.cargo/env" 2>/dev/null || true
+
+cd "$REPO_ROOT"
+exec cargo run -q -p lumacore-headers -- "$@"

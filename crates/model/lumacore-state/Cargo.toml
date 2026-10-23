@@ -1,0 +1,36 @@
+[package]
+name = "lumacore-state"
+version.workspace = true
+edition.workspace = true
+description = "The station's state: AppState, the change path, Oops, props, errors, dialogs (decisions §34; the disk side is lumacore-luma)"
+
+[dependencies]
+lumacore-fixtures = { path = "../lumacore-fixtures" }
+lumacore-sysmon = { path = "../../foundation/lumacore-sysmon" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-tree = { path = "../lumacore-tree" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+lumacore-gdtf = { path = "../../formats/lumacore-gdtf" }
+lumacore-drives = { path = "../../formats/lumacore-drives" }
+lumacore-luma = { path = "../../formats/lumacore-luma" }
+lumacore-patch = { path = "../lumacore-patch" }
+lumacore-render = { path = "../../engine/lumacore-render" }
+lumacore-syntax = { path = "../../foundation/lumacore-syntax" }
+crossbeam-channel = { workspace = true }
+nu-ansi-term = { workspace = true }
+tabled = { workspace = true }
+log = { workspace = true }
+serde_json = { workspace = true }
+serde = { workspace = true }
+uuid = { workspace = true }
+pbkdf2 = { workspace = true }
+sha2 = { workspace = true }
+hmac = { workspace = true }
+arc-swap = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

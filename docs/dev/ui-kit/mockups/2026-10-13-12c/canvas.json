@@ -1,0 +1,54 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "WindowBar.dc.html": {
+      "x": 0,
+      "y": 17060,
+      "w": 1440,
+      "h": 900,
+      "title": "12c · Window bar: pinned settings + actions, live title, chip, … overflow, auto-hide",
+      "is_interactive": true
+    },
+    "BarSettings.dc.html": {
+      "x": 1520,
+      "y": 17060,
+      "w": 1440,
+      "h": 900,
+      "title": "12c · Settings window: pins, Window bar tab, resets",
+      "is_interactive": true
+    },
+    "Presets.dc.html": {
+      "x": 3040,
+      "y": 17060,
+      "w": 1440,
+      "h": 900,
+      "title": "12c · WindowPreset load / save, reset asks",
+      "is_interactive": true
+    },
+    "SelfExport.dc.html": {
+      "x": 0,
+      "y": 18080,
+      "w": 1440,
+      "h": 900,
+      "title": "12c · Self (resolved where typed, E-CMD-016), JSON export / import",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "WindowBar.dc.html",
+    "BarSettings.dc.html",
+    "Presets.dc.html",
+    "SelfExport.dc.html"
+  ],
+  "notes": {
+    "row10": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "12c — window bar, Self, presets, resets, export (for approval)",
+      "x": 0,
+      "y": 16760
+    }
+  },
+  "title": "LumaCore UI Kit Mockups — 12c"
+}

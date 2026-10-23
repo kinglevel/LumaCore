@@ -1,0 +1,32 @@
+[package]
+name = "lumacore-tidy"
+version.workspace = true
+edition.workspace = true
+description = "The source rules of the whole workspace, one file per area (decisions §34 20; the rulebook is docs/meta/tidy.md)"
+
+[dependencies]
+lumacore-objects = { path = "../../model/lumacore-objects" }
+lumacore-cmd-lumasession = { path = "../../commands/objects/lumacore-cmd-lumasession" }
+lumacore-cmd-showfile = { path = "../../commands/objects/lumacore-cmd-showfile" }
+lumacore-cmd-devices = { path = "../../commands/objects/lumacore-cmd-devices" }
+lumacore-cmd-protocols = { path = "../../commands/objects/lumacore-cmd-protocols" }
+lumacore-cmd-station = { path = "../../commands/objects/lumacore-cmd-station" }
+lumacore-cmd-treeshell = { path = "../../commands/objects/lumacore-cmd-treeshell" }
+lumacore-cmd-keys = { path = "../../commands/objects/lumacore-cmd-keys" }
+lumacore-cmd-tags = { path = "../../commands/objects/lumacore-cmd-tags" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-headers = { path = "../lumacore-headers" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-http = { path = "../../ui/lumacore-http", optional = true }
+
+# The HTTP engine's error codes are checked with its catalog.
+[features]
+http = ["dep:lumacore-http"]
+
+[dev-dependencies]
+ctor = { workspace = true }
+# The release rules read banned words as regexes.
+regex = { workspace = true }
+
+[lints]
+workspace = true

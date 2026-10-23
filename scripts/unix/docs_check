@@ -1,0 +1,350 @@
+#!/usr/bin/env python3
+"""docs_check — the one script of the md upgrade (docs/plans/active/md-upgrade.md §9).
+
+Builds the decisions index and runs the gardening checks over the repository's Markdown.
+Docs only: it never reads or changes code. Exit status 1 when a check fails.
+
+  scripts/unix/docs_check            run every check, print findings
+  scripts/unix/docs_check --index    rewrite docs/decisions/README.md from the records' frontmatter, then check
+  scripts/unix/docs_check --quiet    only the summary line
+
+Checks (numbers follow the plan's §9):
+  1  a record has every frontmatter field, a source naming its archive lines, plan or session, the three sections, under 300 body words
+  2  a superseded record names its successor and the successor names it
+  5  CLAUDE.md is at most 150 lines and carries no § references, dates, "built", R1-/Q-ids
+  6  every rules file has `paths:` and every glob matches an existing path
+  7  every repo path named in a doc exists
+  8  no code-owned number in prose (format version, protocol numbers, ports, crate counts, e2e duration, ratchet counts)
+  9  the roadmap has no ticked item, Now <= 10 items, Next <= 25
+  12 every local Markdown link resolves
+"""
+import glob
+import os
+import re
+import sys
+
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+RECORDS = os.path.join(ROOT, "docs", "decisions")
+INDEX = os.path.join(RECORDS, "README.md")
+ARCHIVE = "docs/archive/decisions-2026-10.md"
+
+REQUIRED = ["id", "title", "area", "status", "date", "built_in", "supersedes", "superseded_by", "confirmed_by", "source"]
+STATUSES = {"decided", "built", "superseded", "rejected"}
+SECTIONS = ["## Context", "## Decision", "## Consequences"]
+BODY_WORDS = 300
+CLAUDE_LINES = 150
+NOW_MAX, NEXT_MAX = 10, 25
+
+# Files where code-owned numbers and old paths are allowed: history and generated output.
+EXEMPT = (
+    "docs/archive/", "docs/user/reference/", "docs/research/", "docs/plans/", "CHANGELOG.md",
+    "tests/", "crates/ui/lumacore-webui/web/vendor/", "library/", "visions/", "issues/", "handoffs/",
+    "docs/dev/build-times.md", "docs/dev/benchmarks.md", "docs/dev/ui-kit/mockups/",
+)
+SKIP_DIRS = {".git", "target", "node_modules", "vendor", ".claude/worktrees"}
+
+OWNED = [
+    (re.compile(r"FORMAT_VERSION\s*(=|is|:)?\s*\d+"), "format version number"),
+    (re.compile(r"\bformat\s+(version\s+)?\d{1,3}\b", re.I), "format version number"),
+    (re.compile(r"(SESSION|CLIENT)_PROTOCOL\s*(=|is|:)?\s*\d+"), "protocol number"),
+    (re.compile(r"\bprotocol\s+(number\s+)?\d{1,3}\b", re.I), "protocol number"),
+    (re.compile(r"(?<![\w.])(4765[3-8]|6454|5568)(?![\w.])"), "port number"),
+    (re.compile(r"\b\d+\s+crates\b"), "crate count"),
+    (re.compile(r"e2e[^.\n]{0,40}\b\d+(\.\d+)?\s*min", re.I), "e2e duration"),
+    (re.compile(r"\b\d+\s+(shims|old resolvers|copies|long files|headerless files)\b", re.I), "ratchet count"),
+    (re.compile(r"_AT_MOST\s*=\s*\d+"), "ratchet constant"),
+]
+PATH_RE = re.compile(r"`((?:crates|apps|docs|scripts|tests|library|\.claude|vendor|visions|issues)/[^`\s*]+)`")
+LINK_RE = re.compile(r"\[[^\]]*\]\(([^)#\s]+)(#[^)]*)?\)")
+
+findings = []
+
+
+def find(check, path, line, msg):
+    findings.append((check, path, line, msg))
+
+
+def rel(p):
+    return os.path.relpath(p, ROOT)
+
+
+def md_files():
+    out = []
+    for dirpath, dirs, files in os.walk(ROOT):
+        r = rel(dirpath)
+        dirs[:] = [d for d in dirs if d not in SKIP_DIRS and not os.path.join(r, d).replace("./", "").startswith(".claude/worktrees")]
+        for f in files:
+            if f.endswith(".md"):
+                out.append(os.path.join(dirpath, f))
+    return sorted(out)
+
+
+def exempt(path):
+    r = rel(path)
+    return any(r.startswith(e) for e in EXEMPT)
+
+
+def parse_front(text):
+    if not text.startswith("---\n"):
+        return None, text
+    end = text.find("\n---\n", 4)
+    if end < 0:
+        return None, text
+    front = {}
+    key = None
+    for ln in text[4:end].splitlines():
+        if ln.startswith((" ", "\t")) and ln.strip().startswith("- ") and key:
+            # a YAML list under the previous key
+            front[key] = (front[key] + ", " if front[key] else "") + ln.strip()[2:].strip()
+        elif ":" in ln and not ln.startswith((" ", "\t")):
+            k, v = ln.split(":", 1)
+            key = k.strip()
+            front[key] = v.strip()
+    return front, text[end + 5:]
+
+
+def list_value(v):
+    v = v.strip()
+    if v in ("", "—", "-", "none", "None", "[]"):
+        return []
+    if v.startswith("[") and v.endswith("]"):
+        v = v[1:-1]
+    return [x.strip().strip('"').strip("'") for x in v.split(",") if x.strip()]
+
+
+def check_records():
+    recs = {}
+    for p in sorted(glob.glob(os.path.join(RECORDS, "*.md"))):
+        if os.path.basename(p) == "README.md":
+            continue
+        text = open(p, encoding="utf-8").read()
+        front, body = parse_front(text)
+        r = rel(p)
+        if front is None:
+            find(1, r, 1, "no frontmatter")
+            continue
+        for k in REQUIRED:
+            if k not in front:
+                find(1, r, 1, f"missing frontmatter field `{k}`")
+        if front.get("status") not in STATUSES:
+            find(1, r, 1, f"status `{front.get('status')}` not in {sorted(STATUSES)}")
+        # Where it was decided: the archive's lines, or after the freeze a plan or a session.
+        if not any(k in front.get("source", "") for k in ("archive", "§", "docs/plans/", "session")):
+            find(1, r, 1, "source names neither the archive, a plan under docs/plans/ nor a session")
+        for s in SECTIONS:
+            if s not in body:
+                find(1, r, 1, f"missing section `{s}`")
+        words = len(re.sub(r"^#.*$", "", body, flags=re.M).split())
+        if words > BODY_WORDS:
+            find(1, r, 1, f"body has {words} words (limit {BODY_WORDS})")
+        fname = os.path.basename(p)[:-3]
+        slug = re.sub(r"^\d{4}-", "", fname)
+        recs[slug] = front
+        if front.get("id"):
+            recs[front["id"]] = front
+        front["_slug"] = slug
+        front["_file"] = fname
+        front["_path"] = r
+    # 2: supersession symmetry
+    by_id = {f["id"]: f for f in recs.values() if f.get("id")}
+    for f in {v["_slug"]: v for v in recs.values()}.values():
+        succ = list_value(f.get("superseded_by", ""))
+        if f.get("status") == "superseded" and not succ:
+            find(2, f["_path"], 1, "status superseded but superseded_by is empty")
+        for s in succ:
+            target = by_id.get(s) or recs.get(s)
+            if target is None:
+                find(2, f["_path"], 1, f"superseded_by `{s}` is not a record")
+            elif f["id"] not in list_value(target.get("supersedes", "")) and f["_slug"] not in list_value(target.get("supersedes", "")):
+                find(2, f["_path"], 1, f"successor `{s}` does not list this record in supersedes")
+    return {v["_slug"]: v for v in recs.values()}
+
+
+def write_index(recs):
+    areas = {}
+    for f in recs.values():
+        areas.setdefault(f.get("area", "other"), []).append(f)
+    lines = [
+        "# Decisions — the index",
+        "",
+        "Built by `scripts/unix/docs_check --index` from every record's frontmatter; do not edit by hand.",
+        "One file per binding decision; a reversal is a new record that supersedes the old one.",
+        f"The log these came from is frozen at `{ARCHIVE}`; `source` cites its section and lines.",
+        "",
+        f"Records: {len(recs)}.",
+        "",
+    ]
+    for area in sorted(areas):
+        rows = sorted(areas[area], key=lambda f: f.get("id", ""))
+        lines += [f"## {area}", "", "| id | title | status | confirmed by | supersedes | source |", "|---|---|---|---|---|---|"]
+        for f in rows:
+            lines.append(
+                f"| [{f.get('id','')}]({f['_file']}.md) | {f.get('title','')} | {f.get('status','')} | "
+                f"{f.get('confirmed_by','')} | {f.get('supersedes','')} | {f.get('source','')} |"
+            )
+        lines.append("")
+    # citation map: archive § -> records
+    cite = {}
+    for f in recs.values():
+        for m in re.finditer(r"§\s*(\d+)", f.get("source", "")):
+            cite.setdefault(int(m.group(1)), set()).add(f.get("id", f["_slug"]))
+    lines += ["## Citation map (archive § → records)", "", "| § | records |", "|---|---|"]
+    for s in sorted(cite):
+        lines.append(f"| §{s} | {', '.join(sorted(cite[s]))} |")
+    lines.append("")
+    with open(INDEX, "w", encoding="utf-8") as fh:
+        fh.write("\n".join(lines))
+
+
+def check_claude():
+    p = os.path.join(ROOT, "CLAUDE.md")
+    if not os.path.exists(p):
+        return
+    lines = open(p, encoding="utf-8").read().splitlines()
+    if len(lines) > CLAUDE_LINES:
+        find(5, "CLAUDE.md", 1, f"{len(lines)} lines (limit {CLAUDE_LINES})")
+    for i, ln in enumerate(lines, 1):
+        if re.search(r"§\s*\d", ln):
+            find(5, "CLAUDE.md", i, "§ reference")
+        if re.search(r"\b2026-\d\d-\d\d\b", ln):
+            find(5, "CLAUDE.md", i, "date")
+        if re.search(r"\b(built|hardened)\s*\(|\bbuilt 2026|\b(part|step|round)\s+\w+\s+built\b|\*\*\d\d[a-h]\d?\w*\*\*", ln, re.I):
+            find(5, "CLAUDE.md", i, "build-status history")
+        if re.search(r"\bR1-\d+\b|\bQ\d{1,3}\b", ln):
+            find(5, "CLAUDE.md", i, "R1 / Q id")
+
+
+def check_rules():
+    for p in sorted(glob.glob(os.path.join(ROOT, ".claude", "rules", "*.md"))):
+        text = open(p, encoding="utf-8").read()
+        front, _ = parse_front(text)
+        r = rel(p)
+        if not front or "paths" not in front:
+            find(6, r, 1, "no `paths:` frontmatter")
+            continue
+        globs = list_value(front["paths"])
+        if not globs:
+            find(6, r, 1, "`paths:` is empty")
+        for g in globs:
+            base = g.split("*")[0].rstrip("/")
+            if not glob.glob(os.path.join(ROOT, g), recursive=True) and not os.path.exists(os.path.join(ROOT, base)):
+                find(6, r, 1, f"glob `{g}` matches nothing")
+
+
+def check_docs():
+    for p in md_files():
+        r = rel(p)
+        if r.startswith("docs/archive/") or r.startswith("docs/plans/") or r.startswith("docs/research/") or r.startswith("issues/") or r.startswith("handoffs/") or r.startswith("visions/"):
+            continue
+        text = open(p, encoding="utf-8").read()
+        in_code = False
+        for i, ln in enumerate(text.splitlines(), 1):
+            if ln.strip().startswith("```"):
+                in_code = not in_code
+                continue
+            for m in PATH_RE.finditer(ln):
+                path = m.group(1).rstrip(".,;:")
+                path = re.split(r"[:#]", path)[0]
+                if path.endswith("/"):
+                    path = path[:-1]
+                if "<" in path or ">" in path or "{" in path or "…" in path:
+                    continue
+                if path.startswith("library/"):  # runtime data, created by the station, gitignored
+                    continue
+                here = os.path.join(os.path.dirname(p), path)  # a crate README names its own tests/ and src/
+                if not os.path.exists(os.path.join(ROOT, path)) and not glob.glob(os.path.join(ROOT, path)) and not os.path.exists(here):
+                    find(7, r, i, f"path `{path}` does not exist")
+            if not exempt(p) and not in_code:
+                for rx, label in OWNED:
+                    if rx.search(ln):
+                        find(8, r, i, f"{label} in prose: `{ln.strip()[:80]}`")
+            for m in LINK_RE.finditer(ln):
+                target = m.group(1)
+                if "://" in target or target.startswith("mailto:"):
+                    continue
+                full = os.path.normpath(os.path.join(os.path.dirname(p), target))
+                if not os.path.exists(full):
+                    find(12, r, i, f"link `{target}` does not resolve")
+
+
+def check_roadmap():
+    p = os.path.join(ROOT, "docs", "meta", "roadmap.md")
+    if not os.path.exists(p):
+        return
+    section, counts = None, {}
+    for i, ln in enumerate(open(p, encoding="utf-8").read().splitlines(), 1):
+        if ln.startswith("## "):
+            section = ln[3:].split(" ")[0].strip(" —-")
+        if re.match(r"\s*- \[x\]", ln, re.I):
+            find(9, "docs/meta/roadmap.md", i, "ticked item in the roadmap (belongs in CHANGELOG.md)")
+        if re.match(r"\s*- ", ln) and section:
+            counts[section] = counts.get(section, 0) + 1
+    if counts.get("Now", 0) > NOW_MAX:
+        find(9, "docs/meta/roadmap.md", 1, f"Now has {counts['Now']} items (limit {NOW_MAX})")
+    if counts.get("Next", 0) > NEXT_MAX:
+        find(9, "docs/meta/roadmap.md", 1, f"Next has {counts['Next']} items (limit {NEXT_MAX})")
+
+
+FENCE_WRITE_OK = (".md", ".txt")
+FENCE_WRITE_PATHS = (".claude/rules/", ".claude/skills/", "scripts/unix/docs_check", "docs/plans/active/")
+FENCE_BASH_DENY = ("cargo build", "cargo test", "cargo run", "cargo bench", "LUMACORE_BLESS", "git push --force", "git push -f",
+                   "git checkout main", "git switch main", "git reset --hard", "rm -rf")
+FENCE_BASH_ALLOW = ("gen-docs",)
+
+
+def fence():
+    """PreToolUse hook for a docs-only agent: reads the hook JSON on stdin, exit 2 (deny) with the reason on stderr."""
+    import json
+    try:
+        data = json.load(sys.stdin)
+    except Exception:
+        return 0
+    if os.path.exists(os.path.join(ROOT, "docs", "plans", "active", "STOP")):
+        print("docs_check fence: docs/plans/active/STOP exists; every tool is held. Remove the file to resume.", file=sys.stderr)
+        return 2
+    tool = data.get("tool_name", "")
+    inp = data.get("tool_input", {}) or {}
+    if tool in ("Write", "Edit", "MultiEdit", "NotebookEdit"):
+        path = inp.get("file_path", "") or inp.get("notebook_path", "")
+        r = os.path.relpath(os.path.abspath(path), ROOT) if path else ""
+        ok = r.endswith(FENCE_WRITE_OK) or any(r.startswith(p) for p in FENCE_WRITE_PATHS)
+        if not ok or r.startswith(".."):
+            print(f"docs_check fence: writes are allowed only to Markdown, text, .claude/rules, .claude/skills and the docs plan; not `{r}`. "
+                  "Write a finding to docs/plans/active/findings.md instead.", file=sys.stderr)
+            return 2
+    if tool == "Bash":
+        cmd = inp.get("command", "")
+        if any(a in cmd for a in FENCE_BASH_ALLOW):
+            return 0
+        for d in FENCE_BASH_DENY:
+            if d in cmd:
+                print(f"docs_check fence: `{d}` is not allowed in a docs-only run.", file=sys.stderr)
+                return 2
+    return 0
+
+
+def main(argv):
+    if "--fence" in argv:
+        return fence()
+    quiet = "--quiet" in argv
+    recs = check_records()
+    if "--index" in argv:
+        os.makedirs(RECORDS, exist_ok=True)
+        write_index(recs)
+    check_claude()
+    check_rules()
+    check_docs()
+    check_roadmap()
+    if not quiet:
+        for check, path, line, msg in sorted(findings):
+            print(f"[{check:>2}] {path}:{line}: {msg}")
+    by = {}
+    for c, *_ in findings:
+        by[c] = by.get(c, 0) + 1
+    summary = ", ".join(f"check {c}: {n}" for c, n in sorted(by.items())) or "clean"
+    print(f"docs_check: {len(recs)} records, {len(findings)} findings ({summary})")
+    return 1 if findings else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

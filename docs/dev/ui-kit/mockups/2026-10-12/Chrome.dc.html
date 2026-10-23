@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Window chrome</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: {{t.bg}}; color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+  <div style="flex: 1; display: flex; min-height: 0">
+    <nav style="width: 50px; flex-shrink: 0; background: {{t.surface}}; border-right: 1px solid {{t.line}}; display: flex; flex-direction: column; align-items: center">
+      <sc-for list="{{side}}" as="b" hint-placeholder-count="7">
+        <button type="button" aria-label="{{b.name}}" style="width: 50px; height: 50px; border: none; background: none; color: {{b.c}}; font: inherit; font-size: 10px; font-weight: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="{{b.d}}"></path></svg>{{b.short}}</button>
+      </sc-for>
+    </nav>
+
+    <main style="flex: 1; display: flex; gap: 4px; padding: 0; min-width: 0; background: {{t.line}}">
+      <section style="flex: 6; display: flex; flex-direction: column; background: {{t.bg}}; min-width: 0; position: relative; outline: 1px solid color-mix(in srgb, {{t.accent}} 70%, transparent); outline-offset: -1px">
+        <div style="height: 36px; display: flex; align-items: flex-end; gap: 2px; padding: 0 6px; background: color-mix(in srgb, {{t.accent}} 8%, {{t.surface}}); border-bottom: 1px solid {{t.line}}">
+          <button type="button" onClick="{{toggleMenu}}" style="height: 30px; display: flex; align-items: center; gap: 0; padding: 0 12px 0 0; border: 1px solid {{t.line}}; border-bottom: none; border-radius: 6px 6px 0 0; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 13px; font-weight: 500">
+            <span style="width: 34px; height: 30px; display: flex; align-items: center; justify-content: center" aria-label="Window menu"><span style="width: 12px; height: 12px; border-radius: 50%; background: {{t.accent}}; box-shadow: {{dotRing}}"></span></span>System Monitor
+          </button>
+          <button type="button" style="height: 30px; padding: 0 12px; border: none; background: none; color: {{t.dim}}; font: inherit; font-size: 13px; display: flex; align-items: center"><span style="width: 12px; height: 12px; border-radius: 50%; background: color-mix(in srgb, {{t.accent}} 35%, {{t.bg}}); display: inline-block; margin-right: 8px"></span>Terminal</button>
+        </div>
+        <sc-if value="{{barOn}}" hint-placeholder-val="{{ true }}">
+          <div style="height: 34px; display: flex; align-items: center; gap: 18px; padding: 0 10px; background: {{t.bg}}; border-bottom: 1px solid {{t.surface}}; font-size: 13px; color: {{t.dim}}">
+            <sc-for list="{{barChecks}}" as="b" hint-placeholder-count="3">
+              <button type="button" onClick="{{b.tap}}" style="height: 34px; display: flex; align-items: center; gap: 7px; border: none; background: none; color: {{b.fg}}; font: inherit; font-size: 13px; padding: 0"><span style="width: 15px; height: 15px; border-radius: 2px; background: {{b.box}}; display: flex; align-items: center; justify-content: center; color: {{t.text}}; font-size: 11px">{{b.mark}}</span>{{b.name}}</button>
+            </sc-for>
+            <span style="display: flex; align-items: center; gap: 6px">Level: <span style="color: {{t.text}}">Info+ ▾</span></span>
+            <span style="display: flex; align-items: center; gap: 6px">Time: <span style="color: {{t.text}}">Session ▾</span></span>
+            <button type="button" aria-label="More bar items" style="margin-left: auto; height: 26px; width: 30px; border-radius: 3px; border: none; background: {{t.raised}}; color: {{t.text}}; font: inherit">…</button>
+          </div>
+        </sc-if>
+        <div class="mono" style="flex: 1; padding: 8px 12px; font-size: 13px; line-height: 22px; overflow: hidden">
+          <sc-for list="{{log}}" as="l" hint-placeholder-count="14">
+            <div style="display: flex; gap: 14px"><span style="color: {{t.dim}}">{{l.time}}</span><span style="color: {{l.c}}; width: 54px">{{l.lvl}}</span><span>{{l.msg}}</span></div>
+          </sc-for>
+        </div>
+
+        <sc-if value="{{menuOpen}}" hint-placeholder-val="{{ true }}">
+          <div style="position: absolute; top: 38px; left: 6px; width: 290px; border-radius: 6px; background: {{t.raised}}; border: 1px solid {{t.line}}; padding: 6px; display: flex; flex-direction: column; z-index: 5">
+            <div style="padding: 8px 10px; font-size: 12px; color: {{t.dim}}">Window 3 · System Monitor</div>
+            <sc-for list="{{menu}}" as="m" hint-placeholder-count="8">
+              <button type="button" onClick="{{m.act}}" style="height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; border: none; border-radius: 5px; background: transparent; color: {{m.c}}; font: inherit; font-size: 15px; text-align: left">{{m.label}}<span class="mono" style="font-size: 12px; color: {{t.dim}}">{{m.hint}}</span></button>
+            </sc-for>
+            <div style="padding: 8px 10px 4px; font-size: 12px; color: {{t.dim}}; border-top: 1px solid {{t.line}}; margin-top: 4px">{{hiddenNote}}</div>
+          </div>
+        </sc-if>
+      </section>
+
+      <div style="flex: 4; display: flex; flex-direction: column; gap: 4px; min-width: 0">
+        <section style="flex: 3; display: flex; flex-direction: column; background: {{t.bg}}; min-height: 0">
+          <div style="height: 36px; display: flex; align-items: flex-end; gap: 2px; padding: 0 6px; background: {{t.surface}}; border-bottom: 1px solid {{t.line}}">
+            <span style="height: 30px; display: flex; align-items: center; padding: 0 12px 0 0; border: 1px solid {{t.line}}; border-bottom: none; border-radius: 6px 6px 0 0; background: {{t.raised}}; font-size: 13px; font-weight: 500"><span style="width: 34px; display: flex; justify-content: center"><span style="width: 12px; height: 12px; border-radius: 50%; background: {{t.accent}}"></span></span>DMX</span>
+          </div>
+          <div style="height: 34px; display: flex; align-items: center; gap: 18px; padding: 0 10px; background: {{t.bg}}; border-bottom: 1px solid {{t.surface}}; font-size: 13px; color: {{t.dim}}">
+            <span style="display: flex; align-items: center; gap: 6px">Universe: <span style="color: {{t.text}}">‹ 1 ›</span></span>
+            <span style="display: flex; align-items: center; gap: 7px"><span style="width: 15px; height: 15px; border-radius: 2px; background: {{t.raised}}"></span>Show input</span>
+            <span style="display: flex; align-items: center; gap: 6px">Values: <span style="color: {{t.text}}">% ▾</span></span>
+          </div>
+          <div class="mono" style="flex: 1; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 2px; padding: 6px; font-size: 11px; align-content: start">
+            <sc-for list="{{dmx}}" as="d" hint-placeholder-count="60">
+              <div style="height: 34px; border-radius: 3px; background: {{d.bg}}; display: flex; flex-direction: column; justify-content: space-between; padding: 2px 4px"><span style="color: {{t.dim}}; font-size: 10px">{{d.ch}}</span><span style="text-align: right">{{d.v}}</span></div>
+            </sc-for>
+          </div>
+        </section>
+        <section style="flex: 1; display: flex; flex-direction: column; background: {{t.bg}}; min-height: 0">
+          <div style="height: 36px; display: flex; align-items: flex-end; gap: 2px; padding: 0 6px; background: {{t.surface}}; border-bottom: 1px solid {{t.line}}">
+            <span style="height: 30px; display: flex; align-items: center; padding: 0 12px 0 0; border: 1px solid {{t.line}}; border-bottom: none; border-radius: 6px 6px 0 0; background: {{t.raised}}; font-size: 13px; font-weight: 500"><span style="width: 34px; display: flex; justify-content: center"><span style="width: 12px; height: 12px; border-radius: 50%; background: {{t.accent}}"></span></span>Realtime</span>
+          </div>
+          <div style="flex: 1; padding: 10px 12px; font-size: 13px; color: {{t.dim}}; display: flex; flex-direction: column; gap: 6px">
+            <span class="mono" style="color: {{t.text}}">Frame 31 µs · Headroom 16.3 ms · Jitter 795 µs</span>
+            <span>Too short for its bar: the window bar hides itself; the window menu (tap the dot) lists its items.</span>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <aside style="width: 100px; flex-shrink: 0; background: {{t.surface}}; border-left: 1px solid {{t.line}}; display: flex; flex-direction: column">
+      <sc-for list="{{views}}" as="v" hint-placeholder-count="8">
+        <button type="button" style="height: 60px; border: none; border-bottom: 1px solid {{t.line}}; background: {{v.bg}}; color: {{t.text}}; font: inherit; font-size: 12px; text-align: left; padding: 6px 8px; display: flex; flex-direction: column; justify-content: space-between"><span style="color: {{t.dim}}">{{v.no}}</span>{{v.name}}</button>
+      </sc-for>
+    </aside>
+  </div>
+
+  <footer style="height: 50px; flex-shrink: 0; display: flex; align-items: stretch; background: {{t.surface}}; border-top: 1px solid {{t.line}}">
+    <button type="button" aria-label="Hide control bar" style="width: 50px; border: none; background: none; color: {{t.dim}}; font: inherit">◀</button>
+    <button type="button" style="width: 66px; border: none; background: none; color: {{t.accent}}; font: inherit; font-weight: 500; letter-spacing: .06em">PURR</button>
+    <div class="mono" style="flex: 1; display: flex; align-items: center; padding: 0 12px; font-size: 14px; border-left: 1px solid {{t.line}}; border-right: 1px solid {{t.line}}"><span style="color: {{t.dim}}">[Admin@desk1] Root&gt;&nbsp;</span>Group 3 At 50<span style="width: 2px; height: 20px; background: {{t.accent}}; margin-left: 2px"></span></div>
+    <button type="button" aria-label="Keyboard" style="width: 56px; border: none; background: none; color: {{t.dim}}; font: inherit; font-size: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h18v12H3zM7 10h.01M11 10h.01M15 10h.01M7 14h10"></path></svg>VK</button>
+    <span style="width: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: {{t.ok}}">ONLINE</span>
+    <button type="button" aria-label="Show view bar" style="width: 50px; border: none; background: none; color: {{t.dim}}; font: inherit">▶</button>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { menu: true, bar: true }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const side = [
+      { name: 'Power', short: '', d: 'M12 3v8M6.3 6.3a8 8 0 1 0 11.4 0', c: t.dim },
+      { name: 'Blind', short: 'BLND', d: 'M2 12s4-7 10-7s10 7 10 7M3 3l18 18', c: t.dim },
+      { name: 'Highlight', short: 'HI', d: 'M12 3v3M12 18v3M3 12h3M18 12h3M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8', c: t.accent },
+      { name: 'Freeze', short: 'FRZ', d: 'M12 2v20M4 6l16 12M20 6L4 18', c: t.dim },
+      { name: 'Solo', short: 'SOLO', d: 'M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8', c: t.dim },
+      { name: 'Meow', short: '', d: 'M8 8a1.5 2 0 1 0 0 .01M16 8a1.5 2 0 1 0 0 .01M5 12a1.5 2 0 1 0 0 .01M19 12a1.5 2 0 1 0 0 .01M12 13c-3 0-5 3-4 5c1 1.5 3 1 4 1s3 .5 4-1c1-2-1-5-4-5z', c: t.dim },
+      { name: 'Menu', short: '', d: 'M4 7h16M4 12h16M4 17h16', c: t.dim }
+    ];
+    const lv = { INFO: t.info, WARN: t.warn, OK: t.ok, ERROR: t.alert };
+    const log = [
+      ['12:04:01.112','OK','Show "Festival" loaded (format 6)'],['12:04:01.140','INFO','Patch: 72 channels, 2 universes'],['12:04:02.006','INFO','sACN line 1 → Stage (en0) at 30 Hz'],
+      ['12:04:05.771','INFO','Admin logged in from 127.0.0.1 (web)'],['12:04:09.302','WARN','Output line 2: network "FOH" is not mapped on this station'],['12:04:12.518','INFO','Store Group 3 "Even" — Oops step (Show)'],
+      ['12:04:13.004','INFO','Screenshot saved: 20261012_120413_admin_screen1.png'],['12:04:20.410','OK','Autosave in 15:00'],['12:04:31.990','INFO','Select Sequence 1'],
+      ['12:04:32.212','INFO','Go Sequence 1 Cue 1 (fade 2 s)'],['12:04:40.055','WARN','Clock: holdover (no master)'],['12:04:41.733','INFO','Set Window 3 WindowBarItems "filter,level,time,pause,clear"'],
+      ['12:04:44.010','INFO','EditSetting Self → Window 3'],['12:04:50.300','ERROR','E-PATCH-008 Patch is claimed by Bob']
+    ].map(([time, lvl, msg]) => ({ time, lvl, msg, c: lv[lvl] }));
+    const barChecks = ['Pause', 'Wrap', 'Errors only'].map((name, i) => { const on = (s.checks || [false, true, false])[i]; return { name, mark: on ? '✓' : '', box: on ? t.accent : t.raised, fg: on ? t.text : t.dim, tap: () => { const c = (s.checks || [false, true, false]).slice(); c[i] = !c[i]; this.setState({ checks: c }); } }; });
+    const menu = [
+      { label: 'Split right', hint: '', c: t.text }, { label: 'Split down', hint: '', c: t.text },
+      { label: 'Add window…', hint: 'Store Window', c: t.text }, { label: 'Change type…', hint: '', c: t.text },
+      { label: 'Rename…', hint: 'Label Window', c: t.text }, { label: 'Settings…', hint: 'EditSetting Self', c: t.text },
+      { label: s.bar ? 'Window bar  ✓' : 'Window bar', hint: 'Set Self WindowBar', c: t.text, act: () => this.setState({ bar: !s.bar }) },
+      { label: 'Close', hint: 'Delete Window', c: t.alert }
+    ];
+    const dmx = Array.from({ length: 60 }, (_, i) => { const v = [100, 0, 47, 0, 255, 12, 0, 80][i % 8]; return { ch: i + 1, v: v ? v : '', bg: v ? 'color-mix(in srgb, ' + t.ok + ' ' + Math.round(10 + v / 6) + '%, ' + t.surface + ')' : t.surface }; });
+    const views = Array.from({ length: 13 }, (_, i) => ({ no: i + 1, name: ['Busk', 'Patch', 'Prog', 'Monitor', '', '', '', '', '', '', '', '', ''][i], bg: i === 0 ? 'color-mix(in srgb, ' + t.accent + ' 16%, ' + t.surface + ')' : t.surface }));
+    return {
+      t, side, log, menu, dmx, views, barChecks,
+      menuOpen: s.menu, barOn: s.bar,
+      toggleMenu: () => this.setState({ menu: !s.menu }),
+      dotRing: s.menu ? '0 0 0 4px color-mix(in srgb, ' + t.info + ' 35%, transparent)' : 'none',
+      hiddenNote: s.bar ? 'Tap the dot again to close. A hold on the tab opens this menu too.' : 'Bar hidden — its items: Pause · Wrap · Errors only · Level · Time'
+    };
+  }
+}
+</script>
+</body>
+</html>

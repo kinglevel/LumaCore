@@ -1,0 +1,10 @@
+[package]
+name = "lumacore-headers"
+version.workspace = true
+edition.workspace = true
+description = "The ANSI Shadow file and Part headers every .rs file is laid out with (decisions §34, 25.11)"
+
+[dependencies]
+
+[lints]
+workspace = true

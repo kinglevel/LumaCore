@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+# The local lumacore-server: build, start in the background, stop, status, log.
+#
+# Usage:
+#   ./scripts/unix/server start   [--show demo] [--debug | --ship] [--tracy] [--no-build] [--fg] [--clean-start]
+#   ./scripts/unix/server restart [same as start]
+#   ./scripts/unix/server stop    [--force]
+#   ./scripts/unix/server status  [--debug | --ship]
+#   ./scripts/unix/server log     [--debug | --ship]          # follow the server's output
+#
+# start builds first (skip with --no-build), stops a running server, starts the
+# new one in the background (output: target/<profile>/server.log) and waits
+# for health. --fg runs it in this terminal instead (Ctrl-C stops it). It
+# serves the WebUI from crates/ui/lumacore-webui/web (lib.sh WEB_ROOT).
+set -euo pipefail
+case "${1:-}" in status|log) export LC_NO_LOG=1 ;; esac
+source "$(dirname "$0")/lib.sh"
+
+usage() { sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; }
+
+ACTION="${1:-}"
+[ -n "$ACTION" ] && shift || { usage; exit 1; }
+
+DEBUG=0
+SHOW=""
+EXTRA=""
+BUILD=1
+FG=0
+FORCE=""
+CLEAN=0
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --debug) DEBUG=1 ;;
+        --ship) SHIP=1 ;;
+        --show) SHOW="${2:?--show needs a name}"; shift ;;
+        --tracy) EXTRA="tracy" ;;
+        --no-build) BUILD=0 ;;
+        --fg) FG=1 ;;
+        --force) FORCE="--force" ;;
+        --clean-start) CLEAN=1 ;;
+        -h|--help) usage; exit 0 ;;
+        *) die "Unknown argument: $1" ;;
+    esac
+    shift
+done
+lc_profile "$DEBUG"
+
+do_start() {
+    if [ "$BUILD" -eq 1 ] && ! reuse_without_cargo "$SERVER_BIN"; then
+        { build_server "$EXTRA" && build_cli; } || die "Build failed!"
+    fi
+    stop_server --force || die "Can't stop the running server."
+
+    local args=()
+    [ -n "$SHOW" ] && args+=(--show "$SHOW")
+    [ "$DEBUG" -eq 1 ] && args+=(--debug)
+    [ "$SHIP" -eq 1 ] && args+=(--ship)
+    [ "$CLEAN" -eq 1 ] && args+=(--clean-start)
+
+    if [ "$FG" -eq 1 ]; then
+        server_cmd ${args[@]+"${args[@]}"}
+        log "Starting ${SERVER_CMD[*]} in the foreground (Ctrl-C stops it)..."
+        exec "${SERVER_CMD[@]}"
+    fi
+    start_server_bg ${args[@]+"${args[@]}"}
+    log "Started lumacore-server (PID $SERVER_PID, $PROFILE${SHOW:+, show $SHOW}), waiting for health..."
+    wait_healthy "$SERVER_PID" 15 || exit 1
+    log_ok "Server is healthy."
+    echo "  Server output: $SERVER_LOG"
+    echo "  Web UI:  http://127.0.0.1:$HTTP_PORT/"
+    local flag=""
+    [ "$DEBUG" -eq 1 ] && flag=" --debug"
+    echo "  Connect: ./scripts/unix/connect.sh$flag"
+    echo "  Stop:    ./scripts/unix/server stop"
+}
+
+do_status() {
+    local pids
+    pids="$(server_pids)"
+    if [ -z "$pids" ]; then
+        echo "lumacore-server: not running"
+        return 3
+    fi
+    for pid in $pids; do
+        echo "lumacore-server PID $pid: $(readlink "/proc/$pid/exe" 2>/dev/null || ps -o command= -p "$pid")"
+        ps -o etime=,args= -p "$pid" 2>/dev/null | sed 's/^ */  up /'
+    done
+    if server_healthy; then
+        echo "  health: ok (127.0.0.1:$CMD_PORT)"
+    elif [ -x "$CLI_BIN" ]; then
+        echo "  health: NOT answering on 127.0.0.1:$CMD_PORT"
+    else
+        echo "  health: unknown ($CLI_BIN isn't built)"
+    fi
+    if command -v curl >/dev/null; then
+        if curl -fsS -m 2 "http://127.0.0.1:$HTTP_PORT/api/station" >/dev/null 2>&1; then
+            local page
+            page="$(curl -fsS -m 2 "http://127.0.0.1:$HTTP_PORT/" 2>/dev/null || true)"
+            case "$page" in
+                "") echo "  http:   answering, no web UI (a server from before the built-in WebUI)" ;;
+                *) echo "  http:   answering, web UI http://127.0.0.1:$HTTP_PORT/" ;;
+            esac
+        else
+            echo "  http:   NOT answering on 127.0.0.1:$HTTP_PORT"
+        fi
+    fi
+    echo "  ports:"
+    if command -v ss >/dev/null; then
+        ss -tulpn 2>/dev/null | grep -E ":(4765[3-8])\b" | awk '{print "    " $1 " " $5}' || true
+    else
+        lsof -nP -iTCP -iUDP 2>/dev/null | grep -E ":4765[3-8]" | awk '{print "    " $8 " " $9}' || true
+    fi
+}
+
+case "$ACTION" in
+    start|restart) do_start ;;
+    stop) stop_server "$FORCE" ;;
+    status) do_status ;;
+    log)
+        [ -f "$SERVER_LOG" ] || die "No log yet: $SERVER_LOG"
+        exec tail -n 50 -f "$SERVER_LOG" ;;
+    -h|--help) usage ;;
+    *) usage; exit 1 ;;
+esac

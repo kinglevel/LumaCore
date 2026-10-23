@@ -1,0 +1,18 @@
+[package]
+name = "lumacore-cmd-devices"
+version.workspace = true
+edition.workspace = true
+description = "The devices: DeskLock (and the lock gate), NormalTheme, Device, ScreenConfig (decisions §30 \"12a3\", \"12c2\", §34 25.7, 25.17)"
+
+[dependencies]
+lumacore-registry = { path = "../../../foundation/lumacore-registry" }
+lumacore-sysmon = { path = "../../../foundation/lumacore-sysmon" }
+lumacore-objects = { path = "../../../model/lumacore-objects" }
+lumacore-cmd-station = { path = "../lumacore-cmd-station" }
+
+[dev-dependencies]
+ctor = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

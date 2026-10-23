@@ -1,0 +1,18 @@
+[package]
+name = "lumacore-cmd-lumasession"
+version.workspace = true
+edition.workspace = true
+description = "The LumaSession words: Join, Leave, Invite, Dismiss, Claim / Pause LumaSession and the LumaSession object, on the kernel's outbox (decisions §11, §21, §34 25.7)"
+
+[dependencies]
+lumacore-registry = { path = "../../../foundation/lumacore-registry" }
+lumacore-wire = { path = "../../../foundation/lumacore-wire" }
+lumacore-tree = { path = "../../../model/lumacore-tree" }
+lumacore-objects = { path = "../../../model/lumacore-objects" }
+lumacore-cmd-station = { path = "../lumacore-cmd-station" }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,251 @@
+<title>Device Grid and Value Marks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* A proposal page: notes in one column; the console mocks are drawn in the kit's dark theme on purpose (they are LumaCore's screens), the page around them follows the viewer. */
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#9a7a08;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4;
+  --font:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+  /* the kit, dark theme (crates/ui/lumacore-webui/web/kit/tokens.css) */
+  --k-bg:#121212;--k-surface:#1c1c1c;--k-raised:#303030;--k-line:#424242;--k-text:#d1d1d1;--k-dim:#8a8a8a;--k-accent:#9a7a08;--k-sel:#3a3320;--k-strong:#ececec;--k-cell:#242424;--k-none:#050505;
+  --k-programmer:#d86a7c;--k-park:#3f9a90;--k-info:#758ba0;
+  /* proposed value-mark tokens (B) */
+  --v-prg:#d86a7c;--v-prg-ink:#fff;--v-new:#3fc8d8;--v-lower:#4cc35a;--v-track:#d070d0;--v-block:#f4f4f4;--v-other:#d8b72a;--v-other-track:#968433;--v-fading:#1d3566;
+  --v-rel:#b48ad0;--v-fade:#4cc35a;--v-delay:#e08a2c;--v-phaser:#8a5ae0;--v-preset:#3fc8d8;--v-preset-rel:#1f8590;--v-park:#3f9a90;--v-default:#7c7c7c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--font);margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1040px;margin:0 auto;display:grid;gap:30px}
+h1{font-size:1.75rem;margin:0;text-wrap:balance;line-height:1.2}h2{font-size:1.18rem;margin:0 0 8px;text-wrap:balance}h3{font-size:1rem;margin:4px 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:600}
+p{max-width:72ch;margin:.4em 0}.mute{color:var(--mute)}
+code{font:.86em var(--mono);background:var(--code);padding:1px 5px;border-radius:4px}
+.wrap{overflow-x:auto;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:.86rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}th{color:var(--mute);font-weight:600;white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0;display:grid;gap:6px;align-content:start}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+.q{border-left:3px solid var(--gold);padding:4px 0 4px 12px}
+/* console */
+.con{background:var(--k-bg);color:var(--k-text);border:1px solid #2c2c2c;border-radius:10px;padding:14px;font:13px/1.3 var(--font);min-width:0}
+.vc{position:relative;display:flex;align-items:center;justify-content:flex-end;gap:6px;height:30px;min-width:64px;padding:0 8px;box-sizing:border-box;background:var(--k-cell);color:var(--v-default);font:600 13.5px var(--mono);font-variant-numeric:tabular-nums;border-right:1px solid #161616;overflow:hidden}
+.vc .ind{position:absolute;left:3px;right:3px;top:2px;height:3px;display:flex;gap:2px}
+.vc .ind b{flex:0 0 12px;border-radius:1px}.vc .ind .sp{flex:1}
+.vc .sym{margin-right:auto;width:12px;height:12px;border-radius:2px;flex:none}
+.vc .prog{position:absolute;left:0;bottom:0;height:2px;background:var(--k-strong);opacity:.7}
+.vc .rec{position:absolute;right:2px;top:7px;width:5px;height:5px;background:var(--v-lower)}
+.vc.none{background:var(--k-none)}
+.vc.big{height:64px;min-width:180px;font-size:26px;padding:0 16px}.vc.big .ind{height:6px;top:4px;left:6px;right:6px}.vc.big .ind b{flex-basis:26px}.vc.big .sym{width:22px;height:22px}.vc.big .prog{height:4px}.vc.big .rec{width:9px;height:9px;top:14px;right:5px}
+.anat{display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:center}@media (max-width:640px){.anat{grid-template-columns:1fr}}
+.ctl{display:flex;flex-wrap:wrap;gap:6px}.ctl label{display:inline-flex;gap:5px;align-items:center;border:1px solid #3a3a3a;border-radius:6px;padding:4px 8px;font-size:12px;color:#cfcfcf;background:#1b1b1b;cursor:pointer}
+.ctl select{background:#1b1b1b;color:#ddd;border:1px solid #3a3a3a;border-radius:6px;padding:4px 6px;font:12px var(--font)}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(225px,1fr));gap:8px}
+.legend .it{display:grid;grid-template-columns:76px 1fr;gap:10px;align-items:center;font-size:12.5px;color:#cfcfcf}
+.pal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media (max-width:640px){.pal{grid-template-columns:1fr}}
+/* consumers */
+.cons{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.enc{background:var(--k-surface);border:1px solid var(--k-line);border-radius:8px;padding:8px;display:grid;gap:6px}
+.enc .tabs{display:flex;gap:3px}.enc .tabs span{position:relative;flex:1;text-align:center;font-size:11.5px;padding:9px 2px 6px;background:var(--k-raised);border-radius:4px;color:#bbb}
+.enc .tabs span.on{color:#f0e6c8;box-shadow:inset 0 -2px 0 var(--k-accent)}
+.enc .tabs span i{position:absolute;top:2px;left:6px;right:6px;height:3px;display:flex;gap:2px}.enc .tabs span i b{flex:1;border-radius:1px}
+.knobs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px}
+.knob{position:relative;background:var(--k-raised);border-radius:6px;padding:10px 6px 6px;text-align:center}
+.knob .n{font-size:11px;color:var(--k-dim)}.knob .v{font:600 15px var(--mono);margin-top:2px;border-radius:3px;padding:1px 0}
+.knob i{position:absolute;top:3px;left:8px;right:8px;height:3px;display:flex;gap:2px}.knob i b{flex:1;border-radius:1px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}.chip{position:relative;font-size:11.5px;padding:9px 8px 5px;background:var(--k-raised);border-radius:5px;color:#ccc}.chip i{position:absolute;top:2px;left:5px;right:5px;height:3px;display:flex;gap:2px}.chip i b{flex:1;border-radius:1px}
+.plist{display:grid;gap:2px;font-size:12px}.plist div{display:grid;grid-template-columns:52px 1fr 64px;gap:6px;align-items:center}
+.nm{position:relative;padding:8px 6px 5px;background:var(--k-surface);border-radius:3px;font-weight:600}.nm i{position:absolute;top:2px;left:4px;width:18px;height:3px;display:flex;gap:2px}.nm i b{flex:1;border-radius:1px}
+</style>
+
+<main>
+<header style="display:grid;gap:8px">
+  <div class="kicker">Device sheet · round 1 · page 2 of 3 · 2026-10-22</div>
+  <h1>A device grid for the kit, and one set of value marks</h1>
+  <p>Your ask: a grid for values as a <strong>standard kit element</strong>, <code>&lt;luma-device-grid&gt;</code>, so the device sheet is its first user and not its only one. And the programmer must show the same coloured indicators. This page proposes the element, the anatomy of a value cell, and the marks as kit tokens. It then shows the same marks on every surface where a value appears.</p>
+</header>
+
+<section style="display:grid;gap:12px">
+  <h2>Question 1 · Where the value grid lives</h2>
+  <p>Your proposal is a <strong><code>&lt;luma-device-grid&gt;</code></strong>. Three ways to build it:</p>
+  <div class="opts">
+    <div class="opt rec"><span class="tag">A · your proposal, recommended</span><h3><code>&lt;luma-device-grid&gt;</code> extends <code>&lt;luma-grid&gt;</code></h3>
+      <p>A kit element of its own (<code>kit/devicegrid.js</code>, <code>class LumaDeviceGrid extends LumaGrid</code>). Rows are devices, columns come from the attributes of the patched types in scope. It adds what only devices need: feature-group headers over attribute columns, folder rows from the patch tree, the value cell, the layer switch, merged cells, the Channel / Dimmer+ tile views and the <code>values</code> feed.</p>
+      <ul><li>It inherits the grid's selection (+ / − / Thru / lasso), keys, the one context menu, the pointer core, virtual scroll for the rig's 1 348 rows, frozen columns, column sets and the miniature. So “every list of objects is <code>&lt;luma-grid&gt;</code>” still holds.</li><li>One place for device code: the device sheet, the programmer view, the preset editor and the patch dialog's live column all use it.</li></ul></div>
+    <div class="opt"><span class="tag">B</span><h3>A value column kind inside <code>&lt;luma-grid&gt;</code></h3>
+      <p>No new element: the plain grid gains <code>kind: 'value'</code> columns and a second header row.</p>
+      <ul><li>Least code; any grid can show a value column.</li><li>The device-only parts (attribute columns per type, tiles, layers) end up as switches inside the general grid.</li></ul></div>
+    <div class="opt"><span class="tag">C</span><h3>A separate element on its own scroller</h3>
+      <p>Built for devices from scratch.</p>
+      <ul><li>Free to be fast in its own way.</li><li>Two grids to keep in step: selection, keys, menu, miniature, column sets.</li></ul></div>
+  </div>
+  <p class="mute">In every option the value cell and its marks are one kit module (<code>kit/marks.js</code>, question 3), so the encoder bar and the programmer draw the same marks without a grid. The sequence track sheet's rows are cues, not devices; it uses the plain grid with value columns from the same module.</p>
+  <div class="card">
+    <h3>Who uses it</h3>
+    <div class="wrap"><table>
+      <tr><th>Window</th><th>Rows</th><th>Columns</th><th>Marks it uses</th></tr>
+      <tr><td>Device sheet</td><td>fixtures, folders as tree rows</td><td>attributes under feature groups</td><td>all</td></tr>
+      <tr><td>Programmer view</td><td>the device sheet with <em>Programmer only</em> on: fixtures and attributes with programmer data</td><td>same</td><td>programmer marks</td></tr>
+      <tr><td>Sequence track sheet</td><td>cues (or fixtures, transposed)</td><td>fixture · attribute</td><td>new / tracked / blocked; the tall bar vs thin line of a stored vs tracked value</td></tr>
+      <tr><td>Preset editor</td><td>fixtures or fixture types</td><td>the preset's attributes</td><td>global / universal / selective marks</td></tr>
+      <tr><td>Patch dialog, live columns</td><td>fixtures</td><td>one Output value column, read only</td><td>source colour only</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<section class="card" style="display:grid;gap:12px">
+  <h2>The value cell</h2>
+  <p>One cell, four layers of meaning, each in its own place, so they never fight:</p>
+  <ul>
+    <li><strong>Text colour</strong>: where the value comes from (default, which sequence, new / tracked / blocked).</li>
+    <li><strong>Background</strong>: what is happening to it (in the programmer and active; fading).</li>
+    <li><strong>Indicator bar</strong> along the top: which layers hold data (absolute, relative, fade, delay, phaser, preset, park). Deactivated programmer data is white on the left; DMX tester data is white on the right.</li>
+    <li><strong>Symbol</strong> on the left: the mixed colour or the gobo. A <strong>fade progress</strong> line runs along the bottom while fading, like the sequence miniature's running cue.</li>
+  </ul>
+  <div class="con">
+    <div class="anat">
+      <div id="bigcell"></div>
+      <div style="display:grid;gap:8px">
+        <div class="ctl">
+          <select id="src" aria-label="Source"><option value="def">Default</option><option value="prgA" selected>Programmer · active</option><option value="prgI">Programmer · inactive</option><option value="new">Cue · new (selected sequence)</option><option value="lower">Cue · new, lower dimmer</option><option value="track">Cue · tracked</option><option value="block">Cue · blocked</option><option value="other">Another sequence · new</option><option value="otherT">Another sequence · tracked</option><option value="park">Parked</option><option value="none">No such attribute</option></select>
+          <label><input type="checkbox" id="fading"> fading</label>
+          <label><input type="checkbox" id="sym" checked> symbol</label>
+          <label><input type="checkbox" id="recipe"> recipe</label>
+        </div>
+        <div class="ctl" id="inds"></div>
+        <div style="font:12px var(--mono);color:#9a9a9a" id="cellwhy"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="display:grid;gap:12px">
+  <h2>Question 2 · Which colours</h2>
+  <p>The meanings are the established ones (solid red = an active programmer value); the question is the paint. In <strong>A</strong> the marks copy the usual console colours. In <strong>B</strong> they become kit tokens: the kit already has <code>Programmer</code> for programmer values and <code>Park</code> for parked channels, and every theme (Dark, Daylight, Night, the theme editor) restyles them in one place.</p>
+  <div class="pal">
+    <div class="con"><div class="tag" style="margin-bottom:8px">A · Console colours</div><div class="legend" id="palA"></div></div>
+    <div class="con" style="outline:2px solid color-mix(in srgb,var(--gold) 45%,transparent)"><div class="tag" style="margin-bottom:8px">B · kit tokens (recommended)</div><div class="legend" id="palB"></div></div>
+  </div>
+  <p class="mute">Two places where B differs from the usual colours on purpose: the programmer red is the kit's rose (<code>--lc-programmer</code>), so it doesn't read as an error (<code>--lc-alert</code>), and Park is the kit's teal instead of the usual blue, because blue is already the selection edge in the miniature. Both are one token each if you want the usual hue.</p>
+</section>
+
+<section style="display:grid;gap:12px">
+  <h2>Question 3 · The same marks everywhere a value shows</h2>
+  <p>Your note: the programmer must use these indicators too. Established consoles already do it on the feature-group bar and the encoders. Proposed: the marks are one kit module (<code>marks.js</code> + the tokens). The grid cell, the encoder readout, the feature-group tab, the attribute board's chip and a fixture's name cell all draw from it. Below is one state, Icarus 785 in Admin's programmer, shown in each place:</p>
+  <div class="cons">
+    <div class="con"><h3 style="color:#ddd">Device sheet row</h3>
+      <div style="display:flex;overflow:hidden;border-radius:4px" id="row785"></div>
+      <p style="font-size:12px;color:#9a9a9a">Name bar: the fixture has active programmer data. Dim: active, with an individual fade. Pan: active. Tilt: inactive (red text). Gobo: default.</p></div>
+    <div class="con"><h3 style="color:#ddd">Encoder bar</h3>
+      <div class="enc">
+        <div class="tabs"><span class="on">Dimmer<i><b style="background:var(--v-prg)"></b><b style="background:var(--v-fade)"></b></i></span><span>Position<i><b style="background:var(--v-prg)"></b></i></span><span>Gobo</span><span>Color</span></div>
+        <div class="knobs">
+          <div class="knob"><i><b style="background:var(--v-prg)"></b><b style="background:var(--v-fade)"></b></i><div class="n">Dim</div><div class="v" style="background:var(--v-prg);color:#fff">100</div></div>
+          <div class="knob"><i><b style="background:var(--v-prg)"></b></i><div class="n">Pan</div><div class="v" style="background:var(--v-prg);color:#fff">−45°</div></div>
+          <div class="knob"><div class="n">Tilt</div><div class="v" style="color:var(--v-prg)">30°</div></div>
+        </div>
+      </div>
+      <p style="font-size:12px;color:#9a9a9a">The feature-group tab carries the bars of every attribute in the group, so “Dimmer” and “Position” show programmer data before you open them.</p></div>
+    <div class="con"><h3 style="color:#ddd">Attribute board</h3>
+      <div class="chips"><span class="chip">Dimmer<i><b style="background:var(--v-prg)"></b><b style="background:var(--v-fade)"></b></i></span><span class="chip">Pan<i><b style="background:var(--v-prg)"></b></i></span><span class="chip">Tilt<i><b style="background:#fff"></b></i></span><span class="chip">Gobo1</span><span class="chip">Zoom</span><span class="chip">Cyan</span></div>
+      <p style="font-size:12px;color:#9a9a9a">Tilt's white bar: programmer data that is deactivated, kept but not stored.</p></div>
+    <div class="con"><h3 style="color:#ddd">The programmer</h3>
+      <div class="plist">
+        <div><span class="nm" style="color:#f0e6c8">785<i><b style="background:var(--v-prg)"></b></i></span><span style="color:#aaa">ACME Icarus</span><span class="vc" style="background:var(--v-prg);color:#fff;min-width:0">3 attr</span></div>
+        <div><span class="nm" style="color:#f0e6c8">837<i><b style="background:var(--v-prg)"></b></i></span><span style="color:#aaa">ACME Icarus</span><span class="vc" style="background:var(--v-prg);color:#fff;min-width:0">3 attr</span></div>
+        <div><span class="nm">245<i><b style="background:#fff"></b></i></span><span style="color:#aaa">ACME Icarus</span><span class="vc" style="color:var(--v-prg);min-width:0">1 attr</span></div>
+      </div>
+      <p style="font-size:12px;color:#9a9a9a">Until a programmer window exists, the programmer is the device sheet with <em>Programmer only</em> on (page 3). Its rows use the same name bars.</p></div>
+  </div>
+</section>
+
+<section class="card" style="display:grid;gap:10px">
+  <h2>What the grid needs from the station</h2>
+  <p>One new feed on <code>/ws/feeds</code>, <code>values</code>: a Samples feed, built by <code>lumacore-views</code> like every other view. Per window it carries the rows and columns the window shows (its scope, page 3), and for each cell the value, the readout text and a small state record. Only visible rows stream (the grid is virtual), at the feed's rate, never from the render tick. The plan's value tier is read off the tick, which keeps invariant 10 (the tick allocates, locks and looks up nothing).</p>
+  <p class="mute">The kit rule already points at A: “every list of objects is <code>&lt;luma-grid&gt;</code>”, and a window that needs a missing element waits for its approved mockup, then the element goes into the kit and the Showroom before the window uses it.</p>
+  <pre style="background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 var(--mono);overflow-x:auto;margin:0">{ fixture: "…guid", attr: "Pan", text: "−45°", sym: null,
+  src: "programmer" | "sequence" | "park" | "default",
+  prog: { active: true, user: 1 },          // the viewer's programmer only
+  seq:  { no: 1, selected: true, cue: "new" | "tracked" | "blocked", lower: false },
+  fading: 0.4,                               // progress, null when still
+  layers: ["abs", "fade"],                   // the indicator bars
+  preset: "4.2" }</pre>
+  <p class="mute">The fields for states not built (relative, phaser, recipe, DMX tester, parts) are named now and stay empty, so the marks have their places.</p>
+</section>
+
+<section class="card" style="display:grid;gap:10px">
+  <h2>To decide on this page</h2>
+  <div class="q"><strong>1.</strong> The grid: A, <code>&lt;luma-device-grid&gt;</code> extending <code>&lt;luma-grid&gt;</code> (your proposal, recommended); B, a value column kind in the plain grid; or C, a separate element?</div>
+  <div class="q"><strong>2.</strong> The paint: A, the usual console colours, or B, kit tokens with the same meanings (recommended)? With B: keep the kit's rose for the programmer, or the usual red?</div>
+  <div class="q"><strong>3.</strong> The marks as one kit module used by the grid, the encoder bar, the feature-group tabs, the attribute board and the programmer list: yes?</div>
+  <div class="q"><strong>4.</strong> The cell anatomy (text = source, background = state, top bar = layers, symbol left, fade progress bottom): keep, or change a part?</div>
+</section>
+</main>
+
+<script>
+const S = {
+  def:   {t:'var(--v-default)', why:'At its default.'},
+  prgA:  {t:'var(--v-prg-ink)', bg:'var(--v-prg)', why:'In your programmer, active: a Store takes it.'},
+  prgI:  {t:'var(--v-prg)', why:'In your programmer, not active: kept, but a Store leaves it out.'},
+  new:   {t:'var(--v-new)', why:'New in the current cue of the selected sequence (on a dimmer: higher).'},
+  lower: {t:'var(--v-lower)', why:'A dimmer\'s new, lower value in the current cue.'},
+  track: {t:'var(--v-track)', why:'Tracked into the current cue of the selected sequence.'},
+  block: {t:'var(--v-block)', why:'Blocked in the current cue of the selected sequence.'},
+  other: {t:'var(--v-other)', why:'New or blocked, from a sequence that is not selected.'},
+  otherT:{t:'var(--v-other-track)', why:'Tracked, from a sequence that is not selected.'},
+  park:  {t:'var(--v-park)', why:'Parked: the output holds this value.'},
+  none:  {none:true, why:'The fixture has no such attribute.'},
+};
+const L = [['abs','absolute','var(--v-prg)'],['rel','relative','var(--v-rel)'],['fade','fade','var(--v-fade)'],['delay','delay','var(--v-delay)'],['phaser','phaser','var(--v-phaser)'],['preset','preset','var(--v-preset)'],['park','park','var(--v-park)'],['deact','deactivated (left, white)','#fff'],['tester','DMX tester (right, white)','#fff']];
+function cell({st='def', text='100', layers=[], fading=null, sym=null, recipe=false, big=false, w}){
+  const s = S[st], d = document.createElement('div');
+  d.className = 'vc' + (big ? ' big' : '') + (s.none ? ' none' : '');
+  if (w) d.style.minWidth = w + 'px';
+  if (s.none) return d;
+  d.style.color = s.t; if (s.bg) d.style.background = s.bg;
+  if (fading != null) d.style.background = 'var(--v-fading)';
+  const ind = document.createElement('div'); ind.className = 'ind';
+  if (layers.includes('deact')) ind.innerHTML += '<b style="background:#fff"></b>';
+  for (const [k,, c] of L) if (!['deact','tester'].includes(k) && layers.includes(k)) ind.innerHTML += `<b style="background:${c}"></b>`;
+  ind.innerHTML += '<span class="sp"></span>';
+  if (layers.includes('tester')) ind.innerHTML += '<b style="background:#fff"></b>';
+  d.append(ind);
+  if (sym) { const y = document.createElement('span'); y.className = 'sym'; y.style.background = sym; d.append(y); }
+  d.append(document.createTextNode(text));
+  if (fading != null) { const p = document.createElement('span'); p.className = 'prog'; p.style.width = (fading * 100) + '%'; d.append(p); }
+  if (recipe) { const r = document.createElement('span'); r.className = 'rec'; d.append(r); }
+  return d;
+}
+// anatomy
+const inds = document.getElementById('inds');
+for (const [k, label] of L) inds.insertAdjacentHTML('beforeend', `<label><input type="checkbox" data-l="${k}" ${k==='abs'||k==='fade'?'checked':''}> ${label}</label>`);
+function draw(){
+  const st = document.getElementById('src').value;
+  const layers = [...inds.querySelectorAll('input:checked')].map(i => i.dataset.l);
+  const fading = document.getElementById('fading').checked ? 0.55 : null;
+  const b = document.getElementById('bigcell'); b.replaceChildren(cell({st, text: st==='park'?'30°':'100', layers, fading, sym: document.getElementById('sym').checked ? '#e8a23a' : null, recipe: document.getElementById('recipe').checked, big: true}));
+  document.getElementById('cellwhy').textContent = S[st].why + (fading != null ? ' Fading: 55 % through its transition.' : '') + (layers.length ? ' Bars: ' + layers.join(', ') + '.' : '');
+}
+document.querySelectorAll('#src,#fading,#sym,#recipe,#inds input').forEach(e => e.addEventListener('change', draw)); draw();
+// palettes
+const REF = {def:'#9a9a9a',prgA:['#fff','#c40000'],prgI:'#ff3b30',new:'#22e5f5',lower:'#3fdc4a',track:'#ff47ff',block:'#fff',other:'#f5d300',otherT:'#a8961c',park:'#2a62e8',fading:['#22e5f5','#0d2f7a']};
+const names = {def:'default',prgA:'programmer, active',prgI:'programmer, inactive',new:'cue, new / higher',lower:'cue, lower dimmer',track:'cue, tracked',block:'cue, blocked',other:'other sequence',otherT:'other sequence, tracked',park:'parked',fading:'fading'};
+function pal(id, ref){
+  const el = document.getElementById(id);
+  for (const k of Object.keys(names)){
+    let c;
+    if (ref){ const v = REF[k]; c = cell({st:'def', text: k==='lower'?'20':'75'}); if (Array.isArray(v)){ c.style.color=v[0]; c.style.background=v[1]; } else c.style.color=v; }
+    else c = k==='fading' ? cell({st:'new', text:'75', fading:.5}) : cell({st:k, text: k==='lower'?'20':'75'});
+    c.style.minWidth='76px';
+    const it = document.createElement('div'); it.className='it'; it.append(c); it.insertAdjacentHTML('beforeend', `<span>${names[k]}</span>`); el.append(it);
+  }
+}
+pal('palA', true); pal('palB', false);
+// the 785 row
+const r = document.getElementById('row785');
+r.insertAdjacentHTML('beforeend', '<span class="nm" style="color:#f0e6c8;min-width:120px;background:var(--k-sel)">ACME Icarus 785<i><b style="background:var(--v-prg)"></b></i></span>');
+r.append(cell({st:'prgA', text:'100', layers:['abs','fade']}), cell({st:'prgA', text:'−45°', layers:['abs']}), cell({st:'prgI', text:'30°', layers:['deact']}), cell({st:'def', text:'Open'}));
+</script>

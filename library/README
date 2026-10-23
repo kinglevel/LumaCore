@@ -1,0 +1,29 @@
+LumaCore Library
+================
+
+This directory contains user data, show files, and reference examples.
+
+Subdirectories
+--------------
+
+  datapools/   Exported datapool structures (groups, presets, macros, etc.)
+  demo/        The manual demo: manual.lum, command lines gen-demo replays on the rig
+  poolxml/     A console's pool export as XML (Import PoolXml "x.xml" Groups); ti2026-groups.xml is the demo's
+  gdtf/        GDTF fixture type profiles (.gdtf files)
+  macro/       Macro definitions (JSON) — automation sequences
+  mvr/         MVR scene files (Import Mvr "x.mvr"); ti2026.mvr is the demo's rig
+  presets/     Preset pool exports
+  shows/       Show files (.luma, a zip of the ShowData tree); demo.luma is built, not kept
+  media/       Pictures to import (Import Image "x.png"; browser uploads land here);
+               media/.store/ is the station's cache of embedded pictures by SHA-256
+  userprofiles/  Profile files (.lumaprofile) from Export UserProfile
+  fixturetypes/  The station's cache of GDTF files by SHA-256
+  logs/        Session and server log files (auto-generated)
+
+Example Files
+-------------
+
+  macro/example_hello_world.json      Multi-line macro with different wait modes
+  macro/example_blackout_toggle.json  Practical blackout on/off macro
+  datapools/example_datapool.json     Exported Datapool with groups and a macro
+  shows/example_showfile.json         Minimal valid ShowData with all required fields

@@ -1,0 +1,271 @@
+<title>Users & Profiles Phone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Users & Profiles round 2: the drill-in (grid → profile → Settings / Content) on a phone, three ways.
+   LumaCore Dark on purpose. Layout: three 360 px phones in a row (wrapping), each live; the lines below. */
+:root {
+  --lc-bg:#121212; --lc-surface:#1c1c1c; --lc-raised:#303030; --lc-line:#424242; --lc-hair:#262626; --lc-gap:#0a0a0a;
+  --lc-text:#d1d1d1; --lc-dim:#8a8a8a; --lc-faint:#5e5e5e; --lc-accent:#9a7a08; --lc-accent-hi:#c9a227; --lc-on-accent:#f3ecd3;
+  --lc-cap:#f9ed4f; --lc-sel-line:#4d8fd6; --lc-selected:#3a3218; --lc-info:#758ba0;
+  --lc-font:'Source Sans 3','Segoe UI',system-ui,-apple-system,sans-serif;
+  --lc-mono:'JetBrains Mono',Menlo,Consolas,monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--lc-bg); color: var(--lc-text); }
+body { font-family: var(--lc-font); font-size: 15px; padding-inline: 16px; padding-block: 0 40px; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; }
+button:focus-visible { outline: 2px solid var(--lc-sel-line); outline-offset: 1px; }
+header.top { padding-block: 16px 12px; border-bottom: 1px solid var(--lc-line); display: grid; gap: 6px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance; }
+.sub { color: var(--lc-dim); font-size: 13.5px; margin: 0; max-width: 92ch; line-height: 1.45; }
+.sub b { color: var(--lc-accent-hi); font-weight: 600; }
+main { display: grid; gap: 16px; padding-block: 16px; }
+.phones { display: flex; flex-wrap: wrap; gap: 22px; justify-content: center; }
+.col { display: grid; gap: 8px; width: 360px; max-width: 100%; }
+.col h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.col p { margin: 0; font-size: 13px; color: var(--lc-dim); line-height: 1.4; min-height: 54px; }
+.ph { position: relative; width: 360px; max-width: 100%; height: 720px; border: 1px solid var(--lc-line); border-radius: 26px; background: var(--lc-surface); overflow: hidden; display: grid; grid-template-rows: auto auto 1fr auto; }
+.reset { justify-self: start; min-height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 12.5px; }
+.log { border: 1px solid var(--lc-line); border-radius: 6px; background: var(--lc-gap); font-family: var(--lc-mono); font-size: 13px; }
+.log h4 { margin: 0; padding: 6px 10px; border-bottom: 1px solid var(--lc-line); font: 500 12px var(--lc-font); text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); }
+.log ol { list-style: none; margin: 0; padding: 6px 10px; height: 110px; overflow: auto; }
+.log li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log li b { color: var(--lc-dim); font-weight: 400; }
+.log li::before { content: '› '; color: var(--lc-cap); }
+.decide { border-left: 3px solid var(--lc-accent); background: var(--lc-surface); padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 92ch; font-size: 14px; line-height: 1.45; }
+.decide h3 { margin: 0 0 4px; font-size: 12.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-accent-hi); }
+.decide ul { margin: 0; padding-left: 18px; }
+
+/* phone chrome */
+.wt { display: flex; align-items: center; gap: 6px; min-height: 50px; padding-left: 8px; border-bottom: 1px solid var(--lc-line); min-width: 0; }
+.wt b { font-size: 16px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+.wt .back { min-width: 44px; height: 40px; padding: 0 8px; border-radius: 6px; border: 0; background: none; color: var(--lc-accent-hi); cursor: pointer; font-size: 15px; white-space: nowrap; }
+.x { width: 48px; height: 48px; border: 0; background: none; color: var(--lc-dim); font-size: 22px; cursor: pointer; flex: none; }
+.crumbs { display: flex; gap: 4px; padding: 6px 8px; border-bottom: 1px solid var(--lc-hair); overflow-x: auto; scrollbar-width: none; font-size: 12.5px; }
+.crumbs button { flex: none; min-height: 30px; padding: 0 10px; border-radius: 15px; border: 1px solid var(--lc-line); background: #222; cursor: pointer; color: var(--lc-dim); }
+.crumbs button:last-child { color: var(--lc-text); border-color: var(--lc-accent); }
+.seg2 { display: flex; margin: 8px; border: 1px solid var(--lc-line); border-radius: 8px; overflow: hidden; }
+.seg2 button { flex: 1; min-height: 44px; border: 0; background: var(--lc-raised); cursor: pointer; }
+.seg2 button.on { background: var(--lc-selected); color: var(--lc-on-accent); box-shadow: inset 0 -3px 0 var(--lc-accent-hi); }
+.scr { min-height: 0; overflow-y: auto; padding: 8px; display: grid; gap: 8px; align-content: start; }
+.stored { font-family: var(--lc-mono); font-size: 11px; color: var(--lc-info); overflow-wrap: anywhere; }
+.rows { display: grid; gap: 4px; }
+.row { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--lc-hair); background: #1f1f1f; cursor: pointer; text-align: left; width: 100%; }
+.row .t { flex: 1; min-width: 0; }
+.row .t b { display: block; font-weight: 500; }
+.row .t small { display: block; font-size: 12px; color: var(--lc-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .go { color: var(--lc-faint); font-size: 20px; }
+.row .no { font-family: var(--lc-mono); color: var(--lc-dim); width: 18px; text-align: right; }
+.row .nw { font-size: 11px; color: var(--lc-cap); border: 1px solid var(--lc-accent); border-radius: 8px; padding: 0 6px; }
+.big2 { display: grid; gap: 8px; }
+.big { min-height: 110px; border-radius: 12px; border: 1px solid var(--lc-line); background: #202020; padding: 14px; text-align: left; cursor: pointer; display: grid; gap: 4px; align-content: start; }
+.big b { font-size: 18px; font-weight: 600; }
+.big small { color: var(--lc-dim); font-size: 13px; line-height: 1.35; }
+.h6 { margin: 6px 4px 0; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); font-weight: 500; }
+.cells { display: grid; gap: 4px; }
+.cell { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--lc-hair); background: #1f1f1f; cursor: pointer; width: 100%; text-align: left; }
+.cell span { flex: 1; color: var(--lc-dim); font-size: 14px; }
+.cell b { font-weight: 500; }
+.cell em { font-style: normal; font-size: 10.5px; border: 1px solid var(--lc-line); border-radius: 3px; padding: 0 4px; color: var(--lc-dim); }
+/* encoder bar editor, phone shaped */
+.lays { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.lays button, .chips button { flex: none; min-height: 40px; padding: 0 12px; border-radius: 20px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 13.5px; display: inline-flex; align-items: center; gap: 6px; }
+.lays button.on, .chips button.on { border-color: var(--lc-accent-hi); background: var(--lc-selected); }
+.lays button.add { border-style: dashed; color: var(--lc-dim); }
+.chips { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.chips i { width: 9px; height: 9px; border-radius: 2px; }
+.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.slot { min-height: 64px; border-radius: 8px; border: 1px dashed #3a3a3a; display: grid; place-content: center; text-align: center; font-size: 12px; color: var(--lc-faint); }
+.slot.full { border-style: solid; border-color: var(--lc-line); background: #262626; color: var(--lc-text); font-family: var(--lc-mono); font-size: 13px; }
+.slot small { display: block; font-family: var(--lc-font); font-size: 11px; color: var(--lc-dim); }
+.pg { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); margin: 4px 2px 0; }
+.list div { display: grid; gap: 2px; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--lc-hair); background: #1f1f1f; margin-bottom: 4px; }
+.list code { font-family: var(--lc-mono); font-size: 12.5px; color: var(--lc-cap); }
+.list small { color: var(--lc-dim); font-size: 12px; }
+.board { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.bcol { border: 1px solid var(--lc-line); border-radius: 7px; background: #181818; }
+.bcol h5 { margin: 0; padding: 6px 8px; border-bottom: 1px solid var(--lc-hair); font-size: 13px; display: flex; gap: 6px; align-items: center; }
+.bcol h5 i { width: 9px; height: 9px; border-radius: 2px; }
+.bcol div { padding: 5px; display: grid; gap: 3px; }
+.bcol span { font-family: var(--lc-mono); font-size: 12px; padding: 5px 7px; border-radius: 4px; background: #232323; color: var(--lc-dim); }
+.btn { min-height: 48px; border-radius: 8px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; padding: 0 14px; }
+.btn.ok { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; font-weight: 600; }
+/* P2: bottom bar + part picker */
+.bottom { display: flex; border-top: 1px solid var(--lc-line); background: #171717; padding-bottom: 4px; }
+.bottom button { flex: 1; min-height: 58px; border: 0; background: none; cursor: pointer; display: grid; place-items: center; gap: 0; color: var(--lc-dim); font-size: 12.5px; }
+.bottom button b { font-size: 15px; font-weight: 600; }
+.bottom button.on { color: var(--lc-text); box-shadow: inset 0 3px 0 var(--lc-accent-hi); background: #202020; }
+.picker { display: flex; align-items: center; gap: 8px; margin: 8px; min-height: 48px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--lc-accent); background: var(--lc-selected); cursor: pointer; width: calc(100% - 16px); text-align: left; }
+.picker b { flex: 1; font-weight: 600; }
+.picker small { color: var(--lc-dim); }
+.lm { display: inline-block; width: 14px; height: 2px; background: repeating-linear-gradient(90deg, var(--lc-accent-hi) 0 4px, transparent 4px 5px); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--lc-surface); border-top: 1px solid var(--lc-accent); border-radius: 16px 16px 0 0; padding: 6px 8px 12px; display: grid; gap: 4px; box-shadow: 0 -10px 30px rgba(0,0,0,.6); }
+.sheet .sh { display: flex; align-items: center; padding-left: 8px; font-weight: 600; }
+.sheet .sh span { flex: 1; }
+.scrim { position: absolute; inset: 0; z-index: 9; background: rgba(0,0,0,.5); }
+/* P3: one scroll, accordion */
+.sec { position: sticky; top: -8px; z-index: 2; background: var(--lc-surface); padding: 8px 4px 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-accent-hi); font-weight: 600; }
+.acc { border-radius: 8px; border: 1px solid var(--lc-hair); background: #1f1f1f; }
+.acc.open { border-color: var(--lc-accent); }
+.acc > button { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 54px; padding: 0 12px; border: 0; background: none; cursor: pointer; text-align: left; }
+.acc > button .t { flex: 1; min-width: 0; }
+.acc > button .t b { display: block; font-weight: 500; }
+.acc > button .t small { display: block; font-size: 12px; color: var(--lc-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.acc > button .ch { color: var(--lc-faint); }
+.acc .in { padding: 0 8px 10px; display: grid; gap: 8px; }
+.fullscr { position: absolute; inset: 0; z-index: 8; background: var(--lc-surface); display: grid; grid-template-rows: auto 1fr; }
+</style>
+
+<header class="top">
+  <h1>Users &amp; Profiles on a phone · round 2</h1>
+  <p class="sub">Your picks: <b>Profiles grid → drill in → Settings / Content</b>, users the same way, and the tree as <code>ShowData.UserProfiles.&lt;n&gt;.Settings | Content</code>. On a desk that fits; on a phone the left tabs, the part tabs and the editor fight for 360 px. Three ways to give each level the whole screen. Tap through each phone; all three open on Busking's encoder bars.</p>
+</header>
+
+<main>
+  <div class="phones" id="phones"></div>
+  <div class="log"><h4>Lines each phone sends</h4><ol id="log"></ol></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>P1 (a full screen per level), P2 (bottom bar + part picker) or P3 (one scrolling page)?</li>
+    <li>Should the desk keep its layout from round 1, or follow the phone's pick where it fits?</li>
+    <li>On the phone the encoder bar editor shows layouts and strip buttons as scrolling chips, with 2 × 2 slots per page. Is that right?</li>
+  </ul></div>
+</main>
+
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const log = (v, t) => { const li = document.createElement('li'); li.innerHTML = `<b>${v}</b>  ${esc(t)}`; $('#log').append(li); $('#log').scrollTop = 1e6; };
+
+const USERS = [{ no: 1, name: 'Admin', rights: 'Admin', profile: 'Admin' }, { no: 2, name: 'Bob', rights: 'Program', profile: 'Busking' }, { no: 3, name: 'Guest', rights: 'Guest', profile: 'Guest' }];
+const PROFILES = [{ no: 1, name: 'Default', locked: true, by: 'template' }, { no: 2, name: 'Admin', by: 'Admin' }, { no: 3, name: 'Busking', by: 'Bob' }, { no: 4, name: 'Guest', by: 'Guest' }];
+// The two groups and their parts (round 1, question 3) with where each is stored.
+const GROUPS = {
+  Settings: [['Look', 'Theme LumaCore Dark · font 15 px'], ['Lock screen', 'stage.jpg · clock on'], ['Input & keys', 'Meow Shift · hold 500 ms'], ['Oops', 'Confirmation Main'], ['Command line', 'Suggestions Auto']],
+  Content: [['Attributes', '9 groups · 1 new', 1], ['Encoder bars', '2 layouts'], ['Keys', '14 bindings'], ['Window presets', '2 presets'], ['Images', '4 images'], ['Icons', '3 own'], ['Screens', '2 screens · 3 views']],
+};
+const FIELD = { 'Look': 'Look', 'Lock screen': 'LockScreen', 'Input & keys': 'Input', 'Oops': 'Oops', 'Command line': 'CommandLine', 'Attributes': 'Attributes', 'Encoder bars': 'EncoderBars', 'Keys': 'Keys', 'Window presets': 'WindowPresets', 'Images': 'Images', 'Icons': 'Icons', 'Screens': 'Screens' };
+const path = (p, g, part) => `ShowData.UserProfiles.${p.no}.${g}${part ? '.' + FIELD[part] : ''}`;
+const CELLS = {
+  'Look': [['Theme', 'LumaCore Dark', '≡'], ['Font size', '15 px', '123'], ['Background hue', '42°', '123']],
+  'Lock screen': [['Lock image', 'stage.jpg', '≡'], ['Clock', 'On', 'I/O'], ['Countdown', '5 s', '123']],
+  'Input & keys': [['MeowKey', 'Shift', '≡'], ['HoldTime', '500 ms', '123'], ['HoldFollows', 'On', 'I/O'], ['PopupDim', 'On', 'I/O']],
+  'Oops': [['CreateOops', 'On', 'I/O'], ['OopsProgrammer', 'On', 'I/O'], ['OopsConfirmation', 'Main', '≡']],
+  'Command line': [['Suggestions', 'Auto', '≡'], ['History', '500', '123']],
+};
+const GC = [['Dimmer', '#e6b422'], ['Position', '#4d8fd6'], ['Color', '#ff5c8a'], ['Shutter', '#f3ecd3'], ['FX', '#b07be6'], ['Control', '#9a9a9a']];
+const SLOTS = { Dimmer: ['Dimmer'], Position: ['Pan', 'Tilt', 'PanRotate'], Color: ['ColorAdd_R', 'ColorAdd_G', 'ColorAdd_B', 'ColorAdd_W', 'CTO'], Shutter: ['Shutter1', 'Shutter1Strobe'], FX: ['Gobo1', 'Zoom', 'Iris', 'Frost1'], Control: ['LampControl'] };
+
+// One editor per part, phone shaped; `st` keeps the encoder bar's picked strip button.
+function editor(v, st, p, part) {
+  const pre = `UserProfile "${p.name}"`;
+  if (CELLS[part]) return `<div class="cells">${CELLS[part].map(([n, val, k]) => `<button type="button" class="cell" data-l="Set ${esc(pre)} ${n.replace(/\s/g, '')} …"><span>${n}</span><b>${val}</b><em>${k}</em></button>`).join('')}</div>`;
+  if (part === 'Encoder bars') {
+    const g = st.strip || 'Color';
+    const s = SLOTS[g];
+    const pages = Math.max(1, Math.ceil((s.length + 1) / 4));
+    let pg = '';
+    for (let i = 0; i < pages; i++) pg += `<div class="pg">Page ${i + 1}</div><div class="slots">${[0, 1, 2, 3].map(k => { const n = s[i * 4 + k]; return n ? `<div class="slot full">${n}<small>encoder ${k + 1}</small></div>` : '<div class="slot">empty</div>'; }).join('')}</div>`;
+    return `<div class="pg">Layout · one per screen</div><div class="lays"><button type="button" class="on">Default</button><button type="button">Busking</button><button type="button" class="add" data-l="Store ${esc(pre)} EncoderBar">+ New</button></div>
+      <div class="pg">Strip buttons · hold and drag to reorder</div><div class="chips">${GC.map(([n, c]) => `<button type="button" data-strip="${n}" class="${n === g ? 'on' : ''}"><i style="background:${c}"></i>${n}</button>`).join('')}</div>${pg}`;
+  }
+  if (part === 'Attributes') return `<button type="button" class="btn ok" data-l="Edit ${esc(pre)} Attribute">Open the attribute board</button><div class="board">${GC.slice(0, 4).map(([n, c]) => `<div class="bcol"><h5><i style="background:${c}"></i>${n}</h5><div>${SLOTS[n].slice(0, 3).map(a => `<span>${a}</span>`).join('')}</div></div>`).join('')}</div>`;
+  if (part === 'Keys') return `<div class="list">${[['F1', 'Go Sequence 1'], ['F2', 'Go- Sequence 1'], ['user.blackout', 'Master Grand At 0']].map(([k, l]) => `<div><small>${k}</small><code>${l}</code></div>`).join('')}</div>`;
+  return `<div class="list"><div><small>${esc(part)}</small><code>sample content</code></div></div>`;
+}
+const usersRows = (v) => USERS.map(u => `<button type="button" class="row" data-user="${u.no}"><span class="no">${u.no}</span><span class="t"><b>${u.name}</b><small>${u.rights} · profile ${u.profile}</small></span><span class="go">›</span></button>`).join('');
+const profRows = () => PROFILES.map(p => `<button type="button" class="row" data-prof="${p.no}"><span class="no">${p.no}</span><span class="t"><b>${esc(p.name)}${p.locked ? ' 🔒' : ''}</b><small>used by ${esc(p.by)}</small></span><span class="go">›</span></button>`).join('');
+const prof = no => PROFILES.find(p => p.no === no);
+
+// ── P1: a full screen per level, crumbs to jump back ──
+function p1(st) {
+  const p = st.prof && prof(st.prof);
+  const crumbs = ['Profiles'];
+  if (p) crumbs.push(p.name);
+  if (st.group) crumbs.push(st.group);
+  if (st.part) crumbs.push(st.part);
+  const title = st.part || st.group || (p ? p.name : 'Users & Profiles');
+  const back = st.part ? st.group : st.group ? p.name : p ? 'Profiles' : '';
+  let body;
+  if (!p) body = `<div class="seg2" style="margin:0"><button type="button" class="${st.tab !== 'users' ? 'on' : ''}" data-tab="profiles">Profiles</button><button type="button" class="${st.tab === 'users' ? 'on' : ''}" data-tab="users">Users</button></div><div class="rows">${st.tab === 'users' ? usersRows() : profRows()}</div><button type="button" class="btn" data-l="Store ${st.tab === 'users' ? 'User' : 'UserProfile'}">+ New ${st.tab === 'users' ? 'user' : 'profile'}</button>`;
+  else if (!st.group) body = `<span class="stored">ShowData.UserProfiles.${p.no}</span><div class="big2">${Object.entries(GROUPS).map(([g, parts]) => `<button type="button" class="big" data-group="${g}"><b>${g}</b><small>${parts.map(x => x[0]).join(' · ')}</small></button>`).join('')}</div>`;
+  else if (!st.part) body = `<span class="stored">${path(p, st.group)}</span><div class="rows">${GROUPS[st.group].map(([n, s, nw]) => `<button type="button" class="row" data-part="${n}"><span class="t"><b>${n}</b><small>${s}</small></span>${nw ? '<span class="nw">1 new</span>' : ''}<span class="go">›</span></button>`).join('')}</div>`;
+  else body = `<span class="stored">${path(p, st.group, st.part)}</span>${editor('p1', st, p, st.part)}`;
+  return `<div class="wt">${back ? `<button type="button" class="back" data-back>‹ ${esc(back)}</button>` : ''}<b>${esc(title)}</b><button class="x" type="button" aria-label="Close">×</button></div>
+    ${p ? `<div class="crumbs">${crumbs.map((c, i) => `<button type="button" data-crumb="${i}">${esc(c)}</button>`).join('')}</div>` : '<div></div>'}<div class="scr">${body}</div><div></div>`;
+}
+// ── P2: Settings / Content in a bottom bar, the part from a picker ──
+function p2(st) {
+  const p = st.prof && prof(st.prof);
+  if (!p) return p1({ ...st, prof: null });
+  const g = st.group || 'Content';
+  const parts = GROUPS[g];
+  const part = st.part && parts.some(x => x[0] === st.part) ? st.part : parts[0][0];
+  const sheet = st.sheet ? `<div class="scrim" data-closesheet></div><div class="sheet"><div class="sh"><span>${g}</span><button class="x" type="button" data-closesheet aria-label="Close">×</button></div>${parts.map(([n, s, nw]) => `<button type="button" class="row" data-pick="${n}"><span class="t"><b>${n}</b><small>${s}</small></span>${nw ? '<span class="nw">1 new</span>' : ''}${n === part ? '<span style="color:var(--lc-accent-hi)">●</span>' : ''}</button>`).join('')}<button type="button" class="btn" data-closesheet>Cancel</button></div>` : '';
+  return `<div class="wt"><button type="button" class="back" data-back>‹ Profiles</button><b>${esc(p.name)}</b><button class="x" type="button" aria-label="Close">×</button></div>
+    <button type="button" class="picker" data-sheet><b>${esc(part)}</b><small>${parts.length} in ${g}</small><span class="lm"></span></button>
+    <div class="scr"><span class="stored">${path(p, g, part)}</span>${editor('p2', st, p, part)}</div>
+    <div class="bottom">${Object.keys(GROUPS).map(x => `<button type="button" data-group="${x}" class="${x === g ? 'on' : ''}"><b>${x}</b>${GROUPS[x].length} parts</button>`).join('')}</div>${sheet}`;
+}
+// ── P3: the profile is one scrolling page; a part opens in place, a big editor full screen ──
+function p3(st) {
+  const p = st.prof && prof(st.prof);
+  if (!p) return p1({ ...st, prof: null });
+  const big = ['Encoder bars', 'Attributes'];
+  let body = `<span class="stored">ShowData.UserProfiles.${p.no}</span>`;
+  for (const [g, parts] of Object.entries(GROUPS)) {
+    body += `<div class="sec">${g}</div>`;
+    body += parts.map(([n, s, nw]) => {
+      const open = st.part === n && !big.includes(n);
+      return `<div class="acc${open ? ' open' : ''}"><button type="button" data-acc="${n}"><span class="t"><b>${n}</b><small>${s}</small></span>${nw ? '<span class="nw">1 new</span>' : ''}<span class="ch">${big.includes(n) ? '›' : open ? '▴' : '▾'}</span></button>${open ? `<div class="in"><span class="stored">${path(p, g, n)}</span>${editor('p3', st, p, n)}</div>` : ''}</div>`;
+    }).join('');
+  }
+  const gOf = n => Object.keys(GROUPS).find(g => GROUPS[g].some(x => x[0] === n));
+  const full = st.part && big.includes(st.part) ? `<div class="fullscr"><div class="wt"><button type="button" class="back" data-closefull>‹ ${esc(p.name)}</button><b>${esc(st.part)}</b><button class="x" type="button" aria-label="Close">×</button></div><div class="scr"><span class="stored">${path(p, gOf(st.part), st.part)}</span>${editor('p3', st, p, st.part)}</div></div>` : '';
+  return `<div class="wt"><button type="button" class="back" data-back>‹ Profiles</button><b>${esc(p.name)}</b><button class="x" type="button" aria-label="Close">×</button></div><div></div><div class="scr">${body}</div><div></div>${full}`;
+}
+
+const V = [
+  { id: 'P1', name: 'P1 · A screen per level', note: 'Every level gets the whole phone: Profiles → Busking → Settings or Content → a part. ‹ goes one level up; the crumbs jump further.', draw: p1 },
+  { id: 'P2', name: 'P2 · Bottom bar + part picker', note: 'In a profile, Settings / Content sit in a bottom bar under your thumb. The part comes from a picker at the top (a sheet), and the editor gets the rest of the screen.', draw: p2 },
+  { id: 'P3', name: 'P3 · One scrolling page', note: 'The profile is one page: Settings and Content as sticky headings, each part opens in place. Big editors (Encoder bars, Attributes) open full screen.', draw: p3 },
+];
+const START = { tab: 'profiles', prof: 3, group: 'Content', part: 'Encoder bars', strip: 'Color', sheet: false };
+const state = V.map(() => ({ ...START }));
+
+function render(i) {
+  const v = V[i], st = state[i];
+  $(`#ph${i}`).innerHTML = v.draw(st);
+}
+$('#phones').innerHTML = V.map((v, i) => `<div class="col"><h2>${v.name}</h2><p>${v.note}</p><div class="ph" id="ph${i}"></div><button type="button" class="reset" data-reset="${i}">Back to Busking › Encoder bars</button></div>`).join('');
+V.forEach((_, i) => render(i));
+
+$('#phones').addEventListener('click', e => {
+  const r = e.target.closest('[data-reset]');
+  if (r) { const i = +r.dataset.reset; state[i] = { ...START }; return render(i); }
+  const ph = e.target.closest('.ph'); if (!ph) return;
+  const i = +ph.id.slice(2), st = state[i], v = V[i].id;
+  const b = e.target.closest('button'); if (!b) return;
+  const d = b.dataset;
+  if (d.tab) st.tab = d.tab;
+  else if (d.prof) { Object.assign(st, { prof: +d.prof, group: v === 'P1' ? null : 'Content', part: null }); log(v, `EditSetting UserProfile ${d.prof}`); }
+  else if (d.user) log(v, `EditSetting User "${USERS[+d.user - 1].name}"   (‹ Users › ${USERS[+d.user - 1].name}: Account · Profile · Work · Usage)`);
+  else if (d.group) { st.group = d.group; st.part = null; }
+  else if (d.part) st.part = d.part;
+  else if (d.pick) { st.part = d.pick; st.sheet = false; }
+  else if (d.sheet !== undefined) st.sheet = true;
+  else if (d.closesheet !== undefined) st.sheet = false;
+  else if (d.acc) st.part = st.part === d.acc ? null : d.acc;
+  else if (d.closefull !== undefined) st.part = null;
+  else if (d.strip) st.strip = d.strip;
+  else if (d.crumb) { const n = +d.crumb; if (n === 0) Object.assign(st, { prof: null, group: null, part: null }); if (n === 1) Object.assign(st, { group: null, part: null }); if (n === 2) st.part = null; }
+  else if (d.back !== undefined) {
+    if (v === 'P1') { if (st.part) st.part = null; else if (st.group) st.group = null; else st.prof = null; }
+    else Object.assign(st, { prof: null, part: null });
+  }
+  else if (d.l) log(v, d.l);
+  else return;
+  render(i);
+});
+</script>

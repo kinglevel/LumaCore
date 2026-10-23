@@ -1,0 +1,59 @@
+[package]
+name = "lumacore-station"
+version.workspace = true
+edition.workspace = true
+description = "The station: the one assembler — the catalog of every crate the program is built from and a thin main per binary (decisions §34 24)"
+
+# The catalog (decisions §34 21, 24.1): the one list of every crate's `register`.
+[lib]
+path = "src/catalog.rs"
+
+[[bin]]
+name = "lumacore"
+path = "src/bin/lumacore.rs"
+test = false
+
+[[bin]]
+name = "lumacore-server"
+path = "src/bin/lumacore-server.rs"
+test = false
+
+[[bin]]
+name = "gen-demo"
+path = "src/bin/gen-demo.rs"
+test = false
+
+[[bin]]
+name = "gen-docs"
+path = "src/bin/gen-docs.rs"
+test = false
+
+[[bin]]
+name = "lumacore-sweep"
+path = "src/bin/lumacore-sweep.rs"
+test = false
+
+[dependencies]
+lumacore-registry = { path = "../../crates/foundation/lumacore-registry" }
+lumacore-objects = { path = "../../crates/model/lumacore-objects" }
+lumacore-terminal = { path = "../../crates/ui/lumacore-terminal" }
+lumacore-server = { path = "../../crates/server/lumacore-server" }
+lumacore-sweep = { path = "../../crates/dev/lumacore-sweep" }
+lumacore-cmd-artnet = { path = "../../crates/commands/objects/protocols/dmx/lumacore-cmd-artnet" }
+lumacore-cmd-sacn = { path = "../../crates/commands/objects/protocols/dmx/lumacore-cmd-sacn" }
+lumacore-cmd-osc = { path = "../../crates/commands/objects/protocols/data/lumacore-cmd-osc" }
+assert_no_alloc = { workspace = true }
+clap = { workspace = true }
+log = { workspace = true }
+
+# A build is a feature choice here (decisions §34 24.1); the server and what it builds on do the rest.
+[features]
+tracy = ["lumacore-server/tracy"]
+http = ["lumacore-server/http"]
+perfetto = ["lumacore-server/perfetto"]
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

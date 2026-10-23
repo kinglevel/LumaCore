@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""The Groups element of a console's pool export (XML), as its own small file (decisions §40 15).
+
+A pool export carries presets, cues and macros LumaCore doesn't read yet; the Default pool of a
+big show is 310 MB. `Import PoolXml … Groups` streams such a file fine, but the demo's source in
+git is only what the words read: this writes `<Root><Pool><Groups>…</Groups></Pool></Root>`
+with the root's name and attributes and the pool's kept (the desk writes the pool as
+`<Pool Name=…>`).
+
+Usage: scripts/unix/poolxml_groups <export.xml> <out.xml>
+"""
+import sys
+import xml.etree.ElementTree as ET
+
+if len(sys.argv) != 3:
+    sys.exit(__doc__)
+src, out = sys.argv[1], sys.argv[2]
+depth, groups, root_tag, root_attrs, pool_attrs = 0, [], "Export", {}, {}
+for event, el in ET.iterparse(src, events=("start", "end")):
+    if event == "start":
+        depth += 1
+        if depth == 1:
+            root_tag, root_attrs = el.tag, dict(el.attrib)
+        elif depth == 2 and el.tag == "Pool":
+            pool_attrs = dict(el.attrib)
+        continue
+    if depth == 4 and el.tag == "Group":
+        groups.append(ET.tostring(el, encoding="unicode"))
+        el.clear()
+    depth -= 1
+    if depth < 3:
+        el.clear()
+if not pool_attrs:
+    sys.exit(f"{src}: no Pool in the file")
+ra = "".join(f' {k}="{v}"' for k, v in root_attrs.items())
+pa = "".join(f' {k}="{v}"' for k, v in pool_attrs.items())
+with open(out, "w", encoding="utf-8") as f:
+    f.write(f'<?xml version="1.0" encoding="UTF-8"?>\n<{root_tag}{ra}><Pool{pa}><Groups>')
+    f.write("".join(groups))
+    f.write(f"</Groups></Pool></{root_tag}>\n")
+print(f"{out}: {len(groups)} groups of pool {pool_attrs.get('Name', '?')}")

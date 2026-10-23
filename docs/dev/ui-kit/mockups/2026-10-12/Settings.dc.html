@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Window settings shell</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; box-sizing: border-box; padding: 40px 48px; background: {{t.bg}}; color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 22px">
+  <div style="display: flex; flex-direction: column; gap: 6px">
+    <h1 style="margin: 0; font-size: 28px; font-weight: 500">Window settings shell · EditSetting</h1>
+    <p style="margin: 0; color: {{t.dim}}; font-size: 14px">One shell for every window type, cells generated from the type's schema. Changes apply at once (one <span class="mono">Set</span> line, one Oops step). Tap the tabs and the pins.</p>
+  </div>
+  <div style="display: flex; gap: 28px; align-items: flex-start">
+    <section style="width: 940px; flex-shrink: 0; border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+      <div style="height: 50px; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 18px; border-bottom: 1px solid {{t.line}}">
+        <span style="width: 12px; height: 12px; border-radius: 50%; background: {{t.accent}}"></span>
+        <span style="font-size: 17px; font-weight: 500; margin-right: auto">Settings · Window 4 · DMX</span>
+        <button type="button" style="height: 40px; padding: 0 14px; border-radius: 5px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 14px">Load preset</button>
+        <button type="button" style="height: 40px; padding: 0 14px; border-radius: 5px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 14px">Save preset</button>
+        <button type="button" style="height: 40px; padding: 0 14px; border-radius: 5px; border: 1px solid color-mix(in srgb, {{t.alert}} 55%, transparent); background: color-mix(in srgb, {{t.alert}} 14%, {{t.raised}}); color: {{t.alert}}; font: inherit; font-size: 14px">Delete window</button>
+        <button type="button" aria-label="Close" style="width: 48px; height: 48px; border: none; background: none; color: {{t.text}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+      <div style="display: flex; min-height: 560px">
+        <div style="width: 150px; flex-shrink: 0; border-right: 1px solid {{t.line}}; display: flex; flex-direction: column">
+          <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="4">
+            <button type="button" onClick="{{tb.pick}}" style="height: 56px; border: none; border-bottom: 1px solid {{t.line}}; background: {{tb.bg}}; color: {{tb.fg}}; font: inherit; font-size: 15px; text-align: left; padding: 0 16px; box-shadow: {{tb.mark}}">{{tb.name}}</button>
+          </sc-for>
+        </div>
+        <div style="flex: 1; padding: 18px; display: flex; flex-direction: column; gap: 14px">
+          <sc-if value="{{isBar}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <button type="button" onClick="{{toggleBar}}" style="height: 60px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; display: flex; align-items: center; justify-content: space-between; padding: 0 16px"><span style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px"><span style="font-size: 12px; color: {{t.dim}}">WindowBar</span><span style="font-size: 17px; font-weight: 500">{{barLabel}}</span></span><span style="width: 52px; height: 30px; border-radius: 15px; background: {{barTrack}}; position: relative; display: block"><span style="position: absolute; top: 3px; left: {{barKnob}}px; width: 24px; height: 24px; border-radius: 50%; background: {{t.onAccent}}; display: block"></span></span></button>
+              <span style="font-size: 13px; color: {{t.dim}}">WindowBarItems — drag the handles to reorder; the bar hides itself when the window is too small and lists these in the window menu.</span>
+              <sc-for list="{{pinnedList}}" as="p" hint-placeholder-count="4">
+                <div style="height: 52px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; display: flex; align-items: center; gap: 12px; padding: 0 6px 0 12px"><span style="color: {{t.dim}}; font-size: 18px">≡</span><span style="font-size: 15px; flex: 1">{{p.name}}</span><span style="font-size: 12px; color: {{t.dim}}">{{p.kind}}</span><button type="button" onClick="{{p.unpin}}" aria-label="Remove from bar" style="width: 44px; height: 44px; border: none; background: none; color: {{t.dim}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{isCells}}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+              <sc-for list="{{cells}}" as="c" hint-placeholder-count="9">
+                <div style="height: 76px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; display: flex; align-items: stretch; overflow: hidden">
+                  <div style="flex: 1; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between"><span style="font-size: 12px; color: {{t.dim}}">{{c.label}}</span><span style="font-size: 17px; font-weight: 500">{{c.value}}</span></div>
+                  <button type="button" onClick="{{c.pin}}" aria-label="Pin to window bar" style="width: 44px; border: none; border-left: 1px solid {{t.line}}; background: {{c.pinBg}}; color: {{c.pinFg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M9 4h6l-1 6l3 3H7l3-3zM12 13v7"></path></svg></button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <div class="mono" style="margin-top: auto; padding: 10px 12px; border-radius: 5px; background: {{t.bg}}; font-size: 13px; color: {{t.dim}}">{{lastLine}}</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="flex: 1; display: flex; flex-direction: column; gap: 12px">
+      <div style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+        <div style="height: 50px; display: flex; align-items: center; padding: 0 18px; border-bottom: 1px solid {{t.line}}; font-size: 17px; font-weight: 500">Settings of Show</div>
+        <div style="padding: 14px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{showCells}}" as="c" hint-placeholder-count="4">
+            <div style="height: 70px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; padding: 10px 12px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between"><span style="font-size: 12px; color: {{t.dim}}; display: flex; justify-content: space-between">{{c.label}}<span style="color: {{c.kc}}">{{c.kind}}</span></span><span style="font-size: 16px; font-weight: 500">{{c.value}}</span></div>
+          </sc-for>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: 13px; color: {{t.dim}}; line-height: 1.5">Before: every field was a free-text box (MergeDefault typed by hand, a blue focus ring, OK / Cancel). After: <span class="mono">EditSetting Show</span> uses the same cells as window settings — MergeDefault is a swipe button, Autosave opens the keypad, no OK.</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { tab: 0, bar: true, pins: ['universe', 'show', 'prev', 'next'], last: 'Set Window 4 Universe 1' }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const tabNames = ['Display', 'Mask', 'Window bar', 'Title'];
+    const tabs = tabNames.map((n, i) => ({ name: n, pick: () => this.setState({ tab: i }), bg: i === s.tab ? t.raised : 'transparent', fg: i === s.tab ? t.text : t.dim, mark: i === s.tab ? 'inset 3px 0 0 ' + t.accent : 'none' }));
+    const all = [
+      { id: 'universe', label: 'Universe', value: '1', kind: 'setting' }, { id: 'show', label: 'Show values', value: '%', kind: 'setting' },
+      { id: 'cols', label: 'Columns', value: 'Auto', kind: 'setting' }, { id: 'input', label: 'Show input', value: 'Yes', kind: 'setting' },
+      { id: 'winners', label: 'Winners', value: 'Colour', kind: 'setting' }, { id: 'font', label: 'Font size', value: '12', kind: 'setting' },
+      { id: 'park', label: 'Mark parked', value: 'Yes', kind: 'setting' }, { id: 'grid', label: 'Grid lines', value: 'Every 10', kind: 'setting' },
+      { id: 'zero', label: 'Show zero', value: 'No', kind: 'setting' }
+    ];
+    const togglePin = id => { const has = s.pins.includes(id); this.setState({ pins: has ? s.pins.filter(x => x !== id) : s.pins.concat([id]), last: 'Set Window 4 WindowBarItems "' + (has ? s.pins.filter(x => x !== id) : s.pins.concat([id])).join(',') + '"' }); };
+    const cells = all.map(c => { const on = s.pins.includes(c.id); return { ...c, pin: () => togglePin(c.id), pinBg: on ? 'color-mix(in srgb, ' + t.accent + ' 22%, ' + t.raised + ')' : t.raised, pinFg: on ? t.accent : t.dim }; });
+    const actionNames = { prev: 'Universe −  (action)', next: 'Universe +  (action)' };
+    const pinnedList = s.pins.map(id => { const c = all.find(x => x.id === id); return { name: c ? c.label : actionNames[id], kind: c ? 'setting' : 'action', unpin: () => togglePin(id) }; });
+    const kc = { number: t.info, choice: t.accent, text: t.dim };
+    const showCells = [{ label: 'Description', value: '—', kind: 'text' }, { label: 'Autosave', value: '15 min', kind: 'number' }, { label: 'MergeDefault', value: 'Merge', kind: 'choice' }, { label: 'MergeTimeout', value: '60 s', kind: 'number' }].map(c => ({ ...c, kc: kc[c.kind] }));
+    return { t, tabs, cells, pinnedList, showCells,
+      isBar: s.tab === 2, isCells: s.tab !== 2,
+      barLabel: s.bar ? 'On' : 'Off', barTrack: s.bar ? t.ok : t.line, barKnob: s.bar ? 25 : 3,
+      toggleBar: () => this.setState({ bar: !s.bar, last: 'Set Window 4 WindowBar ' + (s.bar ? 'Off' : 'On') }),
+      lastLine: '› ' + s.last };
+  }
+}
+</script>
+</body>
+</html>

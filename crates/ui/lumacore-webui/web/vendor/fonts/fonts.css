@@ -1,0 +1,13 @@
+/* Vendored fonts (decisions §30 "12a hardening"): Source Sans 3 for the UI,
+   JetBrains Mono for the command line and terminals. Latin subset only;
+   anything else falls back to the system font. */
+@font-face { font-family: 'Source Sans 3'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url(source-sans-3-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Source Sans 3'; font-style: normal; font-weight: 500; font-display: swap;
+  src: url(source-sans-3-latin-500-normal.woff2) format('woff2'); }
+@font-face { font-family: 'Source Sans 3'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url(source-sans-3-latin-600-normal.woff2) format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 400; font-display: swap;
+  src: url(jetbrains-mono-latin-400-normal.woff2) format('woff2'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-weight: 600; font-display: swap;
+  src: url(jetbrains-mono-latin-600-normal.woff2) format('woff2'); }

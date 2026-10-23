@@ -1,0 +1,19 @@
+[package]
+name = "lumacore-syntax"
+version.workspace = true
+edition.workspace = true
+
+# The Lum language (decisions §33): one lexer, one parser, one typed statement.
+# The grammar is `docs/user/syntax/lum.md`; the words come from the station's
+# registries as a `Vocabulary`. No parser libraries — `lumacore-base` only for
+# the shared error-catalog type.
+[dependencies]
+lumacore-registry = { path = "../lumacore-registry" }
+lumacore-base = { path = "../lumacore-base" }
+
+[dev-dependencies]
+ctor = { workspace = true }
+proptest = { workspace = true }
+
+[lints]
+workspace = true

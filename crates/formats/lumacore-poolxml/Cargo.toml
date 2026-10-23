@@ -1,0 +1,12 @@
+[package]
+name = "lumacore-poolxml"
+version.workspace = true
+edition.workspace = true
+description = "A console's pool export as XML: the pool's groups with their items and grid cells, read streaming so a 300 MB export costs nothing it doesn't ask for (decisions §40 13)"
+
+[dependencies]
+quick-xml = { workspace = true }
+thiserror = { workspace = true }
+
+[lints]
+workspace = true

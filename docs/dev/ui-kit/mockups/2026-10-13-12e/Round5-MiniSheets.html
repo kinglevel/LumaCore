@@ -1,0 +1,255 @@
+<title>Miniature Sheets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: two refined miniature sheets on a bench (sliders), then the same two on the phone desk.
+   LumaCore Dark preset (kit/tokens.css); the console's single dark look on purpose. */
+:root {
+  --lc-bg:#121212; --lc-surface:#1c1c1c; --lc-raised:#303030; --lc-line:#424242; --lc-hair:#262626;
+  --lc-text:#d1d1d1; --lc-dim:#8a8a8a; --lc-faint:#5e5e5e; --lc-accent:#9a7a08; --lc-accent-hi:#c9a227; --lc-on-accent:#f3ecd3;
+  --lc-info:#758ba0; --lc-selected:#3a3218; --lc-alt:#161616; --lc-gap:#0a0a0a;
+  --lc-sel-line:#4d8fd6; --lc-sel-fill:#172434; --lc-programmer:#d86a7c;
+  --lc-font:'Source Sans 3','Segoe UI',system-ui,-apple-system,sans-serif;
+  --lc-mono:'JetBrains Mono',Menlo,Consolas,monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--lc-bg); color: var(--lc-text); }
+body { font-family: var(--lc-font); font-size: 15px; padding-inline: 16px; padding-block: 0 40px; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; }
+header { padding-block: 16px 12px; border-bottom: 1px solid var(--lc-line); margin-bottom: 14px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+h2 { font-size: 15px; font-weight: 600; margin: 22px 0 8px; }
+.sub { color: var(--lc-dim); font-size: 14px; margin: 0; max-width: 80ch; line-height: 1.45; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: end; margin-bottom: 14px; }
+.field { display: grid; gap: 4px; font-size: 12px; color: var(--lc-dim); text-transform: uppercase; letter-spacing: .06em; }
+.field input { accent-color: var(--lc-accent); width: 170px; min-height: 30px; }
+.val { font-family: var(--lc-mono); font-size: 13px; color: var(--lc-text); text-transform: none; letter-spacing: 0; }
+.go { min-height: 44px; padding: 0 20px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; }
+.go.main { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; font-weight: 600; }
+.bench { display: flex; flex-wrap: wrap; gap: 18px; align-items: flex-start; }
+.cand { display: grid; gap: 6px; min-width: 0; max-width: 100%; }
+.cand h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.cand h3 span { color: var(--lc-accent-hi); margin-right: 6px; }
+.cand p { margin: 0; color: var(--lc-dim); font-size: 13px; max-width: 40ch; line-height: 1.35; }
+.decide { margin-top: 18px; border-left: 3px solid var(--lc-accent); background: var(--lc-surface); padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 80ch; font-size: 14px; line-height: 1.45; }
+.decide ul { margin: 4px 0 0; padding-left: 18px; }
+
+/* the miniature pane */
+.pane { position: relative; background: var(--lc-bg); overflow: hidden; display: flex; flex-direction: column; max-width: 100%; }
+.bench .pane { border: 3px solid var(--lc-gap); outline: 1px solid var(--lc-line); }
+.pane .ph { height: 18px; flex: none; background: var(--lc-surface); font-size: 12px; line-height: 18px; padding: 0 5px; color: var(--lc-dim); white-space: nowrap; overflow: hidden; display: flex; gap: 6px; }
+.pane .ph b { color: var(--lc-text); font-weight: 500; }
+.pane .ph .r { margin-left: auto; color: var(--lc-accent-hi); }
+.pane .pb { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+.pane .more { position: absolute; top: 0; right: 0; bottom: 0; width: 14px; background: linear-gradient(90deg, transparent, var(--lc-bg)); pointer-events: none; }
+
+/* the miniature grid */
+.mg { border-collapse: collapse; table-layout: fixed; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mg th, .mg td { overflow: hidden; text-overflow: clip; text-align: left; padding: 0 4px; position: relative; }
+.mg th { background: var(--lc-surface); color: var(--lc-dim); font-weight: 500; border-bottom: 1px solid var(--lc-line); border-right: 1px solid var(--lc-hair); font-size: .86em; letter-spacing: .02em; }
+.mg td { border-bottom: 1px solid var(--lc-hair); border-right: 1px solid var(--lc-hair); }
+.mg th:last-child, .mg td:last-child { border-right: 0; }
+.mg tr:nth-child(odd) td { background: var(--lc-alt); }
+.mg td.n { text-align: right; font-family: var(--lc-mono); font-size: .9em; color: var(--lc-dim); }
+.mg td.key { color: var(--lc-text); font-weight: 500; }
+.mg td.t { text-overflow: ellipsis; }
+.mg td.soft { color: var(--lc-dim); }
+.mg .z { color: var(--lc-faint); }
+.mg tr.run td { background: var(--lc-selected); color: var(--lc-on-accent); }
+.mg tr.run td.n { color: var(--lc-accent-hi); }
+.mg tr.run td:first-child { box-shadow: inset 3px 0 0 var(--lc-accent-hi); }
+.mg tr.next td:first-child { box-shadow: inset 3px 0 0 color-mix(in srgb, var(--lc-accent-hi) 40%, transparent); }
+.mg tr.done td { color: var(--lc-faint); }
+.mg tr.done td.key { color: var(--lc-dim); }
+.mg tr.sel td { background: var(--lc-sel-fill); }
+.mg tr.sel td:first-child { box-shadow: inset 3px 0 0 var(--lc-sel-line); }
+.prog { position: absolute; left: 0; bottom: -1px; height: 2px; background: var(--lc-accent-hi); z-index: 2; }
+/* hybrid renderers */
+.lvl i { position: absolute; left: 0; top: 22%; bottom: 22%; border-radius: 0 2px 2px 0; background: color-mix(in srgb, var(--lc-accent-hi) 62%, transparent); }
+.lvl.prg i { background: color-mix(in srgb, var(--lc-programmer) 75%, transparent); }
+.lvl b { position: relative; font-family: var(--lc-mono); font-weight: 400; font-size: .85em; color: var(--lc-text); text-shadow: 0 0 3px #000; }
+.lvl.prg b { color: #fff; }
+.sw { display: block; height: 56%; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12); }
+.ang { display: block; height: 100%; }
+.mg td.prgv { color: var(--lc-programmer); }
+
+/* phone desk */
+.phone-wrap { display: flex; justify-content: center; }
+.phone-scale { transform-origin: top left; }
+.phone-frame { width: 410px; border: 10px solid #000; border-radius: 34px; overflow: hidden; background: var(--lc-bg); }
+.phone { width: 390px; height: 800px; display: flex; flex-direction: column; }
+.ph-status { height: 36px; flex: none; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 22px 4px; font-size: 13px; font-weight: 600; }
+.ph-top { height: 28px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 8px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); font-size: 13px; color: var(--lc-dim); }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lc-accent); }
+.ph-desk { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; background: var(--lc-gap); }
+.ph-desk.wide { grid-template-columns: 1fr; grid-template-rows: 1.1fr 1fr 0.7fr; }
+.ph-bar { height: 56px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 4px; background: var(--lc-surface); border-top: 1px solid var(--lc-line); }
+.ph-bar .b { width: 44px; height: 44px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); display: grid; place-items: center; font-size: 12px; font-weight: 600; flex: none; }
+.ph-line { flex: 1; height: 44px; background: var(--lc-gap); border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-family: var(--lc-mono); font-size: 14px; color: var(--lc-dim); }
+.ph-home { height: 22px; flex: none; display: grid; place-items: center; }
+.ph-home i { width: 130px; height: 5px; border-radius: 3px; background: var(--lc-dim); }
+.minipool { display: grid; gap: 1px; background: var(--lc-gap); width: 100%; }
+.minipool i { display: block; aspect-ratio: 1; background: color-mix(in srgb, var(--c) 72%, var(--lc-bg)); }
+.minipool i.e { background: var(--lc-surface); }
+.term { font-family: var(--lc-mono); font-size: 12px; line-height: 1.35; color: var(--lc-dim); padding: 3px 5px; white-space: pre; transform: scale(.75); transform-origin: top left; }
+.seg { display: inline-flex; border: 1px solid var(--lc-line); border-radius: 6px; overflow: hidden; }
+.seg button { min-height: 44px; padding: 0 14px; border: 0; background: var(--lc-surface); cursor: pointer; border-right: 1px solid var(--lc-line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--lc-selected); color: var(--lc-on-accent); box-shadow: inset 0 -3px 0 var(--lc-accent-hi); }
+</style>
+
+<header>
+  <h1>Miniature sheets</h1>
+  <p class="sub">This is round 5 for 12e, with your round-4 picks: the <b>sequence</b> in dense text and the <b>fixture sheet</b> as the hybrid, both refined. Each fills its pane and keeps the live row in view. When columns don't fit, the right edge fades instead of squeezing the headers. <b>Go</b> runs the next cue. <b>Next selection</b> moves the selected fixtures.</p>
+</header>
+
+<div class="controls">
+  <label class="field">Pane width <input type="range" id="pw" min="140" max="560" value="190"><span class="val" id="pwv"></span></label>
+  <label class="field">Pane height <input type="range" id="ph" min="100" max="520" value="300"><span class="val" id="phv"></span></label>
+  <label class="field">Row height <input type="range" id="rh" min="10" max="24" value="14"><span class="val" id="rhv"></span></label>
+  <button class="go main" id="go" type="button">Go</button>
+  <button class="go" id="nextsel" type="button">Next selection</button>
+</div>
+<div class="bench" id="bench"></div>
+
+<h2>On the phone desk</h2>
+<div class="controls"><div class="field">Desk <span class="seg" id="desk"><button data-v="grid" aria-pressed="true">2 × 2</button><button data-v="wide" aria-pressed="false">Stacked full width</button></span></div></div>
+<div class="phone-wrap" id="phone-wrap"><div class="phone-scale" id="phone-scale"><div class="phone-frame"><div class="phone" id="phone"></div></div></div></div>
+
+<div class="decide">To look at:
+  <ul>
+    <li><b>Sequence (dense text)</b>: done cues dim, the running cue in gold with its fade progress along the bottom, the next cue marked at the left edge, and the times in a monospace face.</li>
+    <li><b>Fixture sheet (hybrid)</b>: Dim is a level bar with its value on top, pink when the value is in your programmer. Color is a swatch. Selected fixtures get a blue edge.</li>
+    <li>Columns keep a minimum width. A narrow pane shows the first columns and fades at the right; it never shortens the headers to "C…".</li>
+  </ul>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.innerHTML = x; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+const CUE_NAMES = ['Preset look', 'Walk-in', 'House to half', 'Opening', 'Verse 1', 'Chorus', 'Verse 2', 'Chorus 2', 'Bridge', 'Breakdown', 'Build', 'Drop', 'Verse 3', 'Key change', 'Final chorus', 'Outro', 'Blackout', 'Bows', 'House up', 'Walk-out'];
+const cues = CUE_NAMES.map((n, i) => ({ no: i + 1, name: n, fade: [2, 3, 1, 5, 2, 3, 2, 3, 4, 1, 0.5, 0, 2, 3, 2, 6, 0, 2, 3, 5][i], delay: [0, 0, 0, 1, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 1, 0][i], trig: [3, 10, 16].includes(i) ? 'Follow' : 'Go', info: { 3: 'Pyro', 8: 'Slow build', 13: 'Key change', 16: 'Snap' }[i] || '', part: [4, 11].includes(i) ? 2 : 1 }));
+const SWATCH = ['#f2efe6', '#e04040', '#f0a040', '#4070e0', '#40c0a0', '#c060d0', '#f2efe6', '#80b0ff'];
+const fixtures = Array.from({ length: 28 }, (_, i) => { const spot = i < 16; const no = spot ? 101 + i : 201 + (i - 16); return { no, name: (spot ? 'Spot ' : 'Wash ') + (spot ? i + 1 : i - 15), dim: [100, 80, 80, 0, 45, 45, 100, 0, 60, 60, 30, 30, 0, 0, 75, 75][i % 16], prg: [4, 5, 6, 7].includes(i), pan: (no * 7) % 180 - 90, tilt: (no * 3) % 90, color: SWATCH[(i * 3) % 8], gobo: i % 5 ? '' : 'Dots' }; });
+
+// window types declare their mini style; columns their mini renderer and a minimum width
+const SEQ = { title: 'Sequence 1', style: 'dense', cols: [
+  { k: 'no', t: 'Cue', min: 26, w: 0.9, r: 'num' }, { k: 'name', t: 'Name', min: 64, w: 3, r: 'key' },
+  { k: 'fade', t: 'Fade', min: 30, w: 1, r: 'num' }, { k: 'delay', t: 'Delay', min: 32, w: 1, r: 'num' },
+  { k: 'trig', t: 'Trig', min: 36, w: 1.1, r: 'text' }, { k: 'info', t: 'Info', min: 50, w: 2, r: 'soft' }, { k: 'part', t: 'Part', min: 26, w: 0.7, r: 'num' }] };
+const FIXS = { title: 'Fixture sheet', style: 'hybrid', cols: [
+  { k: 'no', t: 'Fix', min: 28, w: 0.9, r: 'num' }, { k: 'name', t: 'Name', min: 50, w: 2, r: 'key' },
+  { k: 'dim', t: 'Dim', min: 46, w: 1.8, r: 'level' }, { k: 'color', t: 'Col', min: 26, w: 0.8, r: 'swatch' },
+  { k: 'pan', t: 'Pan', min: 30, w: 1, r: 'num' }, { k: 'tilt', t: 'Tilt', min: 30, w: 1, r: 'num' }, { k: 'gobo', t: 'Gobo', min: 36, w: 1.1, r: 'soft' }] };
+
+const st = { pw: 190, ph: 300, rh: 14, run: 4, prog: 0.35, sel: new Set([105, 106, 107, 108]), desk: 'grid' };
+const tm = v => v ? v.toFixed(1) : '<span class="z">0</span>';
+function cell(def, c, r) {
+  const v = r[c.k];
+  if (c.r === 'num') return `<td class="n">${c.k === 'fade' || c.k === 'delay' ? tm(v) : c.k === 'pan' || c.k === 'tilt' ? v + '°' : v}</td>`;
+  if (c.r === 'key') return `<td class="t key">${esc(v)}</td>`;
+  if (c.r === 'soft') return `<td class="t soft">${esc(v)}</td>`;
+  if (c.r === 'level') return `<td class="lvl${r.prg ? ' prg' : ''}">${v ? `<i style="width:${v}%"></i>` : ''}<b>${v ? v : '<span class="z">0</span>'}</b></td>`;
+  if (c.r === 'swatch') return `<td><span class="sw" style="background:${v}"></span></td>`;
+  return `<td class="t">${esc(v)}</td>`;
+}
+function rowClass(def, r) {
+  if (def === SEQ) { const run = st.run + 1; return r.no === run ? 'run' : r.no === run + 1 ? 'next' : r.no < run ? 'done' : ''; }
+  return st.sel.has(r.no) ? 'sel' : '';
+}
+function sheet(def, rows, W, H) {
+  const rh = st.rh, fs = Math.max(8, Math.min(14, Math.round(rh * 0.74)));
+  const sumMin = def.cols.reduce((s, c) => s + c.min * fs / 10, 0);
+  const tw = def.cols.reduce((s, c) => s + c.w, 0);
+  // columns stretch by weight to the pane, never below their minimum; past the edge they fade
+  const widths = def.cols.map(c => Math.max(c.min * fs / 10, (W * c.w / tw)));
+  const total = widths.reduce((a, b) => a + b, 0);
+  const scale = total > W && sumMin <= W ? W / total : 1; // squeeze to the minimums first
+  const ws = widths.map(w => Math.max(w * scale, 0));
+  const tableW = ws.reduce((a, b) => a + b, 0);
+  const fit = Math.max(1, Math.floor((H - rh) / rh));
+  const live = Math.max(0, rows.findIndex(r => rowClass(def, r) === 'run' || rowClass(def, r) === 'sel'));
+  let s0 = Math.max(0, live - Math.floor(fit / 3)); s0 = Math.min(s0, Math.max(0, rows.length - fit));
+  let html = `<table class="mg" style="font-size:${fs}px;width:${tableW}px"><colgroup>${ws.map(w => `<col style="width:${w}px">`).join('')}</colgroup><tr style="height:${rh}px">${def.cols.map(c => `<th>${c.t}</th>`).join('')}</tr>`;
+  rows.slice(s0, s0 + fit).forEach(r => {
+    const cls = rowClass(def, r);
+    html += `<tr class="${cls}" style="height:${rh}px">${def.cols.map((c, j) => { let td = cell(def, c, r); if (j === 0 && cls === 'run') td = td.replace('</td>', `<span class="prog" style="width:${tableW * st.prog}px"></span></td>`); return td; }).join('')}</tr>`;
+  });
+  return { html: html + '</table>', clipped: tableW > W + 1, fs, fit };
+}
+function pane(def, rows, W, H, right) {
+  const p = h('div', 'pane'); p.style.width = W + 'px'; p.style.height = H + 'px';
+  p.append(h('div', 'ph', `<b>${def.title}</b><span class="r">${right}</span>`));
+  const b = h('div', 'pb'); p.append(b);
+  const s = sheet(def, rows, W, H - 18);
+  b.innerHTML = s.html; if (s.clipped) b.append(h('span', 'more'));
+  return [p, s];
+}
+const seqRight = () => `Cue ${st.run + 1}`;
+const fixRight = () => `${st.sel.size} sel`;
+function drawBench() {
+  $('#pwv').textContent = st.pw + ' px'; $('#phv').textContent = st.ph + ' px'; $('#rhv').textContent = st.rh + ' px';
+  const bench = $('#bench'); bench.innerHTML = '';
+  [[SEQ, cues, seqRight(), 'Sequence · dense text'], [FIXS, fixtures, fixRight(), 'Fixture sheet · hybrid']].forEach(([def, rows, right, name]) => {
+    const [p, s] = pane(def, rows, st.pw - 6, st.ph - 6, right);
+    const c = h('div', 'cand', `<h3><span>${def === SEQ ? 'B' : 'D'}</span>${name}</h3>`);
+    const frame = h('div', 'pane'); frame.style.width = st.pw + 'px'; frame.style.height = st.ph + 'px'; frame.style.border = '3px solid var(--lc-gap)'; frame.style.outline = '1px solid var(--lc-line)';
+    p.style.width = '100%'; p.style.height = '100%'; frame.append(p);
+    c.append(frame, h('p', null, `text ${s.fs} px · ${s.fit} rows${s.clipped ? ' · more columns past the edge' : ''}`));
+    bench.append(c);
+  });
+}
+const POOLC = ['#b5432f', '#c27a12', '#a8911a', '#3c8f3c', '#2f8f85', '#3f73b0', '#7c56a8', '#a8456e', '#2d5a8a'];
+function drawPhone() {
+  const ph = $('#phone'); ph.innerHTML = '';
+  ph.append(h('div', 'ph-status', '<span>9:41</span><span>●●● 5G</span>'), h('div', 'ph-top', '<span class="dot"></span>View 1 · Desk'));
+  const desk = h('div', 'ph-desk' + (st.desk === 'wide' ? ' wide' : ''));
+  ph.append(desk);
+  const bar = h('div', 'ph-bar', '<span class="b" style="color:var(--lc-accent-hi)">PURR</span><span class="ph-line">&gt; Group 3 At 50</span><span class="b">VK</span><span class="b">⋯</span>');
+  ph.append(bar, h('div', 'ph-home', '<i></i>'));
+  {
+    const cells = [];
+    const addPane = (fn) => { const slot = h('div'); slot.style.minWidth = '0'; slot.style.minHeight = '0'; slot.style.overflow = 'hidden'; desk.append(slot); cells.push([slot, fn]); };
+    if (st.desk === 'grid') addPane('pool');
+    addPane('seq'); addPane('fix');
+    if (st.desk === 'grid') addPane('term');
+    cells.forEach(([slot, fn]) => {
+      const W = slot.clientWidth, H = slot.clientHeight;
+      if (fn === 'seq') slot.append(pane(SEQ, cues, W, H, seqRight())[0]);
+      else if (fn === 'fix') slot.append(pane(FIXS, fixtures, W, H, fixRight())[0]);
+      else if (fn === 'pool') {
+        const p = h('div', 'pane'); p.style.width = W + 'px'; p.style.height = H + 'px';
+        p.append(h('div', 'ph', '<b>Groups</b>'));
+        let s = ''; for (let n = 0; n < 16 * 24; n++) { const r = (n * 2654435761 >>> 0) % 100; s += r < 62 ? `<i style="--c:${POOLC[(n * 5) % 9]}"></i>` : '<i class="e"></i>'; }
+        const g = h('div', 'minipool', s); g.style.gridTemplateColumns = 'repeat(16, 1fr)';
+        const b = h('div', 'pb'); b.append(g); p.append(b); slot.append(p);
+      } else {
+        const p = h('div', 'pane'); p.style.width = W + 'px'; p.style.height = H + 'px';
+        p.append(h('div', 'ph', '<b>Terminal</b>'), h('div', 'pb', `<div class="term">admin&gt; Go\nCue ${st.run + 1} "${esc(cues[st.run].name)}"\nadmin&gt; Group 3\n4 selected</div>`));
+        slot.append(p);
+      }
+    });
+  }
+}
+function fitPhone() {
+  const wrap = $('#phone-wrap'), sc = $('#phone-scale');
+  const s = Math.min(1, wrap.clientWidth / 410);
+  sc.style.transform = `scale(${s})`; wrap.style.height = (820 * s) + 'px';
+}
+function draw() { drawBench(); drawPhone(); }
+[['#pw', 'pw'], ['#ph', 'ph'], ['#rh', 'rh']].forEach(([id, k]) => $(id).addEventListener('input', e => { st[k] = +e.target.value; draw(); }));
+$('#desk').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; [...$('#desk').children].forEach(x => x.setAttribute('aria-pressed', x === b)); st.desk = b.dataset.v; drawPhone(); });
+let t0 = 0, raf;
+function tick(t) { const dur = (cues[st.run].fade || 0.3) * 1000; st.prog = Math.min(1, (t - t0) / dur); draw(); if (st.prog < 1) raf = requestAnimationFrame(tick); }
+$('#go').onclick = () => { st.run = (st.run + 1) % cues.length; st.prog = 0; t0 = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); };
+$('#nextsel').onclick = () => { const first = Math.min(...st.sel); const i = fixtures.findIndex(f => f.no === first); const j = (i + 4) % (fixtures.length - 3); st.sel = new Set(fixtures.slice(j, j + 4).map(f => f.no)); draw(); };
+addEventListener('resize', fitPhone);
+fitPhone(); draw();
+})();
+</script>

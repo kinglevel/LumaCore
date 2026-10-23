@@ -1,0 +1,582 @@
+<title>Pixelmapper</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a view switcher, then one fixed 1280×800 desk frame (scaled to fit): the patch's
+   Pixelmapper kind, the Canvas pool, the canvas editor (the 12d setup frame of the locked Patch
+   dialog), and the encoder bar alone in its new Pixelmapper mode (12f concept A, the approved bar).
+   Palette: the locked round 2 mockups and the 12f encoder bar. */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --stripe: #2fa3b8; --stripe-off: #5a5a5a; --ok: #00a60a; --del: #e05a5a; --sel: #1d3550; --sel-line: #3f6fb0;
+  --cap: #f9ed4f; --info: #758ba0; --prog: #ff2e4d; --fx: #b07be6; --selected: #3a3218; --hair: #262626; --gap: #0a0a0a;
+  --ring: #7a4a8a; --main: #3b5f8a; --panel: #6b4a2a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 40px; }
+main { max-width: 1280px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+h1 { margin: 0; font-size: 22px; font-weight: 400; text-wrap: balance; }
+.cap { margin: 0; color: var(--dim); max-width: 96ch; }
+.modes { display: flex; flex-wrap: wrap; gap: 6px; }
+.modes button { min-height: 44px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--dim); font: inherit; cursor: pointer; }
+.modes button[aria-pressed="true"] { background: #303030; color: var(--text); border-color: #5a5a5a; box-shadow: inset 0 -3px 0 var(--gold-hi); }
+button { font: inherit; color: inherit; }
+button:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+.well { width: 100%; overflow: hidden; }
+.frame { width: 1280px; height: 800px; position: relative; overflow: hidden; background: var(--page); transform-origin: 0 0; user-select: none; }
+svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.note { color: var(--dim); max-width: 96ch; margin: 0; }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 96ch; margin: 0; }
+
+/* the setup frame (12d) */
+.dlg { position: absolute; top: 16px; left: 24px; width: 1232px; height: 768px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+.title { height: 52px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 16px; border-bottom: 1px solid var(--line); }
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.crumb .up { color: var(--dim); } .crumb .sp { color: var(--faint); font-size: 14px; } .crumb .here { font-weight: 500; }
+.chip { height: 30px; display: inline-flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; white-space: nowrap; }
+.chip .d { width: 8px; height: 8px; border-radius: 4px; }
+.title .right { margin-left: auto; font-size: 12px; color: var(--faint); }
+.close { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: var(--text); background: none; border: 0; cursor: pointer; }
+.rail { height: 50px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-bottom: 1px solid var(--cell-line); }
+.rail .lab { font-size: 12px; color: var(--faint); margin-right: 6px; }
+.kind { height: 40px; padding: 0 16px; border-radius: 6px; display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--dim); border: 1px solid transparent; }
+.kind.on { background: #303030; color: var(--text); border-color: var(--gold-hi); }
+.kind .new { font-size: 11px; color: var(--gold-hi); }
+.mid { flex: 1; display: flex; min-height: 0; }
+.left { width: 236px; flex: none; border-right: 1px solid var(--cell-line); display: flex; flex-direction: column; overflow: hidden; }
+.ltabs { display: flex; gap: 4px; padding: 6px; border-bottom: 1px solid var(--cell-line); }
+.ltabs span { flex: 1; height: 34px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--dim); border: 1px solid var(--cell-line); }
+.ltabs span.on { background: #303030; color: var(--text); border-color: #5a5a5a; }
+.tree { flex: 1; overflow: auto; padding: 4px 0; }
+.lt { min-height: 44px; padding: 4px 10px 4px 14px; box-shadow: inset 4px 0 0 var(--stripe-off); display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--dim); cursor: pointer; border-bottom: 1px solid var(--cell); }
+.lt.on { background: var(--cell); color: var(--text); box-shadow: inset 4px 0 0 var(--stripe); }
+.lt.g { font-size: 12px; color: var(--faint); min-height: 30px; text-transform: uppercase; letter-spacing: .05em; box-shadow: none; cursor: default; }
+.lt.fx { padding-left: 18px; }
+.lt.pt { padding-left: 34px; min-height: 34px; font-size: 13px; }
+.lt .cnt { margin-left: auto; font-size: 12px; color: var(--faint); }
+.pk { height: 20px; padding: 0 7px; border-radius: 10px; font-size: 11.5px; color: #fff; display: inline-flex; align-items: center; }
+.pk.ring { background: var(--ring); } .pk.main { background: var(--main); } .pk.panel { background: var(--panel); }
+.mapto { margin-left: auto; font-size: 11.5px; color: var(--gold-hi); font-family: var(--mono); }
+.mapto.no { color: var(--faint); font-family: var(--font); }
+.work { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.strip { height: 50px; flex: none; display: flex; gap: 6px; align-items: center; padding: 0 12px; border-bottom: 1px solid var(--cell-line); }
+.strip .tb { height: 44px; padding: 0 18px; border-radius: 6px; display: flex; align-items: center; font-size: 14px; color: var(--dim); }
+.strip .tb.on { background: #303030; color: var(--text); }
+.strip .r { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.sb { height: 44px; min-width: 48px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; cursor: pointer; color: var(--text); }
+.sb[aria-pressed="true"] { border-color: var(--gold-hi); color: var(--gold-hi); background: #262316; }
+.sb.big { font-size: 15px; font-weight: 600; min-width: 64px; }
+.content { flex: 1; min-height: 0; overflow: hidden; position: relative; }
+.echo { height: 34px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; border-top: 1px solid var(--cell-line); font-size: 12px; color: var(--dim); font-family: var(--mono); }
+.echo .r { margin-left: auto; font-family: var(--font); }
+.slab { height: 136px; flex: none; border-top: 1px solid var(--line); padding: 8px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 12px repeat(4, minmax(0, 1fr)) 210px; grid-template-rows: 60px 60px; gap: 6px; }
+.a { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; }
+.a.dis { color: #5a5a5a; border-style: dashed; background: transparent; }
+.a.del { color: var(--del); }
+.a.new svg { color: var(--ok); }
+.sep { grid-row: 1 / span 2; }
+.power { grid-row: 1 / span 2; grid-column: 11; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; position: relative; overflow: hidden; }
+.power svg { width: 34px; height: 34px; }
+.power b { font-size: 15px; font-weight: 600; } .power small { font-size: 12px; color: var(--dim); }
+.power::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--pw, var(--ok)); }
+.power.live svg { color: var(--ok); }
+.power.livedata { --pw: var(--stripe); } .power.livedata svg { color: var(--stripe); }
+.grid { display: grid; font-size: 14px; }
+.hd { height: 40px; background: var(--head); border-bottom: 1px solid var(--cell-line); border-right: 1px solid var(--cell); color: var(--dim); font-size: 12px; padding: 0 10px; display: flex; align-items: center; white-space: nowrap; }
+.no { height: 48px; border-bottom: 1px solid var(--cell); border-right: 1px solid var(--cell-line); color: var(--dim); font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.cl { height: 42px; margin: 3px 2px; border-radius: 4px; border: 1px solid var(--cell-line); background: var(--cell); padding: 0 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; }
+.cl.ro { border-color: transparent; background: transparent; color: var(--dim); }
+.cl.sel, .no.sel { background: var(--sel); border-color: var(--sel-line); color: var(--text); }
+.addline { height: 46px; border-bottom: 1px dashed var(--cell-line); color: var(--dim); display: flex; align-items: center; padding: 0 12px; grid-column: 1 / -1; }
+.pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 8px; padding: 12px; }
+.tile { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; text-align: left; padding: 0; }
+.tile.on { border-color: var(--gold-hi); box-shadow: inset 0 0 0 1px var(--gold-hi); }
+.tile canvas { width: 100%; height: 92px; display: block; background: #000; }
+.tile .m { padding: 7px 10px; display: flex; flex-direction: column; gap: 1px; }
+.tile .m b { font-weight: 500; } .tile .m small { color: var(--dim); font-size: 12px; }
+.tile.empty { border-style: dashed; color: var(--faint); align-items: center; justify-content: center; min-height: 140px; cursor: default; }
+
+/* editor */
+.ed { display: flex; height: 100%; }
+.viewport { flex: 1; min-width: 0; position: relative; touch-action: none; cursor: grab; }
+.viewport canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.vp-hint { position: absolute; left: 10px; bottom: 8px; font-size: 12px; color: rgba(255,255,255,.7); pointer-events: none; text-shadow: 0 1px 2px #000; }
+.vp-tag { position: absolute; left: 10px; top: 8px; font-size: 12.5px; padding: 3px 10px; border-radius: 12px; pointer-events: none; font-weight: 600; letter-spacing: .03em; }
+.vp-tag.d2 { background: #1d2a1d; color: #9fd8a0; border: 1px solid #2e5a2e; }
+.vp-tag.d3 { background: #1d2333; color: #a9c3f0; border: 1px solid #34507e; }
+.vp-msg { position: absolute; right: 10px; top: 8px; font-size: 12px; color: var(--gold-text); background: rgba(154,122,8,.85); padding: 3px 10px; border-radius: 12px; pointer-events: none; }
+.insp { width: 262px; flex: none; border-left: 1px solid var(--cell-line); display: flex; flex-direction: column; overflow: auto; }
+.insp h3 { margin: 0; padding: 8px 12px; font-size: 12px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; background: var(--head); border-bottom: 1px solid var(--cell-line); }
+.prop { display: grid; grid-template-columns: 88px minmax(0, 1fr); align-items: center; gap: 6px; padding: 6px 12px; border-bottom: 1px solid var(--cell); font-size: 13px; }
+.prop .k { color: var(--dim); font-size: 12px; }
+.prop .v { display: flex; gap: 4px; flex-wrap: wrap; }
+.prop.col { grid-template-columns: minmax(0, 1fr); }
+.pill { min-height: 32px; padding: 0 9px; border-radius: 5px; border: 1px solid var(--cell-line); display: inline-flex; align-items: center; font-size: 12.5px; color: var(--dim); background: none; cursor: pointer; }
+.pill[aria-pressed="true"] { background: #3a3a3a; color: var(--text); border-color: #5a5a5a; }
+.pill.link[aria-pressed="true"] { background: #1b2e33; color: #8fd3e0; border-color: var(--stripe); }
+.num { height: 30px; padding: 0 9px; border-radius: 5px; border: 1px solid var(--cell-line); background: var(--cell); display: inline-flex; align-items: center; font-size: 13px; font-variant-numeric: tabular-nums; }
+.srcnote { font-size: 12px; color: var(--dim); line-height: 1.4; }
+
+/* the encoder bar alone (12f concept A) */
+.ebwrap { position: absolute; left: 24px; right: 24px; bottom: 24px; }
+.ebcontext { position: absolute; left: 24px; right: 24px; top: 24px; bottom: 420px; border: 1px dashed #2a2a2a; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 14px; color: var(--faint); font-size: 12.5px; }
+.ebcontext .ttl { color: var(--dim); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+.lamps { display: flex; gap: 10px; flex-wrap: wrap; }
+.lamp { width: 54px; height: 54px; border-radius: 27px; position: relative; display: grid; place-items: center; background: #0d0d0d; border: 1px solid var(--line); }
+.lamp .rg { position: absolute; inset: 3px; border-radius: 50%; border: 8px solid #222; }
+.lamp .core { width: 20px; height: 20px; border-radius: 10px; background: rgb(240,150,30); }
+.batten { display: grid; grid-template-columns: 36px repeat(12, minmax(0, 1fr)); gap: 3px; align-items: center; margin-bottom: 6px; }
+.batten span { height: 16px; border-radius: 2px; background: #222; }
+.batten .id { height: auto; background: none; font-size: 11px; color: var(--dim); }
+.ebar { background: #141414; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; position: relative; }
+.fstrip { display: flex; gap: 3px; padding: 4px 4px 0; }
+.fb { flex: 1 0 auto; min-width: 120px; min-height: 40px; padding: 0 10px; border: 1px solid var(--line); border-bottom: 0; border-radius: 5px 5px 0 0; background: var(--dlg); color: var(--dim); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; position: relative; }
+.fb .ft { display: flex; align-items: center; gap: 7px; }
+.fb .n { font-family: var(--mono); font-size: 11px; color: #5e5e5e; }
+.fb canvas { width: 44px; height: 16px; border-radius: 2px; display: block; }
+.fb[aria-pressed="true"] { background: #262316; color: var(--cap); border-color: var(--gold); }
+.fb.has::after { content: ''; position: absolute; right: 4px; top: 4px; width: 8px; height: 8px; border-radius: 1px; background: var(--prog); }
+.ebody { display: grid; grid-template-columns: 116px repeat(4, minmax(0, 1fr)) 84px; border-top: 1px solid var(--gold); background: #1a1a1a; height: 300px; }
+.lcol { display: grid; grid-template-rows: auto 1fr auto auto auto; gap: 4px; padding: 5px; border-right: 1px solid var(--line); min-height: 0; }
+.lcol .fn { font-size: 14px; font-weight: 600; }
+.lcol .pic { min-height: 0; border-radius: 4px; overflow: hidden; background: #000; display: grid; place-items: center; }
+.lcol .pic canvas { width: 100%; height: 100%; display: block; }
+.layer { min-height: 40px; border-radius: 5px; border: 1px solid var(--line); background: var(--dlg); font-size: 12px; line-height: 1.15; color: var(--dim); cursor: pointer; }
+.layer small { display: block; font-size: 10.5px; opacity: .8; }
+.layer.modeb { display: grid; place-items: center; gap: 0; padding: 3px 2px; background: #232323; color: var(--text); min-height: 44px; }
+.layer.modeb small { text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+.layer.modeb b { font-size: 12.5px; color: #8fd3e0; }
+.layer.cyc { display: grid; place-items: center; gap: 0; border-color: var(--gold); background: var(--selected); padding: 3px 0; }
+.layer.cyc b { font-size: 16px; color: var(--cap); }
+.layer.cyc small { text-transform: uppercase; letter-spacing: .05em; color: var(--dim); }
+.setsw { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+.setsw .layer { min-height: 36px; font-size: 11.5px; padding: 0 2px; }
+.setsw .layer.val[aria-pressed="true"] { border-color: var(--cap); color: var(--cap); background: #2a2810; }
+.setsw .layer.efx { border-color: color-mix(in srgb, var(--fx) 55%, var(--line)); }
+.enc { display: grid; grid-template-rows: minmax(0, 1fr) auto; border-right: 1px solid var(--line); min-width: 0; }
+.enc.prog .ix.big.val { background: color-mix(in srgb, var(--prog) 14%, #1d1c14); }
+.enc.blank { background: repeating-linear-gradient(135deg, transparent 0 8px, #181818 8px 9px); }
+.ixs { display: flex; gap: 3px; padding: 5px 5px 4px; min-width: 0; min-height: 0; }
+.ix { flex: 1 1 0; min-width: 0; display: grid; grid-template-rows: 16px 20px minmax(0, 1fr); justify-items: center; gap: 3px; border-radius: 5px; padding: 3px 2px 5px; cursor: ns-resize; touch-action: none; background: #171717; border: 1px solid var(--hair); }
+.ix.big { flex-grow: 2.8; background: #1d1c14; border-color: var(--gold); }
+.ix .il { font-size: 11px; color: var(--dim); text-transform: uppercase; letter-spacing: .04em; }
+.ix.big .il { color: var(--cap); }
+.ix.t .il { color: var(--info); }
+.ix .iv { font-family: var(--mono); font-size: 12px; color: var(--dim); white-space: nowrap; overflow: hidden; max-width: 100%; }
+.ix.big .iv { font-size: 17px; color: #f1b7c1; }
+.ix.big.t .iv { color: var(--info); }
+.vtrk { position: relative; width: 46px; height: 100%; border-radius: 5px; background: var(--gap); border: 1px solid var(--line); }
+.ix:not(.big) .vtrk { width: 24px; }
+.vfil { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 0 0 4px 4px; background: color-mix(in srgb, var(--prog) 38%, transparent); }
+.ix.t .vfil { background: color-mix(in srgb, var(--info) 40%, transparent); }
+.vtk { position: absolute; left: -4px; right: -4px; height: 2px; margin-bottom: -1px; background: var(--prog); border-radius: 1px; }
+.ix.t .vtk { background: var(--info); }
+.ix.cue .iv { font-family: var(--font); color: var(--faint); font-size: 11px; }
+.carousel { display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; height: 100%; }
+.carousel canvas { border-radius: 4px; display: block; }
+.carousel .cur { box-shadow: 0 0 0 2px var(--gold-hi); }
+.carousel .dimc { opacity: .35; }
+.abar { display: grid; grid-template-columns: 1fr 52px; border-top: 1px solid var(--line); min-height: 52px; }
+.abar .an { border: 0; border-right: 1px solid var(--hair); background: #262626; padding: 4px 8px; text-align: left; display: grid; align-content: center; gap: 1px; min-width: 0; cursor: pointer; }
+.abar .an b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.abar .an .cf { font-size: 11.5px; color: var(--dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.abar .rs { border: 0; background: #1e1e1e; display: grid; grid-template-rows: repeat(3, 1fr); font-size: 11px; color: var(--faint); text-align: left; padding: 2px 0 2px 7px; }
+.abar .rs span.on { color: var(--cap); }
+.tcol { display: grid; grid-template-rows: auto 1fr; min-height: 0; }
+.pgb { min-height: 52px; border: 0; border-bottom: 1px solid var(--line); background: var(--dlg); cursor: pointer; font-size: 13px; line-height: 1.15; }
+.pgb b { display: block; font-family: var(--mono); font-size: 15px; color: var(--cap); }
+.ptime { display: grid; grid-template-rows: auto 1fr auto; padding: 5px; gap: 4px; text-align: center; font-size: 11.5px; color: var(--dim); min-height: 0; }
+.ptime .pf { position: relative; border-radius: 4px; border: 1px solid var(--line); background: var(--gap); overflow: hidden; }
+.ptime .pf i { position: absolute; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, #3fbf4a 35%, transparent); }
+.ptime .pv { font-family: var(--mono); font-size: 14px; color: var(--faint); }
+.mpop { position: absolute; left: 8px; bottom: 8px; width: 360px; z-index: 5; background: var(--dlg); border: 1px solid var(--gold); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.6); }
+.mpop .ph { padding: 0 12px; min-height: 42px; display: flex; align-items: center; border-bottom: 1px solid var(--line); font-weight: 600; }
+.mpop button { width: 100%; text-align: left; min-height: 46px; border: 0; border-bottom: 1px solid var(--hair); background: none; padding: 4px 12px; cursor: pointer; display: grid; gap: 1px; }
+.mpop button small { color: var(--dim); font-size: 12px; }
+.mpop button.on { background: var(--selected); }
+.mpop button.new b::after { content: ' new'; color: var(--gold-hi); font-size: 11px; font-weight: 400; }
+</style>
+
+<main>
+<h1>Pixelmapper · round 3 · v3</h1>
+<p class="cap">Mockup for the 34g4 round 3 hardening (decisions §34, 2026-10-18): <b>media server → canvases (controlled like fixtures) → mappings → parts</b>, in the setup frame of the locked Patch dialog, and the approved encoder bar (12f concept A) with a new <b>Pixelmapper</b> mode. Fixtures: the demo show's six MAC Aura XB (ring = Auras), four GLP JDC-1 (face = 12 plates; two of them stand upright in Group "Floor"). The canvases render live.</p>
+<div class="modes" role="group" aria-label="View">
+  <button data-v="patch" aria-pressed="false">1 · Patch › Pixelmapper</button>
+  <button data-v="pool" aria-pressed="false">2 · Canvas pool</button>
+  <button data-v="editor" aria-pressed="true">3 · Canvas editor</button>
+  <button data-v="ebar" aria-pressed="false">4 · Encoder bar · Pixelmapper mode</button>
+</div>
+<div class="well" id="well"><div class="frame" id="frame"></div></div>
+<p class="note" id="vnote"></p>
+<p class="decide" id="vdecide"></p>
+</main>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="sel" viewBox="0 0 24 24"><path d="m4 4 7 17 2.5-7.5L21 11z"/></symbol>
+  <symbol id="plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/></symbol>
+  <symbol id="cut" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></symbol>
+  <symbol id="paste" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></symbol>
+  <symbol id="del" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></symbol>
+  <symbol id="oops" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></symbol>
+  <symbol id="imp" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+  <symbol id="exp" viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></symbol>
+  <symbol id="edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="pencil" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+  <symbol id="live" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0M2 12a10 10 0 0 1 20 0"/></symbol>
+  <symbol id="move" viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M5 9l-3 3 3 3M19 9l3 3-3 3M9 5l3-3 3 3M9 19l3 3 3-3"/></symbol>
+  <symbol id="scale" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></symbol>
+  <symbol id="rot" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></symbol>
+  <symbol id="align" viewBox="0 0 24 24"><path d="M4 4v16M8 7h12M8 12h8M8 17h10"/></symbol>
+  <symbol id="grid" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></symbol>
+</svg>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ic = id => `<svg class="i"><use href="#${id}"/></svg>`;
+const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const CONTENTS = ['Solid', 'Chase', 'Wave', 'Noise', 'Video', 'Text'];
+
+/* ---------- data ---------- */
+// Group grids (the groups' own X / Y / rotation per member, §22). Units are grid cells.
+const GROUPS = {
+  'Truss 2': [101, 102, 103, 104, 105, 106].map((f, i) => ({ f, x: i, y: 0, rot: 0 })),
+  'Floor': [{ f: 301, x: 0, y: 1, rot: 0 }, { f: 302, x: 1, y: 1, rot: 0 }, { f: 303, x: 3, y: 0, rot: 90 }, { f: 304, x: 4, y: 0, rot: 90 }],
+};
+const CV = [
+  { fid: 901, name: 'Ring wash', size: '64 × 16', w: 64, h: 16, layers: 4, dim: 100,
+    L: [{ c: 'Solid', o: 100, hue: 30, sp: 0, b: 'Over', fade: 2, delay: 0 }, { c: 'Chase', o: 70, hue: 0, sp: 1.2, b: 'Add', fade: 0, delay: 0 }, { c: 'Wave', o: 0, hue: 200, sp: .5, b: 'Over', fade: 0, delay: 0 }, { c: 'Noise', o: 0, hue: 280, sp: .8, b: 'Over', fade: 0, delay: 0 }],
+    map: { what: 'Group "Truss 2" · Ring', group: 'Truss 2', part: 'Ring', shape: 'single', src: 'link', cell: 10, ox: 2, oy: 3, place: '2d', own: null } },
+  { fid: 902, name: 'Batten wave', size: '96 × 40', w: 96, h: 40, layers: 4, dim: 100,
+    L: [{ c: 'Wave', o: 100, hue: 190, sp: .6, b: 'Over', fade: 3, delay: 1 }, { c: 'Chase', o: 50, hue: 0, sp: 2, b: 'Add', fade: 0, delay: 0 }, { c: 'Solid', o: 0, hue: 330, sp: 0, b: 'Over', fade: 0, delay: 0 }, { c: 'Noise', o: 0, hue: 50, sp: 1, b: 'Over', fade: 0, delay: 0 }],
+    map: { what: 'Group "Floor" · Panel', group: 'Floor', part: 'Panel', shape: 'linear12', src: 'link', cell: 14, ox: 8, oy: 4, place: '2d', own: null } },
+];
+const FIXTURES = [
+  { grp: 'Truss 2 · MAC Aura XB · Extended', items: [101, 102, 103, 104, 105, 106].map(n => ({ fid: n, name: `Aura ${n - 100}`, parts: [['main', 'Main', 'Beams', null], ['ring', 'Ring', 'Auras', 901]] })) },
+  { grp: 'Floor · GLP JDC-1 · Mode 2', items: [301, 302, 303, 304].map(n => ({ fid: n, name: `JDC ${n - 300}`, parts: [['main', 'Main', 'Beams · 12', null], ['panel', 'Panel', 'Plates · 12', 902]] })) },
+  { grp: 'Truss 1 · MAC Viper Profile · Basic', items: [201, 202, 203, 204, 205, 206].map(n => ({ fid: n, name: `Viper ${n - 200}`, parts: [['main', 'Main', 'Head', null]] })) },
+];
+const st = { view: 'editor', cv: 1, yaw: -.5, pitch: .38, cam: 'orbit', sel: 303, open: { 303: true, 101: true }, feat: 'master', layer: 'Value', page: 0, tool: 'move', msg: '', pop: false, picked: null };
+
+/* ---------- content rendering ---------- */
+function hsl(h, s, l) { const a = s * Math.min(l, 1 - l), f = n => { const k = (n + h / 30) % 12; return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); }; return [f(0), f(8), f(4)]; }
+function lay(L, u, v, t) {
+  if (L.c === 'Solid') return [hsl(L.hue, 1, .5), 1];
+  if (L.c === 'Chase') { const p = (t * L.sp) % 1; return [[1, 1, 1], Math.max(0, 1 - Math.abs(u - p) * 8)]; }
+  if (L.c === 'Wave') return [hsl((L.hue + u * 180 + t * L.sp * 120) % 360, 1, .5), .5 + .5 * Math.sin((u * 6 - t * L.sp * 4) * Math.PI)];
+  if (L.c === 'Video') return [hsl((u * 300 + v * 200 + t * 40) % 360, .8, .45), 1];
+  if (L.c === 'Text') return [[1, 1, 1], (Math.floor(u * 20 + t * 4) % 3 === 0 && v > .3 && v < .7) ? 1 : 0];
+  return [hsl(L.hue, 1, .5), Math.max(0, Math.sin(u * 23 + t * L.sp * 3) * Math.sin(v * 17 + t * L.sp * 2))];
+}
+function sample(c, u, v, t) {
+  let o = [0, 0, 0];
+  for (const L of c.L) { if (!L.o) continue; const [col, a0] = lay(L, u, v, t), a = a0 * L.o / 100; o = L.b === 'Add' ? o.map((x, i) => Math.min(1, x + col[i] * a)) : o.map((x, i) => x * (1 - a) + col[i] * a); }
+  return o.map(x => x * c.dim / 100);
+}
+const rgb = c => `rgb(${c.map(x => Math.round(x * 255)).join(',')})`;
+function paint(el, c, t, step = 4, only) {
+  if (!el) return; const g = el.getContext('2d'), W = el.width, H = el.height;
+  const one = only != null ? { ...c, L: c.L.map((L, i) => i === only ? { ...L, o: 100 } : { ...L, o: 0 }), dim: 100 } : c;
+  for (let x = 0; x < W; x += step) for (let y = 0; y < H; y += step) { g.fillStyle = rgb(sample(one, x / W, y / H, t)); g.fillRect(x, y, step, step); }
+}
+// The members of a mapping: linked = the group's grid live; copied = a snapshot, then free; free = own positions.
+function members(ci) { const m = CV[ci].map; return m.src === 'link' ? GROUPS[m.group] : m.own; }
+// Self-expanding: each member's part expands from its grid spot along the member's rotation.
+function cells(ci) {
+  const m = CV[ci].map, out = [];
+  for (const mb of members(ci)) {
+    const cx = m.ox + mb.x * m.cell + m.cell / 2, cy = m.oy + mb.y * m.cell + m.cell / 2;
+    if (m.shape === 'single') { out.push({ f: mb.f, px: Math.round(cx), py: Math.round(cy), k: 0 }); continue; }
+    const r = mb.rot * Math.PI / 180, dx = Math.cos(r), dy = Math.sin(r);
+    for (let k = 0; k < 12; k++) { const d = k - 5.5; out.push({ f: mb.f, px: Math.round(cx + dx * d), py: Math.round(cy + dy * d), k }); }
+  }
+  return out;
+}
+
+/* ---------- shared frame parts ---------- */
+const slab = (power, o = {}) => {
+  const a = (cls, icon, label) => `<div class="a ${cls}">${ic(icon)}${label}</div>`;
+  return `<div class="slab">${a('', 'sel', 'Select')}${a(o.new ? 'new' : 'dis', 'plus', o.newLabel || 'New')}${a('dis', 'copy', 'Copy')}${a('dis', 'cut', 'Cut')}${a('dis', 'paste', 'Paste')}<span class="sep"></span>
+    ${a(o.edit ? '' : 'dis', 'edit', o.editLabel || 'Edit')}${a('', 'imp', 'Import')}${a('', 'exp', 'Export')}${a('', 'oops', 'Oops')}
+    ${a(o.del ? 'del' : 'dis', 'del', 'Delete')}${a('dis', 'grid', 'Columns')}${a('', 'align', 'Info')}${a('', 'scale', 'Sort')}${power}</div>`;
+};
+const claimLive = `<div class="power live">${ic('pencil')}<b>Live</b><small>Hold to claim and edit</small></div>`;
+const liveData = `<div class="power livedata">${ic('live')}<b>Live data</b><small>no claim needed</small></div>`;
+const title = (crumbs, chip, right) => `<div class="title"><div class="crumb">${crumbs.map((c, i) => i < crumbs.length - 1 ? `<span class="up">${c}</span><span class="sp">›</span>` : `<span class="here">${c}</span>`).join('')}</div>${chip}<span class="right">${right || ''}</span><button class="close" aria-label="Close">${ic('x')}</button></div>`;
+
+/* ---------- view 1 ---------- */
+function vPatch() {
+  const cols = '56px 220px 140px 110px 90px 300px 1fr';
+  const row = (c, sel) => `<div class="no ${sel ? 'sel' : ''}">${c.fid}</div><div class="cl ${sel ? 'sel' : ''}">${c.name}</div><div class="cl ro">Canvas</div><div class="cl">${c.size}</div><div class="cl">${c.layers}</div><div class="cl ro">${esc(c.map.what)}</div><div class="cl ro">this station</div>`;
+  return `<div class="dlg">${title(['Devices', 'Pixelmapper'], `<span class="chip"><i class="d" style="background:var(--ok)"></i>Live patch · nobody has claimed it</span>`, 'In the show · every station')}
+    <div class="rail"><span class="lab">Devices</span><span class="kind">DMX</span><span class="kind on">Pixelmapper <span class="new">new</span></span><span class="kind" style="border:1px dashed var(--cell-line);color:var(--faint)">+ more device kinds later</span></div>
+    <div class="mid"><div class="left"><div class="ltabs"><span class="on">All</span><span>By size</span></div><div class="tree"><div class="lt on">Pixelmapper · all <span class="cnt">2</span></div><div class="lt">Rings <span class="cnt">1</span></div><div class="lt">Battens <span class="cnt">1</span></div></div></div>
+      <div class="work"><div class="strip"><span class="tb on">Canvases</span><span class="tb">Mappings</span><span class="tb">Part kinds</span><span class="r"><span style="color:var(--dim);font-size:13px">1 selected</span><span class="sb">+</span><span class="sb">−</span><span class="sb">Thru</span><span class="sb">All</span></span></div>
+        <div class="content"><div class="grid" style="grid-template-columns:${cols}"><div class="hd" style="justify-content:center">FID</div><div class="hd">Name</div><div class="hd">Type</div><div class="hd">Size</div><div class="hd">Layers</div><div class="hd">Mapped</div><div class="hd">Renders on</div>${row(CV[0], true)}${row(CV[1])}<div class="addline">+ New canvas in Pixelmapper (claim the draft)</div></div></div>
+        <div class="echo">› Store Fixture 903 "Wall" /Type Canvas /Size 256x144 /Layers 4<span class="r">canvases have FIDs in the one fixture number space · no DMX address</span></div></div></div>
+    ${slab(claimLive)}</div>`;
+}
+/* ---------- view 2 ---------- */
+function vPool() {
+  const tile = (c, i) => `<button class="tile ${st.cv === i ? 'on' : ''}" data-tile="${i}"><canvas width="180" height="80" data-thumb="${i}"></canvas><span class="m"><b>${c.fid} ${c.name}</b><small>${c.size} · ${c.layers} layers · ${esc(c.map.what)}</small></span></button>`;
+  return `<div class="dlg">${title(['Pixelmapper', 'Canvases'], `<span class="chip"><i class="d" style="background:var(--stripe)"></i>Live data · edit any time</span>`, 'the Canvas pool')}
+    <div class="mid"><div class="left"><div class="ltabs"><span class="on">Canvases</span><span>Mappings</span></div><div class="tree"><div class="lt on">All canvases <span class="cnt">2</span></div>${CV.map(c => `<div class="lt fx">${c.fid} ${c.name}<span class="cnt">${members(CV.indexOf(c)).length} fx</span></div>`).join('')}</div></div>
+      <div class="work"><div class="strip"><span class="tb on">Tiles</span><span class="tb">List</span><span class="r"><span style="color:var(--dim);font-size:13px">double-tap a tile to open the editor</span></span></div>
+        <div class="content"><div class="pool">${CV.map(tile).join('')}<div class="tile empty">+ New canvas<small style="font-size:12px">patched in Devices › Pixelmapper</small></div></div></div>
+        <div class="echo">› Edit Fixture ${CV[st.cv].fid}<span class="r">tiles render live · mappings change without a claim</span></div></div></div>
+    ${slab(liveData, { edit: true, editLabel: 'Edit canvas', new: true, newLabel: 'New mapping' })}</div>`;
+}
+/* ---------- view 3: the editor ---------- */
+function vEditor() {
+  const c = CV[st.cv], m = c.map;
+  let tree = '';
+  for (const g of FIXTURES) {
+    tree += `<div class="lt g">${esc(g.grp)}</div>`;
+    for (const f of g.items) {
+      const mapped = f.parts.find(p => p[3]);
+      tree += `<div class="lt fx ${st.sel === f.fid ? 'on' : ''}" data-fx="${f.fid}">${f.fid} ${esc(f.name)}${mapped ? `<span class="mapto">→ ${mapped[3]}</span>` : '<span class="mapto no">unmapped</span>'}</div>`;
+      if (st.open[f.fid]) for (const p of f.parts) tree += `<div class="lt pt"><span class="pk ${p[0]}">${p[1]}</span>${esc(p[2])}${p[3] ? `<span class="mapto">→ ${p[3]}</span>` : '<span class="mapto no">—</span>'}</div>`;
+    }
+  }
+  const d2 = m.place === '2d';
+  const srcTxt = { link: `Linked to Group "${m.group}": its grid (positions, order, rotation) is used live — change the group and the mapping follows. Move the whole mapping here; move members in the group.`, copy: `Copied from Group "${m.group}" (once): the members are now this mapping's own — drag or rotate any of them. The group can change without touching this mapping.`, free: 'Free: members placed by hand on the canvas; no group behind it.' }[m.src];
+  return `<div class="dlg">${title(['Pixelmapper', 'Canvases', `${c.fid} ${c.name}`], `<span class="chip"><i class="d" style="background:var(--stripe)"></i>Live data</span>`, 'drag fixtures or parts from the sidebar onto the canvas')}
+    <div class="mid">
+      <div class="left"><div class="ltabs"><span class="on">Groups</span><span>Types</span><span>Parts</span></div><div class="tree">${tree}</div></div>
+      <div class="work">
+        <div class="strip">
+          <span class="sb" data-cv="0" aria-pressed="${st.cv === 0}">901</span><span class="sb" data-cv="1" aria-pressed="${st.cv === 1}">902</span>
+          <span style="width:10px"></span>
+          <span class="sb big" data-pl="2d" aria-pressed="${d2}">2D</span><span class="sb big" data-pl="3d" aria-pressed="${!d2}">3D</span>
+          ${d2 ? '' : ['front', 'top', 'orbit'].map(v => `<span class="sb" data-cam="${v}" aria-pressed="${st.cam === v}">${v[0].toUpperCase() + v.slice(1)}</span>`).join('')}
+          <span class="r">${['sel', 'move', 'rot', 'scale', 'align', 'grid'].map(t => `<span class="sb" data-tool="${t}" aria-pressed="${st.tool === t}" title="${t}">${ic(t)}</span>`).join('')}</span></div>
+        <div class="content"><div class="ed">
+          <div class="viewport" id="vp" style="background:${d2 ? '#0e0e0e' : 'radial-gradient(ellipse at 50% 30%, #1a2030, #06080d 70%)'}"><canvas id="vpc" width="728" height="474"></canvas>
+            <span class="vp-tag ${d2 ? 'd2' : 'd3'}">${d2 ? '2D · the canvas, pixel by pixel' : '3D · the rig, real positions'}</span>
+            ${st.msg ? `<span class="vp-msg">${esc(st.msg)}</span>` : ''}
+            <span class="vp-hint">${d2 ? (m.src === 'link' ? 'Drag to move the whole mapping · members follow Group "' + m.group + '"' : 'Drag a member to move it · Rotate tool: tap a member to turn it 90°') : 'Drag to orbit · the canvas plane hangs behind the rig · lines show where each part samples'}</span></div>
+          <div class="insp">
+            <h3>Mapping · ${esc(m.what)}</h3>
+            <div class="prop col"><span class="k">Layout from the group</span><span class="v">
+              <button class="pill link" data-src="link" aria-pressed="${m.src === 'link'}">Linked</button><button class="pill" data-src="copy" aria-pressed="${m.src === 'copy'}">Copied</button><button class="pill" data-src="free" aria-pressed="${m.src === 'free'}">Free</button></span>
+              <span class="srcnote">${srcTxt}</span></div>
+            <div class="prop"><span class="k">Part</span><span class="v"><span class="pk ${m.part === 'Ring' ? 'ring' : 'panel'}">${m.part}</span><span style="font-size:12px;color:var(--dim)">${m.shape === 'single' ? 'single' : 'linear · 12 cells'}</span></span></div>
+            <div class="prop"><span class="k">Expand</span><span class="v"><button class="pill" aria-pressed="true">Self-expanding</button><span style="font-size:12px;color:var(--dim)">pixels follow each member's rotation</span></span></div>
+            <div class="prop"><span class="k">Cell size</span><span class="v"><span class="num">${m.cell} px / grid unit</span></span></div>
+            <div class="prop"><span class="k">Takes</span><span class="v"><button class="pill" aria-pressed="true">Dimmer</button><button class="pill" aria-pressed="true">Colour · CIE</button></span></div>
+            <div class="prop"><span class="k">Sampling</span><span class="v"><button class="pill" aria-pressed="true">Point</button><button class="pill">Area</button></span></div>
+            <div class="prop"><span class="k">Offset</span><span class="v"><span class="num" id="offv">${m.ox} , ${m.oy} px</span></span></div>
+            <h3>Canvas</h3>
+            <div class="prop"><span class="k">Size</span><span class="v"><span class="num">${c.size} px</span></span></div>
+            <div class="prop"><span class="k">Layers</span><span class="v"><span class="num">${c.layers}</span><span style="font-size:12px;color:var(--dim)">values: the encoder bar's Pixelmapper mode</span></span></div>
+          </div>
+        </div></div>
+        <div class="echo">› Set Mapping 1 "Layout" ${m.src === 'link' ? 'Linked' : m.src === 'copy' ? 'Copied' : 'Free'}<span class="r">live data · one Oops step per change</span></div>
+      </div></div>
+    ${slab(liveData, { new: true, newLabel: 'New mapping', del: true })}</div>`;
+}
+function drawViewport(t) {
+  const el = $('vpc'); if (!el) return;
+  const g = el.getContext('2d'), W = el.width, H = el.height, c = CV[st.cv], m = c.map;
+  g.clearRect(0, 0, W, H);
+  if (m.place === '2d') {
+    // 2D: the canvas raster itself, one square per canvas pixel, the group grid over it.
+    const px = Math.floor(Math.min((W - 60) / c.w, (H - 70) / c.h)), x0 = Math.round((W - px * c.w) / 2), y0 = 44;
+    for (let x = 0; x < c.w; x++) for (let y = 0; y < c.h; y++) { const col = sample(c, (x + .5) / c.w, (y + .5) / c.h, t); g.fillStyle = rgb(col.map(v => v * .35)); g.fillRect(x0 + x * px, y0 + y * px, px - (px > 4 ? 1 : 0), px - (px > 4 ? 1 : 0)); }
+    g.strokeStyle = '#5a5a5a'; g.strokeRect(x0 - .5, y0 - .5, c.w * px + 1, c.h * px + 1);
+    g.fillStyle = '#9c9c9c'; g.font = '12px sans-serif'; g.fillText(`Canvas ${c.fid} · ${c.w} × ${c.h} px`, x0, y0 - 8);
+    // the group grid (dashed), each member's spot and rotation
+    g.setLineDash([4, 4]); g.strokeStyle = m.src === 'link' ? 'rgba(47,163,184,.7)' : 'rgba(201,162,39,.6)';
+    for (const mb of members(st.cv)) g.strokeRect(x0 + (m.ox + mb.x * m.cell) * px, y0 + (m.oy + mb.y * m.cell) * px, m.cell * px, m.cell * px);
+    g.setLineDash([]);
+    // the expanded pixels: lit at full where they sample
+    for (const p of cells(st.cv)) {
+      if (p.px < 0 || p.py < 0 || p.px >= c.w || p.py >= c.h) continue;
+      g.fillStyle = rgb(sample(c, (p.px + .5) / c.w, (p.py + .5) / c.h, t));
+      const s = m.shape === 'single' ? px * 3 : px;
+      g.fillRect(x0 + p.px * px - (s - px) / 2, y0 + p.py * px - (s - px) / 2, s, s);
+      g.strokeStyle = st.picked === p.f ? '#c9a227' : '#fff'; g.lineWidth = st.picked === p.f ? 2 : 1; g.strokeRect(x0 + p.px * px - (s - px) / 2, y0 + p.py * px - (s - px) / 2, s, s);
+    }
+    g.lineWidth = 1;
+    for (const mb of members(st.cv)) {
+      const cx = x0 + (m.ox + mb.x * m.cell + m.cell / 2) * px, cy = y0 + (m.oy + mb.y * m.cell) * px - 4;
+      g.fillStyle = '#d1d1d1'; g.font = '11px sans-serif'; g.fillText(`${mb.f}${mb.rot ? ' ↻' + mb.rot + '°' : ''}`, cx - 14, cy);
+    }
+    el._px = { x0, y0, px };
+    return;
+  }
+  // 3D: the rig in perspective — floor grid, truss, battens, the canvas as a plane behind.
+  const yaw = st.cam === 'front' ? 0 : st.cam === 'top' ? 0 : st.yaw, pitch = st.cam === 'front' ? .05 : st.cam === 'top' ? 1.45 : st.pitch;
+  const cy = Math.cos(yaw), sy = Math.sin(yaw), cp = Math.cos(pitch), sp = Math.sin(pitch);
+  const proj = (x, y, z) => { const X = x * cy - z * sy, Z = x * sy + z * cy; const Y2 = (y - 2.5) * cp - Z * sp, Z2 = (y - 2.5) * sp + Z * cp + 16; const f = 560 / Z2; return [W / 2 + X * f, H / 2 - Y2 * f]; };
+  const line = (a, b, col, w = 1) => { g.strokeStyle = col; g.lineWidth = w; g.beginPath(); g.moveTo(...proj(...a)); g.lineTo(...proj(...b)); g.stroke(); };
+  for (let i = -8; i <= 8; i++) { line([i, 0, -6], [i, 0, 6], '#1b2230'); line([-8, 0, i * .75], [8, 0, i * .75], '#1b2230'); }
+  line([0, 0, 0], [1.5, 0, 0], '#e05a5a', 2); line([0, 0, 0], [0, 1.5, 0], '#00a60a', 2); line([0, 0, 0], [0, 0, 1.5], '#4f8fd6', 2);
+  // the canvas plane at z = −5, 12 m × 5 m
+  const pc = (u, v) => proj(-6 + u * 12, 5.5 - v * 5, -5);
+  const N = 32, M = Math.round(32 * c.h / c.w) || 8;
+  for (let i = 0; i < N; i++) for (let j = 0; j < M; j++) { const a = pc(i / N, j / M), b = pc((i + 1) / N, (j + 1) / M); g.fillStyle = rgb(sample(c, (i + .5) / N, (j + .5) / M, t)); g.globalAlpha = .6; g.fillRect(Math.min(a[0], b[0]), Math.min(a[1], b[1]), Math.abs(b[0] - a[0]) + 1, Math.abs(b[1] - a[1]) + 1); }
+  g.globalAlpha = 1; g.strokeStyle = '#7a7a7a'; g.lineWidth = 1; g.beginPath(); g.moveTo(...pc(0, 0)); g.lineTo(...pc(1, 0)); g.lineTo(...pc(1, 1)); g.lineTo(...pc(0, 1)); g.closePath(); g.stroke();
+  // truss at 5 m, floor battens
+  line([-6, 5, 0], [6, 5, 0], '#666', 4); line([-6, 4.8, 0], [6, 4.8, 0], '#444', 2);
+  const box = (x, y, z, w, h, d, col) => { const P = [[0,0,0],[w,0,0],[w,h,0],[0,h,0],[0,0,d],[w,0,d],[w,h,d],[0,h,d]].map(([a,b,e]) => [x + a - w / 2, y + b, z + e - d / 2]); [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]].forEach(([i, k]) => line(P[i], P[k], col)); };
+  const pts = cells(st.cv);
+  const pos3 = p => {
+    if (st.cv === 0) { const i = p.f - 101; return [-5 + i * 2, 4.4, 0]; }
+    const mb = GROUPS.Floor.find(q => q.f === p.f), base = [-4.5 + (p.f - 301) * 3, .2, 1.5];
+    return mb.rot ? [base[0], .2 + p.k * .1, base[2]] : [base[0] - .55 + p.k * .1, .2, base[2]];
+  };
+  if (st.cv === 0) for (let i = 0; i < 6; i++) box(-5 + i * 2, 4.2, 0, .5, .6, .5, '#888');
+  else for (let i = 0; i < 4; i++) { const up = GROUPS.Floor[i].rot; box(-4.5 + i * 3, up ? .55 : .2, 1.5, up ? .15 : 1.3, up ? 1.3 : .15, .2, '#888'); }
+  for (const p of pts) {
+    const [x, y, z] = pos3(p), [sx, sy2] = proj(x, y, z), u = (p.px + .5) / c.w, v = (p.py + .5) / c.h, [tx, ty] = pc(u, v);
+    if (st.cv === 0 || p.k % 3 === 0) { g.strokeStyle = 'rgba(201,162,39,.4)'; g.lineWidth = 1; g.beginPath(); g.moveTo(sx, sy2); g.lineTo(tx, ty); g.stroke(); }
+    g.fillStyle = rgb(sample(c, u, v, t)); g.beginPath(); g.arc(sx, sy2, st.cv === 0 ? 8 : 3.5, 0, 7); g.fill(); g.strokeStyle = '#fff'; g.stroke();
+  }
+  g.fillStyle = '#a9c3f0'; g.font = '12px sans-serif'; g.fillText(st.cam === 'front' ? 'Front view' : st.cam === 'top' ? 'Top view' : 'Orbit', W - 90, 24);
+}
+
+/* ---------- view 4: the encoder bar, Pixelmapper mode ---------- */
+const PAGES = {
+  master: [[['Dimmer', 'dim', '%', 0, 100], ['Tint', null], ['Position X', null], ['Position Y', null]], [['Scale', null], ['Rotation', null], ['Speed master', null], ['Blackout', null]]],
+  layer: [[['Opacity', 'o', '%', 0, 100], ['Content', 'c'], ['Hue', 'hue', '°', 0, 360], ['Speed', 'sp', ' Hz', 0, 4]], [['Blend', 'b'], ['Size', null], ['Direction', null], ['Transform', null]]],
+};
+function vEbar() {
+  const c = CV[st.cv], feats = ['master', 0, 1, 2, 3];
+  const fname = f => f === 'master' ? 'Canvas' : `Layer ${f + 1}`;
+  const isL = st.feat !== 'master', L = isL ? c.L[st.feat] : null;
+  const pages = PAGES[isL ? 'layer' : 'master'], slots = pages[st.page];
+  const layers = ['Value', 'Fade', 'Delay'];
+  const valOf = a => a[1] === 'dim' ? c.dim : L ? L[a[1]] : null;
+  const ix = (a, kind, big) => {
+    if (!a[1]) return '';
+    const q = kind === 'Value' ? valOf(a) : kind === 'Fade' ? (isL ? L.fade : 0) : (isL ? L.delay : 0);
+    const t = kind !== 'Value';
+    if (a[1] === 'c' && kind === 'Value') {
+      const i = CONTENTS.indexOf(L.c);
+      return `<div class="ix${big ? ' big' : ''}" data-ix="c"><span class="il">${big ? 'Value' : 'V'}</span><span class="iv">${L.c}</span>${big ? `<div class="carousel">${[-1, 0, 1].map(d => { const k = (i + d + CONTENTS.length) % CONTENTS.length; return `<canvas class="${d ? 'dimc' : 'cur'}" width="${d ? 44 : 64}" height="${d ? 16 : 26}" data-cont="${CONTENTS[k]}"></canvas>`; }).join('')}</div>` : '<div class="vtrk"></div>'}</div>`;
+    }
+    if (a[1] === 'b' && kind === 'Value') return `<div class="ix${big ? ' big' : ''}" data-ix="b"><span class="il">${big ? 'Value' : 'V'}</span><span class="iv">${L.b}</span><div class="vtrk"></div></div>`;
+    if (t && (q == null)) return `<div class="ix cue t"><span class="il">${kind[0]}</span><span class="iv">cue</span><div class="vtrk"></div></div>`;
+    const hi = t ? 10 : a[4], pct = Math.max(0, Math.min(100, (q - (t ? 0 : a[3])) / (hi - (t ? 0 : a[3])) * 100));
+    return `<div class="ix${big ? ' big' : ''}${t ? ' t' : ''}" data-ix="${t ? kind : a[1]}" data-k="${a[1]}"><span class="il">${big ? kind : kind[0]}</span><span class="iv">${t ? q + 's' : q + a[2]}</span><div class="vtrk"><i class="vfil" style="height:${pct}%"></i>${t ? '' : [0, 1, 2, 3].map(i => `<b class="vtk" style="bottom:${Math.max(0, pct - i * 3)}%"></b>`).join('')}</div></div>`;
+  };
+  const encs = slots.map(a => !a[1] ? `<div class="enc blank"><div class="ixs"></div><div class="abar"><button class="an"><b style="color:var(--faint)">${a[0]}</b><span class="cf">page 2 · planned</span></button><div class="rs"></div></div></div>`
+    : `<div class="enc prog"><div class="ixs">${layers.map(k => ix(a, k, k === st.layer)).join('')}</div><div class="abar"><button class="an"><b>${a[0]}</b><span class="cf">${isL ? `Layer${st.feat + 1}${a[0].replace(' ', '')}` : `Canvas ${a[0]}`} · Fixture ${c.fid}</span></button><div class="rs"><span class="on">N</span><span>F</span><span>U</span></div></div></div>`).join('');
+  const strip = `<div class="fstrip">${feats.map((f, i) => `<button class="fb ${f === 'master' || c.L[f].o ? 'has' : ''}" data-feat="${f}" aria-pressed="${String(st.feat) === String(f)}"><span class="ft"><span class="n">${i + 1}</span>${fname(f)}</span><canvas width="44" height="16" data-mini="${f}"></canvas></button>`).join('')}</div>`;
+  const lcol = `<div class="lcol"><div class="fn">${fname(st.feat)}</div><div class="pic"><canvas width="104" height="60" id="pic"></canvas></div>
+    <button class="layer modeb" data-mode><small>Mode</small><b>Pixelmapper</b></button>
+    <button class="layer cyc" data-cyc><small>Layer</small><b>${st.layer}</b><small>${layers.indexOf(st.layer) + 1} of 3</small></button>
+    <div class="setsw"><button class="layer val" aria-pressed="true">Values</button><button class="layer efx">Effect<small>– of 0</small></button></div></div>`;
+  const tcol = `<div class="tcol"><button class="pgb" data-pg>Page<b>${st.page + 1}/2</b></button><div class="ptime"><span>Prog time</span><div class="pf"><i style="height:0%"></i></div><span class="pv">0.0s</span></div></div>`;
+  const pop = st.pop ? `<div class="mpop"><div class="ph">Mode</div>${[['Attributes', "the selection's attributes by feature"], ['Cue timing', 'Fade · Delay · Out per feature group'], ['Masters', 'Grand, Highlight, Solo, speed and group masters'], ['Effects', 'every running effect: Size · Rate'], ['Pixelmapper', 'the selected canvases: canvas master and layers 1–4', 1]].map(([n, d, on]) => `<button class="${on ? 'on new' : ''}" data-pick="${n}"><b>${n}</b><small>${d}</small></button>`).join('')}</div>` : '';
+  return `<div class="ebcontext"><div><div class="ttl">Selected: Fixture ${c.fid} · ${c.name} (canvas)</div><div style="display:flex;gap:6px">${CV.map((x, i) => `<button class="sb" data-cvsel="${i}" aria-pressed="${st.cv === i}">${x.fid} ${x.name}</button>`).join('')}</div><p style="margin:10px 0 0;line-height:1.5">Only the encoder bar is drawn; the screen around it is left out. Pixelmapper is the bar's own mode (Mode ▸ the list): its strip is the selected canvas's Canvas master and Layers 1–4, each with a live picture; four encoders with the Value · Fade · Delay faders; Page 2 holds the rest.</p></div>
+      <div><div class="ttl">On stage (mapped parts)</div><div class="lamps" id="lamps"></div><div style="margin-top:12px" id="battens"></div></div></div>
+    <div class="ebwrap"><div class="ebar">${strip}<div class="ebody">${lcol}${encs}${tcol}</div>${pop}</div></div>`;
+}
+function drawEbar(t) {
+  if (!$('pic')) return;
+  const c = CV[st.cv];
+  paint($('pic'), c, t, 4, st.feat === 'master' ? null : st.feat);
+  for (const el of document.querySelectorAll('[data-mini]')) paint(el, c, t, 4, el.dataset.mini === 'master' ? null : +el.dataset.mini);
+  for (const el of document.querySelectorAll('[data-cont]')) { const L = { c: el.dataset.cont, o: 100, hue: 200, sp: 1, b: 'Over' }; paint(el, { L: [L], dim: 100 }, t, 3); }
+  $('lamps').innerHTML = cells(0).map(p => `<div class="lamp"><span class="rg" style="border-color:${rgb(sample(CV[0], (p.px + .5) / CV[0].w, (p.py + .5) / CV[0].h, t))}"></span><span class="core"></span></div>`).join('');
+  const p1 = cells(1);
+  $('battens').innerHTML = [301, 302, 303, 304].map(f => `<div class="batten"><span class="id">${f}</span>${p1.filter(p => p.f === f).map(p => `<span style="background:${rgb(sample(CV[1], (p.px + .5) / CV[1].w, (p.py + .5) / CV[1].h, t))}"></span>`).join('')}</div>`).join('');
+}
+
+/* ---------- views, notes, loop ---------- */
+const NOTES = {
+  patch: ['Devices › Pixelmapper, a new device kind beside DMX: canvases are patched in the Draft (FID in the one fixture number space, size, layer count) in the same frame as the DMX patch.', 'To decide: a canvas size in pixels (as drawn), or an aspect and a resolution the renderer picks?'],
+  pool: ['The Canvas pool: every patched canvas as a live tile; live data — mappings and placement change without a claim. Edit canvas (or a double-tap) opens the editor.', 'To decide: does the pool stay setup only (as drawn)? Values live in the encoder bar\'s Pixelmapper mode.'],
+  editor: ['2D is the canvas itself, pixel by pixel (dim = what the canvas renders, bright squares = the pixels a part samples), with the group grid dashed over it; 3D is the rig in perspective (floor, truss, fixtures as boxes, axes) with the canvas as a plane behind and a line from every part to its pixel — Front, Top or Orbit. A mapping takes its layout from a group three ways: Linked (the group\'s grid live), Copied (a snapshot, then free), Free. Self-expanding: each member\'s part grows from its grid spot along the member\'s rotation — 303 and 304 stand upright in Group "Floor", so their 12 plates expand downwards. Try Copied, then drag a batten or turn it with the Rotate tool.', 'To decide: when a Linked member is moved here, does the editor refuse ("move it in the group"), or offer to switch the mapping to Copied?'],
+  ebar: ['The approved encoder bar (12f concept A) in its new Pixelmapper mode: the feature strip holds the canvas master and Layers 1–4 with live pictures; the left column the picture, Mode (tap for the list — Pixelmapper is the new entry), the Layer cycle (Value · Fade · Delay) and Values / Effect; each encoder is three faders side by side, the chosen one widened, over its attribute bar; Page and Prog time on the right. Drag a fader up or down; the Content fader turns a carousel of sources.', 'To decide: does Pixelmapper mode follow the selection (the selected canvases, as drawn), or always show every canvas on the strip?'],
+};
+function fit() { const w = $('well').clientWidth, s = Math.min(1, w / 1280); $('frame').style.transform = `scale(${s})`; $('well').style.height = `${800 * s}px`; $('frame')._s = s; }
+function render() {
+  $('frame').innerHTML = st.view === 'patch' ? vPatch() : st.view === 'pool' ? vPool() : st.view === 'editor' ? vEditor() : vEbar();
+  for (const b of document.querySelectorAll('.modes button')) b.setAttribute('aria-pressed', b.dataset.v === st.view);
+  $('vnote').textContent = NOTES[st.view][0]; $('vdecide').textContent = NOTES[st.view][1];
+  tick(performance.now(), true);
+}
+let last = 0;
+function tick(now, once) {
+  const t = still ? 1.3 : now / 1000;
+  if (once || now - last > 70) {
+    last = now;
+    for (const el of document.querySelectorAll('[data-thumb]')) paint(el, CV[+el.dataset.thumb], t, 5);
+    drawViewport(t); drawEbar(t);
+  }
+  if (!once && !still) requestAnimationFrame(tick);
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-v],[data-tile],[data-cv],[data-pl],[data-tool],[data-fx],[data-feat],[data-cvsel],[data-src],[data-cam],[data-mode],[data-pick],[data-cyc],[data-pg]'); if (!b) return;
+  const m = CV[st.cv].map;
+  if (b.dataset.v) st.view = b.dataset.v;
+  else if (b.dataset.tile) st.cv = +b.dataset.tile;
+  else if (b.dataset.cv) st.cv = +b.dataset.cv;
+  else if (b.dataset.pl) m.place = b.dataset.pl;
+  else if (b.dataset.cam) st.cam = b.dataset.cam;
+  else if (b.dataset.tool) { st.tool = b.dataset.tool; st.msg = ''; }
+  else if (b.dataset.fx) { const f = +b.dataset.fx; st.open[f] = !st.open[f]; st.sel = f; }
+  else if (b.dataset.src) { const s = b.dataset.src; if (s !== 'link' && m.src === 'link') m.own = GROUPS[m.group].map(x => ({ ...x })); if (s === 'link') m.own = null; m.src = s; st.msg = s === 'copy' ? `copied from Group "${m.group}"` : ''; }
+  else if (b.dataset.feat) { st.feat = b.dataset.feat === 'master' ? 'master' : +b.dataset.feat; st.page = 0; }
+  else if (b.dataset.cvsel) st.cv = +b.dataset.cvsel;
+  else if (b.hasAttribute('data-mode')) st.pop = !st.pop;
+  else if (b.dataset.pick) st.pop = false;
+  else if (b.hasAttribute('data-cyc')) st.layer = { Value: 'Fade', Fade: 'Delay', Delay: 'Value' }[st.layer];
+  else if (b.hasAttribute('data-pg')) st.page = (st.page + 1) % 2;
+  render();
+});
+document.addEventListener('dblclick', e => { if (e.target.closest('[data-tile]')) { st.view = 'editor'; render(); } });
+// Pointer: 2D move (mapping or member) / rotate, 3D orbit, encoder faders.
+let drag = null;
+const toCanvasPx = (e, el) => { const r = el.getBoundingClientRect(), info = el._px; const x = (e.clientX - r.left) * el.width / r.width, y = (e.clientY - r.top) * el.height / r.height; return [(x - info.x0) / info.px, (y - info.y0) / info.px]; };
+function memberAt(px, py) { const m = CV[st.cv].map; return members(st.cv).find(mb => px >= m.ox + mb.x * m.cell && px < m.ox + (mb.x + 1) * m.cell && py >= m.oy + mb.y * m.cell && py < m.oy + (mb.y + 1) * m.cell); }
+document.addEventListener('pointerdown', e => {
+  const vp = e.target.closest('#vp'), ixe = e.target.closest('[data-ix]');
+  if (vp) {
+    e.preventDefault(); const el = $('vpc'), m = CV[st.cv].map;
+    if (m.place === '3d') { drag = { kind: 'orbit', x: e.clientX, y: e.clientY, yaw: st.yaw, pitch: st.pitch }; st.cam = 'orbit'; return; }
+    const [px, py] = toCanvasPx(e, el), mb = memberAt(px, py);
+    if (st.tool === 'rot' && mb) { if (m.src === 'link') { st.msg = `Linked: turn ${mb.f} in Group "${m.group}", or switch to Copied`; } else { mb.rot = (mb.rot + 90) % 360; st.msg = ''; } render(); return; }
+    if (mb && m.src !== 'link') { drag = { kind: 'member', mb, px, py, x: mb.x, y: mb.y }; st.picked = mb.f; }
+    else { if (mb && m.src === 'link') st.msg = `Linked to Group "${m.group}" — the whole mapping moves`; drag = { kind: 'map', px, py, ox: m.ox, oy: m.oy }; }
+  } else if (ixe) { e.preventDefault(); drag = { kind: 'ix', el: ixe, k: ixe.dataset.ix, y: e.clientY, h: ixe.getBoundingClientRect().height, start: null }; }
+});
+document.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const c = CV[st.cv], m = c.map, s = $('frame')._s || 1;
+  if (drag.kind === 'orbit') { st.yaw = drag.yaw + (e.clientX - drag.x) / 200 / s; st.pitch = Math.max(.02, Math.min(1.45, drag.pitch + (e.clientY - drag.y) / 200 / s)); if (still) tick(0, true); return; }
+  if (drag.kind === 'map' || drag.kind === 'member') {
+    const [px, py] = toCanvasPx(e, $('vpc'));
+    if (drag.kind === 'map') { m.ox = Math.round(drag.ox + px - drag.px); m.oy = Math.round(drag.oy + py - drag.py); const o = $('offv'); if (o) o.textContent = `${m.ox} , ${m.oy} px`; }
+    else { drag.mb.x = Math.round((drag.x + (px - drag.px) / m.cell) * 2) / 2; drag.mb.y = Math.round((drag.y + (py - drag.py) / m.cell) * 2) / 2; }
+    if (still) tick(0, true); return;
+  }
+  if (drag.kind === 'ix') {
+    const L = st.feat === 'master' ? null : c.L[st.feat], d = (drag.y - e.clientY) / (drag.h * s);
+    const k = drag.k;
+    if (drag.start == null) drag.start = k === 'dim' ? c.dim : k === 'Fade' ? (L ? L.fade : 0) : k === 'Delay' ? (L ? L.delay : 0) : k === 'c' ? CONTENTS.indexOf(L.c) : k === 'b' ? 0 : L[k];
+    if (k === 'dim') c.dim = Math.max(0, Math.min(100, Math.round(drag.start + d * 100)));
+    else if (!L) return;
+    else if (k === 'Fade' || k === 'Delay') L[k.toLowerCase()] = Math.max(0, Math.min(10, Math.round((drag.start + d * 10) * 10) / 10));
+    else if (k === 'c') L.c = CONTENTS[((Math.round(drag.start + d * 8) % CONTENTS.length) + CONTENTS.length) % CONTENTS.length];
+    else if (k === 'b') L.b = d > .1 ? 'Add' : d < -.1 ? 'Over' : L.b;
+    else if (k === 'hue') L.hue = ((Math.round(drag.start + d * 360) % 360) + 360) % 360;
+    else if (k === 'sp') L.sp = Math.max(0, Math.min(4, Math.round((drag.start + d * 4) * 10) / 10));
+    else L[k] = Math.max(0, Math.min(100, Math.round(drag.start + d * 100)));
+    const keep = drag; render(); drag = keep; drag.el = null;
+  }
+});
+const stop = () => { if (drag && (drag.kind === 'member' || drag.kind === 'map')) { st.picked = null; render(); } drag = null; };
+document.addEventListener('pointerup', stop); document.addEventListener('pointercancel', stop);
+window.addEventListener('resize', fit);
+fit(); render(); if (!still) requestAnimationFrame(tick);
+</script>

@@ -1,0 +1,28 @@
+[package]
+name = "lumacore-lines"
+version.workspace = true
+edition.workspace = true
+description = "The line runtime: a driver thread per (protocol, NIC) sampling the render engine's frames, Control listeners, started from the show (decisions §11, §34 22)"
+
+[dependencies]
+lumacore-registry = { path = "../../../foundation/lumacore-registry" }
+lumacore-base = { path = "../../../foundation/lumacore-base" }
+lumacore-tree = { path = "../../../model/lumacore-tree" }
+lumacore-net = { path = "../../lumacore-net" }
+lumacore-protocols = { path = "../../../model/lumacore-protocols" }
+lumacore-render = { path = "../../../engine/lumacore-render" }
+lumacore-objects = { path = "../../../model/lumacore-objects" }
+crossbeam-channel = { workspace = true }
+spin_sleep = { workspace = true }
+log = { workspace = true }
+arc-swap = { workspace = true }
+assert_no_alloc = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+lumacore-artnet = { path = "../dmx/lumacore-artnet" }
+lumacore-sacn = { path = "../dmx/lumacore-sacn" }
+lumacore-osc = { path = "../data/lumacore-osc" }
+
+[lints]
+workspace = true

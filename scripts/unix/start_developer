@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Developer environment: build the server (+ Tracy) and the CLI, restart the
+# server with the show (demo unless --show), then open Tracy (if installed),
+# the Meownitor and the CLI in their own terminal windows. Without a display
+# the CLI attaches here. A preset of ./scripts/unix/dev.
+#
+# Usage:
+#   ./scripts/unix/start_developer [--show demo] [--debug | --ship] [--user Admin] [--clean-start]
+set -euo pipefail
+case "${1:-}" in -h|--help) sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;; esac
+exec "$(dirname "$0")/dev" --build server,cli --tracy \
+    --run server,tracy,meownitor,cli-window --show demo "$@"

@@ -1,0 +1,15 @@
+[package]
+name = "lumacore-fixtures"
+version.workspace = true
+edition.workspace = true
+description = "The fixture data the show holds: fixture types, fixtures, attribute definitions, universes — below the tree (decisions §34 25.10)"
+
+[dependencies]
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-protocols = { path = "../lumacore-protocols" }
+serde = { workspace = true }
+uuid = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

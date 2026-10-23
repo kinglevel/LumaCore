@@ -1,0 +1,26 @@
+[package]
+name = "lumacore-cmd-protocols"
+version.workspace = true
+edition.workspace = true
+description = "The DMX lines: Output and Input (sACN, Art-Net, OSC), Assign / Unassign, DMX In, the DMX Protocols menu — on the station's network (decisions §11, §34 25.7, 25.17)"
+
+[dependencies]
+lumacore-registry = { path = "../../../foundation/lumacore-registry" }
+lumacore-wire = { path = "../../../foundation/lumacore-wire" }
+lumacore-syntax = { path = "../../../foundation/lumacore-syntax" }
+lumacore-syntax-derive = { path = "../../../foundation/lumacore-syntax-derive" }
+lumacore-tree = { path = "../../../model/lumacore-tree" }
+lumacore-protocols = { path = "../../../model/lumacore-protocols" }
+lumacore-objects = { path = "../../../model/lumacore-objects" }
+lumacore-cmd-station = { path = "../lumacore-cmd-station" }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+nu-ansi-term = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+lumacore-net = { path = "../../../network/lumacore-net" }
+lumacore-render = { path = "../../../engine/lumacore-render" }
+
+[lints]
+workspace = true

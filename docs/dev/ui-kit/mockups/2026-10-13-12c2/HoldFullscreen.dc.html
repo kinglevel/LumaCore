@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hold to full screen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+@keyframes lcHoldFill{from{transform:scale(0);opacity:.2}to{transform:scale(1);opacity:.9}}
+@keyframes lcToast{0%{opacity:0}10%{opacity:1}80%{opacity:1}100%{opacity:0}}
+</style>
+</helmet>
+<div style="width: 1920px; height: 1100px; background: #0b0b0b; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; position: relative; overflow: hidden; user-select: none; -webkit-user-select: none">
+
+  <div style="position: absolute; left: 32px; top: 20px; font-size: 14px; color: #9c9c9c">The desk (1920×1080, shown at 45 %) — the same live screen; everything you do on the phone happens here too</div>
+  <div style="position: absolute; left: 32px; top: 44px; width: 864px; height: 486px; background: #121212; border: 1px solid #303030; border-radius: 6px; overflow: hidden">
+    <div style="position: absolute; left: 0; top: 0; right: 0; height: 13px; background: #1c1c1c; font-size: 7px; color: #9c9c9c; display: flex; align-items: center; justify-content: center">LumaCore · Admin · Screen 1</div>
+    <div style="position: absolute; left: 0; top: 13px; width: 22px; bottom: 22px; background: #1c1c1c"></div>
+    <div style="position: absolute; right: 0; top: 13px; width: 45px; bottom: 22px; background: #1c1c1c"></div>
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 22px; background: #1c1c1c; font-size: 7px; color: #9c9c9c; display: flex; align-items: center; justify-content: center">PURR · command line · status</div>
+    <sc-for list="{{deskPanes}}" as="p" hint-placeholder-count="6">
+      <div style="position: absolute; left: {{p.l}}px; top: {{p.t}}px; width: {{p.w}}px; height: {{p.h}}px; outline: 1px solid {{p.ring}}; background: #121212; overflow: hidden">
+        <div style="width: {{p.iw}}px; height: {{p.ih}}px; transform: scale({{p.s}}); transform-origin: 0 0; display: flex; flex-direction: column">
+          <div style="height: 30px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: #1c1c1c; font-size: 14px"><span style="width: 10px; height: 10px; border-radius: 5px; background: #9a7a08"></span>{{p.title}}<span style="color: #787878">{{p.sub}}</span></div>
+          <div style="flex: 1; min-height: 0; padding: 6px; display: {{p.grid}}; grid-template-columns: repeat(auto-fill, minmax({{p.cellMin}}px, 1fr)); grid-auto-rows: {{p.rowH}}px; gap: 4px; overflow: hidden">
+            <sc-for list="{{p.cells}}" as="c" hint-placeholder-count="8">
+              <div style="border-radius: 4px; background: {{c.bg}}; outline: 2px solid {{c.ring}}; outline-offset: -2px; padding: 4px 6px; font-size: 13px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden"><span style="color: #787878; font-size: 11px">{{c.no}}</span><span>{{c.name}}</span><span style="height: {{c.fillH}}%; background: {{c.fill}}; border-radius: 2px; display: {{c.fillD}}"></span></div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="position: absolute; left: 32px; top: 560px; width: 864px; display: flex; flex-direction: column; gap: 10px">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+      <span style="font-size: 14px; color: #9c9c9c; width: 120px">Phone content</span>
+      <sc-for list="{{modes}}" as="m" hint-placeholder-count="2">
+        <button type="button" onClick="{{m.pick}}" style="height: 48px; padding: 0 16px; border-radius: 24px; border: 1px solid {{m.b}}; background: {{m.bg}}; color: #d1d1d1; font: inherit; font-size: 15px">{{m.label}}</button>
+      </sc-for>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center">
+      <span style="font-size: 14px; color: #9c9c9c; width: 120px">Phone held</span>
+      <sc-for list="{{orients}}" as="m" hint-placeholder-count="2">
+        <button type="button" onClick="{{m.pick}}" style="height: 48px; padding: 0 16px; border-radius: 24px; border: 1px solid {{m.b}}; background: {{m.bg}}; color: #d1d1d1; font: inherit; font-size: 15px">{{m.label}}</button>
+      </sc-for>
+    </div>
+    <div style="border-radius: 6px; background: #1c1c1c; border: 1px solid #303030; padding: 14px 16px; font-size: 15px; line-height: 1.5; display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 17px; font-weight: 500">Try it on the phone →</span>
+      <span>• The phone shows the desk’s panes in the same places. Tiny things are not tappable.</span>
+      <span>• <b style="font-weight: 500">Hold any pane</b> (≈ 0.4 s, the ring fills) → it opens full screen at real size. Tap groups, step the universe, push a fader — the desk follows.</span>
+      <span>• In full screen: ‹ › go to the neighbour pane, × (or hold the title) goes back to the whole screen.</span>
+      <span>• A quick tap on a pane that is too small only says “Hold to open”.</span>
+      <span style="color: #9c9c9c; font-size: 14px">Shared: selections, values, tab switches, settings. Open question: is the full-screen pane itself only on the phone, or does the desk maximise it too?</span>
+    </div>
+    <div class="mono" style="padding: 10px 14px; border-radius: 6px; background: #121212; border: 1px solid #303030; font-size: 14px; color: #9c9c9c">last line › {{last}}</div>
+  </div>
+
+  <div style="position: absolute; left: {{ph.x}}px; top: {{ph.y}}px; width: {{ph.w}}px; height: {{ph.h}}px; background: #121212; border: 2px solid #3a3a3a; border-radius: 22px; overflow: hidden">
+    <div style="position: absolute; left: 0; top: 0; right: 0; height: {{ph.topH}}px; background: #1c1c1c; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 14px"><span style="font-size: 18px">☰</span><span style="flex: 1; color: #9c9c9c; white-space: nowrap; overflow: hidden">desk1 · Festival · Screen 1</span><span style="width: 26px; height: 26px; border-radius: 13px; background: #9a7a08; color: #121212; font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center">AD</span></div>
+    <div style="position: absolute; left: 0; top: {{ph.topH}}px; width: {{ph.cw}}px; height: {{ph.ch}}px">
+      <sc-for list="{{phPanes}}" as="p" hint-placeholder-count="6">
+        <div onPointerDown="{{p.down}}" onPointerUp="{{p.up}}" onPointerLeave="{{p.cancel}}" style="position: absolute; left: {{p.l}}px; top: {{p.t}}px; width: {{p.w}}px; height: {{p.h}}px; outline: 1px solid #303030; background: #121212; overflow: hidden; touch-action: none">
+          <div style="width: {{p.iw}}px; height: {{p.ih}}px; transform: scale({{p.s}}); transform-origin: 0 0; display: flex; flex-direction: column; pointer-events: {{p.pe}}">
+            <div style="height: 30px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: #1c1c1c; font-size: 14px; white-space: nowrap"><span style="width: 10px; height: 10px; border-radius: 5px; background: #9a7a08"></span>{{p.title}}<span style="color: #787878">{{p.sub}}</span></div>
+            <div style="flex: 1; min-height: 0; padding: 6px; display: {{p.grid}}; grid-template-columns: repeat(auto-fill, minmax({{p.cellMin}}px, 1fr)); grid-auto-rows: {{p.rowH}}px; gap: 4px; overflow: hidden">
+              <sc-for list="{{p.cells}}" as="c" hint-placeholder-count="8">
+                <button type="button" onClick="{{c.tap}}" style="border: none; border-radius: 4px; background: {{c.bg}}; outline: 2px solid {{c.ring}}; outline-offset: -2px; padding: 4px 6px; color: #d1d1d1; font: inherit; font-size: 13px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden"><span style="color: #787878; font-size: 11px">{{c.no}}</span><span>{{c.name}}</span><span style="height: {{c.fillH}}%; width: 100%; background: {{c.fill}}; border-radius: 2px; display: {{c.fillD}}"></span></button>
+              </sc-for>
+            </div>
+          </div>
+          <sc-if value="{{p.holding}}" hint-placeholder-val="{{ false }}">
+            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none"><div style="width: 64px; height: 64px; border-radius: 32px; border: 3px solid #c9a227; background: color-mix(in srgb, #9a7a08 30%, transparent); animation: lcHoldFill 420ms linear forwards"></div></div>
+          </sc-if>
+        </div>
+      </sc-for>
+
+      <sc-if value="{{fullOn}}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; inset: 0; background: #121212; display: flex; flex-direction: column">
+          <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; background: #1c1c1c; border-bottom: 1px solid #424242">
+            <button type="button" onClick="{{prevPane}}" aria-label="Previous pane" style="width: 52px; height: 52px; border: none; background: none; color: #d1d1d1; font: inherit; font-size: 22px">‹</button>
+            <span style="flex: 1; text-align: center; font-size: 16px; font-weight: 500; white-space: nowrap; overflow: hidden">{{full.title}} <span style="color: #9c9c9c; font-weight: 400">{{full.sub}}</span></span>
+            <button type="button" onClick="{{nextPane}}" aria-label="Next pane" style="width: 52px; height: 52px; border: none; background: none; color: #d1d1d1; font: inherit; font-size: 22px">›</button>
+            <button type="button" onClick="{{closeFull}}" aria-label="Back to the whole screen" style="width: 52px; height: 52px; border: none; border-left: 1px solid #424242; background: none; color: #d1d1d1; font: inherit; font-size: 20px">×</button>
+          </div>
+          <sc-if value="{{full.isDmx}}" hint-placeholder-val="{{ false }}">
+            <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 10px; border-bottom: 1px solid #262626; font-size: 15px; color: #9c9c9c">Universe:
+              <button type="button" onClick="{{uniDown}}" style="width: 44px; height: 44px; border: none; border-radius: 4px; background: #303030; color: #d1d1d1; font: inherit">‹</button><span style="color: #d1d1d1; min-width: 20px; text-align: center">{{uni}}</span><button type="button" onClick="{{uniUp}}" style="width: 44px; height: 44px; border: none; border-radius: 4px; background: #303030; color: #d1d1d1; font: inherit">›</button>
+            </div>
+          </sc-if>
+          <div style="flex: 1; min-height: 0; padding: 8px; display: {{full.grid}}; grid-template-columns: repeat(auto-fill, minmax({{full.cellMinFs}}px, 1fr)); grid-auto-rows: {{full.rowHFs}}px; gap: 6px; overflow: hidden; align-content: start">
+            <sc-for list="{{full.cells}}" as="c" hint-placeholder-count="8">
+              <button type="button" onClick="{{c.tap}}" style="border: none; border-radius: 5px; background: {{c.bg}}; outline: 2px solid {{c.ring}}; outline-offset: -2px; padding: 6px 8px; color: #d1d1d1; font: inherit; font-size: 15px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden"><span style="color: #787878; font-size: 12px">{{c.no}}</span><span>{{c.name}}</span><span style="height: {{c.fillH}}%; width: 100%; background: {{c.fill}}; border-radius: 2px; display: {{c.fillD}}"></span></button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{toastOn}}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); padding: 10px 16px; border-radius: 20px; background: #303030; border: 1px solid #424242; font-size: 14px; white-space: nowrap; animation: lcToast 1400ms linear forwards; pointer-events: none">{{toast}}</div>
+      </sc-if>
+    </div>
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: {{ph.botH}}px; background: #1c1c1c; border-top: 1px solid #424242; display: flex; align-items: stretch; font-size: 13px">
+      <span style="width: 60px; display: flex; align-items: center; justify-content: center; color: #9a7a08; font-weight: 500; letter-spacing: .06em">PURR</span>
+      <span class="mono" style="flex: 1; display: flex; align-items: center; padding: 0 10px; background: #121212; border-left: 1px solid #424242; border-right: 1px solid #424242; color: #9c9c9c; white-space: nowrap; overflow: hidden">Root&gt;</span>
+      <span style="width: 48px; display: flex; align-items: center; justify-content: center; color: #9c9c9c">VK</span>
+      <span style="width: 48px; display: flex; align-items: center; justify-content: center; color: #00a60a; font-size: 18px">⋯</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { mode: 'mini', orient: 'portrait', full: null, holding: null, sel: [3], uni: 1, levels: [80, 0, 45, 100, 0, 20, 0, 60], tab: 'dmx', toast: '', toastN: 0, last: 'Group 3' }; }
+  componentWillUnmount(){ clearTimeout(this.holdT); clearTimeout(this.toastT); }
+  renderVals() {
+    const s = this.state;
+    // Desk content area (1770×1002) split tree, in desk px.
+    const W = 1770, H = 1002, EX = 220, TOP = H - EX, LW = 389, CW = 920, RW = W - LW - CW;
+    const panes = [
+      { id: 'groups', x: 0, y: 0, w: LW, h: TOP / 2 },
+      { id: 'presets', x: 0, y: TOP / 2, w: LW, h: TOP / 2 },
+      { id: 'dmx', x: LW, y: 0, w: CW, h: TOP },
+      { id: 'sysmon', x: LW + CW, y: 0, w: RW, h: TOP * 0.6 },
+      { id: 'realtime', x: LW + CW, y: TOP * 0.6, w: RW, h: TOP * 0.4 },
+      { id: 'exec', x: 0, y: TOP, w: W, h: EX }
+    ];
+    const run = (line, patch) => this.setState({ last: line, ...patch });
+    const names = ['All', 'Front', 'Back', 'Wash', 'Spots', 'Odd', 'Even', 'Left', 'Right', 'Truss 1', 'Truss 2', 'Floor'];
+    const presets = ['Open', 'Red', 'Blue', 'Amber', 'Gobo 1', 'Gobo 2', 'Center', 'Audience', 'Strobe', 'Fog', 'Warm', 'Cold'];
+    const content = (id, tappable) => {
+      const tap = fn => tappable ? fn : null;
+      if (id === 'groups') return { title: 'Groups', sub: 'Default', grid: 'grid', cellMin: 90, rowH: 70, cellMinFs: 100, rowHFs: 84,
+        cells: names.map((n, i) => { const on = s.sel.includes(i + 1); return { no: i + 1, name: n, bg: on ? 'color-mix(in srgb, #9a7a08 35%, #1c1c1c)' : 'color-mix(in srgb, #758ba0 18%, #1c1c1c)', ring: on ? '#c9a227' : 'transparent', fillD: 'none', fillH: 0, fill: 'none',
+          tap: tap(() => run('Group ' + (i + 1), { sel: on ? s.sel.filter(x => x !== i + 1) : s.sel.concat(i + 1) })) }; }) };
+      if (id === 'presets') return { title: 'Presets', sub: 'All', grid: 'grid', cellMin: 90, rowH: 70, cellMinFs: 100, rowHFs: 84,
+        cells: presets.map((n, i) => ({ no: '4.' + (i + 1), name: n, bg: 'color-mix(in srgb, #8a80c8 16%, #1c1c1c)', ring: 'transparent', fillD: 'none', fillH: 0, fill: 'none', tap: tap(() => run('Preset 4.' + (i + 1), {})) })) };
+      if (id === 'dmx') return { title: 'DMX', sub: 'U ' + s.uni + ' · Fixture sheet', grid: 'grid', cellMin: 56, rowH: 40, cellMinFs: 64, rowHFs: 48, isDmx: true,
+        cells: Array.from({ length: 96 }, (_, i) => { const v = [[100,0,47,0,255,12,0,80],[0,30,0,90,0,0,60,0],[255,255,0,0,128,0,0,40]][(s.uni - 1) % 3][i % 8]; return { no: s.uni + '.' + (i + 1), name: v ? String(v) : '', bg: v ? 'color-mix(in srgb, #00a60a ' + Math.round(10 + v / 6) + '%, #1c1c1c)' : '#1c1c1c', ring: 'transparent', fillD: 'none', fillH: 0, fill: 'none', tap: null }; }) };
+      if (id === 'sysmon') return { title: 'System Monitor', sub: '', grid: 'grid', cellMin: 900, rowH: 22, cellMinFs: 300, rowHFs: 30,
+        cells: ['Show "Festival" loaded', 'sACN line 1 → Stage', 'Admin logged in', s.last + ' → ok', 'Echo "Act 2"', 'Group 3 → ok', 'Store Cue 4 → ok', 'Go Sequence 1', 'Clock: holdover'].map((m, i) => ({ no: '', name: '12:04:0' + i + '  ' + m, bg: 'transparent', ring: 'transparent', fillD: 'none', fillH: 0, fill: 'none', tap: null })) };
+      if (id === 'realtime') return { title: 'Realtime', sub: '60 fps', grid: 'grid', cellMin: 120, rowH: 60, cellMinFs: 150, rowHFs: 70,
+        cells: ['Frame 31 µs', 'Headroom 16.3 ms', 'Jitter 0.8 ms', 'Lines 1 / 1'].map(n => ({ no: '', name: n, bg: '#1a2226', ring: 'transparent', fillD: 'none', fillH: 0, fill: 'none', tap: null })) };
+      return { title: 'Executors', sub: 'Page 1', grid: 'grid', cellMin: 150, rowH: 170, cellMinFs: 80, rowHFs: 300,
+        cells: s.levels.map((lv, i) => ({ no: 'Exec ' + (201 + i), name: lv + ' %', bg: '#1c1a14', ring: 'transparent', fillD: 'block', fillH: Math.max(4, lv * 0.7), fill: '#9a7a08',
+          tap: tap(() => { const l = s.levels.slice(); l[i] = l[i] >= 100 ? 0 : Math.min(100, l[i] + 25); run('Executor ' + (201 + i) + ' At ' + l[i], { levels: l }); }) })) };
+    };
+    // Desk mini (uniform 0.45, offsets for its chrome).
+    const DS = 864 / 1920;
+    const deskPanes = panes.map(p => { const c = content(p.id, false); return { ...c, l: Math.round((50 + p.x) * DS), t: Math.round((28 + p.y) * DS), w: Math.round(p.w * DS), h: Math.round(p.h * DS), iw: p.w, ih: p.h, s: DS, ring: s.full === p.id ? '#c9a227' : '#303030' }; });
+
+    // Phone frame.
+    const portrait = s.orient === 'portrait';
+    const ph = portrait ? { x: 1180, y: 60, w: 390, h: 844, topH: 44, botH: 58 } : { x: 960, y: 180, w: 844, h: 390, topH: 36, botH: 48 };
+    ph.cw = ph.w - 4; ph.ch = ph.h - 4 - ph.topH - ph.botH;
+    const sx = ph.cw / W, sy = ph.ch / H;
+    const holdStart = id => () => {
+      clearTimeout(this.holdT);
+      this.held = false;
+      this.setState({ holding: id });
+      this.holdT = setTimeout(() => { this.held = true; this.setState({ holding: null, full: id }); }, 420);
+    };
+    const holdEnd = (id, tiny) => () => {
+      clearTimeout(this.holdT);
+      if (this.state.holding === id && !this.held && tiny) {
+        clearTimeout(this.toastT);
+        this.setState({ holding: null, toast: 'Too small — hold to open ' + content(id, false).title, toastN: s.toastN + 1 });
+        this.toastT = setTimeout(() => this.setState({ toast: '' }), 1400);
+      } else if (this.state.holding === id) this.setState({ holding: null });
+    };
+    const cancel = () => { clearTimeout(this.holdT); if (this.state.holding) this.setState({ holding: null }); };
+    const phPanes = panes.map(p => {
+      const pw = p.w * sx, phh = p.h * sy;
+      const mini = s.mode === 'mini';
+      const sc = mini ? pw / p.w : 1;
+      const smallest = mini ? Math.min(content(p.id, false).cellMin, content(p.id, false).rowH) * sc : 999;
+      const tiny = smallest < 44;
+      const c = content(p.id, !tiny);
+      return { ...c, l: Math.round(p.x * sx), t: Math.round(p.y * sy), w: Math.round(pw), h: Math.round(phh), iw: mini ? p.w : Math.round(pw), ih: mini ? Math.round(phh / sc) : Math.round(phh), s: sc,
+        pe: tiny ? 'none' : 'auto', holding: s.holding === p.id, down: holdStart(p.id), up: holdEnd(p.id, tiny), cancel };
+    });
+    const order = panes.map(p => p.id);
+    const fi = s.full ? order.indexOf(s.full) : -1;
+    const full = s.full ? content(s.full, true) : { title: '', sub: '', grid: 'none', cells: [], cellMinFs: 100, rowHFs: 80, isDmx: false };
+    const modes = [['mini', 'Miniature (the desk, scaled per pane)'], ['real', 'Real size (panes clip their content)']].map(([k, label]) => ({ label, b: s.mode === k ? '#9a7a08' : '#424242', bg: s.mode === k ? '#2a2410' : '#1c1c1c', pick: () => this.setState({ mode: k }) }));
+    const orients = [['portrait', 'Portrait'], ['landscape', 'Landscape']].map(([k, label]) => ({ label, b: s.orient === k ? '#9a7a08' : '#424242', bg: s.orient === k ? '#2a2410' : '#1c1c1c', pick: () => this.setState({ orient: k }) }));
+    return {
+      deskPanes, phPanes, ph, modes, orients, full, fullOn: !!s.full, uni: s.uni,
+      prevPane: () => this.setState({ full: order[(fi + order.length - 1) % order.length] }),
+      nextPane: () => this.setState({ full: order[(fi + 1) % order.length] }),
+      closeFull: () => this.setState({ full: null }),
+      uniUp: () => run('Set Self Universe + 1', { uni: s.uni + 1 }),
+      uniDown: () => run('Set Self Universe - 1', { uni: Math.max(1, s.uni - 1) }),
+      toastOn: !!s.toast, toast: s.toast, last: s.last
+    };
+  }
+}
+</script>
+</body>
+</html>

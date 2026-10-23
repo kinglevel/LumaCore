@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Fixes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 40px 48px; background: {{t.bg}}; color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-content: start">
+  <section style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; padding: 16px; display: flex; flex-direction: column; gap: 12px"><span style="font-size: 16px; font-weight: 500">Servers list: green · amber · gone</span><sc-for list="{{servers}}" as="sv" hint-placeholder-count="4">
+  <div style="height: 56px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; display: flex; align-items: center; gap: 12px; padding: 0 14px; opacity: {{sv.op}}">
+    <span style="width: 12px; height: 12px; border-radius: 50%; background: {{sv.dot}}"></span>
+    <span style="display: flex; flex-direction: column; gap: 2px; flex: 1"><span style="font-size: 15px; font-weight: 500">{{sv.name}}</span><span class="mono" style="font-size: 12px; color: {{t.dim}}">{{sv.addr}}</span></span>
+    <span style="font-size: 13px; color: {{sv.stc}}">{{sv.state}}</span>
+  </div>
+</sc-for><span style="font-size: 12px; color: {{t.dim}}">A clean shutdown says goodbye (gone at once); a killed server goes after 4 s without a beacon.</span></section>
+  <section style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; padding: 16px; display: flex; flex-direction: column; gap: 12px"><span style="font-size: 16px; font-weight: 500">Meow lights while held</span><div style="display: flex; gap: 18px; align-items: flex-end"><sc-for list="{{meows}}" as="mw" hint-placeholder-count="3"><span style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span style="width: 64px; height: 64px; border-radius: 6px; border: 2px solid {{mw.border}}; background: {{mw.bg}}; color: {{mw.fg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11px; font-weight: 600"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 8h.01"></path> <path d="M12 12h.01"></path> <path d="M14 8h.01"></path> <path d="M16 12h.01"></path> <path d="M18 8h.01"></path> <path d="M6 8h.01"></path> <path d="M7 16h10"></path> <path d="M8 12h.01"></path> <rect width="20" height="16" x="2" y="4" rx="2"></rect></svg>MEOW</span><span style="font-size: 12px; color: {{t.dim}}">{{mw.name}}</span></span></sc-for><button type="button" onClick="{{toggleHeld}}" style="margin-left: auto; height: 48px; padding: 0 16px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{heldBg}}; color: {{t.text}}; font: inherit; font-size: 14px">{{heldLabel}}</button></div><span style="font-size: 13px; color: {{t.dim}}">Meow key: Shift. Shift + a letter on the command line is still a capital.</span></section>
+  <section style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; padding: 16px; display: flex; flex-direction: column; gap: 12px"><span style="font-size: 16px; font-weight: 500">Command line bar ground</span><span style="font-size: 12px; color: {{t.dim}}">Before (12b): the empty cells painted in the gap colour</span><div style="height: 50px; display: flex; align-items: center; gap: 12px; padding: 0 12px; background: {{t.raised}}; border-radius: 4px"><span style="font-size: 13px; font-weight: 600; color: {{t.accent}}">PURR</span><span style="flex: 1; height: 49px; display: flex; align-items: center; padding: 0 10px; background: {{t.bg}}"><span class="mono" style="font-size: 14px; background: {{t.gap}}; padding: 2px 0; width: 100%">[Admin@desk1] Root&gt; ▍</span></span></div><span style="font-size: 12px; color: {{t.dim}}">After: the line wears the bar's own ground</span><div style="height: 50px; display: flex; align-items: center; gap: 12px; padding: 0 12px; background: {{t.raised}}; border-radius: 4px"><span style="font-size: 13px; font-weight: 600; color: {{t.accent}}">PURR</span><span style="flex: 1; height: 49px; display: flex; align-items: center; padding: 0 10px; background: {{t.bg}}"><span class="mono" style="font-size: 14px">[Admin@desk1] Root&gt; ▍</span></span></div></section>
+  <section style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; padding: 16px; display: flex; flex-direction: column; gap: 12px"><span style="font-size: 16px; font-weight: 500">macOS F-keys hint</span><div style="border-radius: 6px; background: {{t.raised}}; border: 1px solid {{t.line}}; padding: 12px 14px; display: flex; gap: 12px; align-items: flex-start"><span style="flex-shrink: 0; display: flex"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 8h.01"></path> <path d="M12 12h.01"></path> <path d="M14 8h.01"></path> <path d="M16 12h.01"></path> <path d="M18 8h.01"></path> <path d="M6 8h.01"></path> <path d="M7 16h10"></path> <path d="M8 12h.01"></path> <rect width="20" height="16" x="2" y="4" rx="2"></rect></svg></span><span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 15px; font-weight: 500">On a Mac, F9–F12 need fn</span><span style="font-size: 13px; color: {{t.dim}}; line-height: 1.45">Hold fn (🌐), or turn on System Settings › Keyboard › Keyboard Shortcuts › Function Keys › "Use F1, F2, etc. keys as standard function keys". LumaCore never changes it for you.</span></span></div><span style="font-size: 12px; color: {{t.dim}}">In the F10 shortcut sheet on macOS, and once as a toast when Meow is used and no F-key ever arrived.</span></section>
+  <section style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; padding: 16px; display: flex; flex-direction: column; gap: 12px"><span style="font-size: 16px; font-weight: 500">Text selection: only where you read or type</span><div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; font-size: 13px"><span style="padding: 8px 10px; border-radius: 5px; background: color-mix(in srgb, {{t.ok}} 14%, {{t.raised}})">✓ text inputs, dialog inputs, filters</span><span style="padding: 8px 10px; border-radius: 5px; background: color-mix(in srgb, {{t.ok}} 14%, {{t.raised}})">✓ command line + terminal windows</span><span style="padding: 8px 10px; border-radius: 5px; background: color-mix(in srgb, {{t.ok}} 14%, {{t.raised}})">✓ System Monitor rows</span><span style="padding: 8px 10px; border-radius: 5px; background: color-mix(in srgb, {{t.ok}} 14%, {{t.raised}})">✓ help and info text</span><span style="padding: 8px 10px; border-radius: 5px; background: {{t.raised}}; color: {{t.dim}}">✗ pools, slots, the hold selector</span><span style="padding: 8px 10px; border-radius: 5px; background: {{t.raised}}; color: {{t.dim}}">✗ bars, tabs, buttons, sheets, menus</span></div><span style="font-size: 12px; color: {{t.dim}}">No iOS callout or magnifier on a hold either.</span></section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { held: false }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',gap:'#080808',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',gap:'#d4d4d4',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',gap:'#050202',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const servers = [
+      { name: 'desk1', addr: '192.0.2.212 · LumaSession "Festival"', dot: t.ok, state: 'OK', stc: t.ok, op: 1 },
+      { name: 'FOH', addr: '192.0.2.40', dot: t.warn, state: 'not answering 2 s', stc: t.warn, op: 1 },
+      { name: 'Old build', addr: '192.0.2.50 · protocol 5', dot: t.dim, state: 'Wrong version', stc: t.dim, op: 0.7 },
+      { name: 'Spare', addr: '192.0.2.90', dot: t.line, state: 'gone (removed)', stc: t.dim, op: 0.35 }
+    ];
+    const lit = (on, latched) => ({ border: on ? t.accent : t.line, bg: latched ? t.accent : (on ? 'color-mix(in srgb, ' + t.accent + ' 22%, ' + t.raised + ')' : t.raised), fg: latched ? t.onAccent : (on ? t.accent : t.dim) });
+    const meows = [{ name: 'idle', ...lit(false, false) }, { name: s.held ? 'Shift held' : 'held (press →)', ...lit(s.held, false) }, { name: 'tapped = latched', ...lit(true, true) }];
+    return { t, servers, meows, toggleHeld: () => this.setState({ held: !s.held }), heldLabel: s.held ? 'Release Shift' : 'Hold Shift', heldBg: s.held ? t.raised : t.surface };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,380 @@
+<title>Context Menu</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one board per place the menu opens — the patch grid (Live / Draft), a pool, the
+   universes list — plus the rules. The menu is one kit element drawn from the registry: common
+   actions, Set (every declared column), the object's own verbs. Console look, single dark. */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --del-t: #f2a3a3; --sel: #2d3a52; --violet: #8a6bd1;
+  --menu: #232323; --menu-hi: #33302a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+header h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 82ch; line-height: 1.5; }
+.board { display: flex; flex-direction: column; gap: 10px; }
+.board > h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board > .why { color: var(--dim); margin: 0; line-height: 1.5; max-width: 86ch; }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 86ch; line-height: 1.5; margin: 0; }
+.icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button { font: inherit; }
+button:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+
+.dlg { border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.title { min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 6px 4px 6px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.crumb .up { color: var(--dim); } .crumb .sep { color: var(--faint); font-size: 14px; } .crumb .here { font-weight: 500; }
+.chip { height: 30px; display: inline-flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; white-space: nowrap; }
+.chip .d { width: 8px; height: 8px; border-radius: 4px; background: var(--ok); }
+.chip.draft .d { background: var(--gold-hi); }
+.chip.seg2 { padding: 0; overflow: hidden; }
+.chip.seg2 button { height: 100%; border: 0; background: none; color: var(--dim); padding: 0 12px; cursor: pointer; }
+.chip.seg2 button[aria-pressed="true"] { background: var(--head); color: var(--text); box-shadow: inset 0 -2px 0 var(--gold-hi); }
+.x { margin-left: auto; width: 50px; height: 44px; display: grid; place-items: center; border-radius: 6px; color: var(--text); background: none; border: 0; }
+.selbar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--head); min-height: 48px; flex-wrap: wrap; }
+.selchip { height: 34px; display: inline-flex; align-items: center; gap: 8px; padding: 0 4px 0 12px; border-radius: 17px; background: var(--sel); border: 1px solid #4a6390; font-size: 13px; }
+.selchip button { width: 30px; height: 28px; border-radius: 14px; border: 0; background: color-mix(in srgb, #fff 10%, transparent); color: var(--text); cursor: pointer; font-size: 16px; line-height: 1; }
+.hint { color: var(--dim); font-size: 13px; }
+
+.gwrap { position: relative; overflow: auto; max-height: 420px; user-select: none; -webkit-user-select: none; }
+.grid { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.grid th { position: sticky; top: 0; background: var(--dlg); text-align: left; font-weight: 400; color: var(--dim); padding: 8px 10px; border-bottom: 1px solid var(--line); z-index: 1; white-space: nowrap; }
+.grid th .lk { color: var(--faint); margin-left: 4px; font-size: 11px; }
+.grid td { padding: 9px 10px; border-bottom: 1px solid var(--cell-line); white-space: nowrap; }
+.grid tr.s td { background: var(--sel); }
+.grid tr.s td:first-child { box-shadow: inset 3px 0 0 var(--gold-hi); }
+.grid td.chg { color: var(--gold-hi); }
+.grid td.red { color: var(--del-t); }
+.grid td.red::after { content: " ⚠"; }
+.pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 6px; padding: 10px; user-select: none; -webkit-user-select: none; }
+.tile { height: 74px; border-radius: 6px; background: var(--cell); border: 1px solid var(--cell-line); border-left: 4px solid var(--c, var(--line)); padding: 6px 8px; display: flex; flex-direction: column; justify-content: space-between; font-size: 13px; cursor: default; }
+.tile .no { color: var(--faint); font-size: 12px; }
+.tile.s { border-color: var(--gold-hi); border-left-color: var(--c, var(--gold-hi)); background: var(--sel); }
+.foot { border-top: 1px solid var(--line); padding: 8px; }
+.line { font-family: var(--mono); font-size: 12.5px; color: var(--dim); background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+.line b { color: var(--text); font-weight: 400; }
+
+/* the menu */
+.cm { position: fixed; z-index: 50; width: 300px; max-height: min(80vh, 640px); overflow: auto; background: var(--menu); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 12px 40px #000a; padding: 4px 0; }
+.cm[hidden] { display: none; }
+.cm .mh { padding: 8px 12px 8px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 2px; }
+.cm .mh b { font-weight: 500; }
+.cm .mh small { color: var(--dim); font-size: 12px; }
+.cm .sec { padding: 6px 12px 2px; color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
+.cm .mi { width: 100%; min-height: 40px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 0 12px; background: none; border: 0; color: var(--text); text-align: left; cursor: pointer; font-size: 14px; }
+.cm .mi:hover, .cm .mi:focus-visible { background: var(--menu-hi); outline: none; }
+.cm .mi .v { color: var(--dim); font-size: 12.5px; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cm .mi .v.diff { color: var(--violet); font-style: italic; }
+.cm .mi .k { color: var(--faint); font-size: 12px; font-family: var(--mono); }
+.cm .mi.off { color: var(--faint); cursor: default; }
+.cm .mi.off:hover { background: none; }
+.cm .mi .why { grid-column: 2 / 4; color: var(--faint); font-size: 11.5px; margin-top: -8px; padding-bottom: 6px; }
+.cm .mi.del { color: var(--del-t); }
+.cm hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+.cm .back { color: var(--dim); }
+.cm .opt { width: 100%; min-height: 40px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 0 12px; border: 0; background: none; color: var(--text); text-align: left; cursor: pointer; }
+.cm .opt:hover { background: var(--menu-hi); }
+.cm .opt small { color: var(--dim); }
+.cm .opt.cur::before { content: "●"; color: var(--gold-hi); font-size: 10px; }
+.cm .num { display: flex; gap: 8px; padding: 8px 12px; align-items: center; }
+.cm .num input { width: 100%; height: 40px; border-radius: 4px; border: 1px solid var(--gold-hi); background: var(--cell); color: var(--text); font: inherit; font-size: 16px; padding: 0 10px; }
+.cm .num button { height: 40px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--gold-hi); background: var(--gold); color: var(--gold-text); cursor: pointer; }
+@media (max-width: 640px) {
+  .cm { left: 0 !important; right: 0; top: auto !important; bottom: 0; width: auto; max-height: 75vh; border-radius: 12px 12px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .grid .hide-s { display: none; }
+}
+.scrim { position: fixed; inset: 0; z-index: 49; }
+.scrim[hidden] { display: none; }
+dl.rules { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 13px; }
+dl.rules dt { color: var(--faint); } dl.rules dd { margin: 0; line-height: 1.45; }
+@media (max-width: 700px) { dl.rules { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M12 22v-5M9 8V2M15 8V2M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12 2H2v10l9.3 9.3a1 1 0 0 0 1.4 0l8.6-8.6a1 1 0 0 0 0-1.4Z"/><circle cx="7" cy="7" r="1.5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+  <symbol id="i-move" viewBox="0 0 24 24"><path d="m5 9-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.1 7-12a7 7 0 0 0-14 0c0 5.9 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-unlink" viewBox="0 0 24 24"><path d="M18.8 13.4 20.5 11.7a5 5 0 0 0-7.1-7.1L11.7 6.3M5.2 10.6 3.5 12.3a5 5 0 0 0 7.1 7.1l1.7-1.7M8 2v3M2 8h3M16 22v-3M22 16h-3"/></symbol>
+  <symbol id="i-select" viewBox="0 0 24 24"><path d="M3 3h4M3 3v4M21 3h-4M21 3v4M3 21h4M3 21v-4M21 21h-4M21 21v-4"/><path d="M8 12h8M12 8v8"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+</svg>
+
+<main>
+<header>
+  <h1>Context menu · round 3</h1>
+  <p>Mockup for the 34g4 round 3 hardening (decisions §34, 2026-10-18, item 18): <b>one context menu for every list, grid and pool</b>. Right-click, hold without moving (touch), or the selection chip's ⋯ opens it on the selection. It is drawn from the registry — the object's verbs and its declared properties — so every list gets the same menu: the common actions, a <b>Set</b> part with every column the row has (fixture type, mode, revision, address, name, tags …), then what only this object does. Every pick is one line. A phone gets it as a bottom sheet.</p>
+</header>
+
+<section class="board" aria-labelledby="h1">
+  <h2 id="h1">1 · The patch grid — Live and Draft</h2>
+  <p class="why">Select rows (tap, Shift adds, drag lassos), then right-click or hold. Switch the chip between <b>Live</b> and <b>Draft</b>: in Live only the live columns can be set and the rest show why (the claim); in Draft everything can. Try Set › Mode on 104–106: a bigger footprint turns the addresses that now overlap red (decided: red until resolved, no question). Set › Fixture type would open the GDTF picker, then the attribute map.</p>
+  <div class="dlg">
+    <div class="title">
+      <div class="crumb"><svg class="icon"><use href="#i-plug"/></svg><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></div>
+      <span class="chip seg2" role="group" aria-label="Patch state"><button aria-pressed="false" data-claim="live">Live</button><button aria-pressed="true" data-claim="draft">Draft · Admin</button></span>
+      <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="selbar" id="fx-selbar"></div>
+    <div class="gwrap" id="fx-wrap" data-list="fx"><table class="grid"><thead id="fx-head"></thead><tbody id="fx-body"></tbody></table></div>
+    <div class="foot"><div class="line" id="fx-line">Right-click or hold a selected row</div></div>
+  </div>
+</section>
+
+<section class="board" aria-labelledby="h2">
+  <h2 id="h2">2 · A pool — the same menu</h2>
+  <p class="why">The Group pool's tiles: the same three parts, from the Group object's verbs and properties (Name, Colour, Master mode …). This menu replaces the pools' object sheet.</p>
+  <div class="dlg">
+    <div class="title">
+      <div class="crumb"><svg class="icon"><use href="#i-grid"/></svg><span class="up">DataPool 1</span><span class="sep">›</span><span class="here">Groups</span></div>
+      <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="selbar" id="gr-selbar"></div>
+    <div class="pool" id="gr-wrap" data-list="gr"></div>
+    <div class="foot"><div class="line" id="gr-line">Right-click or hold a tile</div></div>
+  </div>
+</section>
+
+<section class="board" aria-labelledby="h3">
+  <h2 id="h3">3 · The universes list</h2>
+  <p class="why">A setup list: Renumber here is the universe move (decided: the No cell or Move to…); Set reaches Name and MergeMode.</p>
+  <div class="dlg">
+    <div class="title">
+      <div class="crumb"><svg class="icon"><use href="#i-plug"/></svg><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Universes</span></div>
+      <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="selbar" id="un-selbar"></div>
+    <div class="gwrap" id="un-wrap" data-list="un"><table class="grid"><thead id="un-head"></thead><tbody id="un-body"></tbody></table></div>
+    <div class="foot"><div class="line" id="un-line">Right-click or hold a row</div></div>
+  </div>
+  <p class="decide">Decided: both stay — Set for one field from the menu, Edit… for the edit card with every field (§34 round 3, 18).</p>
+</section>
+
+<section class="board" aria-labelledby="h4">
+  <h2 id="h4">Rules this mockup shows</h2>
+  <dl class="rules">
+    <dt>Opens</dt><dd>Right-click; hold without moving (touch; hold-then-drag still lassos); the selection chip's ⋯; the Menu key / Shift+F10. On a row outside the selection it selects that row first.</dd>
+    <dt>Three parts</dt><dd>Common (Edit…, Renumber…, Label, Copy, Move, Delete) · Set (every declared column: shared value or ‹different›, its editor by kind) · the object's own verbs. All from <code>ObjectDef</code> verbs + <code>Props</code>; a window adds nothing of its own.</dd>
+    <dt>Greyed says why</dt><dd>An item the rights, the claim or the state refuse stays in place, greyed, with the reason under it (never hidden, so the menu doesn't jump).</dd>
+    <dt>One line</dt><dd>Every pick writes one line naming the rows (<code>Set Fixture 104 Thru 106 "Mode" "Extended"</code>), one Oops step.</dd>
+    <dt>Phone</dt><dd>The same menu as a bottom sheet; submenus slide in with a back row.</dd>
+  </dl>
+</section>
+</main>
+
+<div class="scrim" id="scrim" hidden></div>
+<div class="cm" id="cm" role="menu" hidden></div>
+
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const a3 = n => String(n).padStart(3, '0');
+const ids = list => {
+  const n = [...list].sort((a, b) => a - b), out = [];
+  for (let i = 0; i < n.length;) { let j = i; while (j + 1 < n.length && n[j + 1] === n[j] + 1) j++; out.push(j > i ? `${n[i]} Thru ${n[j]}` : `${n[i]}`); i = j + 1; }
+  return out.join(' + ');
+};
+const MODES = { 'MAC Aura XB': [['Standard', 14], ['Extended', 25], ['Basic', 10]], 'Robin BMFL WashBeam': [['Mode 1', 48], ['Mode 2', 38]] };
+const REVS = { 'MAC Aura XB': ['Rev 3 · 2024-05 (newest)', 'Rev 2 · 2022-11'], 'Robin BMFL WashBeam': ['Rev 7 · 2025-02 (newest)'] };
+const TYPES = ['MAC Aura XB', 'Robin BMFL WashBeam', 'Library…'];
+
+// ---- Lists: each declares its object word, columns (props) and own verbs, like ObjectDef ----
+const L = {
+  fx: {
+    word: 'Fixture', claim: 'draft', sel: [104, 105, 106], line: '',
+    rows: [
+      ...Array.from({ length: 6 }, (_, i) => ({ id: 101 + i, Name: `Aura ${i + 1}`, FixtureType: 'MAC Aura XB', Mode: 'Standard', Revision: 'Rev 3 · 2024-05 (newest)', u: 1, start: 1 + i * 14, Tags: 'Truss', Note: '' })),
+      ...Array.from({ length: 3 }, (_, i) => ({ id: 301 + i, Name: `BMFL ${i + 1}`, FixtureType: 'Robin BMFL WashBeam', Mode: 'Mode 1', Revision: 'Rev 7 · 2025-02 (newest)', u: 2, start: 1 + i * 48, Tags: 'Floor', Note: '' })),
+    ],
+    cols: [
+      { key: 'id', label: 'FID' },
+      { key: 'Name', label: 'Name', kind: 'text', live: true },
+      { key: 'FixtureType', label: 'Fixture type', kind: 'type', hide: true },
+      { key: 'Mode', label: 'Mode', kind: 'mode' },
+      { key: 'Revision', label: 'Revision', kind: 'rev', hide: true },
+      { key: 'Address', label: 'Address', kind: 'addr' },
+      { key: 'Tags', label: 'Tags', kind: 'text', live: true, hide: true },
+      { key: 'Note', label: 'Note', kind: 'text', live: true, hide: true },
+    ],
+    own: [['i-pin', 'Patch to…', 'Patch Fixture {r} At …'], ['i-pin', 'Next free address', 'Patch Fixture {r} At Next'], ['i-swap', 'Swap addresses…', 'Patch Fixture {r} At Fixture … /Swap'], ['i-zap', 'Identify', 'Identify — station output, no line'], ['i-unlink', 'Unpatch', 'Unpatch Fixture {r}'], ['i-info', 'Info', 'Info Fixture {r}']],
+  },
+  gr: {
+    word: 'Group', sel: [3], line: '',
+    rows: [[1, 'All Auras', '#4a7fc1'], [2, 'Odd', '#c1844a'], [3, 'Even', '#c1844a'], [5, 'BMFL', '#8a6bd1'], [6, 'Floor L', '#4ab08a'], [7, 'Floor R', '#4ab08a'], [10, 'Truss', '#4a7fc1']].map(([id, Name, Colour]) => ({ id, Name, Colour, MasterMode: 'Off' })),
+    cols: [{ key: 'id', label: 'No' }, { key: 'Name', label: 'Name', kind: 'text' }, { key: 'Colour', label: 'Colour', kind: 'colour' }, { key: 'MasterMode', label: 'Master mode', kind: 'pick', items: ['Off', 'Relative', 'Absolute'] }],
+    own: [['i-select', 'Select', 'Group {r}'], ['i-edit', 'Edit members', 'Edit Group {r}'], ['i-info', 'Info', 'Info Group {r}']],
+  },
+  un: {
+    word: 'Universe', sel: [2], line: '',
+    rows: [[1, 'Truss'], [2, 'Floor'], [3, 'Spare']].map(([id, Name]) => ({ id, Name, MergeMode: 'HTP', Fixtures: id === 1 ? 6 : id === 2 ? 3 : 0 })),
+    cols: [{ key: 'id', label: 'No' }, { key: 'Name', label: 'Name', kind: 'text' }, { key: 'MergeMode', label: 'MergeMode', kind: 'pick', items: ['HTP', 'LTP', 'Input only'] }, { key: 'Fixtures', label: 'Fixtures' }],
+    own: [['i-select', 'Select its fixtures', 'Select Fixture At Universe {r}'], ['i-info', 'Info', 'Info Universe {r}']],
+  },
+};
+const rowsOf = l => l.rows.filter(r => l.sel.includes(r.id));
+const fmt = (l, r, c) => c.key === 'Address' ? `${r.u}.${a3(r.start)}` : r[c.key];
+const lenOf = r => (MODES[r.FixtureType].find(m => m[0] === r.Mode) || [0, 14])[1];
+function clashes(l) {
+  const bad = new Set(), R = l.rows;
+  for (let i = 0; i < R.length; i++) for (let j = i + 1; j < R.length; j++) {
+    const p = R[i], q = R[j];
+    if (p.u === q.u && p.start <= q.start + lenOf(q) - 1 && q.start <= p.start + lenOf(p) - 1) { bad.add(p.id); bad.add(q.id); }
+  }
+  return bad;
+}
+function lockedWhy(l, c) {
+  if (l !== L.fx || c.live || !c.kind) return '';
+  return l.claim === 'live' ? 'needs the claimed patch (hold Live)' : '';
+}
+
+function render(k) {
+  const l = L[k];
+  const sel = rowsOf(l);
+  document.getElementById(`${k}-selbar`).innerHTML = sel.length
+    ? `<span class="selchip">${sel.length} ${l.word}${sel.length > 1 ? 's' : ''} · ${ids(l.sel)}<button data-menu="${k}" aria-label="Menu for the selection">⋯</button></span><span class="hint">Right-click, hold, or ⋯</span>`
+    : `<span class="hint">Tap a row, Shift adds, drag to lasso</span>`;
+  const line = document.getElementById(`${k}-line`);
+  line.innerHTML = l.line ? `<b>${esc(l.line)}</b>` : line.textContent;
+  if (k === 'gr') {
+    document.getElementById('gr-wrap').innerHTML = l.rows.map(r => `<div class="tile ${l.sel.includes(r.id) ? 's' : ''}" data-id="${r.id}" style="--c:${r.Colour}"><span class="no">${r.id}</span><span>${esc(r.Name)}</span></div>`).join('');
+    return;
+  }
+  const bad = k === 'fx' ? clashes(l) : new Set();
+  document.getElementById(`${k}-head`).innerHTML = `<tr>${l.cols.map(c => `<th class="${c.hide ? 'hide-s' : ''}">${c.label}${lockedWhy(l, c) ? '<span class="lk">🔒</span>' : ''}</th>`).join('')}</tr>`;
+  document.getElementById(`${k}-body`).innerHTML = l.rows.map(r => `<tr class="${l.sel.includes(r.id) ? 's' : ''}" data-id="${r.id}">${l.cols.map(c => `<td class="${c.hide ? 'hide-s' : ''} ${c.key === 'Address' && bad.has(r.id) ? 'red' : ''} ${r._chg === c.key ? 'chg' : ''}">${esc(fmt(l, r, c))}</td>`).join('')}</tr>`).join('');
+}
+
+// ---- Selection: tap, Shift adds, drag lassos; right-click / hold opens the menu ----
+for (const k of Object.keys(L)) {
+  const wrap = document.getElementById(`${k}-wrap`), l = L[k];
+  let d = null, holdT = null;
+  wrap.addEventListener('pointerdown', e => {
+    if (e.button === 2) return;
+    const it = e.target.closest('[data-id]');
+    d = { x: e.clientX, y: e.clientY, it, add: e.shiftKey, moved: false };
+    if (e.pointerType !== 'mouse' && it) holdT = setTimeout(() => { if (d && !d.moved) { pickRow(k, +it.dataset.id); d = null; openMenu(k, e.clientX, e.clientY); } }, 500);
+  });
+  wrap.addEventListener('pointermove', e => {
+    if (!d) return;
+    if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 6) return;
+    d.moved = true; clearTimeout(holdT);
+    const x0 = Math.min(d.x, e.clientX), x1 = Math.max(d.x, e.clientX), y0 = Math.min(d.y, e.clientY), y1 = Math.max(d.y, e.clientY);
+    const hit = [...wrap.querySelectorAll('[data-id]')].filter(el => { const b = el.getBoundingClientRect(); return b.right > x0 && b.left < x1 && b.bottom > y0 && b.top < y1; }).map(el => +el.dataset.id);
+    l.sel = d.add ? [...new Set([...l.sel, ...hit])] : hit; l.line = `Select ${l.word} ${ids(l.sel)}`; render(k);
+  });
+  wrap.addEventListener('pointerup', () => {
+    clearTimeout(holdT);
+    if (d && !d.moved && d.it) { const id = +d.it.dataset.id; l.sel = d.add ? (l.sel.includes(id) ? l.sel.filter(x => x !== id) : [...l.sel, id]) : [id]; l.line = l.sel.length ? `Select ${l.word} ${ids(l.sel)}` : ''; render(k); }
+    d = null;
+  });
+  wrap.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    const it = e.target.closest('[data-id]'); if (!it) return;
+    pickRow(k, +it.dataset.id); openMenu(k, e.clientX, e.clientY);
+  });
+}
+function pickRow(k, id) { const l = L[k]; if (!l.sel.includes(id)) { l.sel = [id]; render(k); } }
+
+// ---- The menu ----
+const cm = document.getElementById('cm'), scrim = document.getElementById('scrim');
+let M = null; // { k, x, y, page }
+function openMenu(k, x, y) { M = { k, x, y, page: 'main' }; drawMenu(); }
+function closeMenu() { M = null; cm.hidden = true; scrim.hidden = true; }
+function shared(l, c) {
+  const vals = [...new Set(rowsOf(l).map(r => fmt(l, r, c)))];
+  return vals.length === 1 ? { v: vals[0] } : { v: `‹different› ${vals.length}`, diff: true };
+}
+function drawMenu() {
+  const l = L[M.k], rws = ids(l.sel), n = l.sel.length;
+  let h = '';
+  if (M.page === 'main') {
+    h += `<div class="mh"><b>${n} ${l.word}${n > 1 ? 's' : ''} · ${rws}</b><small>${l === L.fx ? (l.claim === 'live' ? 'Live patch — live columns only' : 'Draft · claimed by you') : 'DataPool 1'}</small></div>`;
+    h += `<button class="mi" data-act="edit"><svg class="icon"><use href="#i-edit"/></svg><span>Edit…</span><span class="k">all fields</span></button>`;
+    const rnWhy = l === L.fx && l.claim === 'live' ? 'needs the claimed patch' : '';
+    h += item('i-hash', 'Renumber…', 'renum', rnWhy, 'type a number');
+    h += item('i-tag', 'Label…', 'label');
+    h += item('i-copy', 'Copy', 'copy', rnWhy) + item('i-move', 'Move…', 'move', rnWhy);
+    h += `<hr><div class="sec">Set</div>`;
+    for (const c of l.cols.filter(c => c.kind)) {
+      const why = lockedWhy(l, c), s = shared(l, c);
+      h += `<button class="mi ${why ? 'off' : ''}" ${why ? 'aria-disabled="true"' : `data-set="${c.key}"`}><span></span><span>${c.label}</span><span class="v ${s.diff ? 'diff' : ''}">${esc(s.v)} ${why ? '' : '›'}</span>${why ? `<span class="why">${why}</span>` : ''}</button>`;
+    }
+    h += `<hr><div class="sec">${l.word}</div>`;
+    for (const [ic, label, ln] of l.own) {
+      const why = l === L.fx && l.claim === 'live' && /Patch|Unpatch|Swap|Next/.test(label) ? 'needs the claimed patch' : '';
+      h += `<button class="mi ${why ? 'off' : ''}" ${why ? '' : `data-own="${esc(ln)}"`}><svg class="icon"><use href="#${ic}"/></svg><span>${label}</span><span></span>${why ? `<span class="why">${why}</span>` : ''}</button>`;
+    }
+    h += `<hr>` + item('i-trash', `Delete ${n > 1 ? n + ' ' + l.word + 's' : l.word}`, 'delete', l === L.fx && l.claim === 'live' ? 'needs the claimed patch' : '', '', 'del');
+  } else if (M.page === 'renum') {
+    h += back('Renumber') + `<div class="num"><input id="rn" inputmode="numeric" value="${l === L.fx ? 201 : l === L.gr ? 20 : 11}" aria-label="First number"><button data-act="renum-go">Renumber</button></div><div class="sec" style="padding-bottom:8px;text-transform:none;letter-spacing:0">In selection order; a taken number is skipped</div>`;
+  } else {
+    const c = l.cols.find(c => c.key === M.page);
+    h += back(`${c.label} · ${n} ${l.word}${n > 1 ? 's' : ''}`);
+    const cur = shared(l, c).v;
+    let opts = [];
+    const r0 = rowsOf(l)[0];
+    if (c.kind === 'mode') { const t = [...new Set(rowsOf(l).map(r => r.FixtureType))]; opts = t.length > 1 ? [] : MODES[t[0]].map(([m, ch]) => [m, `${ch} ch`]); if (!opts.length) h += `<div class="sec" style="text-transform:none">Different fixture types — pick a mode per type (one line each)</div>`; }
+    else if (c.kind === 'rev') opts = (REVS[r0.FixtureType] || []).map(v => [v, '']);
+    else if (c.kind === 'type') opts = TYPES.map(v => [v, v === 'Library…' ? 'the GDTF picker' : 'in the show']);
+    else if (c.kind === 'pick') opts = c.items.map(v => [v, '']);
+    else if (c.kind === 'colour') opts = [['#4a7fc1', 'blue'], ['#c1844a', 'amber'], ['#8a6bd1', 'violet'], ['#4ab08a', 'green']];
+    else if (c.kind === 'addr') opts = [['Patch to…', 'Edit Patch, the slot grid'], ['Next free address', ''], ['Unpatch', 'keeps the fixture']];
+    for (const [v, sub] of opts) h += `<button class="opt ${v === cur ? 'cur' : ''}" data-pick="${esc(v)}"><span></span><span>${c.kind === 'colour' ? `<span style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${v};vertical-align:-2px;margin-right:6px"></span>` : ''}${esc(v)}</span><small>${esc(sub)}</small></button>`;
+    if (c.kind === 'text') h += `<div class="num"><input id="tx" value="${esc(shared(l, c).diff ? '' : cur)}" aria-label="${c.label}"><button data-act="text-go">Set</button></div>`;
+    if (c.kind === 'type') h += `<div class="sec" style="text-transform:none;letter-spacing:0;padding-bottom:8px">Then the attribute map opens (change map)</div>`;
+  }
+  cm.innerHTML = h; cm.hidden = false; scrim.hidden = false;
+  const w = cm.offsetWidth, ht = cm.offsetHeight;
+  cm.style.left = `${Math.min(M.x, innerWidth - w - 8)}px`; cm.style.top = `${Math.max(8, Math.min(M.y, innerHeight - ht - 8))}px`;
+  const f = cm.querySelector('input, .mi:not(.off), .opt'); if (f) f.focus();
+}
+const item = (ic, label, act, why = '', k = '', cls = '') => `<button class="mi ${why ? 'off' : ''} ${cls}" ${why ? 'aria-disabled="true"' : `data-act="${act}"`}><svg class="icon"><use href="#${ic}"/></svg><span>${label}</span><span class="k">${k}</span>${why ? `<span class="why">${why}</span>` : ''}</button>`;
+const back = t => `<button class="mi back" data-act="back"><svg class="icon"><use href="#i-left"/></svg><span>${esc(t)}</span><span></span></button><hr>`;
+function done(text) { const l = L[M.k]; l.line = text; const k = M.k; closeMenu(); render(k); }
+scrim.addEventListener('pointerdown', closeMenu);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && M) closeMenu(); });
+cm.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || !M) return;
+  const l = L[M.k], rws = ids(l.sel);
+  if (b.dataset.act === 'back') { M.page = 'main'; drawMenu(); }
+  else if (b.dataset.act === 'renum') { M.page = 'renum'; drawMenu(); }
+  else if (b.dataset.act === 'renum-go') { const n = +document.getElementById('rn').value; done(`Move ${l.word} ${rws} At ${n}`); }
+  else if (b.dataset.act === 'edit') done(`Edit ${l.word} ${rws}   ← the edit card, every field in tabs`);
+  else if (b.dataset.act === 'label') done(`Label ${l.word} ${rws} "…"`);
+  else if (b.dataset.act === 'copy') done(`Copy ${l.word} ${rws} At …   ← the next tap is the target`);
+  else if (b.dataset.act === 'move') done(`Move ${l.word} ${rws} At …   ← the next tap is the target`);
+  else if (b.dataset.act === 'delete') done(`Delete ${l.word} ${rws}   ← the station asks once`);
+  else if (b.dataset.own) done(b.dataset.own.replace('{r}', rws));
+  else if (b.dataset.set) { M.page = b.dataset.set; drawMenu(); }
+  else if (b.dataset.act === 'text-go') { const c = l.cols.find(c => c.key === M.page), v = document.getElementById('tx').value; rowsOf(l).forEach(r => { r[c.key] = v; r._chg = c.key; }); done(`Set ${l.word} ${rws} "${c.key}" "${v}"`); }
+  else if (b.dataset.pick) {
+    const c = l.cols.find(c => c.key === M.page), v = b.dataset.pick;
+    if (c.kind === 'addr') return done(v === 'Patch to…' ? `Patch Fixture ${rws} At …   ← Edit Patch opens` : v === 'Unpatch' ? `Unpatch Fixture ${rws}` : `Patch Fixture ${rws} At Next`);
+    if (c.kind === 'type' && v === 'Library…') return done(`Set Fixture ${rws} "FixtureType" …   ← the GDTF picker, then the attribute map`);
+    rowsOf(l).forEach(r => { r[c.key] = v; r._chg = c.key; });
+    done(`Set ${l.word} ${rws} "${c.key}" "${v}"${c.kind === 'type' ? '   ← then the attribute map' : ''}`);
+  }
+});
+document.addEventListener('click', e => {
+  const m = e.target.closest('[data-menu]');
+  if (m) { const r = m.getBoundingClientRect(); openMenu(m.dataset.menu, r.left, r.bottom + 4); }
+  const c = e.target.closest('[data-claim]');
+  if (c) { L.fx.claim = c.dataset.claim; document.querySelectorAll('[data-claim]').forEach(b => b.setAttribute('aria-pressed', b === c)); render('fx'); }
+});
+Object.keys(L).forEach(render);
+</script>

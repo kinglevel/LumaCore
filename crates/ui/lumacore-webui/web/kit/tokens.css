@@ -1,0 +1,313 @@
+/* LumaCore theme tokens (decisions §30): the ONLY file with raw colours
+   (tidy `frontend_colours_only_in_the_theme`). Every other style uses these
+   custom properties.
+
+   Two tiers, REAPER-style: 14 editable palette colours per preset (the user's
+   theme, stored on the user in 12a2, overrides only the ones changed), and
+   derived roles computed from them — never edited directly. Presets switch
+   with <html data-theme="Daylight|Night">; no attribute = Dark.
+
+   The Dark preset is the user's console concept (inspiration-style.md):
+   matte neutral greys, olive gold as the one accent. */
+
+:root {
+  /* ── Palette (editable; Theme.Palette.<Name> in the show) ── */
+  --lc-bg:          #121212;  /* Background  — window background */
+  --lc-surface:     #1c1c1c;  /* Surface     — strips, bars, dialogs */
+  --lc-raised:      #303030;  /* Raised      — cells, buttons, active tab */
+  --lc-line:        #424242;  /* Line        — borders, dividers */
+  --lc-text:        #d1d1d1;  /* Text */
+  --lc-text-dim:    #8a8a8a;  /* TextDim     — labels, inactive tabs */
+  --lc-accent:      #9a7a08;  /* Accent      — olive gold: dots, selection, focus */
+  --lc-info:        #758ba0;  /* Info */
+  --lc-ok:          #00a60a;  /* Ok          — online, running, Please */
+  --lc-warn:        #c27a12;  /* Warn */
+  --lc-alert:       #e10000;  /* Alert       — errors, Delete, changed marks */
+  --lc-programmer:  #d86a7c;  /* Programmer  — programmer values */
+  --lc-blind:       #8a80c8;  /* Blind */
+  --lc-park:        #3f9a90;  /* Park        — parked channels */
+
+  /* Preset constants (not editable). */
+  --lc-on-accent:   #f3ecd3;  /* text on accent fills */
+  --lc-black:       #000;
+  --lc-white:       #fff;
+  color-scheme: dark;
+
+  /* ── Derived roles (never edited; follow the palette) ── */
+  --lc-gap:       color-mix(in srgb, var(--lc-bg) 45%, var(--lc-black));     /* between windows, terminal ground */
+  --lc-hover:     color-mix(in srgb, var(--lc-text) 8%, var(--lc-raised));
+  --lc-pressed:   color-mix(in srgb, var(--lc-text) 16%, var(--lc-raised));
+  --lc-alt-row:   color-mix(in srgb, var(--lc-text) 3%, var(--lc-surface));
+  --lc-selected:  color-mix(in srgb, var(--lc-accent) 24%, var(--lc-raised)); /* selected rows, cells */
+  --lc-lane:      color-mix(in srgb, var(--lc-accent) 16%, var(--lc-bg));     /* highlighted lane / column */
+  --lc-focus:     color-mix(in srgb, var(--lc-accent) 65%, var(--lc-text));   /* keyboard focus ring */
+  --lc-disabled:  color-mix(in srgb, var(--lc-text-dim) 55%, var(--lc-surface));
+  --lc-dot-off:   color-mix(in srgb, var(--lc-accent) 32%, var(--lc-bg));     /* the gold dot on inactive tabs */
+  --lc-scrim:     color-mix(in srgb, var(--lc-black) 62%, transparent);       /* behind modal dialogs */
+  --lc-strong:    color-mix(in srgb, var(--lc-text) 70%, var(--lc-white));    /* emphasis, values */
+  --lc-cap:       color-mix(in srgb, var(--lc-filter) 70%, var(--lc-white));  /* a fader's cap line (12f) */
+
+  /* ── 12d: the grid, the slab and the power toggle (decisions §30 "12d
+     hardening"; the SetupDmx / PowerToggle boards). The slab's standard
+     action colours are the same in every menu: the icon carries the colour. ── */
+  --lc-act-select:  #c9a227;  /* Select, Edit (pointer, pencil) */
+  --lc-act-new:     #3fbf4a;  /* New, Save show */
+  --lc-act-copy:    #4d8fd6;  /* Copy, Paste, Info */
+  --lc-act-cut:     #e08a2c;  /* Cut */
+  --lc-act-delete:  #ff5a4a;  /* Delete (its label only when it applies) */
+  --lc-act-oops:    #e6b422;  /* Oops */
+  --lc-act-io:      #3fb0a6;  /* Import, Export */
+  --lc-act-history: #a98be0;  /* History */
+
+  /* ── The value marks (decisions device-grid-and-value-marks; system colours and
+     coloured indicators in the kit's paint): text = where a value comes from, a ground = what
+     happens to it, the bars = which layers hold data. kit/marks.js paints with these. ── */
+  --lc-v-prg:          var(--lc-programmer);  /* your programmer: a ground when active, the text when not */
+  --lc-v-prg-ink:      #fff;                  /* text on an active programmer value */
+  --lc-v-new:          #3fc8d8;  /* new in the current cue of the selected sequence (a dimmer: higher) */
+  --lc-v-lower:        #4cc35a;  /* a dimmer's new, lower value */
+  --lc-v-track:        #d070d0;  /* tracked into the current cue */
+  --lc-v-block:        var(--lc-strong);      /* blocked */
+  --lc-v-other:        #d8b72a;  /* a sequence that is not selected */
+  --lc-v-other-track:  #968433;  /* … tracked */
+  --lc-v-fading:       #1d3566;  /* the ground while a cue fades it */
+  --lc-v-default:      var(--lc-text-dim);    /* at its default */
+  --lc-v-none:         #050505;  /* the device has no such attribute */
+  --lc-v-park:         var(--lc-park);
+  --lc-v-rel:          #b48ad0;  /* bars: relative */
+  --lc-v-fade:         #4cc35a;  /* bars and the Fade layer: an own fade */
+  --lc-v-delay:        #e08a2c;  /* bars and the Delay layer: an own delay */
+  --lc-v-phaser:       #8a5ae0;  /* bars: a phaser */
+  --lc-v-preset:       #3fc8d8;  /* bars: from a preset */
+  --lc-v-mark-off:     #fff;     /* bars: deactivated data (left), the DMX tester (right) */
+
+  /* ── The modes' colours: the top bar's indicators (decisions top-bar-status-strip). ── */
+  --lc-mode-blind:     var(--lc-blind);
+  --lc-mode-hl:        #e8d36a;  /* Highlight */
+  --lc-mode-freeze:    #6fb3d8;
+  --lc-mode-solo:      #e08a2c;
+  --lc-mode-oops:      var(--lc-act-oops);
+  --lc-mode-meow:      var(--lc-accent);
+  --lc-act-neutral: #b0b0b0;  /* New show */
+  --lc-filter:      #e6c200;  /* the yellow filter row */
+  --lc-mixed:       #e0b84a;  /* ‹different values› */
+  --lc-power-off:   #a03030;  /* the power icon / bar when off */
+  --lc-fail-bg:     #4a1414;  /* "on but failing" fills the tile */
+  --lc-fail-line:   #a01010;
+  --lc-fail-text:   #ffb3a8;
+  --lc-fail-icon:   #ff6a5a;
+  /* derived */
+  --lc-sel-line:    var(--lc-act-copy);                                         /* selected cells' frame */
+  --lc-sel-fill:    color-mix(in srgb, var(--lc-sel-line) 30%, var(--lc-bg));  /* selected cells */
+  --lc-sel-head:    color-mix(in srgb, var(--lc-sel-line) 16%, var(--lc-bg));  /* a selected column's header */
+  --lc-filter-bg:   color-mix(in srgb, var(--lc-filter) 12%, var(--lc-bg));
+  --lc-filter-head: color-mix(in srgb, var(--lc-filter) 20%, var(--lc-bg));
+  --lc-cell:        color-mix(in srgb, var(--lc-text) 5%, var(--lc-surface));  /* an editable cell's box */
+  --lc-cut-tint:    color-mix(in srgb, var(--lc-alert) 14%, var(--lc-cell));   /* cut, waiting for Paste */
+
+  /* ── 12e: a pool type's own colour (the pool colours) — a pool object
+     without its NodeMeta colour draws in it (decisions §30 "12e"). ── */
+  --lc-pool-default: #4a4a4a;
+  --lc-pool-groups:  #2d5a8a;
+  --lc-pool-sequences: #2f8a3c;
+  --lc-pool-macros:  #3b6fae;
+  --lc-pool-views:   #a8862a;
+
+  /* ── Type and sizes (larger on coarse pointers) ── */
+  --lc-font: 'Source Sans 3', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --lc-mono: 'JetBrains Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+  --lc-fs: 14px;          /* body */
+  --lc-fs-small: 12px;    /* captions: never below 12 */
+  --lc-fs-title: 15px;
+  /* The rest of the type scale (decisions §30 "12c2"): every font size in
+     kit.css and the page is one of these (tidy `frontend_font_sizes_are_tokens`). */
+  --lc-fs-note: 13px;     /* notes, hints, mono details */
+  --lc-fs-md: 16px;       /* list rows, dialog text, keyboard words */
+  --lc-fs-head: 17px;     /* dialog and window titles */
+  --lc-fs-lg: 18px;       /* settings titles, big values */
+  --lc-fs-xl: 22px;       /* flash, keypad keys, headings */
+  --lc-fs-xxl: 26px;      /* the show name, keypad display */
+  --lc-fs-field: 16px;    /* fields on touch screens: iOS never zooms at 16 */
+  --lc-fs-sf-date: clamp(16px, 2.2vw, 22px);   /* lock surface */
+  --lc-fs-sf-clock: clamp(76px, 12vw, 132px);
+  --lc-fs-sf-clock-kb: clamp(56px, 7vw, 96px);
+  --lc-fs-sf-station: clamp(14px, 1.6vw, 17px);
+  --lc-fs-sf-ask: 20px;
+  --lc-fs-avatar-big: 24px;
+  --lc-radius: 6px;
+  --lc-radius-sm: 4px;
+  --lc-hit: 32px;         /* smallest control */
+  --lc-row: 36px;         /* tab row, list rows */
+  --lc-bar: 34px;         /* window bar */
+  --lc-action: 60px;      /* action rows (dialog buttons, function block) */
+  --lc-cmdbar: 50px;      /* command line bar */
+  --lc-close: 50px;       /* every overlay's × (title rows are 50 px) */
+  --lc-grid-row: 40px;    /* a grid row (48 on touch) */
+  --lc-power-w: 230px;    /* the power toggle in the slab */
+  /* Tile grids (decisions §30 "12c2", MenuTiles board): columns auto-fill
+     from these minimums; a tile grid never hard-codes a column count (tidy). */
+  --lc-tile-min: 150px;   /* Menu / Shutdown / Backup tiles */
+  --lc-tile-h: 88px;      /* a tile: icon 24 over a one-line label */
+  --lc-tile-row-h: 76px;  /* a narrow box: icon + label in a row */
+  --lc-tile-icon: 24px;
+  --lc-cell-min: 240px;   /* settings cells, picker items */
+  --lc-chip-min: 120px;   /* small tiles (screens, swatches, icons) */
+  --lc-dg-tile-min: 92px; /* a Device Sheet tile in Channel mode (kit/devicegrid.js) */
+  --lc-act-min: 76px;     /* an action in the object sheet's row */
+  --lc-pool-cell: 80px;   /* a pool cell (the window's Size setting) */
+  --lc-pool-min: 0px;     /* touch: a pool cell is never narrower (Fit) */
+  /* Safe areas (notch, home bar, rounded corners): every edge bar and fixed
+     element adds these to its base. */
+  --lc-safe-top: env(safe-area-inset-top, 0px);
+  --lc-safe-right: env(safe-area-inset-right, 0px);
+  --lc-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --lc-safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* Touch screens: console sizes (44–48 px targets, 50 px title rows), and 16 px
+   text in fields so iOS never zooms on focus. */
+@media (any-pointer: coarse) {
+  :root {
+    --lc-fs: 16px;
+    --lc-fs-small: 13px;
+    --lc-fs-title: 17px;
+    --lc-hit: 44px;
+    --lc-row: 48px;
+    --lc-bar: 44px;
+    --lc-cmdbar: 56px;
+    --lc-pool-min: 72px;
+    --lc-grid-row: 48px;
+  }
+}
+
+:root[data-theme="Daylight"] {
+  --lc-bg:          #e4e4e4;
+  --lc-surface:     #f0f0f0;
+  --lc-raised:      #fbfbfb;
+  --lc-line:        #bdbdbd;
+  --lc-text:        #161616;
+  --lc-text-dim:    #5a5a5a;
+  --lc-accent:      #7c6200;
+  --lc-info:        #3d5a78;
+  --lc-ok:          #007a07;
+  --lc-warn:        #9a5600;
+  --lc-alert:       #c00000;
+  --lc-programmer:  #a8384e;
+  --lc-blind:       #5a4fb0;
+  --lc-park:        #1f756c;
+  --lc-on-accent:   #fff;
+  color-scheme: light;
+  --lc-gap:       color-mix(in srgb, var(--lc-bg) 80%, var(--lc-black));
+  --lc-strong:    var(--lc-black);
+  --lc-act-select:  #8a6d00;
+  --lc-act-new:     #1f8a28;
+  --lc-act-copy:    #2f6fb8;
+  --lc-act-cut:     #b0600c;
+  --lc-act-delete:  #c8261a;
+  --lc-act-oops:    #a07c00;
+  --lc-act-io:      #1f7f78;
+  --lc-act-history: #6a4fb0;
+  --lc-act-neutral: #6a6a6a;
+  --lc-filter:      #9a7a00;
+  --lc-mixed:       #8a6300;
+  --lc-fail-bg:     #f6d4d0;
+  --lc-fail-line:   #c00000;
+  --lc-fail-text:   #7a1010;
+  --lc-fail-icon:   #c00000;
+  --lc-sel-fill:    color-mix(in srgb, var(--lc-sel-line) 22%, var(--lc-white));
+  --lc-sel-head:    color-mix(in srgb, var(--lc-sel-line) 12%, var(--lc-white));
+  --lc-filter-bg:   color-mix(in srgb, var(--lc-filter) 14%, var(--lc-white));
+  --lc-filter-head: color-mix(in srgb, var(--lc-filter) 24%, var(--lc-white));
+  --lc-cell:        var(--lc-raised);
+  --lc-v-new:          #0a7f8f;
+  --lc-v-lower:        #1f8a28;
+  --lc-v-track:        #9a2e9a;
+  --lc-v-other:        #8a6d00;
+  --lc-v-other-track:  #9a8a52;
+  --lc-v-fading:       #c8d6f0;
+  --lc-v-none:         #c4c4c4;
+  --lc-v-rel:          #7a4fa0;
+  --lc-v-fade:         #1f8a28;
+  --lc-v-delay:        #b0600c;
+  --lc-v-phaser:       #5a2fb0;
+  --lc-v-preset:       #0a7f8f;
+  --lc-v-mark-off:     #5a5a5a;
+  --lc-mode-hl:        #8a6d00;
+  --lc-mode-freeze:    #2f6f98;
+  --lc-mode-solo:      #b0600c;
+}
+
+/* Night: dim, red-shifted, for dark FOH positions. */
+:root[data-theme="Night"] {
+  --lc-bg:          #0b0505;
+  --lc-surface:     #140909;
+  --lc-raised:      #1d0d0d;
+  --lc-line:        #2e1515;
+  --lc-text:        #d07a68;
+  --lc-text-dim:    #8a4a40;
+  --lc-accent:      #e0862e;
+  --lc-info:        #b0705f;
+  --lc-ok:          #9aa040;
+  --lc-warn:        #e0862e;
+  --lc-alert:       #ff4a3a;
+  --lc-programmer:  #e0607a;
+  --lc-blind:       #9a6ab0;
+  --lc-park:        #4a9a8a;
+  --lc-on-accent:   #0b0505;
+  --lc-strong:    var(--lc-text);
+  --lc-act-select:  var(--lc-accent);
+  --lc-act-new:     var(--lc-ok);
+  --lc-act-copy:    var(--lc-info);
+  --lc-act-cut:     var(--lc-warn);
+  --lc-act-delete:  var(--lc-alert);
+  --lc-act-oops:    var(--lc-warn);
+  --lc-act-io:      var(--lc-park);
+  --lc-act-history: var(--lc-blind);
+  --lc-act-neutral: var(--lc-text-dim);
+  --lc-filter:      var(--lc-accent);
+  --lc-mixed:       var(--lc-accent);
+  --lc-power-off:   #7a2a20;
+  --lc-fail-bg:     #3a0d0a;
+  --lc-fail-line:   #8a2018;
+  --lc-fail-text:   #ff9a88;
+  --lc-fail-icon:   var(--lc-alert);
+  --lc-v-prg-ink:      #0b0505;
+  --lc-v-new:          #9aa040;
+  --lc-v-lower:        #7a8a30;
+  --lc-v-track:        #b0607a;
+  --lc-v-other:        #e0862e;
+  --lc-v-other-track:  #8a5a30;
+  --lc-v-fading:       #2a1414;
+  --lc-v-none:         #000;
+  --lc-v-rel:          #9a6ab0;
+  --lc-v-fade:         #9aa040;
+  --lc-v-delay:        #e0862e;
+  --lc-v-phaser:       #9a6ab0;
+  --lc-v-preset:       #9aa040;
+  --lc-v-mark-off:     #d07a68;
+  --lc-mode-hl:        #e0a050;
+  --lc-mode-freeze:    #b0705f;
+  --lc-mode-solo:      #e0862e;
+}
+
+/* The lock surface (luma-surface, decisions §30 "12a3"): light text over its
+   darkened picture in every preset (it is the room's lock screen, not a
+   window), the user's accent only in rings and the go button. */
+luma-surface {
+  --lc-sf-text:   #d1d1d1;
+  --lc-sf-dim:    #9c9c9c;
+  --lc-sf-faint:  #787878;
+  --lc-sf-glass:  rgba(28, 28, 28, .78);
+  --lc-sf-panel:  rgba(22, 22, 22, .88);
+  --lc-sf-cell:   #262626;
+  --lc-sf-line:   #424242;
+  --lc-sf-shade:  rgba(10, 10, 10, .38);
+  --lc-sf-gold:   #9a7a08;
+  --lc-sf-on-gold:#f3ecd3;
+  --lc-sf-ok:     #00a60a;
+  --lc-sf-alert:  #e10000;
+  --lc-sf-err:    #ff6a5a;
+  --lc-sf-warn:   #c27a12;
+  --lc-av-idle:   rgba(120, 120, 120, .5);
+  --lc-av-fill:   rgba(48, 48, 48, .9);
+}

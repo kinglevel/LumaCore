@@ -1,0 +1,17 @@
+[package]
+name = "lumacore-patch"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+lumacore-fixtures = { path = "../lumacore-fixtures" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-tree = { path = "../lumacore-tree" }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

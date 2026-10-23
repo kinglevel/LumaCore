@@ -1,0 +1,1011 @@
+<title>LumaCore 12e Touch Layout</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a console-dark mockup bench — tabs of boards, each a live stage + the lines it would send.
+   Colours are LumaCore's Dark preset (kit/tokens.css); single dark look on purpose (the console's own). */
+:root {
+  --lc-bg:#121212; --lc-surface:#1c1c1c; --lc-raised:#303030; --lc-line:#424242;
+  --lc-text:#d1d1d1; --lc-dim:#8a8a8a; --lc-accent:#9a7a08; --lc-accent-hi:#c9a227;
+  --lc-info:#758ba0; --lc-ok:#00a60a; --lc-alert:#e10000; --lc-on-accent:#f3ecd3;
+  --lc-act-select:#c9a227; --lc-act-new:#3fbf4a; --lc-act-copy:#4d8fd6; --lc-act-cut:#e08a2c;
+  --lc-act-delete:#ff5a4a; --lc-act-io:#3fb0a6; --lc-act-neutral:#b0b0b0;
+  --lc-gap:#0a0a0a; --lc-hover:#3a3a3a; --lc-selected:#4a4021; --lc-scrim:rgba(0,0,0,.62);
+  --lc-font:'Source Sans 3','Segoe UI',system-ui,-apple-system,sans-serif;
+  --lc-mono:'JetBrains Mono',Menlo,Consolas,monospace;
+  --hit:44px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--lc-bg); color: var(--lc-text); }
+body { font-family: var(--lc-font); font-size: 15px; padding-inline: 16px; padding-block: 0 40px; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; }
+.noselect, .stage, .phone { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--lc-bg); padding-block: 14px 10px; border-bottom: 1px solid var(--lc-line); margin-inline: -16px; padding-inline: 16px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 2px; text-wrap: balance; }
+.sub { color: var(--lc-dim); font-size: 13px; margin: 0 0 10px; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.tabs button { flex: none; min-height: var(--hit); padding: 0 16px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-surface); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--lc-accent); border-color: transparent; color: var(--lc-on-accent); font-weight: 600; }
+.board { padding-block: 16px; display: grid; gap: 14px; }
+.board > * { min-width: 0; }
+.intro { max-width: 70ch; color: var(--lc-text); line-height: 1.45; margin: 0; }
+.intro b { color: var(--lc-accent-hi); font-weight: 600; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--lc-line); border-radius: 6px; overflow: hidden; }
+.seg button { min-height: var(--hit); padding: 0 14px; border: 0; background: var(--lc-surface); cursor: pointer; border-right: 1px solid var(--lc-line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--lc-selected); color: var(--lc-on-accent); box-shadow: inset 0 -3px 0 var(--lc-accent-hi); }
+.ctl-label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); margin-right: 6px; }
+.check { display: inline-flex; align-items: center; gap: 8px; min-height: var(--hit); cursor: pointer; }
+.check input { width: 22px; height: 22px; accent-color: var(--lc-accent); }
+.decide { border-left: 3px solid var(--lc-accent); background: var(--lc-surface); padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 80ch; font-size: 14px; line-height: 1.45; }
+.decide h3 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-accent-hi); }
+.decide ul { margin: 0; padding-left: 18px; }
+:focus-visible { outline: 2px solid var(--lc-accent-hi); outline-offset: 2px; }
+
+/* ── the log of lines ── */
+.log { border: 1px solid var(--lc-line); border-radius: 6px; background: var(--lc-gap); font-family: var(--lc-mono); font-size: 13px; }
+.log-head { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-bottom: 1px solid var(--lc-line); font-family: var(--lc-font); color: var(--lc-dim); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.log-head button { min-height: 32px; border: 1px solid var(--lc-line); background: var(--lc-surface); border-radius: 4px; padding: 0 10px; cursor: pointer; text-transform: none; letter-spacing: 0; }
+.log ol { list-style: none; margin: 0; padding: 6px 10px; max-height: 168px; overflow: auto; }
+.log li { padding: 3px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+.log li .p { color: var(--lc-dim); }
+.log li .n { color: var(--lc-dim); font-family: var(--lc-font); font-size: 13px; }
+.log li:first-child .l { color: var(--lc-accent-hi); }
+.log .empty { color: var(--lc-dim); font-family: var(--lc-font); }
+
+/* ── hold ring ── */
+.ring { position: fixed; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; pointer-events: none; z-index: 999;
+  background: conic-gradient(var(--lc-accent-hi) calc(var(--p) * 1turn), transparent 0); -webkit-mask: radial-gradient(circle, transparent 25px, #000 26px); mask: radial-gradient(circle, transparent 25px, #000 26px); opacity: .9; }
+@property --p { syntax: '<number>'; inherits: false; initial-value: 0; }
+.ring.run { animation: ringfill var(--dur) linear forwards; }
+@keyframes ringfill { from { --p: 0 } to { --p: 1 } }
+
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--lc-raised); border: 1px solid var(--lc-line); padding: 10px 16px; border-radius: 6px; z-index: 1000; font-size: 14px; max-width: calc(100vw - 32px); }
+
+/* ── stage frames ── */
+.stage { position: relative; border: 1px solid var(--lc-line); border-radius: 8px; overflow: hidden; background: var(--lc-bg); }
+.win-hdr { height: 36px; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); font-size: 14px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--lc-accent); }
+.phone-frame { width: 390px; max-width: 100%; margin-inline: auto; border: 10px solid #000; border-radius: 34px; overflow: hidden; background: var(--lc-bg); position: relative; }
+
+/* ── pool cells: desk ── */
+.pool { overflow-y: auto; touch-action: pan-y; }
+.pool.desk { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; padding: 8px; height: 470px; align-content: start; }
+.cell { position: relative; border-radius: 6px; cursor: pointer; text-align: left; }
+.desk .cell { height: 80px; padding: 6px 8px; border: 1px solid var(--lc-line); background: var(--lc-raised); display: flex; flex-direction: column; justify-content: space-between; }
+.desk .cell.empty { background: var(--lc-surface); border-color: transparent; }
+.desk .cell .no { font-size: 12px; color: var(--lc-dim); display: flex; justify-content: space-between; }
+.desk .cell .nm { font-size: 16px; font-weight: 500; line-height: 1.1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.desk .cell .cov { height: 4px; border-radius: 2px; background: var(--lc-info); }
+.cell.lit { outline: 2px solid var(--lc-accent-hi); outline-offset: -2px; }
+.cell.src { outline: 2px dashed var(--lc-act-copy); outline-offset: -2px; }
+.cell .held { color: var(--lc-act-delete); }
+/* ── pool cells: compact phone (the tight matrix) ── */
+.pool.compact { display: grid; grid-template-columns: repeat(auto-fill, minmax(62px, 1fr)); gap: 1px; padding: 0; background: var(--lc-gap); align-content: start; }
+.compact .cell { height: 52px; border-radius: 0; padding: 3px 4px; background: var(--lc-raised); display: flex; flex-direction: column; justify-content: space-between; border: 0; }
+.compact .cell.empty { background: var(--lc-surface); }
+.compact .cell .no { font-size: 12px; line-height: 1; color: var(--lc-dim); display: flex; justify-content: space-between; }
+.compact .cell .nm { font-size: 13px; font-weight: 500; line-height: 1.1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; word-break: break-word; }
+.compact .cell .cov { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--lc-info); }
+.compact .cell.empty .cov { display: none; }
+
+/* ── selector (variant A) and sheet (variant C) ── */
+.overlay { position: absolute; inset: 0; z-index: 20; background: var(--lc-bg); display: flex; flex-direction: column; }
+.sel-head { display: flex; align-items: center; gap: 6px; padding: 6px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); }
+.sel-title { font-size: 16px; font-weight: 600; padding: 0 8px; flex: none; }
+.acts { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+.act { flex: none; min-height: 48px; min-width: 84px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; justify-content: center; }
+.act svg { width: 18px; height: 18px; flex: none; }
+.act[aria-pressed="true"] { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; }
+.act.danger { color: var(--lc-act-delete); }
+.act.danger[aria-pressed="true"] { background: var(--lc-alert); color: var(--lc-on-accent); }
+.x { flex: none; width: 50px; height: 50px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; display: grid; place-items: center; }
+.sel-body { flex: 1; min-height: 0; }
+.sel-body .pool { height: 100%; }
+.desk-sel .pool.desk { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); height: 100%; }
+.desk-sel .pool.desk .cell { height: 96px; }
+.sel-foot { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: var(--lc-surface); border-top: 1px solid var(--lc-line); min-height: 50px; }
+.sel-foot .line { font-family: var(--lc-mono); font-size: 14px; }
+.sel-foot .line .p { color: var(--lc-dim); }
+.sel-foot .hint { margin-left: auto; color: var(--lc-dim); font-size: 13px; }
+.compact-sel .act { min-width: 64px; padding: 0 8px; font-size: 14px; }
+.compact-sel .act svg { display: none; }
+.compact-sel .sel-title { display: none; }
+.compact-sel .x { width: 48px; height: 48px; }
+.sheet { position: absolute; inset: 0; z-index: 20; background: var(--lc-scrim); display: flex; align-items: flex-end; justify-content: center; }
+.sheet-box { width: min(640px, 100%); background: var(--lc-surface); border: 1px solid var(--lc-line); border-radius: 12px 12px 0 0; display: flex; flex-direction: column; }
+.sheet-top { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 16px; border-bottom: 1px solid var(--lc-line); }
+.sheet-top .t { font-size: 17px; font-weight: 600; flex: 1; }
+.sheet-prev { display: flex; gap: 16px; align-items: center; padding: 18px 16px; }
+.sheet-prev .big { width: 96px; height: 96px; border-radius: 8px; background: var(--lc-raised); border: 1px solid var(--lc-line); display: grid; place-items: center; font-size: 26px; font-weight: 600; flex: none; }
+.sheet-prev .facts { color: var(--lc-dim); line-height: 1.5; font-size: 14px; }
+.sheet-prev .facts b { color: var(--lc-text); font-size: 18px; font-weight: 600; display: block; }
+.sheet-acts { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 6px; padding: 8px; border-top: 1px solid var(--lc-line); }
+.sheet-acts .act { min-height: 60px; min-width: 0; flex-direction: column; gap: 2px; font-size: 13px; }
+.banner { position: absolute; left: 8px; right: 8px; top: 44px; z-index: 15; background: var(--lc-act-copy); color: #fff; border-radius: 6px; display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 14px; font-weight: 500; }
+.banner .x { background: transparent; border-color: rgba(255,255,255,.4); color: #fff; width: 44px; height: 44px; }
+.pool-wrap-phone .banner { top: 40px; }
+
+/* ── split board ── */
+.split-stage { height: 440px; display: flex; }
+.pane { position: relative; min-width: 0; min-height: 0; overflow: hidden; background: var(--lc-bg); display: flex; flex-direction: column; }
+.pane .body { flex: 1; display: grid; place-items: center; color: var(--lc-dim); font-size: 13px; text-align: center; padding: 8px; }
+.split { display: flex; flex: 1; min-width: 0; min-height: 0; }
+.split.h { flex-direction: row; } .split.v { flex-direction: column; }
+.handle { position: relative; flex: none; background: var(--lc-gap); z-index: 5; outline: none; }
+.split.h > .handle { width: 4px; cursor: col-resize; }
+.split.v > .handle { height: 4px; cursor: row-resize; }
+.handle::after { content: ''; position: absolute; touch-action: none; }
+.split.h > .handle::after { top: 0; bottom: 0; left: calc(50% - var(--band) / 2); width: var(--band); }
+.split.v > .handle::after { left: 0; right: 0; top: calc(50% - var(--band) / 2); height: var(--band); }
+.show-hit .handle::after { background: rgba(201,162,39,.18); }
+.handle:hover, .handle.active, .handle:focus-visible { background: var(--lc-accent); }
+.pill { position: absolute; z-index: 6; pointer-events: none; border-radius: 4px; background: var(--lc-raised); border: 1px solid var(--lc-line); display: none; }
+.grip-on .pill { display: block; }
+.split.h > .handle .pill { width: 12px; height: 44px; left: -4px; top: calc(50% - 22px); background-image: repeating-linear-gradient(0deg, var(--lc-dim) 0 2px, transparent 2px 6px); background-size: 4px 26px; background-repeat: no-repeat; background-position: center; }
+.split.v > .handle .pill { height: 12px; width: 44px; top: -4px; left: calc(50% - 22px); background-image: repeating-linear-gradient(90deg, var(--lc-dim) 0 2px, transparent 2px 6px); background-size: 26px 4px; background-repeat: no-repeat; background-position: center; }
+.handle.active .pill { border-color: var(--lc-accent-hi); }
+.ratio { font-family: var(--lc-mono); color: var(--lc-text); font-size: 13px; }
+
+/* ── phone board ── */
+.phone-scale { margin-inline: auto; transform-origin: top center; }
+.phone { position: relative; width: 390px; height: 800px; display: flex; flex-direction: column; background: var(--lc-bg); }
+.ph-status { height: 36px; flex: none; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 22px 4px; font-size: 13px; font-weight: 600; }
+.ph-top { height: 28px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 8px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); font-size: 13px; color: var(--lc-dim); }
+.ph-main { flex: 1; min-height: 0; display: flex; }
+.ph-side { width: 50px; flex: none; background: var(--lc-surface); border-right: 1px solid var(--lc-line); display: flex; flex-direction: column; gap: 4px; padding: 4px; }
+.ph-side span { height: 42px; border-radius: 4px; background: var(--lc-raised); display: grid; place-items: center; font-size: 12px; color: var(--lc-dim); }
+.ph-desk { flex: 1; min-width: 0; position: relative; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 3px; background: var(--lc-gap); }
+.mini { position: relative; overflow: hidden; background: var(--lc-bg); display: flex; flex-direction: column; cursor: pointer; touch-action: pan-y; }
+.mini .mh { height: 18px; flex: none; background: var(--lc-surface); font-size: 12px; line-height: 18px; padding: 0 5px; color: var(--lc-dim); white-space: nowrap; overflow: hidden; }
+.mini .mb { flex: 1; padding: 3px; overflow: hidden; }
+.mini-cells { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; }
+.mini-cells i { height: 16px; background: var(--lc-raised); }
+.mini-rows i { display: block; height: 9px; margin-bottom: 3px; background: var(--lc-raised); border-radius: 1px; }
+.mini-rows i.on { background: var(--lc-accent); }
+.mini-term { font-family: var(--lc-mono); font-size: 12px; transform: scale(.6); transform-origin: top left; width: 166%; color: var(--lc-dim); line-height: 1.3; white-space: pre; }
+.full { position: absolute; inset: 0; z-index: 10; display: flex; flex-direction: column; background: var(--lc-bg); }
+.maxbar { height: 44px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 4px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); }
+.maxbar button { width: 44px; height: 44px; border: 0; border-radius: 6px; background: transparent; cursor: pointer; font-size: 20px; }
+.maxbar .t { flex: 1; text-align: center; font-weight: 600; font-size: 15px; }
+.full-body { flex: 1; min-height: 0; overflow: hidden; position: relative; touch-action: pan-y; }
+.full-track { position: absolute; inset: 0; display: flex; transition: transform .22s ease; }
+.full-page { flex: none; width: 100%; height: 100%; overflow: auto; }
+.dots { position: absolute; bottom: 6px; left: 0; right: 0; display: flex; justify-content: center; gap: 6px; pointer-events: none; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--lc-line); }
+.dots i.on { background: var(--lc-accent-hi); }
+.big-rows { padding: 8px; display: grid; gap: 4px; }
+.big-rows div { min-height: 44px; border-radius: 4px; background: var(--lc-raised); display: flex; align-items: center; padding: 0 10px; gap: 10px; font-size: 15px; }
+.big-rows div.on { background: var(--lc-selected); box-shadow: inset 3px 0 0 var(--lc-accent-hi); }
+.big-rows div span { color: var(--lc-dim); font-family: var(--lc-mono); font-size: 13px; width: 36px; }
+.big-term { font-family: var(--lc-mono); font-size: 13px; padding: 8px; color: var(--lc-dim); white-space: pre-wrap; line-height: 1.5; }
+.ph-bar { height: 56px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 4px; background: var(--lc-surface); border-top: 1px solid var(--lc-line); }
+.ph-bar .b { width: 44px; height: 44px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); display: grid; place-items: center; font-size: 12px; font-weight: 600; cursor: pointer; flex: none; }
+.ph-bar .purr { color: var(--lc-accent-hi); }
+.ph-line { flex: 1; min-width: 0; height: 44px; background: var(--lc-gap); border-radius: 4px; display: flex; align-items: center; padding: 0 6px; cursor: text; overflow: hidden; }
+.ph-home { height: 22px; flex: none; display: grid; place-items: center; }
+.ph-home i { width: 130px; height: 5px; border-radius: 3px; background: var(--lc-dim); }
+.ph-sheet { position: absolute; inset: 0; z-index: 30; background: var(--lc-scrim); display: flex; align-items: flex-end; }
+.ph-sheet .box { width: 100%; background: var(--lc-surface); border-radius: 12px 12px 0 0; border-top: 1px solid var(--lc-line); padding: 8px; display: grid; gap: 6px; padding-bottom: 86px; }
+.ph-sheet .grp { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); padding: 6px 6px 0; }
+.ph-sheet .row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.ph-sheet .row button { min-height: 52px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 13px; }
+.ph-sheet .stat { display: flex; justify-content: space-between; font-size: 13px; color: var(--lc-dim); padding: 4px 6px; }
+.ph-toast { position: absolute; left: 50%; top: 45%; transform: translateX(-50%); background: var(--lc-raised); border: 1px solid var(--lc-line); padding: 8px 12px; border-radius: 6px; font-size: 13px; z-index: 40; white-space: nowrap; }
+.offscreen { position: fixed; left: -9999px; top: 0; font-size: 16px; }
+
+/* ── narrow line ── */
+.cl { font-family: var(--lc-mono); font-size: 15px; white-space: pre; display: inline-flex; }
+.cl span { display: inline-block; width: 1ch; text-align: center; }
+.cl .pr { color: var(--lc-dim); }
+.cl .kw { color: var(--lc-accent-hi); }
+.cl .cur { background: var(--lc-text); color: var(--lc-bg); }
+.cl .mk { color: var(--lc-act-copy); font-weight: 600; }
+.cl-row { display: grid; gap: 6px; }
+.cl-row .lbl { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); }
+.cl-box { background: var(--lc-gap); border: 1px solid var(--lc-line); border-radius: 4px; padding: 10px 8px; overflow-x: auto; }
+.cl-box .frame { display: inline-block; outline: 1px dashed var(--lc-line); outline-offset: 3px; }
+.field { display: grid; gap: 4px; font-size: 12px; color: var(--lc-dim); text-transform: uppercase; letter-spacing: .06em; }
+.field input, .field select { min-height: var(--hit); font: 16px var(--lc-mono); color: var(--lc-text); background: var(--lc-surface); border: 1px solid var(--lc-line); border-radius: 4px; padding: 0 10px; text-transform: none; letter-spacing: 0; }
+.field input[type=range] { padding: 0; accent-color: var(--lc-accent); }
+.wide { width: min(100%, 560px); }
+
+/* ── group editor ── */
+.ge { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: 8px; padding: 8px; }
+.ge.stacked { grid-template-columns: 1fr; }
+.ge-list { display: flex; flex-direction: column; border: 1px solid var(--lc-line); border-radius: 6px; overflow: hidden; min-width: 0; }
+.slab { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px; background: var(--lc-surface); border-bottom: 1px solid var(--lc-line); }
+.slab button { min-height: 44px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.slab button .ic { width: 10px; height: 10px; border-radius: 2px; }
+.ge-rows { position: relative; max-height: 400px; overflow-y: auto; touch-action: pan-y; }
+.ge-row { height: 48px; display: grid; grid-template-columns: 44px 34px 1fr 44px 44px; align-items: center; border-bottom: 1px solid var(--lc-line); background: var(--lc-bg); position: relative; }
+.ge-row:nth-child(even) { background: #161616; }
+.ge-row.sel { background: var(--lc-selected); }
+.ge-row.lift { z-index: 5; box-shadow: 0 6px 18px rgba(0,0,0,.6); background: var(--lc-raised); }
+.ge-row .grip { height: 48px; display: grid; place-items: center; cursor: grab; touch-action: none; color: var(--lc-dim); }
+.ge-row .o { font-family: var(--lc-mono); font-size: 13px; color: var(--lc-dim); }
+.ge-row .f { font-size: 15px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ge-row .f small { color: var(--lc-dim); font-size: 13px; margin-left: 6px; }
+.ge-row button.mv { height: 44px; border: 0; background: transparent; cursor: pointer; color: var(--lc-text); font-size: 16px; }
+.ge-row button.mv:disabled { color: var(--lc-line); cursor: default; }
+.ge-grid { position: relative; border: 1px solid var(--lc-line); border-radius: 6px; background: var(--lc-gap); display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px; padding: 2px; align-content: start; min-width: 0; touch-action: none; }
+.ge-cell { aspect-ratio: 1; background: var(--lc-surface); border-radius: 3px; position: relative; display: grid; place-items: center; font-size: 13px; min-height: 36px; }
+.ge-fix { position: absolute; inset: 2px; border-radius: 4px; background: var(--lc-raised); border: 1px solid var(--lc-line); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: grab; touch-action: none; line-height: 1.1; }
+.ge-fix b { font-size: 14px; font-weight: 600; }
+.ge-fix span { font-size: 12px; color: var(--lc-accent-hi); font-family: var(--lc-mono); }
+.ge-fix.sel { border-color: var(--lc-accent-hi); background: var(--lc-selected); }
+.ge-fix.drag { z-index: 9; box-shadow: 0 6px 18px rgba(0,0,0,.6); }
+.ge-cell.over { background: var(--lc-hover); }
+
+@media (max-width: 640px) {
+  .ge { grid-template-columns: 1fr; }
+  .pool.desk { height: 400px; }
+  .split-stage { height: 380px; }
+}
+@media (prefers-reduced-motion: reduce) { .full-track { transition: none; } .ring.run { animation-duration: 1ms; } }
+</style>
+
+<header>
+  <h1>12e touch layout</h1>
+  <p class="sub">Mockups for approval, §30 "12e hardening". Hold 500 ms (the profile's HoldTime), slop 8 px. Every gesture shows the line it would send.</p>
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-b="pool" aria-selected="true">Pool hold</button>
+    <button role="tab" data-b="split" aria-selected="false">Split handle</button>
+    <button role="tab" data-b="phone" aria-selected="false">Phone</button>
+    <button role="tab" data-b="group" aria-selected="false">Group editor</button>
+    <button role="tab" data-b="cmd" aria-selected="false">Command line</button>
+  </nav>
+</header>
+
+<!-- ═════════ Pool hold ═════════ -->
+<section class="board" id="b-pool">
+  <p class="intro">This is <b>&lt;luma-pool&gt;</b> in two designs. Tap a cell to select it. <b>Hold</b> a cell for the variant you pick below. After a hold, keep your finger down, slide it over another cell and release to tap that cell (§22).</p>
+  <div class="controls">
+    <span><span class="ctl-label">Hold on an object</span><span class="seg" id="pv-variant"><button data-v="selector" aria-pressed="true">A · Selector (locked board)</button><button data-v="sheet" aria-pressed="false">C · Object sheet</button></span></span>
+    <label class="check"><input type="checkbox" id="pv-empty" checked> B · Hold on an empty cell stores there</label>
+    <span><span class="ctl-label">Design</span><span class="seg" id="pv-design"><button data-v="desk" aria-pressed="true">Desk</button><button data-v="compact" aria-pressed="false">Compact phone</button></span></span>
+  </div>
+  <div id="pool-host"></div>
+  <div class="log" data-log></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li><b>A</b> is the locked PoolHold board. A hold opens a full-screen selector of every cell with the action row. Pick the action, then the object. Move and Copy then want a target tap.</li>
+    <li><b>C</b> opens one sheet for the object you held, with the actions at the bottom. Move and Copy close the sheet and arm a target pick in the pool.</li>
+    <li><b>B</b> (the checkbox) works with either: a hold on an empty cell stores there at once.</li>
+    <li>Compact phone: is the tight matrix right (1 px gap, no padding, number and name only, 62 px minimum)?</li>
+  </ul></div>
+</section>
+
+<!-- ═════════ Split handle ═════════ -->
+<section class="board" id="b-split" hidden>
+  <p class="intro">Drag a divider. <b>Double-tap</b> it to reset to 50 / 50. With a keyboard, focus it (Tab) and use the arrows, Home and End. A pane never goes below 120 px (the window type's minimum). Releasing files <b>one Oops step</b>.</p>
+  <div class="controls">
+    <span><span class="ctl-label">Variant</span><span class="seg" id="sv-variant"><button data-v="A" aria-pressed="false">A · Band only</button><button data-v="B" aria-pressed="true">B · Band + grip pill</button></span></span>
+    <span><span class="ctl-label">Sizes</span><span class="seg" id="sv-size"><button data-v="touch" aria-pressed="false">Touch</button><button data-v="mouse" aria-pressed="false">Mouse</button></span></span>
+    <label class="check"><input type="checkbox" id="sv-hit"> Show the hit area</label>
+    <span class="ratio" id="sv-ratio"></span>
+  </div>
+  <div class="stage split-stage" id="split-host"></div>
+  <div class="log" data-log></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li><b>A</b>: a 4 px hairline with a 44 px hit band on touch (12 px with a mouse). Nothing else shows.</li>
+    <li><b>B</b>: A, plus a small grip pill in the middle of each divider, on touch only. The pill is easy to find and costs no space.</li>
+    <li>Today's handle is a 24 px band on touch with no grip.</li>
+  </ul></div>
+</section>
+
+<!-- ═════════ Phone ═════════ -->
+<section class="board" id="b-phone" hidden>
+  <p class="intro">This is the 12c2 desk in miniature with the 12e changes. <b>Hold a pane</b> to make it full screen. Then <b>swipe left or right</b> to page through the panes, or use ‹ ›. Tap the command line to type: the prompt shrinks and the line scrolls (see the Command line tab). <b>⋯</b> holds what the left sidebar had.</p>
+  <div class="controls">
+    <span><span class="ctl-label">Left sidebar</span><span class="seg" id="ph-side"><button data-v="fold" aria-pressed="true">12e · Folded into ⋯</button><button data-v="today" aria-pressed="false">Today</button></span></span>
+    <label class="check"><input type="checkbox" id="ph-swipe" checked> Swipe between full-screen panes</label>
+  </div>
+  <div id="phone-outer"><div class="phone-scale" id="phone-scale"><div class="phone-frame"><div class="phone" id="phone"></div></div></div></div>
+  <input class="offscreen" id="ph-input" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Phone command line">
+  <div class="log" data-log></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>Folded sidebar: are the ⋯ sheet's contents right (sidebar items above the status)?</li>
+    <li>Swipe: the pages wrap around at the ends. Should they stop at the first and last pane instead?</li>
+    <li>No landscape layout for now (decided).</li>
+  </ul></div>
+</section>
+
+<!-- ═════════ Group editor ═════════ -->
+<section class="board" id="b-group" hidden>
+  <p class="intro">This is Group 3 "Front". Drag a member by its <b>grip ⋮⋮</b>. Only the grip drags, so the rows still scroll with one finger. ↑ ↓ move a member one step. The slab holds the pool tools. You can drag fixtures on the grid to new spots. Tap a row or a fixture to select it.</p>
+  <div class="controls">
+    <span><span class="ctl-label">Layout</span><span class="seg" id="gv-layout"><button data-v="desk" aria-pressed="true">Desk</button><button data-v="phone" aria-pressed="false">Phone (stacked)</button></span></span>
+  </div>
+  <div id="ge-host"></div>
+  <div class="log" data-log></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>Grip + ↑ ↓: right size and place?</li>
+    <li>The tools' syntax is a <b>proposal</b>: <code>Set Group 3 Order Number | LeftToRight | TopToBottom</code> and <code>Set Group 3 Grid RemoveGaps</code>. Each is one statement and one Oops step.</li>
+    <li>Phone: the list sits above the grid.</li>
+  </ul></div>
+</section>
+
+<!-- ═════════ Command line ═════════ -->
+<section class="board" id="b-cmd" hidden>
+  <p class="intro">This is the bar's one-row line at a given width in columns (a phone is about 25). <b>Type</b> in the field and move the cursor: the 12e row shrinks the prompt and scrolls to keep the cursor in view. ‹ › mark the cut edges. The station draws this, so the TUI gets it too.</p>
+  <div class="controls">
+    <label class="field">Columns <input type="range" id="cl-cols" min="16" max="80" value="25"></label>
+    <span class="ratio" id="cl-colsv"></span>
+    <label class="field">Scope <select id="cl-scope"><option>Root</option><option selected>DataPools.1.Groups</option><option>Root.ShowData.DataPools.1.Groups</option></select></label>
+  </div>
+  <label class="field wide">Line <input id="cl-in" value='Store Group 3 /Merge "Front wash left"' autocomplete="off" spellcheck="false"></label>
+  <div class="cl-row"><span class="lbl">Today (approximately: the prompt is cut on the right, the line wraps and the one visible row shows its tail)</span><div class="cl-box"><span class="frame"><span class="cl" id="cl-today"></span></span></div></div>
+  <div class="cl-row"><span class="lbl">12e</span><div class="cl-box"><span class="frame"><span class="cl" id="cl-new"></span></span></div></div>
+  <div class="decide"><h3>The rule</h3><ul>
+    <li>The prompt takes the first form that leaves at least 12 columns for typing (or half the bar): <code>[admin@desk1] scope&gt; </code>, then <code>scope&gt; </code>, then <code>…end of scope&gt; </code>, then <code>&gt; </code>. The <code>&gt;</code> is never cut.</li>
+    <li>The line scrolls sideways and keeps the cursor 4 columns from either edge (fewer on a tiny bar). ‹ and › show where text is hidden.</li>
+  </ul></div>
+</section>
+
+<script>
+(() => {
+'use strict';
+const HOLD = 500, SLOP = 8, RING = 140, DBL = 300;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ── tabs ── */
+let board = 'pool';
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  board = b.dataset.b;
+  $$('#tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  $$('.board').forEach(s => s.hidden = s.id !== 'b-' + board);
+  if (board === 'phone') fitPhone();
+  if (board === 'split') layoutSplit();
+});
+function seg(id, fn) {
+  const el = $(id);
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    $$('button', el).forEach(x => x.setAttribute('aria-pressed', x === b));
+    fn(b.dataset.v);
+  });
+}
+
+/* ── log (one per board; shared list) ── */
+const lines = [];
+function log(line, note) {
+  lines.unshift({ line, note });
+  if (lines.length > 30) lines.pop();
+  drawLogs();
+}
+function drawLogs() {
+  $$('[data-log]').forEach(el => {
+    el.innerHTML = '';
+    const head = h('div', 'log-head', '<span>Lines the page would send</span>');
+    const clr = h('button', null, 'Clear'); clr.onclick = () => { lines.length = 0; drawLogs(); };
+    head.append(clr); el.append(head);
+    const ol = h('ol');
+    if (!lines.length) ol.append(h('li', 'empty', 'Nothing yet. Try a gesture.'));
+    lines.forEach(x => ol.append(h('li', null, (x.line ? `<span><span class="p">Root&gt; </span><span class="l">${esc(x.line)}</span></span>` : '') + (x.note ? `<span class="n">${esc(x.note)}</span>` : ''))));
+    el.append(ol);
+  });
+}
+drawLogs();
+
+let toastT;
+function toast(msg) {
+  let t = $('.toast'); if (!t) { t = h('div', 'toast'); document.body.append(t); }
+  t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 1800);
+}
+
+/* ── the one hold recognizer (kit/pointer.js in miniature) ── */
+let ringEl = null;
+function ringStart(x, y) {
+  ringStop();
+  ringEl = h('div', 'ring'); ringEl.style.left = x + 'px'; ringEl.style.top = y + 'px';
+  ringEl.style.setProperty('--dur', (HOLD - RING) + 'ms');
+  document.body.append(ringEl);
+  requestAnimationFrame(() => ringEl && ringEl.classList.add('run'));
+}
+function ringStop() { if (ringEl) { ringEl.remove(); ringEl = null; } }
+let swallowUntil = 0;
+document.addEventListener('click', e => { if (performance.now() < swallowUntil) { e.stopPropagation(); e.preventDefault(); } }, true);
+document.addEventListener('contextmenu', e => { if (e.target.closest('.stage, .phone, .noselect')) e.preventDefault(); });
+let pressOwned = false; // one press arms one hold: the innermost target owns it
+function hold(el, { onHold, onTap, target = e => e.currentTarget }) {
+  el.addEventListener('pointerdown', e => {
+    if (e.button > 0 || pressOwned) return;
+    const t = target(e); if (!t) return;
+    pressOwned = true;
+    const x0 = e.clientX, y0 = e.clientY;
+    let fired = false, ringT, holdT;
+    const end = (tap) => {
+      clearTimeout(ringT); clearTimeout(holdT); ringStop();
+      el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up);
+      el.removeEventListener('pointercancel', cancel); el.removeEventListener('lostpointercapture', cancel);
+      setTimeout(() => pressOwned = false, 0);
+      if (tap && !fired && onTap) onTap(t, e);
+    };
+    const mv = ev => { if (!fired && Math.hypot(ev.clientX - x0, ev.clientY - y0) > SLOP) end(false); };
+    const up = () => end(true);
+    const cancel = () => end(false);
+    el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', cancel); el.addEventListener('lostpointercapture', cancel);
+    ringT = setTimeout(() => ringStart(x0, y0), RING);
+    holdT = setTimeout(() => {
+      fired = true; ringStop(); swallowUntil = performance.now() + 700;
+      end(false); onHold(t, { x: x0, y: y0, pointerId: e.pointerId, pointerType: e.pointerType });
+    }, HOLD);
+  });
+}
+
+/* ═════════ POOL ═════════ */
+const NAMES = { 1: 'All', 2: 'Odd', 3: 'Front', 4: 'Back', 5: 'Spots', 6: 'Wash L', 7: 'Wash R', 9: 'Truss 1', 10: 'Truss 2', 11: 'Floor', 13: 'Blinders', 14: 'Strobes', 17: 'Side L', 18: 'Side R', 21: 'Audience', 25: 'Cyc' };
+const groups = {};
+Object.entries(NAMES).forEach(([n, name], i) => groups[n] = { name, cover: [100, 50, 50, 30, 0, 0, 0, 0][i % 8], fixtures: 4 + (n * 3) % 17, held: n == 5 ? 'Bob' : '' });
+const POOL_N = 60;
+const pv = { variant: 'selector', empty: true, design: 'desk' };
+const ICON = {
+  Edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  Label: '<path d="M12 2H2v10l9.3 9.3a1 1 0 0 0 1.4 0l8.6-8.6a1 1 0 0 0 0-1.4Z"/><circle cx="7" cy="7" r="1.5"/>',
+  Store: '<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/>',
+  Delete: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>',
+  Move: '<path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>',
+  Copy: '<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  Settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/>'
+};
+const svg = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const X_ICON = svg('<path d="M6 6l12 12M18 6L6 18"/>');
+const ACTIONS = ['Edit', 'Label', 'Store', 'Delete', 'Move', 'Copy', 'Settings'];
+let sel = null; // {action, src}
+let pick = null; // armed Move/Copy from the sheet {action, src}
+
+seg('#pv-variant', v => { pv.variant = v; drawPool(); });
+seg('#pv-design', v => { pv.design = v; drawPool(); });
+$('#pv-empty').onchange = e => { pv.empty = e.target.checked; };
+
+function cellHtml(n) {
+  const g = groups[n];
+  if (!g) return `<span class="no"><span>${n}</span></span><span class="nm"></span><span class="cov" style="width:0"></span>`;
+  return `<span class="no"><span>${n}</span>${g.held ? `<span class="held">${pv.design === 'desk' ? 'held by ' + esc(g.held) : '●'}</span>` : ''}</span><span class="nm">${esc(g.name)}</span><span class="cov" style="width:${g.cover}%"></span>`;
+}
+function poolGrid(cls) {
+  const grid = h('div', 'pool ' + (pv.design === 'desk' ? 'desk' : 'compact') + (cls ? ' ' + cls : ''));
+  for (let n = 1; n <= POOL_N; n++) {
+    const c = h('button', 'cell' + (groups[n] ? '' : ' empty'), cellHtml(n));
+    c.type = 'button'; c.dataset.no = n; c.setAttribute('aria-label', groups[n] ? `Group ${n} ${groups[n].name}` : `Empty ${n}`);
+    grid.append(c);
+  }
+  return grid;
+}
+let poolStage;
+function drawPool() {
+  sel = null; pick = null;
+  const host = $('#pool-host'); host.innerHTML = '';
+  const phone = pv.design === 'compact';
+  const wrap = phone ? h('div', 'phone-frame pool-wrap-phone') : h('div');
+  poolStage = h('div', 'stage');
+  if (phone) { poolStage.style.border = '0'; poolStage.style.borderRadius = '0'; poolStage.style.height = '640px'; poolStage.style.display = 'flex'; poolStage.style.flexDirection = 'column'; }
+  poolStage.append(h('div', 'win-hdr', '<span class="dot"></span>Groups<span style="margin-left:auto;color:var(--lc-dim);font-size:13px">DataPool 1</span>'));
+  const grid = poolGrid();
+  if (phone) grid.style.flex = '1';
+  poolStage.append(grid);
+  wrap.append(poolStage); host.append(wrap);
+  hold(grid, {
+    target: e => e.target.closest('.cell'),
+    onTap: c => poolTap(+c.dataset.no),
+    onHold: (c, p) => poolHold(+c.dataset.no, p)
+  });
+}
+function poolTap(n) {
+  if (pick) return finishPick(n);
+  if (groups[n]) log(`Group ${n}`, 'tap: the window\'s tap action (select)');
+  else toast('Empty. Hold to store here' + (pv.empty ? '' : ' (B is off)'));
+}
+function poolHold(n, p) {
+  if (!groups[n]) {
+    if (pv.empty) { groups[n] = { name: 'Group ' + n, cover: 0, fixtures: 0, held: '' }; log(`Store Group ${n}`, 'B: hold on an empty cell stores there (your selection)'); drawPool(); toast(`Stored Group ${n}`); return; }
+    if (pv.variant === 'sheet') { toast('Empty cell: nothing to show'); return; }
+  }
+  if (pv.variant === 'selector') openSelector(n, p); else openSheet(n);
+}
+
+/* variant A: the locked board's selector */
+function openSelector(n, p) {
+  sel = { action: null, src: null };
+  const phone = pv.design === 'compact';
+  const ov = h('div', 'overlay ' + (phone ? 'compact-sel' : 'desk-sel'));
+  const head = h('div', 'sel-head');
+  head.append(h('span', 'sel-title', 'Groups'));
+  const acts = h('div', 'acts');
+  ACTIONS.forEach(a => {
+    const b = h('button', 'act' + (a === 'Delete' ? ' danger' : ''), svg(ICON[a]) + a);
+    b.type = 'button'; b.setAttribute('aria-pressed', 'false');
+    b.onclick = () => { sel.action = sel.action === a ? null : a; sel.src = null; syncActs(); };
+    acts.append(b);
+  });
+  const x = h('button', 'x', X_ICON); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.onclick = () => closeOverlay();
+  head.append(acts, x);
+  const body = h('div', 'sel-body');
+  const grid = poolGrid(); body.append(grid);
+  const foot = h('div', 'sel-foot', '<span class="line"></span><span class="hint"></span>');
+  ov.append(head, body, foot);
+  poolStage.append(ov);
+  const syncActs = () => {
+    $$('.act', acts).forEach(b => b.setAttribute('aria-pressed', b.textContent === sel.action));
+    $$('.cell', grid).forEach(c => c.classList.toggle('src', sel.src === +c.dataset.no));
+    let line = sel.action ? (sel.action === 'Settings' ? 'EditSetting Group' : sel.action + ' Group') : '';
+    if (sel.src) line += ' ' + sel.src + ' At';
+    let hint = 'Hold opened this. Slide to a cell and release to tap it, or pick an action, then a cell.';
+    if (sel.action && !sel.src) hint = sel.action === 'Move' || sel.action === 'Copy' ? 'Tap the group to ' + sel.action.toLowerCase() + '.' : 'Now tap a group.';
+    if (sel.src) hint = 'Now tap the target cell.';
+    $('.line', foot).innerHTML = line ? `<span class="p">Root&gt; </span>${esc(line)}` : '';
+    $('.hint', foot).textContent = hint;
+  };
+  syncActs();
+  grid.addEventListener('click', e => { const c = e.target.closest('.cell'); if (c) selectorTap(+c.dataset.no, syncActs); });
+  // drag-through from the hold that opened it (§22): slide and release over a cell taps it
+  if (p) dragThrough(grid, p, no => selectorTap(no, syncActs));
+}
+function dragThrough(grid, p, tapFn) {
+  let moved = false, lit = null;
+  const block = e => e.preventDefault();
+  document.addEventListener('touchmove', block, { passive: false });
+  const mv = e => {
+    if (e.pointerId !== p.pointerId) return;
+    if (Math.hypot(e.clientX - p.x, e.clientY - p.y) > SLOP) moved = true;
+    const c = document.elementFromPoint(e.clientX, e.clientY)?.closest('.cell');
+    const inGrid = c && grid.contains(c) ? c : null;
+    if (lit !== inGrid) { lit?.classList.remove('lit'); lit = inGrid; lit?.classList.add('lit'); }
+  };
+  const up = e => {
+    if (e.pointerId !== p.pointerId) return;
+    done();
+    if (moved && lit && e.type === 'pointerup') { lit.classList.remove('lit'); tapFn(+lit.dataset.no); }
+    else lit?.classList.remove('lit');
+  };
+  const done = () => { document.removeEventListener('touchmove', block); window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); };
+  window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+}
+function selectorTap(n, sync) {
+  const a = sel.action, g = groups[n];
+  if (!a) { if (g) { log(`Group ${n}`, 'selector: no action → the window\'s tap action; closes'); closeOverlay(); } return; }
+  if (a === 'Move' || a === 'Copy') {
+    if (!sel.src) { if (!g) { toast('Pick a group first'); return; } sel.src = n; sync(); return; }
+    if (n === sel.src) { sel.src = null; sync(); return; }
+    runMoveCopy(a, sel.src, n); closeOverlay(); return;
+  }
+  if (!g && a !== 'Store') { toast('Empty cell'); return; }
+  runAction(a, n); closeOverlay();
+}
+function runAction(a, n) {
+  const g = groups[n];
+  if (a === 'Edit') log(`Edit Group ${n}`, 'opens the group editor (claims it)');
+  if (a === 'Label') log(`Label Group ${n}`, 'no name: the station asks (one dialog)');
+  if (a === 'Store') { if (g) log(`Store Group ${n}`, 'used: the station asks Merge / Overwrite / Remove'); else { groups[n] = { name: 'Group ' + n, cover: 0, fixtures: 0, held: '' }; log(`Store Group ${n}`); drawPool(); } }
+  if (a === 'Delete') log(`Delete Group ${n}`, 'the one Delete ask (dispatch) comes first');
+  if (a === 'Settings') log(`EditSetting Group ${n}`, 'needs EditSetting for pool objects (missing for Group today)');
+}
+function runMoveCopy(a, from, to) {
+  log(`${a} Group ${from} At ${to}`, groups[to] ? (a === 'Move' ? 'target used: it pushes along' : 'target used: the station asks to overwrite') : '');
+  if (!groups[to]) { groups[to] = { ...groups[from] }; if (a === 'Move') delete groups[from]; }
+  drawPool();
+}
+function closeOverlay() { sel = null; poolStage.querySelector('.overlay, .sheet')?.remove(); }
+
+/* variant C: one object's sheet */
+function openSheet(n) {
+  const g = groups[n];
+  const sh = h('div', 'sheet');
+  const box = h('div', 'sheet-box');
+  const top = h('div', 'sheet-top', `<span class="t">Group ${n} · ${esc(g.name)}</span>`);
+  const x = h('button', 'x', X_ICON); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.onclick = () => sh.remove();
+  top.append(x);
+  const prev = h('div', 'sheet-prev', `<div class="big">${n}</div><div class="facts"><b>${esc(g.name)}</b>${g.fixtures} fixtures · DataPool 1${g.held ? `<br><span style="color:var(--lc-act-delete)">Held by ${esc(g.held)}</span>` : ''}</div>`);
+  const acts = h('div', 'sheet-acts');
+  ACTIONS.forEach(a => {
+    const b = h('button', 'act' + (a === 'Delete' ? ' danger' : ''), svg(ICON[a]) + a); b.type = 'button';
+    b.onclick = () => {
+      sh.remove();
+      if (a === 'Move' || a === 'Copy') armPick(a, n); else runAction(a, n);
+    };
+    acts.append(b);
+  });
+  box.append(top, prev, acts); sh.append(box);
+  sh.addEventListener('click', e => { if (e.target === sh) sh.remove(); });
+  poolStage.append(sh);
+}
+function armPick(a, n) {
+  pick = { action: a, src: n };
+  const bn = h('div', 'banner', `<span style="flex:1">${a} Group ${n}: tap the target</span>`);
+  const x = h('button', 'x', X_ICON); x.type = 'button'; x.setAttribute('aria-label', 'Cancel'); x.onclick = () => { pick = null; bn.remove(); markSrc(); };
+  bn.append(x); poolStage.append(bn); markSrc();
+}
+function markSrc() { $$('.stage > .pool .cell', $('#pool-host')).forEach(c => c.classList.toggle('src', !!pick && pick.src === +c.dataset.no)); }
+function finishPick(n) {
+  const p = pick; pick = null; poolStage.querySelector('.banner')?.remove();
+  if (n === p.src) { markSrc(); return; }
+  runMoveCopy(p.action, p.src, n);
+}
+drawPool();
+
+/* ═════════ SPLIT ═════════ */
+const coarse = matchMedia('(any-pointer: coarse)').matches;
+const sv = { variant: 'B', size: coarse ? 'touch' : 'mouse', hit: false };
+$$('#sv-size button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === sv.size));
+seg('#sv-variant', v => { sv.variant = v; layoutSplit(); });
+seg('#sv-size', v => { sv.size = v; layoutSplit(); });
+$('#sv-hit').onchange = e => { sv.hit = e.target.checked; layoutSplit(); };
+const MIN = 120;
+const tree = { dir: 'h', ratio: 0.5, a: { leaf: 'Groups' }, b: { dir: 'v', ratio: 0.5, a: { leaf: 'Fixture sheet' }, b: { leaf: 'Sequence 1' } } };
+function buildSplit(node) {
+  if (node.leaf) {
+    const p = h('div', 'pane');
+    p.append(h('div', 'win-hdr', `<span class="dot"></span>${node.leaf}`), h('div', 'body', 'pane'));
+    return p;
+  }
+  const s = h('div', 'split ' + node.dir);
+  const A = buildSplit(node.a), B = buildSplit(node.b);
+  const hd = h('div', 'handle', '<span class="pill"></span>');
+  hd.tabIndex = 0; hd.setAttribute('role', 'separator');
+  hd.setAttribute('aria-orientation', node.dir === 'h' ? 'vertical' : 'horizontal');
+  const apply = () => { A.style.flex = node.ratio + ' 1 0'; B.style.flex = (1 - node.ratio) + ' 1 0'; hd.setAttribute('aria-valuenow', Math.round(node.ratio * 100)); showRatio(node); };
+  apply();
+  s.append(A, hd, B);
+  const clamp = (r, size) => Math.min(Math.max(r, MIN / size), 1 - MIN / size);
+  let lastTap = 0;
+  hd.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    e.preventDefault(); hd.setPointerCapture(e.pointerId); hd.classList.add('active'); hd.focus({ preventScroll: true });
+    const r0 = node.ratio, x0 = e.clientX, y0 = e.clientY; let moved = false;
+    const rect = s.getBoundingClientRect(); const size = node.dir === 'h' ? rect.width : rect.height;
+    const mv = ev => {
+      const d = node.dir === 'h' ? ev.clientX - x0 : ev.clientY - y0;
+      if (Math.abs(d) > 2) moved = true;
+      node.ratio = clamp(r0 + d / size, size); apply();
+    };
+    const up = ev => {
+      hd.classList.remove('active');
+      hd.removeEventListener('pointermove', mv); hd.removeEventListener('pointerup', up); hd.removeEventListener('pointercancel', up); hd.removeEventListener('lostpointercapture', up);
+      if (moved) { log('', `Layout saved (PUT with revision) · ratio ${node.ratio.toFixed(2)} · one Oops step`); lastTap = 0; return; }
+      const now = performance.now();
+      if (now - lastTap < DBL) { node.ratio = 0.5; apply(); log('', 'Double-tap: reset to 50 / 50 · one Oops step'); lastTap = 0; }
+      else lastTap = now;
+    };
+    hd.addEventListener('pointermove', mv); hd.addEventListener('pointerup', up); hd.addEventListener('pointercancel', up); hd.addEventListener('lostpointercapture', up);
+  });
+  hd.addEventListener('keydown', e => {
+    const rect = s.getBoundingClientRect(); const size = node.dir === 'h' ? rect.width : rect.height;
+    const k = e.key; let r = node.ratio;
+    const fwd = node.dir === 'h' ? 'ArrowRight' : 'ArrowDown', back = node.dir === 'h' ? 'ArrowLeft' : 'ArrowUp';
+    if (k === fwd) r += 0.05; else if (k === back) r -= 0.05; else if (k === 'Home') r = 0; else if (k === 'End') r = 1; else if (k === 'Enter') r = 0.5; else return;
+    e.preventDefault(); node.ratio = clamp(r, size); apply();
+    log('', `Keyboard · ratio ${node.ratio.toFixed(2)} · one Oops step`);
+  });
+  return s;
+}
+function showRatio(node) { $('#sv-ratio').textContent = 'last ratio ' + node.ratio.toFixed(2); }
+function layoutSplit() {
+  const host = $('#split-host'); host.innerHTML = '';
+  host.style.setProperty('--band', sv.size === 'touch' ? '44px' : '12px');
+  host.classList.toggle('show-hit', sv.hit);
+  host.classList.toggle('grip-on', sv.variant === 'B' && sv.size === 'touch');
+  host.append(buildSplit(tree));
+}
+layoutSplit();
+
+/* ═════════ NARROW LINE (shared by the phone and the Command line board) ═════════ */
+const KW = new Set(['Store', 'Group', 'Fixture', 'At', 'Thru', 'Edit', 'Label', 'Delete', 'Move', 'Copy', 'Go', 'Cue', 'Sequence', 'Set', 'Select']);
+function promptFor(cols, user, host, scope) {
+  const need = Math.max(Math.min(12, cols), Math.floor(cols / 2)); // typing room: 12 columns or half the bar
+  const room = cols - need;
+  const forms = [`[${user}@${host}] ${scope}> `, `${scope}> `];
+  for (const f of forms) if (f.length <= room) return f;
+  if (room >= 6) { const keep = room - 3; return '…' + scope.slice(scope.length - keep) + '> '; }
+  return '> ';
+}
+function tokenize(text) { // class per char
+  const cls = new Array(text.length).fill('');
+  const re = /[A-Za-z]+/g; let m;
+  while ((m = re.exec(text))) if (KW.has(m[0])) for (let i = m.index; i < m.index + m[0].length; i++) cls[i] = 'kw';
+  return cls;
+}
+function renderNew(el, cols, prompt, text, cur) {
+  const w = cols - prompt.length;
+  const margin = Math.min(4, Math.max(0, Math.floor((w - 1) / 3)));
+  const total = text.length + 1; // room for the cursor at the end
+  let off = 0;
+  if (total > w) {
+    off = Math.max(0, cur - (w - 1 - margin));
+    off = Math.min(off, total - w);
+  }
+  const cls = tokenize(text);
+  let out = '';
+  for (let i = 0; i < prompt.length; i++) out += `<span class="pr">${esc(prompt[i]) === ' ' ? '&nbsp;' : esc(prompt[i])}</span>`;
+  for (let j = 0; j < w; j++) {
+    const i = off + j;
+    const ch = i < text.length ? text[i] : ' ';
+    let c = cls[i] || '';
+    let shown = ch;
+    if (j === 0 && off > 0 && i !== cur) { shown = '‹'; c = 'mk'; }
+    if (j === w - 1 && off + w < total && i !== cur) { shown = '›'; c = 'mk'; }
+    if (i === cur) c = 'cur';
+    out += `<span class="${c}">${shown === ' ' ? '&nbsp;' : esc(shown)}</span>`;
+  }
+  el.innerHTML = out;
+}
+function renderToday(el, cols, full, text) {
+  const room = Math.min(full.length, Math.max(cols - 16, Math.floor(cols / 2)));
+  const prompt = full.slice(0, room);
+  const all = prompt + text + ' ';
+  const rows = Math.ceil(all.length / cols);
+  const vis = rows > 1 ? all.slice((rows - 1) * cols) : all;
+  let out = '';
+  for (let j = 0; j < cols; j++) { const ch = vis[j] ?? ' '; out += `<span class="${j < prompt.length && rows === 1 ? 'pr' : ''}">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`; }
+  el.innerHTML = out;
+}
+function drawCmd() {
+  const cols = +$('#cl-cols').value; $('#cl-colsv').textContent = cols + ' cols';
+  const scope = $('#cl-scope').value, inp = $('#cl-in');
+  const cur = inp.selectionStart ?? inp.value.length;
+  renderToday($('#cl-today'), cols, `[admin@desk1] ${scope}> `, inp.value);
+  renderNew($('#cl-new'), cols, promptFor(cols, 'admin', 'desk1', scope), inp.value, cur);
+}
+['input', 'keyup', 'click', 'select'].forEach(ev => $('#cl-in').addEventListener(ev, drawCmd));
+document.addEventListener('selectionchange', () => { if (document.activeElement === $('#cl-in')) drawCmd(); if (document.activeElement === $('#ph-input')) drawPhoneLine(); });
+$('#cl-cols').oninput = drawCmd; $('#cl-scope').onchange = drawCmd;
+drawCmd();
+
+/* ═════════ PHONE ═════════ */
+const ph = { side: 'fold', swipe: true, full: -1, sheet: false };
+const PANES = [
+  { t: 'Groups', mini: () => `<div class="mini-cells">${Array.from({ length: 16 }, () => '<i></i>').join('')}</div>`, full: () => `<div class="big-rows">${Object.entries(NAMES).slice(0, 12).map(([n, x]) => `<div><span>${n}</span>${x}</div>`).join('')}</div>` },
+  { t: 'Sequence 1', mini: () => `<div class="mini-rows">${[0, 1, 2, 3, 4, 5].map(i => `<i class="${i === 2 ? 'on' : ''}"></i>`).join('')}</div>`, full: () => `<div class="big-rows">${['Preset look', 'Opening', 'Verse 1', 'Chorus', 'Verse 2', 'Bridge', 'Finale', 'Blackout'].map((x, i) => `<div class="${i === 2 ? 'on' : ''}"><span>${i + 1}</span>${x}</div>`).join('')}</div>` },
+  { t: 'Fixture sheet', mini: () => `<div class="mini-rows">${[0, 1, 2, 3, 4, 5].map(() => '<i></i>').join('')}</div>`, full: () => `<div class="big-rows">${[101, 102, 103, 104, 105, 106, 107, 108].map(n => `<div><span>${n}</span>Spot ${n - 100} · Dim 100%</div>`).join('')}</div>` },
+  { t: 'Terminal', mini: () => `<div class="mini-term">admin&gt; Go\nCue 3 "Verse 1"\nadmin&gt; Group 3\n8 selected</div>`, full: () => `<div class="big-term">[admin@desk1] Root&gt; Go\nSequence 1 Cue 3 "Verse 1"\n[admin@desk1] Root&gt; Group 3\n8 fixtures selected\n[admin@desk1] Root&gt; At 50\n</div>` }
+];
+seg('#ph-side', v => { ph.side = v; drawPhone(); });
+$('#ph-swipe').onchange = e => { ph.swipe = e.target.checked; };
+function drawPhone() {
+  const p = $('#phone'); p.innerHTML = '';
+  p.append(h('div', 'ph-status', '<span>9:41</span><span>●●● 5G</span>'));
+  p.append(h('div', 'ph-top', '<span class="dot"></span>View 1 · Desk'));
+  const main = h('div', 'ph-main');
+  if (ph.side === 'today') { const sd = h('div', 'ph-side'); ['Menu', 'V1', 'V2', 'V3', 'Oops', 'Lock'].forEach(x => sd.append(h('span', null, x))); main.append(sd); }
+  const desk = h('div', 'ph-desk');
+  PANES.forEach((pn, i) => {
+    const m = h('div', 'mini', `<div class="mh">${pn.t}</div><div class="mb">${pn.mini()}</div>`);
+    m.dataset.i = i; desk.append(m);
+  });
+  hold(desk, {
+    target: e => e.target.closest('.mini'),
+    onTap: () => phToast('Too small · hold to open'),
+    onHold: m => { openFull(+m.dataset.i); }
+  });
+  main.append(desk); p.append(main);
+  const bar = h('div', 'ph-bar');
+  const purr = h('button', 'b purr', 'PURR'); purr.type = 'button';
+  const line = h('div', 'ph-line', '<span class="cl" id="ph-cl"></span>');
+  line.onclick = () => $('#ph-input').focus();
+  const vk = h('button', 'b', 'VK'); vk.type = 'button'; vk.onclick = () => $('#ph-input').focus();
+  const more = h('button', 'b', '⋯'); more.type = 'button'; more.setAttribute('aria-label', 'More'); more.onclick = openMore;
+  bar.append(purr, line, vk, more); p.append(bar);
+  p.append(h('div', 'ph-home', '<i></i>'));
+  if (ph.full >= 0) openFull(ph.full, true);
+  drawPhoneLine();
+}
+function phToast(msg) {
+  const p = $('#phone'); p.querySelector('.ph-toast')?.remove();
+  const t = h('div', 'ph-toast', msg); p.append(t); setTimeout(() => t.remove(), 1400);
+}
+function openFull(i, quiet) {
+  ph.full = i;
+  const desk = $('.ph-desk'); desk.querySelector('.full')?.remove();
+  const f = h('div', 'full');
+  const mb = h('div', 'maxbar');
+  const prev = h('button', null, '‹'), next = h('button', null, '›'), x = h('button', null, '×');
+  [prev, next, x].forEach(b => b.type = 'button'); prev.setAttribute('aria-label', 'Previous pane'); next.setAttribute('aria-label', 'Next pane'); x.setAttribute('aria-label', 'Back to the desk');
+  const t = h('span', 't');
+  mb.append(prev, t, next, x);
+  const body = h('div', 'full-body');
+  const track = h('div', 'full-track');
+  PANES.forEach(pn => track.append(h('div', 'full-page', pn.full())));
+  const dots = h('div', 'dots', PANES.map(() => '<i></i>').join(''));
+  body.append(track, dots);
+  f.append(mb, body); desk.append(f);
+  const go = (j, how) => {
+    const k = (j + PANES.length) % PANES.length;
+    ph.full = k; track.style.transform = `translateX(${-k * 100}%)`;
+    t.textContent = PANES[k].t;
+    $$('i', dots).forEach((d, n) => d.classList.toggle('on', n === k));
+    if (how) log('Set Self Maximized On', `${how} → ${PANES[k].t} (HoldFollows on)`);
+  };
+  track.style.transition = 'none'; go(i); requestAnimationFrame(() => track.style.transition = '');
+  if (!quiet) log('Set Self Maximized On', `hold → ${PANES[i].t} full screen (HoldFollows on)`);
+  prev.onclick = () => go(ph.full - 1, '‹');
+  next.onclick = () => go(ph.full + 1, '›');
+  x.onclick = () => { f.remove(); ph.full = -1; log('Set Self Maximized Off', 'back to the desk'); };
+  // swipe
+  body.addEventListener('pointerdown', e => {
+    if (!ph.swipe || e.button > 0) return;
+    const x0 = e.clientX, y0 = e.clientY, w = body.clientWidth; let dx = 0, horiz = null;
+    const mv = ev => {
+      dx = ev.clientX - x0; const dy = ev.clientY - y0;
+      if (horiz === null && Math.hypot(dx, dy) > SLOP) horiz = Math.abs(dx) > Math.abs(dy);
+      if (horiz) { track.style.transition = 'none'; track.style.transform = `translateX(calc(${-ph.full * 100}% + ${dx}px))`; }
+    };
+    const up = () => {
+      body.removeEventListener('pointermove', mv); body.removeEventListener('pointerup', up); body.removeEventListener('pointercancel', up);
+      track.style.transition = '';
+      if (horiz && Math.abs(dx) > w * 0.2) go(ph.full + (dx < 0 ? 1 : -1), 'swipe'); else go(ph.full);
+    };
+    body.addEventListener('pointermove', mv); body.addEventListener('pointerup', up); body.addEventListener('pointercancel', up);
+  });
+}
+function openMore() {
+  const p = $('#phone');
+  const sh = h('div', 'ph-sheet');
+  const box = h('div', 'box');
+  if (ph.side === 'fold') {
+    box.append(h('div', 'grp', 'Sidebar'));
+    const r1 = h('div', 'row'); ['Menu', 'Oops', 'Lock', 'Meow'].forEach(x => r1.append(h('button', null, x)));
+    box.append(r1, h('div', 'grp', 'Views'));
+    const r2 = h('div', 'row'); ['View 1', 'View 2', 'View 3', 'View 4'].forEach(x => r2.append(h('button', null, x)));
+    box.append(r2);
+  }
+  box.append(h('div', 'grp', 'Status'));
+  box.append(h('div', 'stat', '<span>desk1 · Master</span><span>Rig ● en0</span>'), h('div', 'stat', '<span>Show: demo</span><span>admin · Program</span>'));
+  sh.append(box); p.append(sh);
+  sh.addEventListener('click', e => {
+    if (e.target === sh) return sh.remove();
+    const b = e.target.closest('button'); if (!b) return;
+    const map = { Menu: 'Menu', Oops: 'Oops', Lock: 'DeskLock', Meow: '(Meow held)' };
+    log(map[b.textContent] || `View ${b.textContent.split(' ')[1]}`, '⋯ sheet'); sh.remove();
+  });
+}
+let phText = 'Group 3 Thru 7 At 50 Fade 2';
+const phIn = $('#ph-input'); phIn.value = phText;
+phIn.addEventListener('input', () => { phText = phIn.value; drawPhoneLine(); });
+phIn.addEventListener('keyup', drawPhoneLine);
+phIn.addEventListener('keydown', e => { if (e.key === 'Enter') { log(phIn.value, 'phone line'); phIn.value = ''; phText = ''; drawPhoneLine(); } });
+function drawPhoneLine() {
+  const el = $('#ph-cl'); if (!el) return;
+  const box = el.parentElement;
+  const probe = h('span', 'cl', '<span>M</span>'); box.append(probe);
+  const cw = probe.firstChild.getBoundingClientRect().width || 9; probe.remove();
+  const scale = $('#phone').getBoundingClientRect().width / 390 || 1;
+  const cols = Math.max(8, Math.floor((box.clientWidth - 12) / (cw / scale)));
+  const cur = document.activeElement === phIn ? (phIn.selectionStart ?? phText.length) : phText.length;
+  renderNew(el, cols, promptFor(cols, 'admin', 'desk1', 'DataPools.1.Groups'), phText, cur);
+}
+function fitPhone() {
+  const outer = $('#phone-outer'), sc = $('#phone-scale');
+  const avail = outer.clientWidth; const full = 410;
+  const s = Math.min(1, avail / full);
+  sc.style.transform = `scale(${s})`; sc.style.width = full + 'px';
+  outer.style.height = (820 * s) + 'px';
+  sc.style.marginLeft = Math.max(0, (avail - full * s) / 2) + 'px';
+  sc.style.transformOrigin = 'top left';
+  drawPhoneLine();
+}
+addEventListener('resize', () => { if (board === 'phone') fitPhone(); });
+drawPhone();
+
+/* ═════════ GROUP EDITOR ═════════ */
+const ge = { layout: 'desk', sel: null };
+let members = [
+  { f: 104, name: 'Spot 4', x: 3, y: 0 }, { f: 101, name: 'Spot 1', x: 0, y: 0 }, { f: 102, name: 'Spot 2', x: 1, y: 0 },
+  { f: 103, name: 'Spot 3', x: 2, y: 0 }, { f: 111, name: 'Wash 1', x: 0, y: 2 }, { f: 112, name: 'Wash 2', x: 2, y: 2 },
+  { f: 113, name: 'Wash 3', x: 4, y: 2 }, { f: 114, name: 'Wash 4', x: 6, y: 2 }
+];
+seg('#gv-layout', v => { ge.layout = v; drawGE(); });
+const COLS = 8, ROWS = 4;
+function drawGE() {
+  const host = $('#ge-host'); host.innerHTML = '';
+  const phone = ge.layout === 'phone';
+  const outer = phone ? h('div', 'phone-frame') : h('div');
+  const st = h('div', 'stage');
+  if (phone) { st.style.border = '0'; st.style.borderRadius = '0'; }
+  st.append(h('div', 'win-hdr', '<span class="dot"></span>Edit Group 3 "Front"<span style="margin-left:auto;color:var(--lc-dim);font-size:13px">claimed · exit releases</span>'));
+  const body = h('div', 'ge' + (phone ? ' stacked' : ''));
+  // list
+  const list = h('div', 'ge-list');
+  const slab = h('div', 'slab');
+  const tools = [
+    ['By number', 'var(--lc-act-select)', () => { members.sort((a, b) => a.f - b.f); log('Set Group 3 Order Number', 'proposed syntax · one Oops step'); drawGE(); }],
+    ['Left → right', 'var(--lc-act-select)', () => { members.sort((a, b) => a.y - b.y || a.x - b.x); log('Set Group 3 Order LeftToRight', 'proposed syntax'); drawGE(); }],
+    ['Top → bottom', 'var(--lc-act-select)', () => { members.sort((a, b) => a.x - b.x || a.y - b.y); log('Set Group 3 Order TopToBottom', 'proposed syntax'); drawGE(); }],
+    ['Remove gaps', 'var(--lc-act-io)', () => { const xs = [...new Set(members.map(m => m.x))].sort((a, b) => a - b), ys = [...new Set(members.map(m => m.y))].sort((a, b) => a - b); members.forEach(m => { m.x = xs.indexOf(m.x); m.y = ys.indexOf(m.y); }); log('Set Group 3 Grid RemoveGaps', 'proposed syntax'); drawGE(); }],
+    ['Remove', 'var(--lc-act-delete)', () => { if (ge.sel == null) return toast('Select a member first'); const m = members.find(x => x.f === ge.sel); members = members.filter(x => x !== m); log(`Group 3 - Fixture ${m.f}`, 'removes the member (as today)'); ge.sel = null; drawGE(); }]
+  ];
+  tools.forEach(([t, c, fn]) => { const b = h('button', null, `<span class="ic" style="background:${c}"></span>${t}`); b.type = 'button'; b.onclick = fn; slab.append(b); });
+  const rows = h('div', 'ge-rows');
+  members.forEach((m, i) => {
+    const r = h('div', 'ge-row' + (ge.sel === m.f ? ' sel' : ''));
+    r.dataset.f = m.f;
+    const grip = h('div', 'grip', '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>');
+    grip.setAttribute('aria-label', 'Drag to reorder');
+    const up = h('button', 'mv', '↑'), dn = h('button', 'mv', '↓');
+    up.type = dn.type = 'button'; up.disabled = i === 0; dn.disabled = i === members.length - 1;
+    up.setAttribute('aria-label', 'Move up'); dn.setAttribute('aria-label', 'Move down');
+    up.onclick = e => { e.stopPropagation(); moveTo(i, i - 1); };
+    dn.onclick = e => { e.stopPropagation(); moveTo(i, i + 1); };
+    r.append(grip, h('span', 'o', i + 1), h('span', 'f', `${m.f}<small>${m.name}</small>`), up, dn);
+    r.addEventListener('click', e => { if (e.target.closest('.grip, .mv')) return; ge.sel = ge.sel === m.f ? null : m.f; drawGE(); });
+    gripDrag(grip, r, i, rows);
+    rows.append(r);
+  });
+  list.append(slab, rows);
+  // grid
+  const grid = h('div', 'ge-grid');
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
+    const c = h('div', 'ge-cell'); c.dataset.x = x; c.dataset.y = y;
+    const m = members.find(q => q.x === x && q.y === y);
+    if (m) {
+      const fx = h('div', 'ge-fix' + (ge.sel === m.f ? ' sel' : ''), `<b>${m.f}</b><span>${members.indexOf(m) + 1}</span>`);
+      fx.dataset.f = m.f; cellDrag(fx, m, grid); c.append(fx);
+    }
+    grid.append(c);
+  }
+  body.append(list, grid); st.append(body); outer.append(st); host.append(outer);
+}
+function moveTo(from, to) {
+  if (to < 0 || to >= members.length || from === to) return;
+  const [m] = members.splice(from, 1); members.splice(to, 0, m);
+  log(`Set Group 3 Fixture ${m.f} Order ${to + 1}`, 'one Oops step');
+  drawGE();
+}
+function gripDrag(grip, row, i, rows) {
+  grip.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    e.preventDefault(); grip.setPointerCapture(e.pointerId);
+    const y0 = e.clientY, H = row.offsetHeight; let target = i;
+    row.classList.add('lift');
+    const sibs = [...rows.children];
+    const mv = ev => {
+      const dy = ev.clientY - y0;
+      row.style.transform = `translateY(${dy}px)`;
+      target = Math.max(0, Math.min(members.length - 1, i + Math.round(dy / H)));
+      sibs.forEach((s, k) => { if (s === row) return; let sh = 0; if (k > i && k <= target) sh = -H; if (k < i && k >= target) sh = H; s.style.transform = sh ? `translateY(${sh}px)` : ''; s.style.transition = 'transform .12s'; });
+      const rr = rows.getBoundingClientRect();
+      if (ev.clientY < rr.top + 36) rows.scrollTop -= 8; else if (ev.clientY > rr.bottom - 36) rows.scrollTop += 8;
+    };
+    const up = () => {
+      grip.removeEventListener('pointermove', mv); grip.removeEventListener('pointerup', up); grip.removeEventListener('pointercancel', up); grip.removeEventListener('lostpointercapture', up);
+      sibs.forEach(s => { s.style.transform = ''; s.style.transition = ''; });
+      if (target !== i) moveTo(i, target); else { row.classList.remove('lift'); row.style.transform = ''; }
+    };
+    grip.addEventListener('pointermove', mv); grip.addEventListener('pointerup', up); grip.addEventListener('pointercancel', up); grip.addEventListener('lostpointercapture', up);
+  });
+}
+function cellDrag(fx, m, grid) {
+  fx.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    e.preventDefault(); fx.setPointerCapture(e.pointerId);
+    const x0 = e.clientX, y0 = e.clientY; let moved = false, over = null;
+    const mv = ev => {
+      const dx = ev.clientX - x0, dy = ev.clientY - y0;
+      if (!moved && Math.hypot(dx, dy) > SLOP) { moved = true; fx.classList.add('drag'); }
+      if (!moved) return;
+      fx.style.transform = `translate(${dx}px, ${dy}px)`;
+      fx.style.pointerEvents = 'none';
+      const c = document.elementFromPoint(ev.clientX, ev.clientY)?.closest('.ge-cell');
+      fx.style.pointerEvents = '';
+      const ok = c && grid.contains(c) && !c.querySelector('.ge-fix:not(.drag)') ? c : null;
+      if (over !== ok) { over?.classList.remove('over'); over = ok; over?.classList.add('over'); }
+    };
+    const up = ev => {
+      fx.removeEventListener('pointermove', mv); fx.removeEventListener('pointerup', up); fx.removeEventListener('pointercancel', up); fx.removeEventListener('lostpointercapture', up);
+      over?.classList.remove('over');
+      if (!moved) { ge.sel = ge.sel === m.f ? null : m.f; drawGE(); return; }
+      if (over && ev.type === 'pointerup') { m.x = +over.dataset.x; m.y = +over.dataset.y; log(`Set Group 3 Fixture ${m.f} X ${m.x} Y ${m.y}`, 'one Oops step on release'); }
+      drawGE();
+    };
+    fx.addEventListener('pointermove', mv); fx.addEventListener('pointerup', up); fx.addEventListener('pointercancel', up); fx.addEventListener('lostpointercapture', up);
+  });
+}
+drawGE();
+})();
+</script>

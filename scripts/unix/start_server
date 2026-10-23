@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Build, (re)start lumacore-server in the background, then attach the CLI here
+# (or run one --cmd). A preset of ./scripts/unix/dev.
+#
+# Usage:
+#   ./scripts/unix/start_server [--show demo] [--user LD] [--cmd "list fixture"] [--debug] [--clean-start]
+set -euo pipefail
+case "${1:-}" in -h|--help) sed -n '2,6p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;; esac
+exec "$(dirname "$0")/dev" --build server,cli --run server,cli "$@"

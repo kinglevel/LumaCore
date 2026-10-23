@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Users & Profiles</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 40px; background: color-mix(in srgb, {{t.bg}} 70%, #000); color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex">
+  <section style="flex: 1; display: flex; flex-direction: column; border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+    <div style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 6px 0 18px; border-bottom: 1px solid {{t.line}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path> <path d="M16 3.128a4 4 0 0 1 0 7.744"></path> <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path> <circle cx="9" cy="7" r="4"></circle></svg><span style="font-size: 18px; font-weight: 500">Users &amp; Profiles</span><span style="font-size: 14px; color: {{t.dim}}">3 users · 3 profiles · 1 logged in</span><span style="margin-left: auto"></span><button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: {{t.text}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path> <path d="m6 6 12 12"></path></svg></button></div>
+    <div style="flex: 1; display: flex; min-height: 0">
+      <div style="width: 300px; flex-shrink: 0; border-right: 1px solid {{t.line}}; display: flex; flex-direction: column; gap: 8px; padding: 12px; overflow: auto">
+        <span style="font-size: 12px; color: {{t.dim}}; padding: 2px 4px">Users</span>
+        <sc-for list="{{users}}" as="u" hint-placeholder-count="3">
+          <button type="button" onClick="{{u.pick}}" style="height: 64px; border-radius: 6px; border: 2px solid {{u.border}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; display: flex; align-items: center; gap: 12px; padding: 0 12px; text-align: left">
+            <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 50%; border: 2px solid {{u.ring}}; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500; background: {{t.surface}}">{{u.ini}}</span>
+            <span style="display: flex; flex-direction: column; gap: 3px; min-width: 0"><span style="font-size: 16px; font-weight: 500">{{u.name}} <span style="font-size: 11px; font-weight: 400; padding: 2px 6px; border-radius: 4px; background: {{t.surface}}; color: {{t.dim}}">{{u.role}}</span></span><span style="font-size: 12px; color: {{u.subC}}">{{u.sub}}</span></span>
+          </button>
+        </sc-for>
+        <span style="font-size: 12px; color: {{t.dim}}; padding: 10px 4px 2px">Profiles</span>
+        <sc-for list="{{profiles}}" as="p" hint-placeholder-count="3">
+          <button type="button" onClick="{{p.pick}}" style="height: 56px; border-radius: 6px; border: 2px solid {{p.border}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; display: flex; align-items: center; gap: 12px; padding: 0 12px; text-align: left">
+            <span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 5px; background: {{p.sw}}; border: 1px solid {{t.line}}"></span>
+            <span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 15px; font-weight: 500">{{p.name}}</span><span style="font-size: 12px; color: {{t.dim}}">{{p.sub}}</span></span>
+          </button>
+        </sc-for>
+      </div>
+      <sc-if value="{{isProfile}}" hint-placeholder-val="{{ true }}">
+        <div style="width: 160px; flex-shrink: 0; border-right: 1px solid {{t.line}}; display: flex; flex-direction: column">
+          <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="5">
+            <button type="button" onClick="{{tb.pick}}" style="height: 60px; border: none; border-bottom: 1px solid {{t.line}}; background: {{tb.bg}}; color: {{tb.fg}}; font: inherit; font-size: 15px; text-align: left; padding: 0 18px; box-shadow: {{tb.mark}}">{{tb.name}}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <div style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0">
+        <span style="font-size: 13px; color: {{t.dim}}">{{heading}}</span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+          <sc-for list="{{cells}}" as="c" hint-placeholder-count="6">
+            <button type="button" onClick="{{c.tap}}" style="height: 76px; border-radius: 6px; border: 1px solid {{c.border}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; text-align: left; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between">
+              <span style="font-size: 12px; color: {{t.dim}}; display: flex; justify-content: space-between; width: 100%">{{c.label}}<span style="color: {{c.kc}}">{{c.kind}}</span></span>
+              <span style="font-size: 17px; font-weight: 500; display: flex; align-items: center; gap: 8px"><span style="width: {{c.swW}}px; height: 16px; border-radius: 3px; background: {{c.sw}}"></span>{{c.value}}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div class="mono" style="margin-top: auto; padding: 10px 12px; border-radius: 5px; background: {{t.bg}}; font-size: 13px; color: {{t.dim}}">{{lastLine}}</div>
+      </div>
+      <aside style="width: 250px; flex-shrink: 0; border-left: 1px solid {{t.line}}; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: color-mix(in srgb, {{t.bg}} 35%, {{t.surface}})">
+        <span style="font-size: 12px; color: {{t.dim}}">{{selLabel}}</span>
+        <sc-for list="{{acts}}" as="a" hint-placeholder-count="5">
+          <button type="button" onClick="{{a.run}}" style="height: 60px; border-radius: 6px; border: 1px solid {{a.border}}; background: {{a.bg}}; color: {{a.fg}}; font: inherit; text-align: left; padding: 0 14px; display: flex; flex-direction: column; justify-content: center; gap: 2px"><span style="font-size: 15px; font-weight: 500">{{a.name}}</span><span class="mono" style="font-size: 11px; color: {{t.dim}}">{{a.cmd}}</span></button>
+        </sc-for>
+      </aside>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { sel: 'p:LD', tab: 2, meow: 'Shift', last: 'Set UserProfile "LD" MeowKey Shift' }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',gap:'#080808',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',gap:'#d4d4d4',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',gap:'#050202',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const pick = sel => () => this.setState({ sel, tab: sel.startsWith('p:') ? s.tab : 0 });
+    const users = [
+      { name: 'Admin', ini: 'AD', role: 'Admin', sub: 'Profile Admin · on desk1', on: true, ring: t.accent },
+      { name: 'LD', ini: 'LD', role: 'Programmer', sub: 'Profile LD · logged out', on: false, ring: t.info },
+      { name: 'Busk', ini: 'BU', role: 'Programmer', sub: 'Profile Default · logged out', on: false, ring: t.park }
+    ].map(u => ({ ...u, subC: u.on ? t.ok : t.dim, border: s.sel === 'u:' + u.name ? t.accent : t.line, pick: pick('u:' + u.name) }));
+    const profiles = [
+      { name: 'Admin', sub: 'used by Admin', sw: '#121212' },
+      { name: 'LD', sub: 'used by LD · Night theme', sw: '#0b0505' },
+      { name: 'Default', sub: 'used by Busk', sw: '#e4e4e4' }
+    ].map(p => ({ ...p, border: s.sel === 'p:' + p.name ? t.accent : t.line, pick: pick('p:' + p.name) }));
+    const isProfile = s.sel.startsWith('p:');
+    const who = s.sel.slice(2);
+    const tabNames = ['Look', 'Lock screen', 'Input & keys', 'Oops', 'Command line'];
+    const tabs = tabNames.map((n, i) => ({ name: n, pick: () => this.setState({ tab: i }), bg: i === s.tab ? t.raised : 'transparent', fg: i === s.tab ? t.text : t.dim, mark: i === s.tab ? 'inset 3px 0 0 ' + t.accent : 'none' }));
+    const kc = { choice: t.accent, number: t.info, toggle: t.ok, link: t.park, text: t.dim, colour: t.prog };
+    const C = (label, value, kind, extra) => ({ label, value, kind, sw: 'transparent', swW: 0, ...extra });
+    const meowNext = { Shift: 'Alt', Alt: 'Ctrl', Ctrl: 'Shift' };
+    const sets = {
+      0: [C('Theme', 'Night', 'choice'), C('Brightness', '0', 'number'), C('Contrast', '0', 'number'), C('Saturation', '0', 'number'), C('Background hue', '12°', 'number'), C('Background saturation', '40', 'number'), C('Accent hue', '28°', 'number'), C('Colours', '14 · 2 changed', 'colour', { sw: t.accent, swW: 16 }), C('Normal theme', 'Meow + F9', 'text')],
+      1: [C('Lock screen', 'On', 'toggle'), C('Image', '1 Stage', 'link'), C('Show clock', 'Yes', 'toggle'), C('Text', '"FOH desk"', 'text'), C('Auto lock', 'Off', 'number')],
+      2: [C('Meow key', s.meow, 'choice', { tap: () => { const m = meowNext[s.meow]; this.setState({ meow: m, last: 'Set UserProfile "' + who + '" MeowKey ' + m }); } }), C('Hold time', '500 ms', 'number'), C('Double press', '300 ms', 'number'), C('Grid cursor', 'Append X', 'choice'), C('Pool drag', 'Move', 'choice'), C('Keyboard shortcuts', '42 keys', 'link')],
+      3: [C('Create Oops', 'Yes', 'toggle'), C('Oops views', 'Yes', 'toggle'), C('Oops programmer', 'Yes', 'toggle'), C('Oops selection', 'Yes', 'toggle'), C('Oops confirmation', 'Never', 'choice')],
+      4: [C('Verbosity', 'Normal', 'choice'), C('Show descriptions', 'Yes', 'toggle'), C('Clear buffer', 'No', 'toggle'), C('Notifications', 'Timed', 'choice'), C('Language', 'LumaCore', 'choice'), C('Alias depth', '4', 'number')]
+    };
+    const userCells = [C('Name', '"' + who + '"', 'text'), C('Role', who === 'Admin' ? 'Admin' : 'Programmer', 'choice'), C('Password', who === 'Admin' ? 'admin (fixed)' : '••••', 'text'), C('Profile', who === 'Busk' ? 'Default' : who, 'link'), C('Colour', '', 'colour', { sw: who === 'Admin' ? t.accent : who === 'LD' ? t.info : t.park, swW: 40 })];
+    const cells = (isProfile ? sets[s.tab] : userCells).map(c => ({ ...c, kc: kc[c.kind], border: c.tap ? t.accent : t.line, tap: c.tap || (() => {}) }));
+    const mk = (name, cmd, danger) => ({ name, cmd, run: () => this.setState({ last: cmd }), bg: danger ? 'color-mix(in srgb, ' + t.alert + ' 14%, ' + t.raised + ')' : t.raised, fg: danger ? t.alert : t.text, border: danger ? 'color-mix(in srgb, ' + t.alert + ' 55%, transparent)' : t.line });
+    const acts = isProfile ? [
+      mk('Theme editor…', 'opens the theme editor (12g)'), mk('New profile', 'Store UserProfile 4'), mk('Copy', 'Copy UserProfile "' + who + '" At 4'),
+      mk('Export…', 'Export UserProfile "' + who + '"'), mk('Import…', 'Import UserProfile "…"'), mk('Delete', 'Delete UserProfile "' + who + '"', true)
+    ] : [
+      mk('New user', 'Store User "…"'), mk('Log out', 'Logout "' + who + '"'), mk('Delete', 'Delete User "' + who + '"', true)
+    ];
+    return { t, users, profiles, tabs, cells, acts, isProfile,
+      heading: isProfile ? 'Profile "' + who + '" · ' + tabNames[s.tab] + ' — changes apply at once' : 'User "' + who + '" — changes apply at once',
+      selLabel: isProfile ? 'Profile ' + who : 'User ' + who, lastLine: '› ' + s.last };
+  }
+}
+</script>
+</body>
+</html>

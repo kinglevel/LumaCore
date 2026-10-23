@@ -1,0 +1,1042 @@
+<title>LumaCore 12f Round 7</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a console bench — tabs of boards; each board a live control and, under it, what
+   reaches the command line vs the System Monitor. LumaCore Dark preset + the concept's yellow
+   cap line (inspiration/A1 Whole Low Res.png). Single dark look on purpose. */
+:root {
+  --lc-bg:#121212; --lc-surface:#1c1c1c; --lc-raised:#303030; --lc-line:#424242; --lc-hair:#262626; --lc-gap:#0a0a0a;
+  --lc-text:#d1d1d1; --lc-dim:#8a8a8a; --lc-faint:#5e5e5e; --lc-accent:#9a7a08; --lc-accent-hi:#c9a227; --lc-on-accent:#f3ecd3;
+  --lc-cap:#f9ed4f; --lc-info:#758ba0; --lc-ok:#3fbf4a; --lc-alert:#e10000; --lc-programmer:#d86a7c; --lc-selected:#3a3218;
+  --lc-sel-line:#4d8fd6; --lc-act-delete:#ff5a4a; --lc-act-oops:#e6b422; --lc-alt:#161616;
+  --lc-font:'Source Sans 3','Segoe UI',system-ui,-apple-system,sans-serif;
+  --lc-mono:'JetBrains Mono',Menlo,Consolas,monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--lc-bg); color: var(--lc-text); }
+body { font-family: var(--lc-font); font-size: 15px; padding-inline: 16px; padding-block: 0 40px; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; }
+.noselect, .stage { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 50; background: var(--lc-bg); padding-block: 14px 10px; border-bottom: 1px solid var(--lc-line); margin-inline: -16px; padding-inline: 16px; }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 2px; }
+.sub { color: var(--lc-dim); font-size: 13px; margin: 0 0 10px; max-width: 90ch; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.tabs button { flex: none; min-height: 44px; padding: 0 16px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-surface); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--lc-accent); border-color: transparent; color: var(--lc-on-accent); font-weight: 600; }
+.board { padding-block: 16px; display: grid; gap: 14px; }
+.board > * { min-width: 0; }
+.intro { max-width: 78ch; line-height: 1.45; margin: 0; }
+.intro b { color: var(--lc-accent-hi); font-weight: 600; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--lc-line); border-radius: 6px; overflow: hidden; }
+.seg button { min-height: 44px; padding: 0 14px; border: 0; background: var(--lc-surface); cursor: pointer; border-right: 1px solid var(--lc-line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--lc-selected); color: var(--lc-on-accent); box-shadow: inset 0 -3px 0 var(--lc-accent-hi); }
+.ctl-label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); margin-right: 6px; }
+.decide { border-left: 3px solid var(--lc-accent); background: var(--lc-surface); padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 84ch; font-size: 14px; line-height: 1.45; }
+.decide h3 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-accent-hi); }
+.decide ul { margin: 0; padding-left: 18px; }
+.stage { position: relative; border: 1px solid var(--lc-line); border-radius: 8px; background: var(--lc-bg); overflow: hidden; }
+
+/* the two logs */
+.logs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 700px) { .logs { grid-template-columns: 1fr; } }
+.log { border: 1px solid var(--lc-line); border-radius: 6px; background: var(--lc-gap); font-family: var(--lc-mono); font-size: 13px; min-width: 0; }
+.log h4 { margin: 0; padding: 6px 10px; border-bottom: 1px solid var(--lc-line); font: 500 12px var(--lc-font); text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); display: flex; justify-content: space-between; gap: 8px; }
+.log h4 span { text-transform: none; letter-spacing: 0; color: var(--lc-faint); }
+.log ol { list-style: none; margin: 0; padding: 6px 10px; height: 140px; overflow: auto; }
+.log li { padding: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.log li .t { color: var(--lc-faint); margin-right: 8px; }
+.log li .k { color: var(--lc-cap); margin-right: 8px; }
+.log li .p { color: var(--lc-dim); }
+.log .empty { color: var(--lc-faint); font-family: var(--lc-font); }
+
+/* ── faders ── */
+.bank { display: flex; gap: 2px; padding: 12px; background: #161616; overflow-x: auto; touch-action: pan-x; }
+.fcol { flex: none; width: 76px; display: grid; grid-template-rows: 26px 1fr 40px; gap: 6px; align-items: center; justify-items: center; padding: 6px 0 4px; border-radius: 4px; background: #1a1a1a; position: relative; }
+.fcol .val { font-family: var(--lc-mono); font-size: 14px; color: var(--lc-text); font-variant-numeric: tabular-nums; }
+.fcol .lab { text-align: center; line-height: 1.1; font-size: 13px; }
+.fcol .lab small { display: block; color: var(--lc-dim); font-family: var(--lc-mono); font-size: 12px; }
+.ftrack { position: relative; width: 100%; height: 300px; touch-action: none; cursor: grab; }
+/* desk look (the concept): a dark groove, a cap with a yellow line */
+.desk .groove { position: absolute; left: 50%; top: 10px; bottom: 10px; width: 6px; margin-left: -3px; border-radius: 3px; background: #060606; box-shadow: inset 0 0 0 1px #2a2a2a; }
+.desk .ticks { position: absolute; left: calc(50% + 14px); top: 10px; bottom: 10px; width: 8px; background: repeating-linear-gradient(to bottom, #3a3a3a 0 1px, transparent 1px 10%); opacity: .8; }
+.desk .cap { position: absolute; left: 50%; width: 44px; height: 30px; margin-left: -22px; margin-top: -15px; border-radius: 4px; background: linear-gradient(#3a3a3a, #262626); box-shadow: 0 2px 6px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08); }
+.desk .cap::after { content: ''; position: absolute; left: 6px; right: 6px; top: 13px; height: 3px; border-radius: 2px; background: var(--lc-cap); }
+/* filled look (the Elements board): a bar, the level filled */
+.filled .groove { position: absolute; left: 12px; right: 12px; top: 10px; bottom: 10px; border-radius: 4px; background: var(--lc-surface); border: 1px solid var(--lc-line); overflow: hidden; }
+.filled .fill { position: absolute; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, var(--lc-accent) 45%, transparent); }
+.filled .cap { position: absolute; left: 12px; right: 12px; height: 4px; margin-top: -2px; background: var(--lc-cap); border-radius: 2px; }
+.filled .ticks { display: none; }
+.desk .fill { display: none; }
+.fcol.active { background: #232016; }
+.fcol.fine .val::after { content: ' FINE'; color: var(--lc-cap); font-size: 11px; }
+.bubble { position: absolute; left: calc(100% - 6px); z-index: 5; padding: 4px 8px; border-radius: 4px; background: var(--lc-raised); border: 1px solid var(--lc-accent); font-family: var(--lc-mono); font-size: 13px; white-space: nowrap; pointer-events: none; transform: translateY(-50%); }
+.ring { position: fixed; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; pointer-events: none; z-index: 999;
+  background: conic-gradient(var(--lc-accent-hi) calc(var(--p) * 1turn), transparent 0); -webkit-mask: radial-gradient(circle, transparent 25px, #000 26px); mask: radial-gradient(circle, transparent 25px, #000 26px); }
+@property --p { syntax: '<number>'; inherits: false; initial-value: 0; }
+.ring.run { animation: ringfill 360ms linear forwards; }
+@keyframes ringfill { from { --p: 0 } to { --p: 1 } }
+
+/* the sheet (master / sequence) */
+.scrim { position: absolute; inset: 0; z-index: 30; background: rgba(0,0,0,.62); display: flex; align-items: flex-end; justify-content: center; }
+.sheet { width: min(560px, 100%); background: var(--lc-surface); border: 1px solid var(--lc-line); border-bottom: 0; border-radius: 10px 10px 0 0; }
+.sheet .top { display: flex; align-items: center; gap: 10px; padding: 0 0 0 16px; border-bottom: 1px solid var(--lc-line); min-height: 50px; font-weight: 600; font-size: 17px; }
+.sheet .top span { flex: 1; }
+.x { width: 50px; height: 50px; border: 0; background: none; color: var(--lc-dim); cursor: pointer; font-size: 22px; }
+.sheet .facts { padding: 14px 16px; color: var(--lc-dim); }
+.sheet .facts b { color: var(--lc-text); font-size: 26px; font-family: var(--lc-mono); display: block; }
+.sheet .acts { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 6px; padding: 8px; border-top: 1px solid var(--lc-line); }
+.sheet .acts button { min-height: 60px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; }
+.sheet .acts button.list::after { content: ''; display: block; margin: 4px auto 0; width: 27px; height: 3px; background: repeating-linear-gradient(90deg, var(--lc-act-select, #c9a227) 0 7px, transparent 7px 10px); }
+
+/* keypad */
+.kp { position: absolute; inset: 0; z-index: 40; background: rgba(0,0,0,.62); display: grid; place-items: center; }
+.kp .box { width: 300px; background: var(--lc-surface); border: 1px solid var(--lc-line); border-radius: 10px; padding: 10px; display: grid; gap: 8px; }
+.kp .disp { font-family: var(--lc-mono); font-size: 26px; background: var(--lc-gap); padding: 8px 10px; border-radius: 4px; min-height: 52px; }
+.kp .disp small { display: block; font-size: 12px; color: var(--lc-dim); }
+.kp .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.kp .keys button { min-height: 52px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); font-size: 20px; cursor: pointer; }
+.kp .keys button.ok { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; font-size: 15px; font-weight: 600; }
+
+/* ── encoders ── */
+.ebar { display: grid; grid-template-columns: 96px repeat(5, minmax(0, 1fr)); border-top: 1px solid var(--lc-line); background: #161616; }
+.ecell { min-height: 78px; padding: 8px 10px; border-right: 1px solid #262626; display: flex; flex-direction: column; justify-content: space-between; touch-action: none; cursor: ew-resize; position: relative; overflow: hidden; }
+.ecell:last-child { border-right: 0; }
+.ecell .an { font-size: 13px; color: var(--lc-dim); display: flex; justify-content: space-between; gap: 6px; }
+.ecell .ev { font-family: var(--lc-mono); font-size: 20px; color: var(--lc-programmer); font-variant-numeric: tabular-nums; }
+.ecell .ev.out { color: var(--lc-text); }
+.ecell .eband { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--lc-programmer); opacity: .7; }
+.ecell.active { background: #241a1d; }
+.eres { display: grid; grid-template-rows: repeat(3, 1fr); border-right: 1px solid var(--lc-line); }
+.eres button { border: 0; border-bottom: 1px solid #262626; background: transparent; font-size: 13px; cursor: pointer; color: var(--lc-dim); }
+.eres button[aria-pressed="true"] { color: var(--lc-on-accent); background: var(--lc-selected); box-shadow: inset 3px 0 0 var(--lc-accent-hi); }
+.pop { position: absolute; z-index: 20; left: 50%; transform: translateX(-50%); bottom: 90px; width: min(620px, calc(100% - 16px)); background: var(--lc-surface); border: 1px solid var(--lc-accent); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.6); display: grid; grid-template-columns: 90px 60px 1fr 60px; grid-template-rows: 26px 60px; }
+.pop .ph { grid-column: 1 / -1; padding: 4px 10px; font-size: 13px; color: var(--lc-dim); border-bottom: 1px solid var(--lc-line); display: flex; justify-content: space-between; }
+.pop .pres { display: grid; place-items: center; font-size: 13px; color: var(--lc-cap); border-right: 1px solid var(--lc-line); }
+.pop .pm { border: 0; background: var(--lc-raised); font-size: 22px; cursor: pointer; }
+.pop .band { position: relative; background: var(--lc-gap); }
+.pop .band i { position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in srgb, var(--lc-programmer) 55%, transparent); }
+.pop .band b { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--lc-mono); font-size: 18px; font-weight: 500; }
+.selbar { padding: 10px 12px; color: var(--lc-dim); font-size: 14px; border-bottom: 1px solid var(--lc-line); }
+.selbar b { color: var(--lc-text); }
+.ewin { min-height: 200px; display: grid; place-items: center; color: var(--lc-faint); font-size: 14px; padding: 20px; text-align: center; }
+
+/* ── oops ── */
+.olist { display: flex; flex-direction: column; max-height: 420px; overflow: auto; }
+.orow { min-height: 48px; display: grid; grid-template-columns: 34px 1fr auto auto; gap: 10px; align-items: center; padding: 0 12px; border-bottom: 1px solid var(--lc-hair); cursor: pointer; }
+.orow:nth-child(even) { background: var(--lc-alt); }
+.orow .n { color: var(--lc-faint); font-family: var(--lc-mono); font-size: 13px; text-align: right; }
+.orow .ln { font-family: var(--lc-mono); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.orow .cat { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: var(--lc-raised); color: var(--lc-dim); }
+.orow .cat.Programmer { color: var(--lc-programmer); } .orow .cat.Show { color: var(--lc-accent-hi); } .orow .cat.UI { color: var(--lc-info); } .orow .cat.Selection { color: #8fbf6a; }
+.orow .tm { font-size: 12px; color: var(--lc-faint); font-family: var(--lc-mono); }
+.orow.pick { background: color-mix(in srgb, var(--lc-act-oops) 18%, var(--lc-bg)); box-shadow: inset 3px 0 0 var(--lc-act-oops); }
+.orow.undone { opacity: .45; }
+.orow.undone.pick { opacity: 1; background: color-mix(in srgb, var(--lc-info) 20%, var(--lc-bg)); box-shadow: inset 3px 0 0 var(--lc-info); }
+.odiv { padding: 6px 12px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); background: var(--lc-surface); border-block: 1px solid var(--lc-line); }
+.ofoot { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; border-top: 1px solid var(--lc-line); background: var(--lc-surface); }
+.ofoot button { min-height: 60px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 16px; }
+.ofoot button.oops:not(:disabled) { background: color-mix(in srgb, var(--lc-act-oops) 30%, var(--lc-raised)); border-color: var(--lc-act-oops); color: var(--lc-text); font-weight: 600; }
+.ofoot button.redo:not(:disabled) { border-color: var(--lc-info); }
+.ofoot button:disabled { color: var(--lc-faint); cursor: default; }
+.ochips { display: flex; gap: 6px; padding: 8px; flex-wrap: wrap; border-bottom: 1px solid var(--lc-line); background: var(--lc-surface); }
+.ochips button { min-height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 13px; }
+.ochips button[aria-pressed="false"] { color: var(--lc-faint); text-decoration: line-through; }
+
+/* ── sequence pool ── */
+.spool { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 3px; padding: 6px; background: var(--lc-gap); touch-action: pan-y; }
+.scell { position: relative; height: 104px; border-radius: 4px; padding: 6px 8px 8px; background: color-mix(in srgb, var(--c, var(--lc-accent)) 32%, var(--lc-raised)); cursor: pointer; display: flex; flex-direction: column; overflow: hidden; }
+.scell.empty { background: var(--lc-surface); }
+.scell .top { display: flex; justify-content: space-between; font-size: 12px; color: var(--lc-dim); }
+.scell .nm { font-weight: 600; font-size: 15px; line-height: 1.15; }
+.scell .cue { margin-top: auto; font-family: var(--lc-mono); font-size: 13px; }
+.scell .cue small { color: var(--lc-dim); display: block; font-size: 12px; }
+.scell .prog { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--lc-cap); }
+.scell .run { width: 9px; height: 9px; border-radius: 50%; background: var(--lc-ok); box-shadow: 0 0 6px var(--lc-ok); display: inline-block; }
+.scell.sel { box-shadow: inset 0 0 0 2px var(--lc-accent-hi); }
+.scell .exe { margin-top: auto; font-family: var(--lc-mono); font-size: 12px; display: grid; gap: 1px; }
+.scell .exe div { padding: 1px 4px; border-radius: 2px; white-space: nowrap; overflow: hidden; color: var(--lc-dim); }
+.scell .exe div.on { background: color-mix(in srgb, var(--lc-cap) 34%, #241f0c); color: var(--lc-text); font-weight: 600; box-shadow: inset 2px 0 0 color-mix(in srgb, var(--lc-cap) 70%, transparent); }
+.scell .exe div.cur-off { box-shadow: inset 0 0 0 1px var(--lc-faint); color: var(--lc-text); }
+.scell .blue { position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: #2f6fd6; }
+.scell .blue i { position: absolute; left: 0; top: 0; bottom: 0; background: #8fb8ff; }
+.scell.run { box-shadow: inset 0 -5px 0 #2f6fd6; }
+.scell.sel { box-shadow: inset 0 0 0 2px var(--lc-accent-hi); }
+.scell.sel.run { box-shadow: inset 0 0 0 2px var(--lc-accent-hi), inset 0 -5px 0 #2f6fd6; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--lc-raised); border: 1px solid var(--lc-line); padding: 10px 16px; border-radius: 6px; z-index: 1000; font-size: 14px; }
+
+/* ── sequence window ── */
+.sq-v { overflow: auto; max-height: 560px; }
+.sq-v table { border-collapse: collapse; width: max-content; min-width: 100%; font-size: 14px; }
+.sq-v th { position: sticky; top: 0; z-index: 2; background: var(--lc-surface); color: var(--lc-dim); font-weight: 500; text-align: left; padding: 0 10px; height: 40px; border-bottom: 1px solid var(--lc-line); border-right: 1px solid var(--lc-hair); white-space: nowrap; }
+.sq-v td { height: 44px; padding: 0 10px; border-bottom: 1px solid var(--lc-hair); border-right: 1px solid var(--lc-hair); white-space: nowrap; }
+.sq-v tr.cue:nth-of-type(even) td { background: var(--lc-alt); }
+.sq-v tr.cue.run td { background: var(--lc-selected); }
+.sq-v tr.cue.run td:first-child { box-shadow: inset 3px 0 0 var(--lc-accent-hi); }
+.sq-v td.n { font-family: var(--lc-mono); text-align: right; color: var(--lc-dim); }
+.sq-v .exp { width: 32px; height: 32px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; }
+.sq-v tr.detail > td { padding: 0; background: #1d1810; border-bottom: 2px solid var(--lc-accent); }
+.sq-d { display: grid; gap: 0; }
+.sq-d .chips { display: flex; gap: 6px; padding: 8px 10px; overflow-x: auto; border-bottom: 1px solid var(--lc-line); }
+.sq-d .chips button { flex: none; min-height: 40px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; }
+.sq-d .chips button[aria-pressed="true"] { border-color: var(--lc-sel-line); box-shadow: inset 0 0 0 1px var(--lc-sel-line); }
+.sq-d .tim { display: grid; grid-template-columns: 110px repeat(var(--n), minmax(84px, 1fr)); }
+.sq-d .tim > div { height: 36px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid #3a2f17; border-right: 1px solid #3a2f17; font-family: var(--lc-mono); font-size: 13px; }
+.sq-d .tim > div.h { justify-content: flex-start; padding-left: 10px; font-family: var(--lc-font); color: var(--lc-dim); }
+.sq-d .tim > div.inh { color: var(--lc-faint); }
+.sq-d canvas { display: block; width: 100%; height: 200px; background: #0b0b0b; }
+.sq-h { overflow: auto; max-height: 600px; position: relative; }
+.sq-h .tl { display: flex; align-items: flex-start; padding: 10px; gap: 0; width: max-content; position: relative; }
+.sq-h .col { border: 1px solid #4a3d1a; background: #191710; flex: none; }
+.sq-h .col .ch { height: 44px; display: grid; grid-template-rows: 16px 1fr; padding: 2px 6px; background: #2a2412; border-bottom: 1px solid #4a3d1a; cursor: pointer; }
+.sq-h .col .ch small { font-size: 12px; color: var(--lc-dim); }
+.sq-h .col .ch b { font-weight: 500; text-align: center; }
+.sq-h .col.run .ch { background: color-mix(in srgb, var(--lc-accent) 45%, #2a2412); }
+.sq-h .row { display: grid; grid-template-columns: 76px 40px 1fr; height: 30px; border-bottom: 1px solid #2a2412; }
+.sq-h .row span { display: flex; align-items: center; font-size: 12px; }
+.sq-h .row .k { padding-left: 6px; color: var(--lc-dim); }
+.sq-h .row .v { justify-content: center; background: #22201a; font-family: var(--lc-mono); cursor: pointer; }
+.sq-h .row .v:hover, .sq-h .row .v.on { background: var(--lc-selected); box-shadow: inset 0 0 0 1px var(--lc-accent-hi); }
+.tslider { position: absolute; z-index: 45; left: 50%; bottom: 12px; transform: translateX(-50%); width: min(560px, calc(100% - 16px)); background: var(--lc-surface); border: 1px solid var(--lc-accent); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.6); }
+.tslider .top { display: flex; align-items: center; min-height: 44px; padding-left: 14px; border-bottom: 1px solid var(--lc-line); font-weight: 600; }
+.tslider .top span { flex: 1; }
+.tslider .row2 { display: grid; grid-template-columns: 60px 1fr 60px 76px; height: 64px; }
+.tslider .row2 button { border: 0; background: var(--lc-raised); font-size: 22px; cursor: pointer; border-right: 1px solid var(--lc-line); }
+.tslider .band { position: relative; background: var(--lc-gap); touch-action: none; cursor: ew-resize; }
+.tslider .band i { position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in srgb, var(--lc-accent) 50%, transparent); }
+.tslider .band b { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--lc-mono); font-size: 20px; }
+.tslider .kpb { font-size: 14px !important; }
+.sq-h .row.part { background: #2a2412; }
+.sq-h .row.part .k { color: var(--lc-text); }
+.sq-h .row .lane { position: relative; }
+.sq-h .row .lane i { position: absolute; top: 50%; height: 2px; background: var(--lc-cap); }
+.sq-h .row .lane i::before, .sq-h .row .lane i::after { content: ''; position: absolute; top: -3px; width: 7px; height: 7px; background: var(--lc-accent); }
+.sq-h .row .lane i::before { left: -3px; } .sq-h .row .lane i::after { right: -3px; }
+.sq-h .add { height: 30px; display: flex; align-items: center; justify-content: center; color: var(--lc-accent-hi); cursor: pointer; border-bottom: 1px solid #2a2412; }
+.sq-h .ruler { position: relative; height: 16px; overflow: hidden; border-bottom: 1px solid #2a2412; font-size: 11px; color: var(--lc-faint); }
+.sq-h .ruler span { position: absolute; top: 1px; }
+.picker { position: absolute; z-index: 40; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(460px, calc(100% - 16px)); background: var(--lc-surface); border: 1px solid var(--lc-line); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.6); }
+.picker .top { display: flex; align-items: center; min-height: 50px; padding-left: 14px; border-bottom: 1px solid var(--lc-line); font-weight: 600; }
+.picker .top span { flex: 1; }
+.picker .cols { display: grid; grid-template-columns: 1fr 1fr; }
+.picker .cols div { border-right: 1px solid var(--lc-line); padding: 6px; display: grid; gap: 2px; align-content: start; }
+.picker .cols div:last-child { border-right: 0; }
+.picker .cols h5 { margin: 4px 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); }
+.picker .cols button { min-height: 44px; text-align: left; padding: 0 12px; border: 0; border-radius: 4px; background: none; cursor: pointer; font-size: 15px; }
+.picker .cols button[aria-pressed="true"] { background: var(--lc-selected); box-shadow: inset 3px 0 0 var(--lc-accent-hi); }
+.picker .foot { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; border-top: 1px solid var(--lc-line); }
+.picker .foot button { min-height: 56px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; }
+.picker .foot .run { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; font-weight: 600; }
+.picker .opts { padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.picker .opts button { min-height: 52px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; }
+.picker textarea { grid-column: 1 / -1; min-height: 70px; background: var(--lc-gap); color: var(--lc-text); border: 1px solid var(--lc-line); border-radius: 4px; font: 15px var(--lc-font); padding: 8px; }
+
+.vslider { position: fixed; z-index: 60; width: 88px; height: 300px; margin-left: -44px; background: var(--lc-surface); border: 1px solid var(--lc-accent); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.6); display: grid; grid-template-rows: 28px 1fr 28px; pointer-events: none; }
+.vslider .vh, .vslider .vf { display: grid; place-items: center; font-size: 12px; color: var(--lc-dim); }
+.vslider .vt { position: relative; margin: 0 22px; border-radius: 4px; background: var(--lc-gap); border: 1px solid var(--lc-line); overflow: hidden; }
+.vslider .vt i { position: absolute; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, var(--lc-programmer) 55%, transparent); }
+.vslider .vt b { position: absolute; left: -2px; right: -2px; height: 4px; background: var(--lc-cap); margin-top: -2px; }
+.vslider .vf { font-family: var(--lc-mono); color: var(--lc-text); font-size: 14px; }
+
+.tfield { cursor: ns-resize; }
+.tfield:hover { background: var(--lc-selected) !important; }
+.pfield { cursor: pointer; gap: 6px; }
+.pfield .lm { display: inline-block; width: 18px; height: 3px; background: repeating-linear-gradient(90deg, var(--lc-act-select, #c9a227) 0 5px, transparent 5px 7px); }
+.vpanel { position: fixed; z-index: 70; width: 110px; margin-left: -55px; background: var(--lc-surface); border: 1px solid var(--lc-accent); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.6); display: grid; grid-template-rows: auto auto auto; user-select: none; -webkit-user-select: none; }
+.vpanel.follow { pointer-events: none; }
+.vpanel .vh { padding: 6px 8px; font-size: 12px; color: var(--lc-dim); text-align: center; border-bottom: 1px solid var(--lc-line); line-height: 1.2; }
+.vpanel .vbody { display: grid; grid-template-rows: auto 300px auto; gap: 6px; padding: 8px; }
+.vpanel.follow .vbody { grid-template-rows: 300px; }
+.vpanel .vbody button { min-height: 44px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); font-size: 22px; cursor: pointer; }
+.vpanel .vt { position: relative; margin: 0 18px; border-radius: 4px; background: var(--lc-gap); border: 1px solid var(--lc-line); overflow: hidden; touch-action: none; cursor: ns-resize; }
+.vpanel .vt i { position: absolute; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, var(--lc-accent) 50%, transparent); }
+.vpanel .vt b { position: absolute; left: 0; right: 0; height: 4px; margin-top: -2px; background: var(--lc-cap); }
+.vpanel .vt span { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); font-family: var(--lc-mono); font-size: 13px; background: rgba(0,0,0,.6); padding: 1px 4px; border-radius: 3px; white-space: nowrap; }
+.vpanel .vfoot { display: grid; gap: 6px; padding: 0 8px 8px; }
+.vpanel .vfoot button { min-height: 44px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 14px; }
+.sq-d .tim > div.colname { cursor: pointer; justify-content: center; }
+.sq-d .tim > div.col-on { background: color-mix(in srgb, var(--lc-cap) 16%, #1d1810); color: var(--lc-text); }
+.sq-d .tim > div.colname.col-on { box-shadow: inset 0 -3px 0 var(--lc-cap); color: var(--lc-cap); }
+@media (prefers-reduced-motion: reduce) { .ring.run { animation-duration: 1ms; } }
+</style>
+
+<header>
+  <h1>12f controls · round 7</h1>
+  <p class="sub">Every control sends real lines. A drag goes on the <b>gesture channel</b>: it reaches the station and the System Monitor's “Faders” filter once per drag, and never the command line. A typed line stays a normal command. Try it on a touch screen; several fingers work at once.</p>
+  <nav class="tabs" id="tabs" role="tablist">
+    <button role="tab" data-b="fader" aria-selected="true">Faders</button>
+    <button role="tab" data-b="enc" aria-selected="false">Encoder</button>
+    <button role="tab" data-b="oops" aria-selected="false">Oops window</button>
+    <button role="tab" data-b="seq" aria-selected="false">Sequence pool</button>
+    <button role="tab" data-b="sheet" aria-selected="false">Sequence window</button>
+  </nav>
+</header>
+
+<section class="board" id="b-fader">
+  <p class="intro">The masters as faders. <b>Drag</b> moves a fader relative to where it is, and a tap never jumps. Each finger owns one fader, so several move at once. A <b>second finger on the same fader</b> gives fine control (×0.1). A fader only drags: no hold, no double-tap (its settings come from the window). Near 0 and 100 the fader snaps.</p>
+  <div class="stage"><div class="bank filled noselect" id="bank"></div></div>
+  <div class="logs"><div class="log" data-log="cmd"></div><div class="log" data-log="sys"></div></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>Look B, as you picked (the filled bar).</li>
+    <li>Is the travel (300 px) right? Is a second finger the right way to get fine control?</li>
+  </ul></div>
+</section>
+
+<section class="board" id="b-enc" hidden>
+  <p class="intro">Round 5: <b>no hold delay</b>. Press and drag adjusts at once, and the slider appears as your finger moves. A tap without moving opens the panel. Round 4: the encoders use the <b>same vertical slider</b> as the timing fields. A <b>tap</b> opens the slider panel (− / +, Keypad). <b>Hold and drag</b> brings the slider under your finger. The <b>mouse wheel</b> still steps the value on a desk. Your concept's <b>encoder bar</b>: a row of "Attribute / Value" cells under the screen, for the selected fixtures (here Spot 1–4). <b>Drag a cell</b> sideways or up/down to change it. The resolution sits on the left: Coarse 1 %, Fine 0.1 %, Ultra one DMX step. A <b>tap</b> opens the keypad. Pick B to see the locked board's pop-up band fader while you drag.</p>
+
+  <div class="stage noselect" id="enc-stage">
+    <div class="selbar">Selection: <b>Spot 1 Thru 4</b> · Feature: <b>Dimmer · Position · Beam</b></div>
+    <div class="ewin">(a window above the bar)</div>
+    <div class="ebar" id="ebar"></div>
+  </div>
+  <div class="logs"><div class="log" data-log="cmd"></div><div class="log" data-log="sys"></div></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>Desk: drag + pop-up, wheel. Touch: hold → vertical slider. Right? Does the bar go under every screen as in your concept, or only where a window asks for it?</li>
+    <li>Programmer values <b>are</b> undoable. One drag = one Oops step, e.g. <code>Attribute "Dim" At + 12.5</code>. See the Oops window tab.</li>
+    <li>Is Coarse / Fine / Ultra right, or do you want four (Coarse / Fine / Increment / Native)?</li>
+  </ul></div>
+</section>
+
+<section class="board" id="b-oops" hidden>
+  <p class="intro">This is your Oops list, as decided: newest at the bottom. <b>Tap</b> an entry to select it and every newer one, then press <b>Oops n steps</b>. Undone steps stay dimmed under the line, and tapping one selects it for <b>Redo</b>. The chips are your profile's Oops filters. Steps from the Encoder tab land here too.</p>
+  <div class="stage noselect">
+    <div class="ochips" id="ochips"></div>
+    <div class="olist" id="olist"></div>
+    <div class="ofoot"><button class="oops" id="o-oops" type="button">Oops</button><button class="redo" id="o-redo" type="button">Redo</button></div>
+  </div>
+  <div class="logs"><div class="log" data-log="cmd"></div><div class="log" data-log="sys"></div></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>Do the rows show the right facts: the line, the category, the station, the time?</li>
+    <li>How it opens: a window type, the Menu tile, or a hold on the Oops key (hold already means "show me more")?</li>
+  </ul></div>
+</section>
+
+<section class="board" id="b-seq" hidden>
+  <p class="intro">Executor style, as you picked: the active cue's name on <b>yellow</b> while the sequence runs (no yellow when it's off), a <b>blue</b> mark along the bottom of a running sequence (it fills during a fade), no green dot. The <b>Sequence pool</b> in <b>&lt;luma-pool&gt;</b>. Each cell takes its NodeMeta colour and shows the cue before, the active cue and the next, and a gold frame on <i>your</i> selected sequence. The window's <b>tap action</b> decides what a tap does. <b>Hold</b> follows the window's new <b>Hold action</b> setting: Edit (the default here) opens the sequence, Sheet opens the object sheet plus Goto, Off and Top.</p>
+  <div class="controls">
+    <span><span class="ctl-label">Hold action</span><span class="seg" id="s-hold"><button data-v="Edit" aria-pressed="true">Edit</button><button data-v="Sheet" aria-pressed="false">Sheet</button></span></span>
+    <span><span class="ctl-label">Tap action</span><span class="seg" id="s-act"><button data-v="Select" aria-pressed="true">Select</button><button data-v="Go" aria-pressed="false">Go</button><button data-v="Toggle" aria-pressed="false">Toggle</button><button data-v="Off" aria-pressed="false">Off</button><button data-v="Top" aria-pressed="false">Top</button></span></span>
+  </div>
+  <div class="stage noselect"><div class="spool" id="spool"></div></div>
+  <div class="logs"><div class="log" data-log="cmd"></div><div class="log" data-log="sys"></div></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>Executor style: the yellow active cue (gone when off: a thin frame keeps the place), the blue bar of a running sequence (fills during a fade, try Go), the gold frame on your selected sequence. Right?</li>
+    <li>Sequences get NodeMeta (colour, icon, note, locked; one show-format bump) and <b>stay show-wide</b> (<code>Sequence 3</code>), or move into DataPools (<code>DataPool 1 Sequence 3</code>)?</li>
+    <li>Is "Top" a new word, or <code>Goto Cue &lt;first&gt;</code>?</li>
+  </ul></div>
+</section>
+
+<section class="board" id="b-sheet" hidden>
+  <p class="intro">Round 7: the graph's time axis always has rounded room past the end (2 s minimum), so grabbing a handle never moves the scale. It holds still while you drag and grows only if you drag past its end. Round 6: the graph has <b>handles</b> for the active feature group: the end of its delay and the end of its fade. Drag one sideways and the time follows. The scale holds still while you drag, and the values in the table update live. Round 5: in the vertical sheet a live edit only redraws the values and the curve (no glitch). A <b>tap on a feature group's name</b> highlights its column and makes it the active curve. Round 4: every timing field, feature groups included, drags with <b>hold and drag</b>. While you drag, the lines, curves and spans redraw live. Round 3: every timing field works the same in both layouts. A <b>tap</b> opens the vertical slider (− / +, Keypad). <b>Hold and drag</b> edits right away, with the slider under your finger. The vertical sheet keeps its scroll, draws each feature group's <b>path shape</b> (tap a Path cell to pick Linear, S-curve, Ease in / out or Snap) with the others dimmed. This is the <b>sequence window</b>, drawn from your two references. <b>Vertical</b> (the classic style): the cue sheet. <b>+</b> opens a cue's parts and the timing of each feature group (Fade · Delay · Path; an inherited value is shown in brackets), with the curve. <b>Horizontal</b> (timeline): the cues side by side, a row per timing with its line across the seconds, zoom, <b>+ add timing</b> (Attribute × Type) and a tap on a cue's head for its options. Every change is a <code>Set Cue …</code> line.</p>
+  <div class="controls">
+    <span><span class="ctl-label">Layout</span><span class="seg" id="q-mode"><button data-v="v" aria-pressed="true">A · Vertical sheet</button><button data-v="h" aria-pressed="false">B · Horizontal timeline</button></span></span>
+    <label class="ctl-label" id="q-zoomw" hidden>Zoom <input type="range" id="q-zoom" min="20" max="200" value="60" style="vertical-align:middle;accent-color:var(--lc-accent)"> <span id="q-zv"></span></label>
+  </div>
+  <div class="stage noselect" id="q-stage"></div>
+  <div class="logs"><div class="log" data-log="cmd"></div><div class="log" data-log="sys"></div></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>Both, as you picked: one window, Vertical / Horizontal as its setting. Vertical: every feature group's line dimmed behind the active one. Horizontal: tap a timing field to edit it with the slider.</li>
+    <li>Which columns does the vertical sheet show by default (No · Name · Trig · Trig time · Fade · Out fade · Delay · Out delay · Info …)? Its miniature stays the approved dense text.</li>
+    <li>Is per-feature timing in 12f, or later with cue parts? Today each cue part times itself (Fade / OutFade / Delay / OutDelay); timing per feature group is new data.</li>
+  </ul></div>
+</section>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const h = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.innerHTML = x; return e; };
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const HOLD = 500, SLOP = 8;
+const clock = () => new Date().toTimeString().slice(0, 8);
+
+$('#tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $$('#tabs button').forEach(x => x.setAttribute('aria-selected', x === b));
+  $$('.board').forEach(s => s.hidden = s.id !== 'b-' + b.dataset.b);
+});
+const seg = (id, fn) => $(id).addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $$('button', $(id)).forEach(x => x.setAttribute('aria-pressed', x === b));
+  fn(b.dataset.v);
+});
+let toastT;
+function toast(m) { let t = $('.toast'); if (!t) { t = h('div', 'toast'); document.body.append(t); } t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 1600); }
+
+/* ── logs: the command line (typed + visible lines) and the System Monitor ── */
+const cmd = [], sys = [];
+let sent = 0;
+function cmdLine(line) { cmd.push({ t: clock(), line }); drawLogs(); }
+function sysRow(kind, text) { sys.push({ t: clock(), kind, text }); drawLogs(); }
+function drawLogs() {
+  for (const el of $$('[data-log]')) {
+    const isCmd = el.dataset.log === 'cmd';
+    const rows = isCmd ? cmd : sys;
+    el.innerHTML = `<h4>${isCmd ? 'Command line · history' : 'System Monitor'}<span>${isCmd ? 'echoes typed and visible lines' : `filter: Faders ✓ · gesture lines sent: ${sent}`}</span></h4>`;
+    const ol = h('ol');
+    if (!rows.length) ol.append(h('li', 'empty', isCmd ? 'Nothing yet. A fader drag never shows here.' : 'Nothing yet.'));
+    rows.slice(-60).forEach(r => ol.append(h('li', null, isCmd
+      ? `<span class="t">${r.t}</span><span class="p">Admin&gt; </span>${esc(r.line)}`
+      : `<span class="t">${r.t}</span><span class="k">[${esc(r.kind)}]</span>${esc(r.text)}`)));
+    el.append(ol);
+    ol.scrollTop = ol.scrollHeight;
+  }
+}
+drawLogs();
+/* the gesture channel: ≤ 30 lines/s while moving, the end always; one sysmon row per gesture */
+function gesture(id, line) { sent++; drawLogs(); }
+
+/* ── hold helper (the kit's one hold) ── */
+let ringEl;
+function ring(x, y) { unring(); ringEl = h('div', 'ring'); ringEl.style.left = x + 'px'; ringEl.style.top = y + 'px'; document.body.append(ringEl); requestAnimationFrame(() => ringEl?.classList.add('run')); }
+function unring() { ringEl?.remove(); ringEl = null; }
+
+/* ═════════ FADERS ═════════ */
+const masters = [
+  { id: 'Master 2.1', name: 'Grand', v: 100 },
+  { id: 'Master 2.2', name: 'Highlight', v: 100 },
+  { id: 'Master 2.4', name: 'Solo', v: 100 },
+  { id: 'Group 1 Master', name: 'All', v: 100, group: true },
+  { id: 'Group 2 Master', name: 'Odd', v: 80, group: true },
+  { id: 'Group 3 Master', name: 'Even', v: 35, group: true },
+  { id: 'Master Highlight', name: 'My HL', v: 70, own: true },
+];
+const TRAVEL = 280; // px of the track's usable height
+let gid = 0;
+function drawBank() {
+  const bank = $('#bank'); bank.innerHTML = '';
+  masters.forEach((m, i) => {
+    const col = h('div', 'fcol');
+    col.innerHTML = `<div class="val"></div><div class="ftrack"><div class="groove"><div class="fill"></div></div><div class="ticks"></div><div class="cap"></div></div><div class="lab">${esc(m.name)}<small>${esc(m.own ? 'yours' : m.id.replace(' Master', ''))}</small></div>`;
+    bank.append(col);
+    const track = $('.ftrack', col), cap = $('.cap', col), fill = $('.fill', col), val = $('.val', col);
+    const paint = () => {
+      const y = 10 + (1 - m.v / 100) * TRAVEL;
+      cap.style.top = y + 'px';
+      fill.style.height = m.v + '%';
+      val.textContent = m.v.toFixed(m.v % 1 ? 1 : 0);
+    };
+    paint();
+    // one finger owns the fader; a second finger on it = fine
+    const fingers = new Map();
+    let g = null;
+    const lineOf = v => m.own ? `Master Highlight At ${v.toFixed(1)}` : m.group ? `${m.id.replace(' Master', '')} Master At ${v.toFixed(1)}` : `${m.id} At ${v.toFixed(1)}`;
+    track.addEventListener('pointerdown', e => {
+      e.preventDefault();
+      try { track.setPointerCapture(e.pointerId); } catch {}
+      fingers.set(e.pointerId, { y: e.clientY });
+      if (fingers.size === 2 && g) { g.fine = true; g.y0 = e.clientY; g.v0 = m.v; col.classList.add('fine'); return; }
+      if (fingers.size > 2) return;
+      g = { id: ++gid, owner: e.pointerId, y0: e.clientY, v0: m.v, start: m.v, moved: false, fine: false, last: 0 };
+    });
+    track.addEventListener('pointermove', e => {
+      if (!g) return;
+      const f = fingers.get(e.pointerId); if (!f) return;
+      const finePid = g.fine ? [...fingers.keys()].find(k => k !== g.owner) : null;
+      if (e.pointerId !== (g.fine ? finePid : g.owner) && !(g.fine && e.pointerId === g.owner)) return;
+      const dy = e.clientY - g.y0;
+      if (!g.moved && Math.abs(dy) > SLOP) { g.moved = true; col.classList.add('active'); }
+      if (!g.moved) return;
+      let v = g.v0 - (dy / TRAVEL) * 100 * (g.fine ? 0.1 : 1);
+      v = Math.max(0, Math.min(100, v));
+      if (!g.fine) { if (v > 98) v = 100; if (v < 2) v = 0; }
+      m.v = Math.round(v * 10) / 10;
+      paint();
+      let b = $('.bubble', col);
+      if (!b) { b = h('div', 'bubble'); track.append(b); }
+      b.style.top = cap.style.top; b.textContent = lineOf(m.v);
+      const now = performance.now();
+      if (now - g.last > 33) { g.last = now; gesture(g.id, lineOf(m.v)); }
+    });
+    const end = e => {
+      fingers.delete(e.pointerId);
+      if (!g) return;
+      if (g.fine && e.pointerId !== g.owner) { g.fine = false; g.y0 = fingers.get(g.owner)?.y ?? g.y0; g.v0 = m.v; col.classList.remove('fine'); return; }
+      if (e.pointerId !== g.owner) return;
+      col.classList.remove('active', 'fine');
+      $('.bubble', col)?.remove();
+      if (g.moved && m.v !== g.start) { gesture(g.id, lineOf(m.v)); sysRow('Faders', `Admin · ${m.own ? 'Master Highlight (yours)' : m.id} ${g.start} → ${m.v}`); }
+      g = null; fingers.clear();
+    };
+    track.addEventListener('pointerup', end);
+    track.addEventListener('pointercancel', end);
+    track.addEventListener('lostpointercapture', end);
+  });
+}
+function openSheet(m, paint) {
+  const stage = $('#bank').parentElement;
+  const sc = h('div', 'scrim');
+  sc.innerHTML = `<div class="sheet"><div class="top"><span>${esc(m.own ? 'Your Highlight master' : `${m.id} · ${m.name}`)}</span><button class="x" aria-label="Close">×</button></div>
+    <div class="facts"><b>${m.v.toFixed(1)} %</b>${m.group ? 'Group master · fades on the session clock' : m.own ? 'Scales your own Highlight' : 'ShowData.Playbacks.Masters · never undone'}</div>
+    <div class="acts"><button data-a="kp">Keypad</button><button data-a="full">Full</button><button data-a="zero">Zero</button><button data-a="reset">Reset</button><button data-a="set" class="list">Settings</button></div></div>`;
+  stage.append(sc);
+  const close = () => sc.remove();
+  $('.x', sc).onclick = close;
+  sc.addEventListener('click', e => { if (e.target === sc) close(); });
+  $$('[data-a]', sc).forEach(b => b.onclick = () => {
+    const a = b.dataset.a; close();
+    const base = m.own ? 'Master Highlight' : m.group ? m.id : m.id;
+    if (a === 'full' || a === 'zero') { const v = a === 'full' ? 100 : 0; cmdLine(`${base} At ${a === 'full' ? 'Full' : 'Zero'}`); m.v = v; paint(); }
+    if (a === 'reset') { cmdLine(`${base} At Full`); m.v = 100; paint(); }
+    if (a === 'set') { cmdLine(`EditSetting ${base.replace(' Master', '')}`); }
+    if (a === 'kp') keypad(stage, base, m.v, v => { cmdLine(`${base} At ${v}`); m.v = Math.max(0, Math.min(100, applyRel(m.v, v))); paint(); });
+  });
+}
+function applyRel(now, txt) {
+  const t = String(txt).trim(); const op = t[0];
+  const n = parseFloat(t.replace(/^[+\-*/]\s*/, ''));
+  if (isNaN(n)) return now;
+  if (op === '+' && t[1] === ' ' ) return now + n; if (op === '-' && t[1] === ' ') return now - n;
+  if (op === '*') return now * n; if (op === '/') return n ? now / n : now;
+  return n;
+}
+function keypad(stage, title, value, done) {
+  const kp = h('div', 'kp');
+  let txt = '';
+  const keys = ['7', '8', '9', '+ ', '4', '5', '6', '- ', '1', '2', '3', '* ', '0', '.', '⌫', 'OK'];
+  kp.innerHTML = `<div class="box"><div class="disp"><small>${esc(title)} · was ${value}</small><span></span></div><div class="keys">${keys.map(k => `<button class="${k === 'OK' ? 'ok' : ''}">${k.trim() || k}</button>`).join('')}</div></div>`;
+  const disp = $('.disp span', kp);
+  $$('.keys button', kp).forEach((b, i) => b.onclick = () => {
+    const k = keys[i];
+    if (k === 'OK') { kp.remove(); if (txt) done(txt.trim()); return; }
+    if (k === '⌫') txt = txt.slice(0, -1); else txt += k;
+    disp.textContent = txt;
+  });
+  kp.addEventListener('click', e => { if (e.target === kp) kp.remove(); });
+  stage.append(kp);
+}
+drawBank();
+
+/* ═════════ ENCODERS ═════════ */
+const RES = { Coarse: { step: 1, px: 8 }, Fine: { step: 0.1, px: 8 }, Ultra: { step: 100 / 65535, px: 8 } };
+let res = 'Coarse', estyle = 'pop';
+const attrs = [
+  { a: 'Dim', label: 'Dimmer', v: 47, unit: '%', min: 0, max: 100, prog: true },
+  { a: 'Pan', label: 'Pan', v: -32, unit: '°', min: -270, max: 270, prog: true },
+  { a: 'Tilt', label: 'Tilt', v: 12.5, unit: '°', min: -135, max: 135, prog: false },
+  { a: 'Zoom', label: 'Zoom', v: 24, unit: '°', min: 6, max: 50, prog: false },
+  { a: 'Iris', label: 'Iris', v: 100, unit: '%', min: 0, max: 100, prog: true },
+];
+function drawEbar() {
+  const bar = $('#ebar'); bar.innerHTML = '';
+  const r = h('div', 'eres');
+  ['Coarse', 'Fine', 'Ultra'].forEach(k => { const b = h('button', null, k); b.setAttribute('aria-pressed', k === res); b.onclick = () => { res = k; drawEbar(); }; r.append(b); });
+  bar.append(r);
+  attrs.forEach(at => {
+    const c = h('div', 'ecell');
+    const fmt = () => `${at.v.toFixed(res === 'Coarse' ? 1 : res === 'Fine' ? 2 : 3)}${at.unit}`;
+    const span = at.max - at.min;
+    c.innerHTML = `<div class="an"><span>${esc(at.label)}</span><span>${res}</span></div><div class="ev${at.prog ? '' : ' out'}"></div><i class="eband"></i>`;
+    const paint = () => { $('.ev', c).textContent = fmt(); $('.eband', c).style.width = ((at.v - at.min) / span * 100) + '%'; };
+    paint();
+    bar.append(c);
+    let g = null;
+    // Desk: the mouse wheel steps the value (one resolution step a notch).
+    let wheel = null;
+    c.addEventListener('wheel', e => {
+      e.preventDefault();
+      const unitStep = res === 'Ultra' ? span / 65535 : (span / 100) * RES[res].step;
+      if (!wheel) wheel = { id: ++gid, v0: at.v };
+      at.v = Math.max(at.min, Math.min(at.max, at.v + (e.deltaY < 0 ? 1 : -1) * unitStep));
+      at.prog = true; $('.ev', c).classList.remove('out'); paint();
+      gesture(wheel.id, `Attribute "${at.a}" At ${at.v.toFixed(2)}`);
+      clearTimeout(wheel.t);
+      wheel.t = setTimeout(() => {
+        const d = at.v - wheel.v0, line = `Attribute "${at.a}" At ${d >= 0 ? '+' : '-'} ${Math.abs(d).toFixed(2)}`;
+        sysRow('Encoders', `Admin · ${at.label} ${wheel.v0.toFixed(1)} → ${at.v.toFixed(2)}${at.unit} (wheel)`);
+        addOops(line, 'Programmer'); wheel = null;
+      }, 600);
+    }, { passive: false });
+    // The same vertical slider as the timing fields: tap = the slider panel (− / +, Keypad),
+    // hold-and-drag = the slider under the finger (decided round 3). The wheel stays (desk).
+    const io = {
+      label: `${at.label} · Spot 1 Thru 4`, min: at.min, max: at.max, unit: at.unit,
+      step: () => (res === 'Ultra' ? span / 65535 : (span / 100) * RES[res].step),
+      digits: () => (res === 'Coarse' ? 1 : res === 'Fine' ? 2 : 3),
+      get: () => at.v,
+      put: v => { at.v = Math.max(at.min, Math.min(at.max, v)); at.prog = true; },
+      line: () => `Attribute "${at.a}" At ${at.v.toFixed(3).replace(/\.?0+$/, '')}`,
+      live: () => paint(),
+      commit: (from, how) => {
+        const d = at.v - from, line = `Attribute "${at.a}" At ${d >= 0 ? '+' : '-'} ${Math.abs(d).toFixed(res === 'Ultra' ? 3 : 2)}`;
+        if (how === 'drag') sysRow('Encoders', `Admin · ${at.label} ${from.toFixed(1)} → ${at.v.toFixed(2)}${at.unit} (Spot 1 Thru 4)`); else cmdLine(line);
+        addOops(line, 'Programmer');
+      },
+    };
+    c.style.touchAction = 'none';
+    holdDrag(c, io, $('#enc-stage'), { immediate: true });
+  });
+}
+drawEbar();
+
+/* ═════════ OOPS ═════════ */
+let steps = [
+  { line: 'Fixture 1 Thru 4', cat: 'Selection', st: 'desk1', tm: '14:02:11' },
+  { line: 'At 50', cat: 'Programmer', st: 'desk1', tm: '14:02:15' },
+  { line: 'Store Group 3 "Front"', cat: 'Show', st: 'desk1', tm: '14:02:40' },
+  { line: 'Set Window 1.2 Columns 8', cat: 'UI', st: 'desk1', tm: '14:03:02' },
+  { line: 'Attribute "Pan" At - 32', cat: 'Programmer', st: 'desk1', tm: '14:03:20' },
+  { line: 'Set Group 3 Color #3c8f3c', cat: 'Show', st: 'tower', tm: '14:03:55' },
+];
+let undone = [];    // newest undone first in display order (top of the dimmed block = next redo)
+let pick = null;    // { kind: 'oops'|'redo', from }
+const filters = { Programmer: true, Selection: true, Show: true, UI: true };
+function addOops(line, cat) { steps.push({ line, cat, st: 'desk1', tm: clock() }); undone = []; pick = null; drawOops(); }
+function drawOops() {
+  const chips = $('#ochips'); chips.innerHTML = '';
+  Object.keys(filters).forEach(k => { const b = h('button', null, k); b.setAttribute('aria-pressed', filters[k]); b.onclick = () => { filters[k] = !filters[k]; drawOops(); }; chips.append(b); });
+  const list = $('#olist'); list.innerHTML = '';
+  const shown = steps.map((s, i) => ({ ...s, i })).filter(s => filters[s.cat]);
+  shown.forEach(s => {
+    const r = h('div', 'orow', `<span class="n">${steps.length - s.i}</span><span class="ln">${esc(s.line)}</span><span class="cat ${s.cat}">${s.cat}</span><span class="tm">${s.st} · ${s.tm}</span>`);
+    if (pick?.kind === 'oops' && s.i >= pick.from) r.classList.add('pick');
+    r.onclick = () => { pick = pick?.kind === 'oops' && pick.from === s.i ? null : { kind: 'oops', from: s.i }; drawOops(); };
+    list.append(r);
+  });
+  if (undone.length) {
+    list.append(h('div', 'odiv', `Undone · Redo brings back ${undone.length > 1 ? 'from the top' : 'this'}`));
+    undone.forEach((s, j) => {
+      const r = h('div', 'orow undone', `<span class="n">↺</span><span class="ln">${esc(s.line)}</span><span class="cat ${s.cat}">${s.cat}</span><span class="tm">${s.st} · ${s.tm}</span>`);
+      if (pick?.kind === 'redo' && j <= pick.to) r.classList.add('pick');
+      r.onclick = () => { pick = pick?.kind === 'redo' && pick.to === j ? null : { kind: 'redo', to: j }; drawOops(); };
+      list.append(r);
+    });
+  }
+  list.scrollTop = list.scrollHeight;
+  const nOops = pick?.kind === 'oops' ? steps.length - pick.from : 1;
+  const ob = $('#o-oops'), rb = $('#o-redo');
+  ob.textContent = pick?.kind === 'oops' ? `Oops ${nOops} step${nOops > 1 ? 's' : ''}` : 'Oops last step';
+  ob.disabled = !steps.length;
+  const nRedo = pick?.kind === 'redo' ? pick.to + 1 : 1;
+  rb.textContent = undone.length ? (pick?.kind === 'redo' ? `Redo ${nRedo} step${nRedo > 1 ? 's' : ''}` : 'Redo 1 step') : 'Redo';
+  rb.disabled = !undone.length;
+}
+$('#o-oops').onclick = () => {
+  const n = pick?.kind === 'oops' ? steps.length - pick.from : 1;
+  const gone = steps.splice(steps.length - n, n);
+  undone = [...gone.reverse(), ...undone];
+  cmdLine(n > 1 ? `Oops ${n}` : 'Oops');
+  sysRow('Oops', `Admin · undid ${n} step${n > 1 ? 's' : ''}`);
+  pick = null; drawOops();
+};
+$('#o-redo').onclick = () => {
+  const n = pick?.kind === 'redo' ? pick.to + 1 : 1;
+  const back = undone.splice(0, n);
+  steps.push(...back);
+  cmdLine(n > 1 ? `Redo ${n}` : 'Redo');
+  pick = null; drawOops();
+};
+drawOops();
+
+/* ═════════ SEQUENCE POOL ═════════ */
+const SEQ = [
+  { no: 1, name: 'Main', c: '#3f73b0', cues: ['Preset', 'Opening', 'Verse 1', 'Chorus', 'Verse 2', 'Bridge', 'Finale'], cur: 2, run: true },
+  { no: 2, name: 'Busk Wash', c: '#3c8f3c', cues: ['Blue', 'Amber', 'Red', 'Strobe'], cur: 0, run: true },
+  { no: 3, name: 'FX', c: '#7c56a8', cues: ['Slow', 'Fast', 'Chase'], cur: -1, run: false },
+  { no: 4, name: 'House', c: '#c27a12', cues: ['Full', 'Half', 'Out'], cur: 1, run: true },
+  { no: 5, name: 'Walk-in', c: null, cues: ['Look 1', 'Look 2'], cur: -1, run: false },
+  { no: 7, name: 'Encore', c: '#b5432f', cues: ['Hit', 'Bows'], cur: -1, run: false },
+];
+let sAct = 'Select', sStyle = 'exec', selected = 1;
+const prog = {};
+seg('#s-act', v => { sAct = v; });
+let sHold = 'Edit';
+seg('#s-hold', v => { sHold = v; });
+function drawPool() {
+  const pool = $('#spool'); pool.innerHTML = '';
+  for (let n = 1; n <= 12; n++) {
+    const s = SEQ.find(x => x.no === n);
+    const c = h('div', 'scell' + (s ? '' : ' empty') + (s && s.no === selected ? ' sel' : '') + (s && s.run ? ' run' : ''));
+    if (s) {
+      if (s.c) c.style.setProperty('--c', s.c);
+      const cur = s.cur >= 0 ? `${s.cur + 1} · ${s.cues[s.cur]}` : 'Off';
+      const next = s.cur + 1 < s.cues.length ? `next ${s.cur + 2} · ${s.cues[s.cur + 1]}` : 'end';
+      const body = sStyle === 'exec'
+        ? (() => { const at = s.cur >= 0 ? s.cur : (s.last ?? 0); return `<div class="exe">${[at - 1, at, at + 1].map(i => `<div class="${i === at ? (s.run ? 'on' : 'cur-off') : ''}">${i >= 0 && i < s.cues.length ? `${i + 1} ${esc(s.cues[i])}` : '&nbsp;'}</div>`).join('')}</div>`; })()
+        : `<div class="cue">${esc(cur)}<small>${esc(next)}</small></div>`;
+      c.innerHTML = `<div class="top"><span>${s.no}</span></div><div class="nm">${esc(s.name)}</div>${body}${s.run && prog[s.no] != null ? `<span class="blue"><i style="width:${prog[s.no] * 100}%"></i></span>` : ''}`;
+    } else c.innerHTML = `<div class="top"><span>${n}</span></div>`;
+    let t, held = false, x0, y0;
+    c.addEventListener('pointerdown', e => { if (!s) return; held = false; x0 = e.clientX; y0 = e.clientY; ring(e.clientX, e.clientY); t = setTimeout(() => { unring(); held = true; if (sHold === 'Edit') { cmdLine(`Edit Sequence ${s.no}`); toast(`Edit Sequence ${s.no}: its sequence window opens`); $('#tabs [data-b=sheet]').click(); } else seqSheet(s); }, HOLD); });
+    c.addEventListener('pointermove', e => { if (t && Math.hypot(e.clientX - x0, e.clientY - y0) > SLOP) { clearTimeout(t); t = null; unring(); } });
+    c.addEventListener('pointerup', () => { clearTimeout(t); unring(); if (!held && s && t !== null) tapSeq(s); t = undefined; });
+    c.addEventListener('pointercancel', () => { clearTimeout(t); unring(); });
+    pool.append(c);
+  }
+}
+function fade(s, secs = 2) {
+  const t0 = performance.now();
+  const step = () => { const p = Math.min(1, (performance.now() - t0) / (secs * 1000)); prog[s.no] = p; drawPool(); if (p < 1) requestAnimationFrame(step); else { delete prog[s.no]; drawPool(); } };
+  requestAnimationFrame(step);
+}
+function tapSeq(s) {
+  if (sAct === 'Select') { selected = s.no; cmdLine(`Select Sequence ${s.no}`); drawPool(); return; }
+  if (sAct === 'Go') { s.cur = Math.min(s.cues.length - 1, s.cur + 1); s.run = true; cmdLine(`Go Sequence ${s.no}`); fade(s); return; }
+  if (sAct === 'Toggle') { s.run = !s.run; if (s.run && s.cur < 0) s.cur = s.last ?? 0; if (!s.run) { s.last = s.cur; s.cur = -1; } cmdLine(`Toggle Sequence ${s.no}`); drawPool(); return; }
+  if (sAct === 'Off') { s.run = false; if (s.cur >= 0) s.last = s.cur; s.cur = -1; cmdLine(`Off Sequence ${s.no}`); drawPool(); return; }
+  if (sAct === 'Top') { s.cur = 0; s.run = true; cmdLine(`Goto Cue 1 Sequence ${s.no}`); fade(s, 1); }
+}
+function seqSheet(s) {
+  const stage = $('#spool').parentElement;
+  const sc = h('div', 'scrim');
+  const acts = ['Edit', 'Label', 'Store', 'Delete', 'Move', 'Copy', 'Settings', 'Goto…', 'Off', 'Top'];
+  sc.innerHTML = `<div class="sheet"><div class="top"><span>Sequence ${s.no} · ${esc(s.name)}</span><button class="x" aria-label="Close">×</button></div>
+    <div class="facts"><b>${s.cur >= 0 ? `Cue ${s.cur + 1}` : 'Off'}</b>${s.cues.length} cues · ${s.run ? 'running' : 'off'}${s.no === selected ? ' · your selected sequence' : ''}</div>
+    <div class="acts">${acts.map(a => `<button data-a="${a}" class="${a === 'Goto…' ? 'list' : ''}">${a.replace('…', '')}</button>`).join('')}</div></div>`;
+  stage.append(sc);
+  const close = () => sc.remove();
+  $('.x', sc).onclick = close;
+  sc.addEventListener('click', e => { if (e.target === sc) close(); });
+  $$('[data-a]', sc).forEach(b => b.onclick = () => {
+    close();
+    const a = b.dataset.a;
+    if (a === 'Off') { s.run = false; if (s.cur >= 0) s.last = s.cur; s.cur = -1; cmdLine(`Off Sequence ${s.no}`); drawPool(); }
+    else if (a === 'Top') { s.cur = 0; s.run = true; cmdLine(`Goto Cue 1 Sequence ${s.no}`); fade(s, 1); }
+    else if (a === 'Goto…') toast('Goto opens a pick list of the cues (the === button)');
+    else cmdLine(`${a === 'Settings' ? 'EditSetting' : a} Sequence ${s.no}`);
+  });
+}
+drawPool();
+
+/* ═════════ SEQUENCE WINDOW ═════════ */
+const FG = ['Dimmer', 'Position', 'Gobo', 'Color', 'Beam', 'Focus', 'Control', 'Shapers', 'Video'];
+const SC = [
+  { no: '7', name: 'mera', trig: 'Go', fade: 15, delay: 0, parts: [{ name: '', fg: {} }] },
+  { no: '8', name: 'break', trig: 'Go', fade: 0, delay: 0, parts: [{ name: '', fg: {} }] },
+  { no: '9', name: 'synth', trig: 'Go', fade: 9, delay: 0, parts: [{ name: '', fg: {} }] },
+  { no: '10', name: 'song', trig: 'Go', fade: 0, delay: 0, parts: [{ name: '', fg: {} }] },
+  { no: '11', name: 'kagge', trig: 'Go', fade: 0, delay: 5, run: true, parts: [{ name: '', fg: { Position: { fade: 5 }, Dimmer: { delay: 5 }, Gobo: { delay: 5 } } }, { name: 'Part 2', fg: { Color: { fade: 2 } } }] },
+  { no: '11.5', name: 'kagge2', trig: 'Go', fade: 0, delay: 0, parts: [{ name: '', fg: {} }] },
+  { no: '12', name: 'breakdown', trig: 'Follow', fade: 1, delay: 0, parts: [{ name: '', fg: {} }] },
+];
+let qMode = 'v', qOpen = '11', qFg = 'Dimmer', zoom = 60;
+seg('#q-mode', v => { qMode = v; $('#q-zoomw').hidden = v !== 'h'; drawSheet(); });
+$('#q-zoom').addEventListener('input', e => { zoom = +e.target.value; drawSheet(); });
+function drawSheet() { $('#q-zv').textContent = zoom + '%'; qMode === 'v' ? drawV() : drawH(); }
+const fgT = (c, part, g, k) => { const own = c.parts[part]?.fg[g]?.[k]; return own != null ? { v: own, inh: false } : { v: k === 'fade' ? c.fade : c.delay, inh: true }; };
+const PATHS = { 'Linear': t => t, 'S-curve': t => t * t * (3 - 2 * t), 'Ease in': t => t * t, 'Ease out': t => 1 - (1 - t) * (1 - t), 'Snap': t => (t > 0 ? 1 : 0) };
+const pathOf = (c, g) => c.parts[0].fg[g]?.path || 'Linear';
+function drawV() {
+  const st = $('#q-stage');
+  const keep = $('.sq-v', st)?.scrollTop || 0;   // a redraw never moves the window
+  st.innerHTML = '';
+  const box = h('div', 'sq-v');
+  const cols = ['', 'No', 'Name', 'Trig', 'Trig time', 'Fade', 'Out fade', 'Delay', 'Out delay', 'Info'];
+  let html = `<table><tr>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
+  SC.forEach(c => {
+    const open = qOpen === c.no;
+    html += `<tr class="cue${c.run ? ' run' : ''}" data-cue="${c.no}"><td><button class="exp" data-exp="${c.no}" aria-label="${open ? 'Fold' : 'Open'} cue ${c.no}">${open ? '−' : '+'}</button></td><td class="n">${c.no}</td><td>${esc(c.name)}</td><td>${c.trig}</td><td></td><td class="n tfield" data-t="${c.no}||fade">${c.fade}</td><td class="n"></td><td class="n tfield" data-t="${c.no}||delay">${c.delay}</td><td class="n"></td><td></td></tr>`;
+    if (open) html += `<tr class="detail"><td colspan="${cols.length}" data-detail="${c.no}"></td></tr>`;
+  });
+  box.innerHTML = html + '</table>';
+  st.append(box);
+  $$('[data-exp]', box).forEach(b => b.onclick = () => { qOpen = qOpen === b.dataset.exp ? null : b.dataset.exp; drawV(); });
+  const d = $('[data-detail]', box);
+  if (d) {
+    const c = SC.find(x => x.no === d.dataset.detail);
+    const wrap = h('div', 'sq-d');
+    wrap.innerHTML = `<div class="chips">${FG.map((g, i) => `<button data-fg="${g}" aria-pressed="${g === qFg}">${g} ${i + 1}</button>`).join('')}</div>`;
+    const tim = h('div', 'tim'); tim.style.setProperty('--n', FG.length);
+    const on = g => (g === qFg ? ' col-on' : '');
+    let t = '<div class="h">Timing</div>' + FG.map(g => `<div class="h colname${on(g)}" data-col="${g}" style="justify-content:center">${g}</div>`).join('');
+    for (const [k, label] of [['fade', 'Fade'], ['delay', 'Delay']]) {
+      t += `<div class="h">${label}</div>` + FG.map(g => { const x = fgT(c, 0, g, k); return `<div class="tfield${x.inh ? ' inh' : ''}${on(g)}" data-col="${g}" data-t="${c.no}|${g}|${k}|0">${x.inh ? `(${x.v})` : x.v}</div>`; }).join('');
+    }
+    t += '<div class="h">Path</div>' + FG.map(g => `<div class="pfield${c.parts[0].fg[g]?.path ? '' : ' inh'}${on(g)}" data-col="${g}" data-p="${g}">${pathOf(c, g)}<span class="lm"></span></div>`).join('');
+    tim.innerHTML = t;
+    wrap.append(tim);
+    const cv = h('canvas'); wrap.append(cv);
+    d.append(wrap);
+    const draw = () => drawCurves(cv, c);
+    graphHandles(cv, c);
+    // Switching the feature group only repaints the curve and the chips.
+    // A feature group's name (or its chip) highlights its column and makes it the active curve.
+    const pick = g => { qFg = g; $$('[data-fg]', wrap).forEach(x => x.setAttribute('aria-pressed', x.dataset.fg === g)); $$('[data-col]', tim).forEach(x => x.classList.toggle('col-on', x.dataset.col === g)); draw(); };
+    $$('[data-fg]', wrap).forEach(b => b.onclick = () => pick(b.dataset.fg));
+    $$('.colname', tim).forEach(b => b.onclick = () => pick(b.dataset.col));
+    $$('[data-p]', tim).forEach(cell => cell.onclick = () => pickPath(st, c, cell.dataset.p));
+    setTimeout(draw, 30);
+  }
+  $$('.tfield', box).forEach(el => timingField(st, el));
+  box.scrollTop = keep;
+}
+// The graph's time axis: at least 2 s, a fifth of headroom, rounded to a whole step — the same
+// before and during a drag, so grabbing a handle never moves the scale.
+function niceTotal(t) {
+  const v = Math.max(2, t * 1.2);
+  const step = v <= 10 ? 1 : v <= 30 ? 2 : 5;
+  return Math.ceil(v / step) * step;
+}
+function drawCurves(cv, c) {
+  const W = cv.parentElement.clientWidth || 800, H = 220, L = 60, B = 26, T = 14, R = 170;
+  cv.width = W; cv.height = H; cv.style.width = W + 'px';
+  const g = cv.getContext('2d');
+  g.clearRect(0, 0, W, H);
+  g.strokeStyle = '#2a2a2a'; g.lineWidth = 1;
+  for (let i = 0; i <= 10; i++) { const x = L + (W - L - R) * i / 10; g.beginPath(); g.moveTo(x, T); g.lineTo(x, H - B); g.stroke(); }
+  for (let i = 0; i <= 5; i++) { const y = T + (H - T - B) * i / 5; g.beginPath(); g.moveTo(L, y); g.lineTo(W - R, y); g.stroke(); }
+  g.fillStyle = '#8a8a8a'; g.font = '11px sans-serif';
+  for (let i = 0; i <= 5; i++) g.fillText(`${100 - i * 20}%`, 18, T + (H - T - B) * i / 5 + 4);
+  const tim = gg => ({ fd: fgT(c, 0, gg, 'fade').v, dl: fgT(c, 0, gg, 'delay').v });
+  const total = cv._freeze ?? niceTotal(Math.max(...FG.map(gg => tim(gg).fd + tim(gg).dl)));
+  const X = t => L + (W - L - R) * (t / total), Y = v => H - B - (H - T - B) * v;
+  // Each feature group's own shape (its Path): splines, lines, steps — the others dimmed.
+  const curve = (gg, colour, w) => {
+    const { fd, dl } = tim(gg), f = PATHS[pathOf(c, gg)];
+    g.strokeStyle = colour; g.lineWidth = w; g.beginPath(); g.moveTo(L, Y(0)); g.lineTo(X(dl), Y(0));
+    const n = 48;
+    for (let i = 1; i <= n; i++) { const p = i / n; g.lineTo(X(dl + p * Math.max(fd, 0.0001)), Y(fd ? f(p) : 1)); }
+    g.lineTo(W - R, Y(1)); g.stroke();
+  };
+  FG.filter(gg => gg !== qFg).forEach(gg => curve(gg, 'rgba(209,209,209,.22)', 1.5));
+  curve(qFg, '#f9ed4f', 3);
+  // Handles of the active feature group: the end of its delay (the curve starts) and the end of
+  // its fade (it arrives). Drag one sideways to change that time.
+  const hd = tim(qFg);
+  const handles = [{ k: 'delay', x: X(hd.dl), y: Y(0) }, { k: 'fade', x: X(hd.dl + hd.fd), y: Y(1) }];
+  for (const hh of handles) {
+    const on = cv._drag?.k === hh.k;
+    g.fillStyle = on ? '#ffffff' : '#f9ed4f'; g.strokeStyle = '#121212'; g.lineWidth = 2;
+    g.beginPath(); g.rect(hh.x - 8, hh.y - 8, 16, 16); g.fill(); g.stroke();
+    g.fillStyle = '#d1d1d1'; g.font = '11px sans-serif';
+    const txt = hh.k === 'delay' ? `delay ${hd.dl}s` : `fade ${hd.fd}s`;
+    const tx = hh.x + 12 + g.measureText(txt).width > W - 4 ? hh.x - 12 - g.measureText(txt).width : hh.x + 12;
+    g.fillText(txt, tx, hh.k === 'delay' ? hh.y - 10 : hh.y + 22);
+  }
+  cv._geo = { L, R, W, total, handles };
+  g.fillStyle = '#8a8a8a'; for (let i = 0; i <= 4; i++) g.fillText(`${(total * i / 4).toFixed(1)}s`, X(total * i / 4) - 8, H - 8);
+  const a = tim(qFg);
+  // The legend sits low on the right, clear of the fade handle at the top.
+  g.fillStyle = '#c9a227'; g.fillText(`${qFg}: ${pathOf(c, qFg)}`, W - R + 14, H - B - 44);
+  g.fillText(`delay ${a.dl}s · fade ${a.fd}s`, W - R + 14, H - B - 28);
+  g.fillStyle = '#8a8a8a'; g.fillText('the others, dimmed', W - R + 14, H - B - 10);
+}
+// Drag a handle in the graph (decided round 5): the delay's end or the fade's end, sideways; the
+// scale holds still while dragging; the table's values follow live; one Oops step at the end.
+function graphHandles(cv, c) {
+  cv.style.touchAction = 'pan-y';
+  cv.addEventListener('pointerdown', e => {
+    const geo = cv._geo; if (!geo) return;
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    const hit = geo.handles.map(hh => ({ ...hh, d: Math.hypot(hh.x - x, hh.y - y) })).sort((a, b) => a.d - b.d)[0];
+    if (!hit || hit.d > 24) return;
+    e.preventDefault(); cv.setPointerCapture(e.pointerId);
+    const g = qFg, part = c.parts[0];
+    const from = { fade: fgT(c, 0, g, 'fade').v, delay: fgT(c, 0, g, 'delay').v };
+    // The scale holds exactly as it is (it grows only past its end); the grab keeps its offset.
+    cv._freeze = geo.total;
+    cv._drag = { k: hit.k };
+    const id = ++gid; let last = 0;
+    const raw = ev => ((ev.clientX - r.left - geo.L) / (geo.W - geo.L - geo.R)) * cv._freeze;
+    const handleT = hit.k === 'delay' ? from.delay : from.delay + from.fade;
+    const off = handleT - raw(e);
+    const tAt = ev => {
+      const t = Math.max(0, Math.min(30, Math.round((raw(ev) + off) * 10) / 10));
+      if (t > cv._freeze * 0.95) cv._freeze = Math.min(36, Math.max(cv._freeze, t * 1.08));
+      return t;
+    };
+    const line = () => `Set Cue ${c.no} ${g} ${hit.k === 'delay' ? 'Delay' : 'Fade'} ${fgT(c, 0, g, hit.k).v}`;
+    const mv = ev => {
+      const t = tAt(ev), f = (part.fg[g] ||= {});
+      if (hit.k === 'delay') f.delay = t; else f.fade = Math.max(0, Math.round((t - fgT(c, 0, g, 'delay').v) * 10) / 10);
+      liveV();
+      const now = performance.now(); if (now - last > 33) { last = now; gesture(id, line()); }
+    };
+    const up = () => {
+      cv.removeEventListener('pointermove', mv); cv.removeEventListener('pointerup', up); cv.removeEventListener('pointercancel', up);
+      cv._freeze = null; cv._drag = null;
+      const now = fgT(c, 0, g, hit.k).v;
+      if (now !== from[hit.k]) { gesture(id, line()); sysRow('Faders', `Admin · Cue ${c.no} ${g} ${hit.k === 'delay' ? 'Delay' : 'Fade'} ${from[hit.k]} → ${now} s (graph)`); addOops(line(), 'Show'); }
+      liveV();
+    };
+    cv.addEventListener('pointermove', mv); cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  });
+}
+function pickPath(st, c, g) {
+  const p = h('div', 'picker');
+  p.innerHTML = `<div class="top"><span>Cue ${c.no} · ${g} path</span><button class="x" aria-label="Close">×</button></div><div class="cols" style="grid-template-columns:1fr"><div>${Object.keys(PATHS).map(k => `<button data-k="${k}" aria-pressed="${k === pathOf(c, g)}">${k}</button>`).join('')}</div></div>`;
+  $('.x', p).onclick = () => p.remove();
+  $$('[data-k]', p).forEach(b => b.onclick = () => { p.remove(); (c.parts[0].fg[g] ||= {}).path = b.dataset.k; cmdLine(`Set Cue ${c.no} ${g} Path "${b.dataset.k}"`); addOops(`Set Cue ${c.no} ${g} Path "${b.dataset.k}"`, 'Show'); qFg = g; drawV(); });
+  st.append(p);
+}
+function drawH() {
+  const st = $('#q-stage');
+  const keep = $('.sq-h', st)?.scrollLeft || 0;
+  st.innerHTML = '';
+  const box = h('div', 'sq-h'); const tl = h('div', 'tl'); box.append(tl); st.append(box);
+  const pxs = zoom * 0.6;
+  SC.forEach(c => {
+    const span = Math.max(2, ...c.parts.flatMap(p => FG.filter(g => p.fg[g]).map(g => (p.fg[g].fade ?? c.fade) + (p.fg[g].delay ?? c.delay))), c.fade + c.delay) + 0.5;
+    const lane = Math.max(60, span * pxs);
+    const col = h('div', 'col' + (c.run ? ' run' : ''));
+    col.style.width = (116 + lane) + 'px';
+    const line = (from, len) => `<i style="left:${4 + from * pxs}px;width:${Math.max(2, len * pxs)}px"></i>`;
+    let rows = `<div class="ch" data-cue="${c.no}"><small>${c.no} · ${c.trig}</small><b>${esc(c.name)}</b></div>`;
+    rows += `<div class="ruler">${Array.from({ length: Math.ceil(span) + 1 }, (_, i) => `<span style="left:${116 + 4 + i * pxs}px">${i}</span>`).join('')}</div>`;
+    rows += `<div class="row"><span class="k">Fade</span><span class="v tfield" data-t="${c.no}||fade">${c.fade}</span><span class="lane">${c.fade ? line(c.delay, c.fade) : ''}</span></div>`;
+    rows += `<div class="row"><span class="k">Delay</span><span class="v tfield" data-t="${c.no}||delay">${c.delay}</span><span class="lane">${c.delay ? line(0, c.delay) : ''}</span></div>`;
+    c.parts.forEach((p, pi) => {
+      if (pi > 0) rows += `<div class="row part"><span class="k">${esc(p.name)}</span><span></span><span></span></div>`;
+      for (const g of FG) {
+        const f = p.fg[g]; if (!f || (f.fade == null && f.delay == null)) continue;
+        const dl = f.delay ?? c.delay, fd = f.fade ?? c.fade;
+        rows += `<div class="row"><span class="k">${g.slice(0, 3)} Fade</span><span class="v tfield" data-t="${c.no}|${g}|fade|${pi}">${f.fade ?? `(${c.fade})`}</span><span class="lane">${line(dl, fd || 0.2)}</span></div>`;
+        if (f.delay != null) rows += `<div class="row"><span class="k">${g.slice(0, 3)} Delay</span><span class="v tfield" data-t="${c.no}|${g}|delay|${pi}">${f.delay}</span><span class="lane">${line(0, f.delay)}</span></div>`;
+      }
+      rows += `<div class="add" data-add="${c.no}" data-part="${pi}">+ add timing</div>`;
+    });
+    col.innerHTML = rows;
+    tl.append(col);
+  });
+  $$('[data-add]', tl).forEach(a => a.onclick = () => addTiming(st, SC.find(c => c.no === a.dataset.add), +a.dataset.part));
+  $$('.ch', tl).forEach(hd => hd.onclick = () => cueOptions(st, SC.find(c => c.no === hd.dataset.cue)));
+  $$('.tfield', tl).forEach(el => timingField(st, el));
+  box.scrollLeft = keep;
+}
+// ── One timing field, both layouts (decided round 2): a TAP opens the vertical slider
+// (− / + 0.1 s, Keypad); TAP-HOLD-AND-DRAG edits at once (the slider under the finger, lift to
+// close). A drag is one gesture: one System Monitor row, one Oops step at its end.
+const TPX = 300; // the slider's travel
+function fieldIO(el) {
+  const [no, g, k, pi] = el.dataset.t.split('|');
+  const c = SC.find(x => x.no === no), part = +(pi || 0);
+  const label = `Cue ${no}${part ? ` Part ${part + 1}` : ''}${g ? ` ${g}` : ''} ${k === 'fade' ? 'Fade' : 'Delay'}`;
+  return {
+    label, min: 0, max: 30, unit: ' s', step: () => 0.1, digits: () => 1,
+    get: () => (g ? fgT(c, part, g, k).v : c[k]),
+    put: v => { v = Math.max(0, Math.min(30, Math.round(v * 10) / 10)); if (g) (c.parts[part].fg[g] ||= {})[k] = v; else c[k] = v; },
+    line: () => `Set ${label} ${g ? fgT(c, part, g, k).v : c[k]}`,
+    // While it drags, the lines, curves and spans redraw at once (decided round 3).
+    live: () => liveSheet(),
+    commit: (from, how) => {
+      const line = `Set ${label} ${g ? fgT(c, part, g, k).v : c[k]}`;
+      if (how === 'drag') sysRow('Faders', `Admin · ${label} ${from} → ${g ? fgT(c, part, g, k).v : c[k]} s`); else cmdLine(line);
+      addOops(line, 'Show');
+    },
+  };
+}
+let liveFrame = 0;
+function liveSheet() {
+  cancelAnimationFrame(liveFrame);
+  liveFrame = requestAnimationFrame(() => (qMode === 'v' ? liveV() : drawSheet()));
+}
+// The vertical sheet while a value drags: the changed values and the curve, in place — the
+// sheet is never rebuilt under the finger (no glitch).
+function liveV() {
+  const st = $('#q-stage');
+  for (const el of $$('.tfield', st)) {
+    const [no, g, k, pi] = el.dataset.t.split('|');
+    const c = SC.find(x => x.no === no);
+    if (!g) { el.textContent = c[k]; continue; }
+    const x = fgT(c, +(pi || 0), g, k);
+    el.textContent = x.inh ? `(${x.v})` : x.v;
+    el.classList.toggle('inh', x.inh);
+  }
+  const cv = $('.sq-d canvas', st), c = SC.find(x => x.no === qOpen);
+  if (cv && c) drawCurves(cv, c);
+}
+function timingField(st, el) { holdDrag(el, fieldIO(el), st); }
+const snap = (io, v) => { const st = io.step(); return Math.round(v / st) * st; };
+// Tap = the slider panel by the field; hold-and-drag = the slider under the finger. The drag
+// listens on the page, so the view can redraw live under the finger.
+function holdDrag(el, io, st, { immediate = false } = {}) {
+  if (!immediate) el.style.touchAction = 'pan-x pan-y';
+  el.addEventListener('pointerdown', e => {
+    if (e.button > 0) return;
+    if (immediate) e.preventDefault();
+    const g = { x: e.clientX, y: e.clientY, held: false, moved: false, v0: io.get(), id: ++gid, last: 0, vs: null, pid: e.pointerId };
+    // Immediate (the encoder): no hold — the first move past the slop starts the slider.
+    if (!immediate) ring(e.clientX, e.clientY);
+    const hold = immediate ? 0 : setTimeout(() => {
+      unring(); g.held = true; g.y = g.y; g.v0 = io.get();
+      g.vs = vSlider(st, io, { x: e.clientX, y: e.clientY, follow: true });
+    }, HOLD);
+    const block = ev => { if (g.held) ev.preventDefault(); };
+    document.addEventListener('touchmove', block, { passive: false });
+    const mv = ev => {
+      if (ev.pointerId !== g.pid) return;
+      if (!g.held) {
+        if (Math.hypot(ev.clientX - g.x, ev.clientY - g.y) <= SLOP) return;
+        if (!immediate) { clearTimeout(hold); unring(); g.moved = true; return; }
+        g.held = true; g.v0 = io.get(); g.vs = vSlider(st, io, { x: g.x, y: g.y, follow: true });
+      }
+      ev.preventDefault();
+      io.put(snap(io, g.v0 + (g.y - ev.clientY) / TPX * (io.max - io.min)));
+      g.vs.paint(); io.live();
+      const now = performance.now(); if (now - g.last > 33) { g.last = now; gesture(g.id, io.line()); }
+    };
+    const up = ev => {
+      if (ev.pointerId !== g.pid) return;
+      clearTimeout(hold); unring();
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      document.removeEventListener('touchmove', block);
+      if (g.held) { g.vs.close(); if (io.get() !== g.v0) { gesture(g.id, io.line()); io.commit(g.v0, 'drag'); } io.live(); return; }
+      if (!g.moved && ev.type === 'pointerup') vSlider(st, io, { anchor: el });
+    };
+    window.addEventListener('pointermove', mv, { passive: false }); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  });
+}
+// The one vertical slider: under the finger (follow) or as a panel by the field (tap).
+function vSlider(st, io, { x, y, follow, anchor }) {
+  document.querySelector('.vpanel')?.remove();
+  const p = h('div', 'vpanel' + (follow ? ' follow' : ''));
+  p.innerHTML = `<div class="vh">${esc(io.label)}</div><div class="vbody">${follow ? '' : '<button data-d="1" aria-label="More">+</button>'}<div class="vt"><i></i><b></b><span></span></div>${follow ? '' : '<button data-d="-1" aria-label="Less">−</button>'}</div>${follow ? '' : '<div class="vfoot"><button data-kp>Keypad</button><button data-x>Done</button></div>'}`;
+  document.body.append(p);
+  const r = anchor?.getBoundingClientRect();
+  const px = follow ? x : Math.min(innerWidth - 70, r.right + 70), py = follow ? y : r.top + r.height / 2;
+  p.style.left = px + 'px'; p.style.top = Math.max(8, Math.min(innerHeight - p.offsetHeight - 8, py - p.offsetHeight / 2)) + 'px';
+  const paint = () => { const f = (io.get() - io.min) / (io.max - io.min) * 100; $('.vt i', p).style.height = f + '%'; $('.vt b', p).style.top = (100 - f) + '%'; $('.vt span', p).textContent = `${io.get().toFixed(io.digits())}${io.unit}`; };
+  paint();
+  const close = () => { p.remove(); document.removeEventListener('pointerdown', outside, true); };
+  const outside = ev => { if (!p.contains(ev.target) && !ev.target.closest('.kp')) { close(); io.live(); } };
+  if (!follow) {
+    setTimeout(() => document.addEventListener('pointerdown', outside, true), 0);
+    $('[data-x]', p).onclick = () => { close(); io.live(); };
+    $$('[data-d]', p).forEach(b => b.onclick = () => { const was = io.get(); io.put(snap(io, was + io.step() * Number(b.dataset.d))); paint(); io.live(); io.commit(was, 'step'); });
+    $('[data-kp]', p).onclick = () => keypad(st, io.label, io.get(), v => { const was = io.get(); io.put(applyRel(was, v)); paint(); io.live(); io.commit(was, 'keypad'); });
+    const track = $('.vt', p); let d = null;
+    track.addEventListener('pointerdown', e => { e.preventDefault(); track.setPointerCapture(e.pointerId); d = { id: ++gid, y: e.clientY, v0: io.get(), last: 0 }; });
+    track.addEventListener('pointermove', e => { if (!d) return; io.put(snap(io, d.v0 + (d.y - e.clientY) / TPX * (io.max - io.min))); paint(); io.live(); const now = performance.now(); if (now - d.last > 33) { d.last = now; gesture(d.id, io.line()); } });
+    const end = () => { if (!d) return; if (io.get() !== d.v0) { gesture(d.id, io.line()); io.commit(d.v0, 'drag'); } d = null; };
+    track.addEventListener('pointerup', end); track.addEventListener('pointercancel', end);
+  }
+  return { paint, close };
+}
+function addTiming(st, c, part) {
+  let attr = 'Dimmer', type = 'Fade';
+  const p = h('div', 'picker');
+  const draw = () => {
+    p.innerHTML = `<div class="top"><span>Add timing · Cue ${c.no}${part ? ` part ${part + 1}` : ''}</span><button class="x" aria-label="Close">×</button></div>
+      <div class="cols"><div><h5>Attribute</h5>${['General', ...FG.slice(0, 6)].map(a => `<button data-a="${a}" aria-pressed="${a === attr}">${a}</button>`).join('')}</div>
+      <div><h5>Type</h5>${['Fade', 'Delay', 'OutFade', 'OutDelay', 'TrigTime'].map(t => `<button data-t="${t}" aria-pressed="${t === type}">${t}</button>`).join('')}</div></div>
+      <div class="foot"><button data-c>Cancel</button><button class="run" data-ok>Set…</button></div>`;
+    $('.x', p).onclick = () => p.remove(); $('[data-c]', p).onclick = () => p.remove();
+    $$('[data-a]', p).forEach(b => b.onclick = () => { attr = b.dataset.a; draw(); });
+    $$('[data-t]', p).forEach(b => b.onclick = () => { type = b.dataset.t; draw(); });
+    $('[data-ok]', p).onclick = () => { p.remove(); keypad(st, `Cue ${c.no} ${attr} ${type}`, 0, v => {
+      const g = attr === 'General' ? null : attr;
+      cmdLine(`Set Cue ${c.no}${part ? ` Part ${part + 1}` : ''}${g ? ` ${g}` : ''} ${type} ${v}`);
+      if (g && (type === 'Fade' || type === 'Delay')) { (c.parts[part].fg[g] ||= {})[type.toLowerCase()] = parseFloat(v) || 0; }
+      else if (type === 'Fade') c.fade = parseFloat(v) || 0; else if (type === 'Delay') c.delay = parseFloat(v) || 0;
+      drawSheet();
+    }); };
+  };
+  draw(); st.append(p);
+}
+function cueOptions(st, c) {
+  const p = h('div', 'picker');
+  p.innerHTML = `<div class="top"><span>Cue ${c.no} · ${esc(c.name)} · options</span><button class="x" aria-label="Close">×</button></div>
+    <div class="opts"><button>Trig: ${c.trig}</button><button>Mode</button><button>Default path</button><button>Snap percent</button><textarea aria-label="Info">Remember the milk</textarea></div>`;
+  $('.x', p).onclick = () => p.remove();
+  $$('.opts button', p).forEach(b => b.onclick = () => toast(`${b.textContent} → a Set Cue ${c.no} line`));
+  st.append(p);
+}
+drawSheet();
+})();
+</script>

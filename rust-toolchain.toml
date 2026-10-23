@@ -1,0 +1,4 @@
+# The Rust every build uses (decisions §31). Nightly is used only by tests/fuzz/ (`cargo +nightly fuzz`).
+[toolchain]
+channel = "1.99.0"
+components = ["clippy", "rustfmt"]

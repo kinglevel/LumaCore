@@ -1,0 +1,119 @@
+<title>Demo Data Inventory</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1040px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.84rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wrap{overflow-x:auto}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.bad{color:var(--red)}.ok{color:var(--green)}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+.grid2{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 3 · 2026-10-20</div>
+<h1>The demo data: The International 2026 and its DataPools</h1>
+<p><code>../ExternalData/DemoData/</code> holds one MVR exported by another console and 39 DataPool exports (1.6 GB of XML). The MVR was imported for real; the XML was walked for what it holds. This page is the inventory and the first of the questions it raises.</p>
+</header>
+
+<section class="card">
+<h2>The rig · "The International 2026 R67 fina.mvr"</h2>
+<div class="grid2"><div>
+<table>
+<tr><th>MVR</th><td>1.6 (a console's export) · 4.4 MB · 1 layer "Fixture Layer"</td></tr>
+<tr><th>Fixtures</th><td class="n">1 371 rows: 1 348 fixtures + 23 folders</td></tr>
+<tr><th>Fixture types</th><td class="n">22, all with real attributes (8–64 each)</td></tr>
+<tr><th>Universes</th><td class="n">106 (1 … 255)</td></tr>
+<tr><th>Numbers</th><td>FixtureID and FixtureIDNumeric both set, none twice</td></tr>
+<tr><th>Imported</th><td class="ok">1 348 new · Apply 351 ms · show file 8.6 MB</td></tr>
+<tr><th>References after</th><td>1 note: Fixture 9999 (Generic Universal) patched with 0 channels, its mode has 16</td></tr>
+</table>
+</div><div>
+<pre>344× CKC Mini Blinder · 286× ACME Icarus 620 · 247× ACME Photon Hybrid 500
+136× ACME Tornado · 66× ACME Aeco 30 IP · 66× Viky LS 315 · 50× ACME Cyclone
+32× ACME BL-100 · 20× Titan Tube · 20× Coolie 546 · 19× LED RGBW · 12× Ozone
+12× Event-200T · 12× EK Soft Light · 9× Move Motor · 8× pixstick · 6× Fog
+4× Virgo · 1× Universal · 1× Dimmer · 1× Depence Camera</pre>
+</div></div>
+</section>
+
+<section class="card">
+<h2>Finding 4 · the question: the exporter writes its fixture-tree folders as fixtures of type <code>Generic@Grouping</code></h2>
+<p>The exporting console's patch is a tree. In the MVR every folder is a <code>&lt;Fixture&gt;</code> with <code>GDTFSpec Generic@Grouping.gdtf</code>, no number and no address, and its fixtures are its child fixtures. The import today sees 23 fixtures without a number (clash rows, never written) and, because the children's parent is a fixture, makes the groups it recreates nameless:</p>
+<pre>Review "ti2026.mvr": 1371 rows — 1348 new, 23 clash
+     —  Clash    ACME Icarus       Generic@Grouping · Default    ✕ no fixture number: the file has none
+     —  Clash    Stage 1 Mainstage Generic@Grouping · Default    ✕ no fixture number: the file has none
+…
+MvrLayer 1 "Fixture Layer" · 19 groups, 1348 fixtures
+MvrGroup 2 · in MvrLayer 1 "Fixture Layer" · 247 fixtures        ← should be "ACME Photon"
+MvrGroup 3 · in MvrLayer 1 "Fixture Layer" · 286 fixtures        ← should be "ACME Icarus"</pre>
+<p>The tree the file carries:</p>
+<pre>ALL (1361)
+├─ Stage 1 Mainstage (1255): ACME Tornado 136 · ACME Photon 247 · ACME Icarus 286 · ACME Cyclone 50 · ACME Aeco 30 IP 66
+│                            Deco LED 19 · CKC Mini Blinder 344 · Viky LS315 66 · BL-100 32
+├─ Stage 2 Keylights (60): Aputure LX 600 X Pro 12 · EK Lights Softlight 12 · TitanTubes 20 · Nebula 12
+├─ Stage 4 layher (20) · Smoke (6) · Machinery (9) · Previz (1) · Utills (1) · Stage 3 (0) · Pyro (0)</pre>
+</section>
+
+<section>
+<h2>What a <code>Generic@Grouping</code> fixture is to the import</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>A nested MVR group with its name</h3><p>A fixture whose GDTF is <code>Generic@Grouping</code> (a folder; it has no number, no address, no channels) is read as an MVR group in the fixture tree: the review shows no row for it, its children's group is it, and Apply recreates it nested under its parent folder, named. <code>lumacore-mvr</code> keeps the scene as the file says; the review makes the call. The empty folders (Stage 3, Pyro) come along as empty groups.</p></div>
+<div class="opt"><span class="tag">B</span><h3>A fixture without a number, as today</h3><p>Stays a clash row; the operator numbers it with <code>/FidOffset</code> or leaves it. The groups it implies stay nameless.</p></div>
+<div class="opt"><span class="tag">C</span><h3>Dropped silently</h3><p>Not read at all; its children sit on the layer. Loses the tree the file carries.</p></div>
+</div>
+</section>
+
+<section class="card">
+<h2>The DataPools · 39 exports</h2>
+<p>Every file is one DataPool: its groups, 25 preset pools, sequences (with cues, parts and values), macros, Pawterns, layouts, pages, configurations. Sizes run from 0.1 MB (macro pools) to 457 MB (OpeningCermony). The ones with content:</p>
+<div class="wrap"><table>
+<tr><th>Pool</th><th class="n">File</th><th class="n">Groups</th><th class="n">Sequences</th><th class="n">Macros</th><th class="n">Pawterns</th><th class="n">Layouts</th><th>More</th></tr>
+<tr><td>Default</td><td class="n">310 MB</td><td class="n">87</td><td class="n">100</td><td class="n">1</td><td class="n">136</td><td class="n">33</td><td>14 worlds · 107 pages · 4 242 plugin entries · 13 quickeys</td></tr>
+<tr><td>Event</td><td class="n">292 MB</td><td class="n">9 985 rows</td><td class="n">809</td><td class="n">134</td><td class="n">140</td><td class="n">1</td><td>1 timecode</td></tr>
+<tr><td>OpeningCermony</td><td class="n">457 MB</td><td class="n">—</td><td class="n">75</td><td class="n">3</td><td class="n">—</td><td class="n">127</td><td>2 timecodes</td></tr>
+<tr><td>Busk1</td><td class="n">99 MB</td><td class="n">169</td><td class="n">663</td><td class="n">664</td><td class="n">348</td><td class="n">8</td><td></td></tr>
+<tr><td>DOTA2 · DOTA2DRAFT</td><td class="n">153 · 78 MB</td><td class="n">56 · 25</td><td class="n">126 · 55</td><td class="n">94 · 80</td><td class="n">84 · 52</td><td class="n">1</td><td>1 timecode</td></tr>
+<tr><td>TeamColor</td><td class="n">102 MB</td><td class="n">4</td><td class="n">2</td><td class="n">370</td><td class="n">—</td><td class="n">1</td><td>1 plugin</td></tr>
+<tr><td>APEX · CLASH · CSGO · OVERWATCH</td><td class="n">9–11 MB</td><td class="n">36 · 65 · 17 · 16</td><td class="n">245 · 116 · 122 · 253</td><td class="n">260 · 124 · 155 · 293</td><td class="n">5 · 66 · 49 · 2</td><td class="n">1</td><td>timecodes</td></tr>
+<tr><td>Broad · Utils · Flashy · FestivalMerge</td><td class="n">20 · 20 · 9 · 0.5 MB</td><td class="n">98 · 3 · 17 · 76</td><td class="n">1 · 182 · 12 · 1</td><td class="n">— · 64 · 3 · 76</td><td class="n">95 · 1 · 3 · —</td><td class="n">1</td><td></td></tr>
+<tr><td>20 small pools (0.1 MB)</td><td class="n"></td><td class="n">4</td><td class="n">1–212</td><td class="n">2–271</td><td class="n"></td><td class="n">1–18</td><td>macro libraries, UI, Init (212 sequences), MacrosDB (66 + 186)</td></tr>
+</table></div>
+</section>
+
+<section class="card">
+<h2>Finding 5 · the Default pool's groups name this rig</h2>
+<p>A group is a <code>SelectionData</code> of <code>Item IDType="0" ID="840"</code> rows with grid positions. The 87 groups of the Default pool carry 11 393 items; 3 713 are fixture numbers the MVR has, and the rest are sub-fixture ids (<code>239.1</code>, <code>849.2</code>, <code>769.2.1</code>: Mini Blinder cells, Icarus LEDs, mapping pixels). The groups by type match the rig one for one:</p>
+<pre>Photon 245/245 · Icarus 284/284 · Blinder 344/344 · LedBar 66/66 · BL-100 32/32 · Tornado 136/136 · Cyclone 50/50
+Aeco 30 IP 66/66 · OZONE 12/12 · TitanTubes 20/20 · Fresnel 12/12 · PIXStick 8/8 · SMOKE 6/6 · Automation 9/9 · Fram 196/196
+L1 SW 1 32/32 · L1 IC 1 32/32 · LB Bakre 28/28 · … · TYGTAK 40/160 · MAPPING 557/2759 · Icarus LEDs 0/852 (cells only)</pre>
+<p>Groups alone, pulled out of the 310 MB file, are 817 KB of XML (87 groups). Presets are <code>PresetData</code> → <code>Phaser</code> (IDType 2 = fixture type, ID, Attribute) → <code>Step</code> with values; cues are <code>Cue</code> → <code>Part</code> → the same; macros are <code>MacroLine Command="…"</code> in the exporter's syntax. All of that waits for presets and sequences on LumaCore's side; the groups do not.</p>
+</section>
+
+<section class="card">
+<h2>Finding 6 · the demo show's weight in git</h2>
+<p>Today's <code>library/shows/demo.luma</code> is 1 MB and has been regenerated 45 times: 41 MB of history already. This rig's show file is 8.6 MB with 22 manufacturer GDTFs (models included); regenerated on every format bump it would add 8.6 MB a time. The MVR itself is 4.4 MB and would be committed once; the groups extract 0.8 MB once.</p>
+</section>
+
+<section class="card">
+<h2>Next questions</h2>
+<ul>
+<li>Groups from the DataPool now: a small pool XML reader for <code>Groups</code> (<code>formats/lumacore-poolxml</code>, <code>Import PoolXml "default-groups.xml" Groups</code>) versus hand-made groups per folder and type; presets, cues and macros as later parts of the same reader.</li>
+<li>One show or two: the tests' small demo (six AuraXB, 12 e2e files, 30 Rust test files; +1 s per build in debug for this rig) and the station's showcase.</li>
+<li>What is committed: the MVR + the groups extract, with the show built by <code>gen-demo</code> (not committed), or the built show as today.</li>
+<li>Names: the file names a real production; the fixture names, groups and layers stay as they are, or not.</li>
+</ul>
+</section>
+</main>

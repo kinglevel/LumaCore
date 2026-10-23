@@ -1,0 +1,62 @@
+<title>Tree Index</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 6 · 2026-10-20 · discussion only</div>
+<h1>The tree index: a key you can insert into</h1>
+<p>Decided on question 5: the patch's key is internal and a fixture carries FID, CID and its id type (Media …). You added: a new fixture gets the next free tree index, it must be possible to insert in the middle of the tree, and the tree is the fixture tree with folders. This page is what "tree index" can be in LumaCore's data, with the facts from the file and the desk.</p>
+</header>
+
+<section class="card">
+<h2>Facts</h2>
+<table>
+<tr><th>The order in the MVR</th><td>Children come in the exporter's own order, not by number and not by name: ACME Icarus's children <code>849, 852, 854, 853, 850, 851, 819, 855 … 18, 1699, 1700</code>; ALL's folders <code>Utills(8), Smoke(9), Pyro(5), Stage 4 layher(4), Stage 3(3), Stage 2 Keylights(2), Stage 1 Mainstage(1), Machinery(6), Previz(7)</code>. An export must write that order back; an import must keep it.</td></tr>
+<tr><th>A console's index</th><td>On the desk <code>INDEX</code> = <code>NO</code> = the fixture's own id in its type (849 for Fixture 849, 7003 for Media 7003), scoped by the parent — not a position. The order you see in the Patch is kept apart from it.</td></tr>
+<tr><th>LumaCore today</th><td><code>patch.fixtures: BTreeMap&lt;u32, Fixture&gt;</code> flat, key = FID, shown in FID order everywhere; <code>Fixture.Mvr.parent: Option&lt;Uuid&gt;</code> (a layer, a group or a fixture) is the only tree link; layers and groups are their own numbered maps in <code>Devices.Metadata.MVR</code>; the grid lists <code>fixtures.values()</code>, so FID order.</td></tr>
+<tr><th>What depends on the key</th><td>87 read sites, 37 iterations, the show-file folder per fixture (<code>Devices/…/Fixtures/&lt;key&gt;/</code>). Selections, groups, presets and cues hold GUIDs; nothing stored points at a key.</td></tr>
+</table>
+</section>
+
+<section class="card">
+<h2>How a reference console's patch behaves</h2>
+<p>A parent's children keep <b>the file's order</b>, and each child's index — the number in its address path — is <b>its own id</b>, not its position.</p>
+<p>So there the path index is a stable id (FID or CID, by the fixture's id type; 1, 2, 3 for sub-fixtures) and the order is kept apart from it: the two are never the same thing. That is option A's shape — the id stable, an order on the node — with the one difference that LumaCore's key is a slot the line never names, because <code>Fixture 1</code> and <code>Media 1</code> share one flat map here.</p>
+</section>
+
+<section>
+<h2>What the tree index is</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>A stable slot key, and an order kept on each node</h3><p>The key is the next free slot at insert and never changes. Every fixture (folder or not) keeps <code>parent</code> and an <code>order</code> within its parent, spaced (10, 20, 30 …). Insert in the middle takes the midpoint; when two neighbours touch, the siblings are respaced in that one step. The sidebar, the grid's tree view and the export walk (parent, order); the flat grid can still sort by FID. Layers and groups get the same <code>order</code> so one rule covers the whole tree.</p><ul><li>+ a key that nothing ever has to rename: no show-file churn, undo and replication by GUID as today</li><li>+ the tree is a view of <code>parent</code> + <code>order</code>, the walk is one function; the MVR's order round-trips</li><li>− "the tree index" is two fields, not one number</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>The key is the position: renumbered on insert</h3><p>Keys are the pre-order of the tree; a fixture inserted in the middle takes that key and every key after it moves up by one.</p><ul><li>+ one number is the whole story</li><li>− every insert renames show-file folders and rewrites the map; the pre-order of a tree in one flat number means moving a folder renumbers its whole subtree</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>Nested maps, an index per parent</h3><p><code>Fixture.children: BTreeMap&lt;u32, Fixture&gt;</code>; the index is the position inside its parent; insert in the middle renumbers the siblings after it.</p><ul><li>+ literally a tree index, like the desk's path <code>…99.1.7003.849</code></li><li>− the flat patch goes: every one of the 124 sites becomes a tree walk, the engine's dense slots need a flattening pass, the show file nests folders per level; the biggest sweep for the same behaviour as A</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Then</h2>
+<ul>
+<li>The id shape on a fixture: the triple (FID · IDType · CID) as you said, or the typed list that also holds <code>MoreIds</code>.</li>
+<li>The keyword: <code>Fixture Media 7003</code> (lum.md) or the bare <code>Media 7003</code>.</li>
+<li>An untyped CustomId on import (the export drops the type): the preset's default id type.</li>
+<li>A folder on a line: the subtree; the sidebar; Move / Delete with children.</li>
+</ul>
+</section>
+</main>

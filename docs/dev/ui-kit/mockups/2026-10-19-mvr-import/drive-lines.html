@@ -1,0 +1,131 @@
+<title>Drive Lines in Lum</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --warn: #d08a2a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 88ch; line-height: 1.5; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 13px; margin: 0; max-width: 100ch; min-width: 0; flex: 1 1 420px; line-height: 1.45; }
+.facts dt { color: var(--faint); } .facts dd { margin: 0; }
+code, pre { font-family: var(--mono); font-size: 12px; color: var(--gold-text); }
+pre { margin: 0; background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; line-height: 1.55; color: var(--text); }
+pre b { color: var(--gold-text); font-weight: 500; } pre i { font-style: normal; color: var(--faint); } pre em { font-style: normal; color: var(--del); } pre u { text-decoration: none; color: var(--ok-t); }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 100ch; line-height: 1.5; margin: 0; }
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 22px; }
+.opt { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.opt h3 { margin: 0; font-size: 15px; font-weight: 500; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.opt h3 .tag { font-size: 11px; border: 1px solid var(--gold); color: var(--gold-hi); border-radius: 9px; padding: 0 7px; }
+.opt p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.45; }
+.opt ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--dim); line-height: 1.4; }
+.opt li::before { content: "＋ "; color: var(--ok-t); } .opt li.m::before { content: "－ "; color: var(--del); }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; max-width: 100ch; }
+th { text-align: left; font-weight: 500; color: var(--dim); padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--head); white-space: nowrap; }
+td { padding: 6px 10px; border-bottom: 1px solid var(--cell-line); vertical-align: top; }
+</style>
+
+<main>
+  <header>
+    <h1>Drives · 4 · the lines (a lum.md discussion)</h1>
+    <p>Decided: model C, ids bound to the volume (<code>local-library</code>, <code>ssda</code>, <code>usb1</code>, <code>smb1</code>, <code>folder1</code>), the drive node is the volume with the library marked and <code>~usb1</code> the short way. Now the words. lum.md is strict: a change to the syntax is a discussion first — alternatives, what it breaks, which edge case it adds — then lum.md, then code. Two things need words: <b>how a file word names a file on a drive</b> (LoadShow, SaveShow, Import, Export, the MVR import to come), and <b>the Drive object itself</b> (list, info, settings, an added folder, forgetting one). And the fence needs <code>~</code>.</p>
+  </header>
+
+  <section class="board">
+    <h2>What lum.md says today</h2>
+    <div class="row">
+      <pre><i>the grammar</i>
+option     = "/" NAME [ value ] ;         <i>a value: NUMBER | WORD | QUOTED | …</i>
+id         = NUMBER | QUOTED ;            <i>"An id is a number or quoted text": Interface "en1"</i>
+TREE-PATH  = ".." | "/" | ROOT-PATH | PART { "." PART } ;   <i>no ~</i>
+
+<i>file words</i>
+LoadShow "Festival 26" /NoSave /NoConfirmation
+SaveShow "x" /Overwrite · /Version &lt;stamp&gt; · /Recovery "copy" · /Note "…"
+Import FixtureType "file.gdtf"      Import Patch + Users /From "Festival"
+<i>a file name is relative to the word's library folder (sub-folders allowed, no absolute path, no `..`,
+and `:` is refused: "no absolute path or drive")</i>
+
+<i>the fence under Root.Drives</i>
+cp / mv / rm work on files; between Root.Drives and the show tree they are refused: that is Import / Export.
+<i>Station-local objects with keyed properties</i>
+Set Interface "en1" "HTTP" No · Set Station "Tower" "Priority" High · List Interface · Info Interface "en1"</pre>
+      <dl class="facts">
+        <dt>The id of a drive</dt><dd>A name, so quoted where an id is quoted: <code>Drive "usb1"</code>, like <code>Interface "en1"</code>. As an option's value a WORD is allowed by the grammar: <code>/Drive usb1</code> and <code>/Drive "usb1"</code> both parse; the printed form is the bare word.</dd>
+        <dt>The Drive object</dt><dd>Station-local, keyed rows like Interface: declared properties <code>Label</code> (text, the volume's label by default), <code>Kind</code> (Internal · SSD · HDD · USB · SMB · NFS · Folder; set once to correct the OS), <code>Path</code> (the mount; for an added folder its path), <code>Library</code> (Yes when <code>LumaCore/library/</code> exists — <b>Set Yes initialises it</b>: the folders and a README; No is refused: nothing is deleted by a setting), <code>Free</code>, <code>Total</code>, <code>State</code> (In · Out), <code>Since</code> (read-only). So the Drives menu is a <code>MenuDef</code> grid on these, every cell a <code>Set</code> line — no new verb for initialising.</dd>
+        <dt>Added folders</dt><dd><code>Store Drive "folder1" /Path "/srv/shows"</code> — the next free id of its kind is the name; <code>Store Drive "smb1" /Path "//nas/shows"</code> for a share the OS has mounted (or mounts; question 6). <code>Delete Drive "usb1"</code> forgets a found drive (frees its id) or removes an added one; it asks when an AssetRoot maps to it.</dd>
+        <dt>Ejecting</dt><dd>A real action with no verb today. Proposed as the one new verb of this round, <code>Eject Drive "usb1"</code> (the OS unmounts, the row goes Out, a sysmon line); planned until built. Not a property: nothing is set.</dd>
+        <dt>What it breaks</dt><dd>Nothing existing: every file word keeps its bare form (the local library). The fence gains <code>~</code> and <code>~name</code> as a TREE-PATH start — new tokens, a grammar edit, a test.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="board">
+    <h2>The options — how a file word names a file on a drive</h2>
+    <div class="opts" id="opts"></div>
+    <p class="decide">To decide: A, B or C for the file words (the Drive object, Store / Delete Drive, Set Drive "usb1" "Library" Yes, the planned Eject and the fence's <code>~</code> go with whichever). Recommended: <b>A · a <code>/Drive</code> option on every file word</b> — the file name stays what it is today, a name relative to the word's library folder, and the drive is an option that says <i>where</i>, with the local library as the default when it is absent: <code>LoadShow "rig" /Drive usb1</code>, <code>SaveShow "rig" /Drive usb1</code>, <code>Import Mvr "Rig 2026 v3.mvr" /Drive usb1</code>, <code>Export UserProfile "Bob" /Drive smb1</code>. It is one option declared once (<code>F::DRIVE</code>, like <code>/Version</code>), every file word takes it, the file dialogs' footers read naturally, and a macro that says <code>/Drive usb1</code> means one stick (question 2). B puts the drive inside the quoted name, a syntax of its own inside text that the grammar never sees (and <code>:</code> is what file names refuse today); C makes file words take tree paths, which only the fence does today, and a file's dots fight the path's dots.</p>
+  </section>
+
+  <section class="board">
+    <h2>The lum.md change A asks for, in full</h2>
+    <pre><i>## Options — one example more</i>
+LoadShow "Festival 26" <b>/Drive usb1</b>                 <i>a file word's /Drive: the drive to read or write; absent = the local library</i>
+
+<i>## The tree-shell fence — the grammar</i>
+TREE-PATH  = ".." | "/" | <b>"~" [ NAME ]</b> | ROOT-PATH | PART { "." PART } ;   <i>~ = the local library, ~usb1 = that drive's library</i>
+cd ~usb1 · ls ~ · cp "Rig 2026 v4 draft.mvr" ~usb1/mvr         <i>(a fence arg; "/" inside a quoted part stays a file name)</i>
+
+<i>## Objects and targets — one noun more</i>
+`Drive` — this station's drives: the local library, the volumes it finds, the folders you add (station-local, never in a show)
+
+<i>examples that become tests</i>
+List Drive
+Info Drive "usb1"
+Set Drive "usb1" "Label" "Kingston blue"
+Set Drive "ssdb" "Kind" USB
+Set Drive "usb1" "Library" Yes
+Store Drive "folder1" /Path "/srv/shows"
+Delete Drive "usb1"
+Import Mvr "Rig 2026 v3.mvr" /Drive usb1
+Eject Drive "usb1"                                    <i>planned</i></pre>
+  </section>
+</main>
+
+<script>
+const OPTS = [
+  { id: 'a', tag: 'recommended', title: 'A · A /Drive option on every file word',
+    pre: `<pre>LoadShow "rig" <b>/Drive usb1</b>
+SaveShow "rig" <b>/Drive usb1</b> /Overwrite
+Import Mvr "Rig 2026 v3.mvr" <b>/Drive usb1</b>
+Import FixtureType "x.gdtf" <b>/Drive smb1</b>
+Export UserProfile "Bob" <b>/Drive usb1</b>
+LoadShow "rig"                           <i>= /Drive local-library</i>
+<i>sub-folders as today:</i> Import Mvr "2026/Rig v3.mvr" /Drive usb1</pre>`,
+    text: 'One option, declared once, on every word that reads or writes a library file. The name stays library-relative; the option says which library.',
+    pros: ['Nothing existing changes; the default is today\'s line', 'Reads as a person says it: "load rig from usb1"', 'The dialogs\' footer line and a macro are the same line'],
+    cons: ['Two tokens for one place (name + option)', 'A file outside the library has no line — by design: the fence copies it in (cp … ~usb1/mvr)'] },
+  { id: 'b', title: 'B · The drive inside the name: "usb1:rig"',
+    pre: `<pre>LoadShow "usb1:rig"
+Import Mvr "usb1:mvr/Rig 2026 v3.mvr"
+Import Mvr "usb1:/Vectorworks exports/x.mvr"   <i>an absolute path on the stick?</i></pre>`,
+    text: 'The quoted name carries the drive before a colon, like a URL or a Windows drive letter.',
+    pros: ['One token'], cons: ['A syntax inside quoted text, invisible to the grammar and the resolver', '":" is exactly what file names refuse today (drive letters, absolute paths)', 'Tempts absolute paths on the stick, which a line must never take'] },
+  { id: 'c', title: 'C · The tree path as the file',
+    pre: `<pre>LoadShow Root.Drives.usb1.LumaCore.library.shows."rig.luma"
+Import Mvr Root.Drives.usb1.LumaCore.library.mvr."Rig 2026 v3.mvr"
+Import Mvr ~usb1.mvr."Rig 2026 v3.mvr"</pre>`,
+    text: 'Lum file words take a ROOT-PATH under Root.Drives, as the fence does.',
+    pros: ['One form for the fence and the words'], cons: ['Only the fence enters Root.Drives today (§25) — a rule the sweep relies on', 'A file\'s dots fight the path\'s: every file name must be quoted as one part', 'Long; the dialogs\' footer line no longer reads'] },
+];
+document.getElementById('opts').innerHTML = OPTS.map(o => `<div class="opt"><h3>${o.title}${o.tag ? `<span class="tag">${o.tag}</span>` : ''}</h3>${o.pre}<p>${o.text}</p><ul>${o.pros.map(p => `<li>${p}</li>`).join('')}${o.cons.map(c => `<li class="m">${c}</li>`).join('')}</ul></div>`).join('');
+</script>

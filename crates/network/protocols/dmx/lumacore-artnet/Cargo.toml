@@ -1,0 +1,17 @@
+[package]
+name = "lumacore-artnet"
+version.workspace = true
+edition.workspace = true
+description = "Art-Net 4 on one NIC, declared as a protocol (decisions §11, §34 22)"
+
+[dependencies]
+lumacore-registry = { path = "../../../../foundation/lumacore-registry" }
+lumacore-protocols = { path = "../../../../model/lumacore-protocols" }
+lumacore-net = { path = "../../../lumacore-net" }
+socket2 = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

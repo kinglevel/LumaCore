@@ -1,0 +1,47 @@
+[package]
+name = "lumacore-objects"
+version.workspace = true
+edition.workspace = true
+description = "The registry tables, every object and its verbs, dispatch (decisions §34)"
+
+[dependencies]
+lumacore-fixtures = { path = "../lumacore-fixtures" }
+lumacore-drives = { path = "../../formats/lumacore-drives" }
+lumacore-luma = { path = "../../formats/lumacore-luma" }
+lumacore-sysmon = { path = "../../foundation/lumacore-sysmon" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-state = { path = "../lumacore-state" }
+lumacore-tree = { path = "../lumacore-tree" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+lumacore-gdtf = { path = "../../formats/lumacore-gdtf" }
+lumacore-mvr = { path = "../../formats/lumacore-mvr" }
+lumacore-poolxml = { path = "../../formats/lumacore-poolxml" }
+lumacore-patch = { path = "../lumacore-patch" }
+lumacore-protocols = { path = "../lumacore-protocols" }
+lumacore-net = { path = "../../network/lumacore-net" }
+lumacore-render = { path = "../../engine/lumacore-render" }
+lumacore-syntax = { path = "../../foundation/lumacore-syntax" }
+lumacore-syntax-derive = { path = "../../foundation/lumacore-syntax-derive" }
+crossbeam-channel = { workspace = true }
+nu-ansi-term = { workspace = true }
+tabled = { workspace = true }
+log = { workspace = true }
+serde_json = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+uuid = { workspace = true }
+sha2 = { workspace = true }
+strsim = { workspace = true }
+nucleo-matcher = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+proptest = { workspace = true }
+# The protocol rows the demo show's lines name (decisions §34 "34f7b"): test catalog only.
+lumacore-sacn = { path = "../../network/protocols/dmx/lumacore-sacn" }
+lumacore-artnet = { path = "../../network/protocols/dmx/lumacore-artnet" }
+lumacore-osc = { path = "../../network/protocols/data/lumacore-osc" }
+
+[lints]
+workspace = true

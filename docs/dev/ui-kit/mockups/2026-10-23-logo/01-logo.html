@@ -1,0 +1,167 @@
+<title>LumaCore Logo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* A proposal page: three logo directions (mark, wordmark, app icon) and the README hero, each on the kit's dark ground and on light; the page around it follows the viewer. */
+:root{--bg:#f4f3ef;--fg:#1b1a17;--mute:#69655b;--line:#d8d3c6;--card:#fffdf8;--gold:#8a6d06;
+  --font:"Source Sans 3","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",Menlo,Consolas,monospace;
+  /* the kit (tokens.css): ground, surface, olive gold accent, its bright form, the preset cyan for the eyes */
+  --k-bg:#121212;--k-surface:#1c1c1c;--k-line:#424242;--k-text:#d1d1d1;--k-dim:#8a8a8a;--k-strong:#ececec;--k-gold:#9a7a08;--k-gold-hi:#e0b341;--k-eye:#3fc8d8;--k-light:#e4e4e4;--k-light-ink:#1c1c1c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141518;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1c1e23;--gold:#e0b341;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141518;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1c1e23;--gold:#e0b341;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.5 var(--font);margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1240px;margin:0 auto;display:grid;gap:30px}
+h1{font-size:1.9rem;margin:0;line-height:1.15;text-wrap:balance}h2{font-size:1.25rem;margin:0;text-wrap:balance}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:600}
+p{max-width:72ch;margin:.35em 0}.mute{color:var(--mute)}
+code{font:.85em var(--mono)}
+.opt{display:grid;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
+.opt header{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.opt header b{font:600 .8rem var(--mono);color:var(--gold);letter-spacing:.06em}
+.rec{font-size:.72rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.06em}
+.row{display:grid;gap:10px;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,.55fr)}
+@media (max-width:820px){.row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.row>.wide{grid-column:1/-1}}
+.tile{border-radius:8px;display:grid;place-items:center;padding:18px;min-height:150px;min-width:0}
+.tile.dark{background:var(--k-bg)}.tile.light{background:var(--k-light)}
+.tile svg{max-width:100%;height:auto}
+.hero{border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.hero svg{display:block;width:100%;height:auto}
+.small{font-size:.88rem}
+ol{margin:0;padding-left:1.3em;display:grid;gap:8px}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="moon" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0cf6a"/><stop offset=".55" stop-color="#d4a634"/><stop offset="1" stop-color="#9a7a08"/></linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#d4a634" stop-opacity=".35"/><stop offset="1" stop-color="#d4a634" stop-opacity="0"/></radialGradient>
+    <!-- Luma, sitting: head, ears, body, tail (100 × 100) -->
+    <symbol id="cat" viewBox="0 0 100 100">
+      <path fill="currentColor" d="M36.5 30 L35 10 L47 21.5 Q50 21 53 21.5 L65 10 L63.5 30 Q65 36 62 41 Q66 50 68.5 62 Q71 76 69 84 Q67 94 50 94 Q33 94 31 84 Q29 76 31.5 62 Q34 50 38 41 Q35 36 36.5 30 Z"/>
+      <path fill="none" stroke="currentColor" stroke-width="5.5" stroke-linecap="round" d="M66 89 C83 92 90 80 85 68 C83 63 79 62 77 64"/>
+      <ellipse cx="44" cy="31" rx="2.3" ry="3.2" fill="var(--eye,#3fc8d8)"/><ellipse cx="56" cy="31" rx="2.3" ry="3.2" fill="var(--eye,#3fc8d8)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main>
+  <header style="display:grid;gap:8px;max-width:900px">
+    <div class="kicker">Brand mockup · round 1 · 2026-10-23</div>
+    <h1>A new LumaCore mark and README hero</h1>
+    <p>The current image keeps its idea: Luma the cat sits under the moon, Lum is the language, TreeShell is the tree. It moves from the purple painting to the desk's own look: the kit's dark ground, its olive gold, and the cyan of the preset colour for the eyes. Every option is vector art, so it stays sharp in the README, the app icon, the favicon and the status strip.</p>
+  </header>
+
+  <!-- A · Moon -->
+  <section class="opt" aria-labelledby="a-h">
+    <header><b>A</b><h2 id="a-h">Moon</h2><span class="rec">recommended</span></header>
+    <p class="mute small">The closest to today's image. A gold moon with Luma in front of it, on a branch of the tree. It reads at 16 px as a gold disc with ears.</p>
+    <div class="row">
+      <div class="tile dark wide"><svg viewBox="0 0 520 140" width="520" role="img" aria-label="Moon mark with the LumaCore wordmark">
+        <circle cx="70" cy="66" r="62" fill="url(#glow)"/>
+        <circle cx="70" cy="62" r="44" fill="url(#moon)"/>
+        <path d="M18 112 Q70 96 122 112" stroke="#9a7a08" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <use href="#cat" x="38" y="44" width="64" height="64" style="color:#121212"/>
+        <text x="146" y="86" font-family="'Source Sans 3', 'Segoe UI', sans-serif" font-weight="700" font-size="58" fill="#ececec" letter-spacing="-1">Luma<tspan fill="#e0b341">Core</tspan></text>
+        <text x="149" y="114" font-family="JetBrains Mono, Menlo, monospace" font-size="15" fill="#8a8a8a" letter-spacing="3">TREESHELL · LUM</text>
+      </svg></div>
+      <div class="tile light"><svg viewBox="0 0 140 140" width="140" role="img" aria-label="Moon mark on light">
+        <circle cx="70" cy="62" r="44" fill="url(#moon)"/>
+        <path d="M18 112 Q70 96 122 112" stroke="#7c6200" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <use href="#cat" x="38" y="44" width="64" height="64" style="color:#1c1c1c"/>
+      </svg></div>
+      <div class="tile dark"><svg viewBox="0 0 64 64" width="64" role="img" aria-label="Moon app icon">
+        <rect width="64" height="64" rx="14" fill="#1c1c1c"/><circle cx="32" cy="29" r="20" fill="url(#moon)"/>
+        <use href="#cat" x="17" y="20" width="30" height="30" style="color:#121212"/>
+      </svg></div>
+    </div>
+  </section>
+
+  <!-- B · Ring -->
+  <section class="opt" aria-labelledby="b-h">
+    <header><b>B</b><h2 id="b-h">Ring</h2></header>
+    <p class="mute small">Ties the logo to the status strip's mark, the ring that tells a station's state. Luma sits inside it and the ears break through. On the desk the same ring can turn green, blue or red.</p>
+    <div class="row">
+      <div class="tile dark wide"><svg viewBox="0 0 520 140" width="520" role="img" aria-label="Ring mark with the LumaCore wordmark">
+        <circle cx="70" cy="70" r="46" fill="none" stroke="#d4a634" stroke-width="7"/>
+        <rect x="52" y="16" width="36" height="16" fill="#121212"/>
+        <use href="#cat" x="30" y="22" width="80" height="80" style="color:#ececec"/>
+        <text x="146" y="86" font-family="'Source Sans 3', 'Segoe UI', sans-serif" font-weight="700" font-size="58" fill="#ececec" letter-spacing="-1">Luma<tspan fill="#e0b341">Core</tspan></text>
+        <text x="149" y="114" font-family="JetBrains Mono, Menlo, monospace" font-size="15" fill="#8a8a8a" letter-spacing="3">TREESHELL · LUM</text>
+      </svg></div>
+      <div class="tile light"><svg viewBox="0 0 140 140" width="140" role="img" aria-label="Ring mark on light">
+        <circle cx="70" cy="70" r="46" fill="none" stroke="#7c6200" stroke-width="7"/>
+        <rect x="52" y="16" width="36" height="16" fill="#e4e4e4"/>
+        <use href="#cat" x="30" y="22" width="80" height="80" style="color:#1c1c1c"/>
+      </svg></div>
+      <div class="tile dark"><svg viewBox="0 0 64 64" width="64" role="img" aria-label="Ring app icon">
+        <rect width="64" height="64" rx="14" fill="#1c1c1c"/><circle cx="32" cy="33" r="21" fill="none" stroke="#d4a634" stroke-width="4"/>
+        <rect x="24" y="9" width="16" height="8" fill="#1c1c1c"/>
+        <use href="#cat" x="13" y="13" width="38" height="38" style="color:#ececec"/>
+      </svg></div>
+    </div>
+  </section>
+
+  <!-- C · Prompt -->
+  <section class="opt" aria-labelledby="c-h">
+    <header><b>C</b><h2 id="c-h">Prompt</h2></header>
+    <p class="mute small">Says "terminal first". Luma's head holds the command line's prompt, <code>›_</code>, as its face. It works best as an app icon and less well as a hero.</p>
+    <div class="row">
+      <div class="tile dark wide"><svg viewBox="0 0 520 140" width="520" role="img" aria-label="Prompt mark with the LumaCore wordmark">
+        <path d="M24 46 L22 14 L46 32 Q70 26 94 32 L118 14 L116 46 Q122 60 120 82 Q116 124 70 124 Q24 124 20 82 Q18 60 24 46 Z" fill="#1c1c1c" stroke="#d4a634" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M44 62 L62 76 L44 90" fill="none" stroke="#e0b341" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="70" y="84" width="26" height="7" rx="2" fill="#3fc8d8"/>
+        <text x="146" y="86" font-family="'Source Sans 3', 'Segoe UI', sans-serif" font-weight="700" font-size="58" fill="#ececec" letter-spacing="-1">Luma<tspan fill="#e0b341">Core</tspan></text>
+        <text x="149" y="114" font-family="JetBrains Mono, Menlo, monospace" font-size="15" fill="#8a8a8a" letter-spacing="3">TREESHELL · LUM</text>
+      </svg></div>
+      <div class="tile light"><svg viewBox="0 0 140 140" width="140" role="img" aria-label="Prompt mark on light">
+        <path d="M24 46 L22 14 L46 32 Q70 26 94 32 L118 14 L116 46 Q122 60 120 82 Q116 124 70 124 Q24 124 20 82 Q18 60 24 46 Z" fill="#1c1c1c"/>
+        <path d="M44 62 L62 76 L44 90" fill="none" stroke="#e0b341" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="70" y="84" width="26" height="7" rx="2" fill="#3fc8d8"/>
+      </svg></div>
+      <div class="tile dark"><svg viewBox="0 0 140 140" width="64" role="img" aria-label="Prompt app icon">
+        <path d="M24 46 L22 14 L46 32 Q70 26 94 32 L118 14 L116 46 Q122 60 120 82 Q116 124 70 124 Q24 124 20 82 Q18 60 24 46 Z" fill="#2a2a2a" stroke="#d4a634" stroke-width="5"/>
+        <path d="M44 62 L62 76 L44 90" fill="none" stroke="#e0b341" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="70" y="84" width="26" height="8" rx="2" fill="#3fc8d8"/>
+      </svg></div>
+    </div>
+  </section>
+
+  <!-- The README hero with A -->
+  <section style="display:grid;gap:10px">
+    <div class="kicker">The README hero (with A; it takes whichever mark you pick)</div>
+    <div class="hero"><svg viewBox="0 0 1280 420" role="img" aria-label="LumaCore hero banner">
+      <defs>
+        <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0b341" stop-opacity=".22"/><stop offset="1" stop-color="#e0b341" stop-opacity="0"/></linearGradient>
+        <pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.2" fill="#ffffff" fill-opacity=".05"/></pattern>
+      </defs>
+      <rect width="1280" height="420" fill="#121212"/><rect width="1280" height="420" fill="url(#dots)"/>
+      <!-- a truss of six fixtures and their beams -->
+      <g>
+        <rect x="560" y="18" width="680" height="6" rx="3" fill="#2a2a2a"/>
+        <g fill="url(#beam)"><path d="M620 30 L560 420 L700 420 Z"/><path d="M740 30 L700 420 L820 420 Z"/><path d="M860 30 L860 420 L960 420 Z"/><path d="M980 30 L1010 420 L1110 420 Z"/><path d="M1100 30 L1150 420 L1260 420 Z"/></g>
+        <g fill="#303030"><rect x="606" y="24" width="28" height="12" rx="3"/><rect x="726" y="24" width="28" height="12" rx="3"/><rect x="846" y="24" width="28" height="12" rx="3"/><rect x="966" y="24" width="28" height="12" rx="3"/><rect x="1086" y="24" width="28" height="12" rx="3"/></g>
+        <g fill="#e0b341"><circle cx="620" cy="36" r="3"/><circle cx="740" cy="36" r="3"/><circle cx="860" cy="36" r="3"/><circle cx="980" cy="36" r="3"/><circle cx="1100" cy="36" r="3"/></g>
+      </g>
+      <circle cx="200" cy="200" r="150" fill="url(#glow)"/>
+      <circle cx="200" cy="190" r="104" fill="url(#moon)"/>
+      <path d="M78 306 Q200 270 322 306" stroke="#9a7a08" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <use href="#cat" x="124" y="148" width="152" height="152" style="color:#121212"/>
+      <text x="380" y="196" font-family="'Source Sans 3', 'Segoe UI', sans-serif" font-weight="800" font-size="104" fill="#ececec" letter-spacing="-2">Luma<tspan fill="#e0b341">Core</tspan></text>
+      <text x="384" y="246" font-family="'Source Sans 3', 'Segoe UI', sans-serif" font-size="30" fill="#d1d1d1">An open-source lighting console, written in Rust.</text>
+      <text x="386" y="296" font-family="JetBrains Mono, Menlo, monospace" font-size="18" fill="#8a8a8a">Luma is the cat · Lum is the language · TreeShell is the tree</text>
+      <g font-family="JetBrains Mono, Menlo, monospace" font-size="17">
+        <rect x="384" y="326" width="372" height="40" rx="6" fill="#1c1c1c" stroke="#424242"/>
+        <text x="400" y="352" fill="#8a8a8a">[Admin]&gt; <tspan fill="#ececec">Fixture 1 Thru 8 At Full</tspan></text>
+      </g>
+    </svg></div>
+  </section>
+
+  <section class="opt" style="max-width:900px">
+    <h2>Questions</h2>
+    <ol>
+      <li><b>The mark:</b> A Moon, B Ring or C Prompt? <span class="mute">(A recommended: it keeps today's idea and reads at every size.)</span></li>
+      <li><b>The tagline:</b> "An open-source lighting console, written in Rust." <span class="mute">Keep it, or send another.</span></li>
+      <li><b>Where it goes:</b> the README hero (SVG with a PNG export), the app icon, the favicon and the connect page. The old painting moves out of <code>images/</code>. <span class="mute">The status strip's ring stays as it is unless you pick B.</span></li>
+    </ol>
+  </section>
+</main>

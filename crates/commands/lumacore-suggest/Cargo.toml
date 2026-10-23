@@ -1,0 +1,27 @@
+[package]
+name = "lumacore-suggest"
+version.workspace = true
+edition.workspace = true
+description = "The suggestion engine: what can follow on the command line, grammar first, ranked by fuzzy match and each user's Usage (decisions §30 \"12b2\", §34 25.9)"
+
+[dependencies]
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-objects = { path = "../../model/lumacore-objects" }
+nucleo-matcher = { workspace = true }
+
+[dev-dependencies]
+lumacore-cmd-treeshell = { path = "../objects/lumacore-cmd-treeshell" }
+ctor = { workspace = true }
+uuid = { workspace = true }
+lumacore-fixtures = { path = "../../model/lumacore-fixtures" }
+lumacore-luma = { path = "../../formats/lumacore-luma" }
+# The protocol rows the demo show's lines name (its load refuses a missing one).
+lumacore-sacn = { path = "../../network/protocols/dmx/lumacore-sacn" }
+lumacore-artnet = { path = "../../network/protocols/dmx/lumacore-artnet" }
+lumacore-osc = { path = "../../network/protocols/data/lumacore-osc" }
+
+[lints]
+workspace = true

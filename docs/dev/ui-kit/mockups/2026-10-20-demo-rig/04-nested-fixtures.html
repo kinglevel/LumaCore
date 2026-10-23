@@ -1,0 +1,79 @@
+<title>Nested Fixtures</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.bad{color:var(--red)}.ok{color:var(--green)}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 4 · 2026-10-20</div>
+<h1>Nested fixtures: a fixture can hold fixtures</h1>
+<p>Your direction on question 3: the tree is yours, drawn on another console with the Grouping fixture type, and LumaCore should hold nested fixtures natively so such a file imports as it is. This page lays out what that takes and asks the one thing that decides the rest: the number of a fixture that is only a folder.</p>
+</header>
+
+<section class="card">
+<h2>What the show already has, and what it lacks</h2>
+<table>
+<tr><th>Already</th><td><code>Fixture.Mvr.parent</code> may be a layer, a group <em>or the fixture it is a child of</em> (MVR 1.6's <code>ChildList</code>, decided with 34g4 part 1). The 1 348 fixtures of the TI rig import with their parent set to the folder's GUID today.</td></tr>
+<tr><th>Lacking 1</th><td>The folder fixture itself: <code>Generic@Grouping</code>, no number, no address — the review makes it a clash row and never writes it, so 1 348 parents point at nothing and the review recreates nameless groups in their place.</td></tr>
+<tr><th>Lacking 2</th><td>The Patch dialog's tree sidebar walks layers and groups only (<code>lumacore_views::patch</code>, <code>parent_of</code> from <code>mvr.groups</code>); a fixture with children is not a node.</td></tr>
+<tr><th>Lacking 3</th><td>What a parent means to a line: selecting it, moving it, deleting it, a value at it.</td></tr>
+<tr><th>Apart</th><td>Sub-fixtures (<code>849.1</code>, a Mini Blinder's cells, Icarus LEDs) are a GDTF geometry matter, not this tree; they stay as decided (dotted ids, Tags part 2).</td></tr>
+</table>
+<pre>The export of one folder:
+&lt;Fixture uuid="AEAC30A5-…" name="ACME Icarus"&gt;
+  &lt;Matrix&gt;{1,0,0}{0,1,0}{0,0,1}{-100,0,0}&lt;/Matrix&gt;          ← a position of its own
+  &lt;GDTFSpec&gt;Generic@Grouping.gdtf&lt;/GDTFSpec&gt;               ← 1 mode, 0 channels, 0 attributes
+  &lt;ChildList&gt; &lt;Fixture name="ACME ICARUS 620(CM-620Z)"&gt; … ×286 &lt;/ChildList&gt;
+&lt;/Fixture&gt;                                                   (no FixtureID, no Addresses)</pre>
+</section>
+
+<section class="card">
+<h2>The shape of it</h2>
+<ul>
+<li><b>A fixture is a fixture.</b> A folder is a fixture of a type with no channels (Grouping, or any type), with a position of its own; its children are fixtures whose parent is it. Nothing new in the data: <code>Fixture.Mvr.parent</code> carries it, the world matrix stays absolute (MVR's rule), <code>child_position</code> is already a field.</li>
+<li><b>The tree sidebar</b> shows fixtures with children as nodes under their layer or group, any depth; the grid can indent or filter by the node, as the MVR tree does today for groups.</li>
+<li><b>A line at a parent</b> (the established rule): <code>Fixture "Stage 1 Mainstage"</code> selects the subtree; <code>At 50</code> on it programs the children; Move / Delete carry the children (the one nesting rule, <code>Move &lt;node&gt; At &lt;node&gt;</code> asks, Delete asks Keep / Delete the children as MVR nodes do).</li>
+<li><b>Import</b> writes the folder as a fixture (new row, its type <code>Generic@Grouping</code> imported like any GDTF), nested; Export writes the <code>ChildList</code> back. Keep / Discard and the review's Lost rows work unchanged.</li>
+</ul>
+</section>
+
+<section class="card">
+<h2>How a reference console holds it</h2>
+<p>A folder is a fixture whose id type is Media, with no fixture number and a second id in the Media namespace; the console reaches it as <code>Media 7003</code>. Numbers are global across the tree. In the MVR export the folders carry <code>FixtureID ""</code> and <code>CustomId 7003</code> (every one of the 1 371 fixtures writes a CustomId; no <code>CustomIdType</code> tag, so the namespace is lost in the file). So the rule there is: a folder has no fixture number; it lives in a second id namespace (Media), and selection, Move and Delete work on it by that id. LumaCore keeps <code>custom_id_type</code> + <code>custom_id</code> as data (34g4 part 1) and has the CIDs-versus-tags discussion reopened on the roadmap.</p>
+</section>
+
+<section>
+<h2>The number of a folder fixture</h2>
+<p>Every fixture is its pool's key (<code>BTreeMap&lt;u32&gt;</code>, "a number is only its pool's key"); the file gives a folder none.</p>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>A number like any fixture, given at import above the file's highest; the Media id kept as data</h3><p>An unnumbered fixture gets the next free number above the highest number in the file, in a new hundred: this rig's highest is 9 999, so <code>10001 … 10023</code> in tree order (ALL 10001, Stage 1 Mainstage 10002, …). <code>/FidOffset</code> moves them like any row; the review shows the given number in grey. Its <code>CustomId</code> (Media 7003) stays on the fixture as today, so when the CID discussion lands, <code>Media 7003</code> can resolve to it; Export writes the CustomId back and no FixtureID unless the operator set one.</p><ul><li>+ one id rule everywhere; <code>Fixture 10002</code> is the whole main stage</li><li>+ a folder can be given a real number later like any fixture</li><li>− a made-up number in the grid until renamed by the operator</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>A dotted id under the parent</h3><p>Children keep their numbers; a folder is <code>Fixture 1.2</code> under its parent, like a sub-fixture.</p><ul><li>− collides with sub-fixture ids (<code>849.1</code> is a cell) and the Decimal rule for cues</li><li>− a folder that is moved changes its id; every link to it breaks the rule "ids are GUIDs, numbers are keys"</li></ul></div>
+<div class="opt"><span class="tag">D</span><h3>The second id now: the folder is <code>Media 7003</code></h3><p>A folder keeps no fixture number; it is reached by its second id, which means deciding the CIDs-versus-tags question first (id namespaces in the grammar, the resolver, the grids) before the demo can be built.</p><ul><li>+ the file round-trips exactly</li><li>− the pool is keyed by number: a hidden key or a second key space either way; the reopened discussion becomes a blocker for the demo</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>No number: by name and path only</h3><p>A folder is keyed by GUID, reached as <code>Fixture "ACME Icarus"</code> or by its tree path.</p><ul><li>− the fixture pool is keyed by number; a second key space for some fixtures touches every list, grid, range and the resolver</li><li>− two names the same (allowed) have no second handle</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Then</h2>
+<ul>
+<li>What selecting a parent does by default (the subtree; or itself, with <code>/Children</code>) and how the grid shows the tree (indent, a node filter, both).</li>
+<li>Groups from the Default pool (87, matching the rig), the show split for the tests, what is committed, the names.</li>
+</ul>
+</section>
+</main>

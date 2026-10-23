@@ -1,0 +1,59 @@
+/target
+.env.local
+paths.txt
+.DS_Store
+
+# Runtime logs
+library/logs/
+apps/lumacore-station/library/logs/
+
+# Personal AI/vibe-coding workspaces — use whatever tool you want
+.planning/
+.obsidian/
+*.canvas
+
+# Local tooling config
+.claude/settings.local.json
+# Machine-local settings for scripts (build servers, …)
+*.local.env
+
+# Station identity + login-token secret (per machine, never commit)
+library/station_settings.json
+
+# Local reference material (not part of the repo)
+inspiration/
+intel/
+
+# The station's store of GDTF files (decisions §29): a cache, filled by Import and show loads.
+library/fixturetypes/
+# The station's store of embedded pictures (decisions §30 "12a2"): a cache by SHA-256.
+library/media/.store/
+
+# station runtime marker (12d part 5: unclean-stop detection)
+library/running
+library/stations/*/running
+library/.starting
+library/stations/*/.starting
+
+# Show backups (decisions §30 "12d part 5", §31): versions, recovery copies and trash are per station
+library/shows/.autosave/
+library/shows/.versions/
+library/shows/.trash/
+# Untitled shows saved under the default name (`NewShow_<date>UTC`)
+library/shows/NewShow_*.luma
+# The demo show is built from library/mvr, library/poolxml and library/demo/manual.lum when it is
+# missing or stale (decisions §40 15: `gen-demo`, the station's start, the e2e support).
+library/shows/demo.luma
+
+# A crate's tests write a library of their own (decisions §34 34c).
+crates/**/library/
+tests/catalog/library/
+# Tests in a crate write autosave copies there.
+crates/**/library/shows/.autosave/
+# What tests write beside a crate (a merge's split base, a terminal's session log).
+crates/**/library/split_base.json
+crates/**/library/logs/
+# The station's own (an app since decisions §34 24): the same caches.
+apps/**/library/
+apps/**/library/shows/.autosave/
+apps/**/library/split_base.json

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pool hold selector</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: {{t.bg}}; color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; position: relative; overflow: hidden">
+  <div style="height: 64px; display: flex; align-items: center; gap: 8px; padding: 0 16px; background: {{t.surface}}; border-bottom: 1px solid {{t.line}}">
+    <span style="font-size: 17px; font-weight: 500; margin-right: 12px">Groups</span>
+    <sc-for list="{{actions}}" as="a" hint-placeholder-count="7">
+      <button type="button" onClick="{{a.pick}}" style="height: 48px; min-width: 92px; padding: 0 14px; border-radius: 6px; border: 1px solid {{a.border}}; background: {{a.bg}}; color: {{a.fg}}; font: inherit; font-size: 15px; font-weight: 500">{{a.name}}</button>
+    </sc-for>
+    <button type="button" onClick="{{closeAll}}" aria-label="Close" style="margin-left: auto; width: 48px; height: 48px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+  </div>
+  <div style="flex: 1; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 10px; padding: 16px; align-content: start">
+    <sc-for list="{{cells}}" as="c" hint-placeholder-count="24">
+      <button type="button" onClick="{{c.tap}}" style="height: 112px; border-radius: 6px; border: 2px solid {{c.border}}; background: {{c.bg}}; color: {{t.text}}; font: inherit; text-align: left; padding: 8px 10px; display: flex; flex-direction: column; justify-content: space-between; position: relative">
+        <span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; color: {{t.dim}}"><span>{{c.no}}</span><span style="color: {{c.lockC}}">{{c.lock}}</span></span>
+        <span style="font-size: 18px; font-weight: 500">{{c.name}}</span>
+        <span style="height: 5px; width: {{c.cover}}%; border-radius: 3px; background: {{t.info}}"></span>
+      </button>
+    </sc-for>
+  </div>
+  <div style="height: 64px; display: flex; align-items: center; gap: 16px; padding: 0 20px; background: {{t.surface}}; border-top: 1px solid {{t.line}}">
+    <span class="mono" style="font-size: 16px"><span style="color: {{t.dim}}">Root&gt;&nbsp;</span>{{line}}</span>
+    <span style="margin-left: auto; font-size: 13px; color: {{t.dim}}">{{hint}}</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { action: null, ran: null }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const names = ['Edit', 'Label', 'Store', 'Delete', 'Move', 'Copy', 'Settings'];
+    const actions = names.map(n => {
+      const on = s.action === n, danger = n === 'Delete';
+      return { name: n, pick: () => this.setState({ action: on ? null : n, ran: null }),
+        bg: on ? (danger ? t.alert : t.accent) : t.raised, fg: on ? t.onAccent : (danger ? t.alert : t.text), border: on ? 'transparent' : t.line };
+    });
+    const data = { 1: ['All', 100, ''], 2: ['Odd', 50, ''], 3: ['Even', 50, ''], 4: ['Front', 0, ''], 5: ['Back', 0, 'Bob'], 6: ['Spots', 0, ''], 9: ['Wash L', 0, ''], 10: ['Wash R', 0, ''] };
+    const cells = Array.from({ length: 24 }, (_, i) => {
+      const no = i + 1, d = data[no];
+      const target = s.ran && s.ran.no === no;
+      return { no, name: d ? d[0] : '', cover: d ? d[1] : 0, lock: d && d[2] ? '🔒 ' + d[2] : '', lockC: t.alert,
+        bg: d ? t.raised : t.surface, border: target ? t.accent : (d ? t.line : 'transparent'),
+        tap: () => this.setState({ ran: { no, action: s.action } }) };
+    }).map(c => ({ ...c, lock: c.lock.replace('🔒 ', 'held by ') }));
+    let line = '', hint = 'Hold opened this. Drag over a cell and release to tap it; or pick an action, then a cell.';
+    if (s.ran) {
+      const a = s.ran.action;
+      line = a === 'Settings' ? 'EditSetting Group ' + s.ran.no : a === 'Label' ? 'Label Group ' + s.ran.no + ' "…"' : a === 'Move' || a === 'Copy' ? a + ' Group ' + s.ran.no + ' At …' : a ? a + ' Group ' + s.ran.no : 'Group ' + s.ran.no;
+      hint = a === 'Move' || a === 'Copy' ? 'Now tap the target cell.' : a === 'Delete' ? 'Asks first (one standard dialog).' : 'Runs on the command line; the selector closes.';
+    } else if (s.action) {
+      line = s.action === 'Settings' ? 'EditSetting' : s.action;
+      hint = 'Command-first, like typing it: now tap a group.';
+    }
+    return { t, actions, cells, line, hint, closeAll: () => this.setState({ action: null, ran: null }) };
+  }
+}
+</script>
+</body>
+</html>

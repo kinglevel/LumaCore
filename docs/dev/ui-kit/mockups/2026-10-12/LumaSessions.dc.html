@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>LumaSessions menu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 40px; background: color-mix(in srgb, {{t.bg}} 70%, #000); color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex">
+  <section style="flex: 1; display: flex; flex-direction: column; border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+    <div style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 12px; padding: 0 6px 0 18px; border-bottom: 1px solid {{t.line}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{t.text}}" stroke-width="1.8" aria-hidden="true"><path d="M7 7a3 3 0 1 0 0 .01M17 7a3 3 0 1 0 0 .01M12 17a3 3 0 1 0 0 .01M9 8.5l2 6M15 8.5l-2 6"></path></svg>
+      <span style="font-size: 18px; font-weight: 500">LumaSessions</span>
+      <span style="font-size: 14px; color: {{t.dim}}">"Festival" · epoch 4</span>
+      <span style="margin-left: auto; display: flex; gap: 8px">
+        <span style="height: 34px; padding: 0 12px; border-radius: 17px; display: flex; align-items: center; gap: 8px; font-size: 13px; background: {{t.raised}}; border: 1px solid {{t.line}}"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{t.ok}}"></span>This station: Master</span>
+        <span style="height: 34px; padding: 0 12px; border-radius: 17px; display: flex; align-items: center; gap: 8px; font-size: 13px; background: {{t.raised}}; border: 1px solid {{t.line}}"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{t.ok}}"></span>Clock locked</span>
+      </span>
+      <button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: {{t.text}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+    </div>
+    <div style="flex: 1; display: flex; min-height: 0">
+      <div style="width: 160px; flex-shrink: 0; border-right: 1px solid {{t.line}}; display: flex; flex-direction: column">
+        <button type="button" style="height: 60px; border: none; border-bottom: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 15px; text-align: left; padding: 0 18px; box-shadow: inset 3px 0 0 {{t.accent}}">Stations</button>
+        <button type="button" style="height: 60px; border: none; border-bottom: 1px solid {{t.line}}; background: transparent; color: {{t.dim}}; font: inherit; font-size: 15px; text-align: left; padding: 0 18px">Discovered</button>
+        <button type="button" style="height: 60px; border: none; border-bottom: 1px solid {{t.line}}; background: transparent; color: {{t.dim}}; font: inherit; font-size: 15px; text-align: left; padding: 0 18px">Settings</button>
+      </div>
+      <div style="flex: 1; padding: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-content: start; min-width: 0">
+        <sc-for list="{{stations}}" as="st" hint-placeholder-count="5">
+          <button type="button" onClick="{{st.pick}}" style="height: 150px; border-radius: 6px; border: 2px solid {{st.border}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; text-align: left; padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between">
+            <span style="display: flex; justify-content: space-between; width: 100%; align-items: center"><span style="font-size: 18px; font-weight: 500">{{st.name}}</span><span style="font-size: 12px; font-weight: 500; padding: 4px 8px; border-radius: 6px; background: {{st.roleBg}}; color: {{st.roleFg}}">{{st.role}}</span></span>
+            <span class="mono" style="font-size: 13px; color: {{t.dim}}">{{st.addr}} · prio {{st.prio}}</span>
+            <span style="display: flex; gap: 14px; font-size: 13px"><span style="display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{st.hc}}"></span>{{st.health}}</span><span style="color: {{t.dim}}">{{st.lat}}</span><span style="color: {{t.dim}}">{{st.users}}</span></span>
+          </button>
+        </sc-for>
+      </div>
+      <aside style="width: 260px; flex-shrink: 0; border-left: 1px solid {{t.line}}; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: color-mix(in srgb, {{t.bg}} 35%, {{t.surface}})">
+        <span style="font-size: 12px; color: {{t.dim}}; letter-spacing: 0">{{selLabel}}</span>
+        <sc-for list="{{acts}}" as="a" hint-placeholder-count="4">
+          <button type="button" disabled="{{a.off}}" style="height: 60px; border-radius: 6px; border: 1px solid {{a.border}}; background: {{a.bg}}; color: {{a.fg}}; font: inherit; text-align: left; padding: 0 14px; display: flex; flex-direction: column; justify-content: center; gap: 2px"><span style="font-size: 15px; font-weight: 500">{{a.name}}</span><span class="mono" style="font-size: 11px; color: {{t.dim}}">{{a.cmd}}</span></button>
+        </sc-for>
+        <button type="button" style="margin-top: auto; height: 96px; border-radius: 6px; border: 2px solid {{t.ok}}; background: color-mix(in srgb, {{t.ok}} 20%, {{t.raised}}); color: {{t.text}}; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v8M6.3 6.3a8 8 0 1 0 11.4 0"></path></svg><span style="font-size: 16px; font-weight: 500">In "Festival"</span></button>
+      </aside>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { sel: 'FOH' }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const roleC = { Master: [t.accent, t.onAccent], Member: [t.info, t.onAccent], Invited: [t.line, t.text], Lost: [t.alert, t.onAccent] };
+    const data = [
+      ['desk1', 'Master', '192.0.2.212', 10, 'OK', t.ok, '—', 'Admin'],
+      ['FOH', 'Member', '192.0.2.40', 5, 'OK', t.ok, '0.4 ms', 'Bob, Ann'],
+      ['Backup', 'Member', '192.0.2.41', 8, 'Warn 1.6 s', t.warn, '2.1 ms', '—'],
+      ['Stage-L', 'Invited', '192.0.2.77', 1, 'Waiting', t.dim, '—', '—'],
+      ['Spare', 'Lost', '192.0.2.90', 1, 'Lost 12 s', t.alert, '—', '—']
+    ];
+    const stations = data.map(([name, role, addr, prio, health, hc, lat, users]) => ({
+      name, role, addr, prio, health, hc, lat, users,
+      roleBg: roleC[role][0], roleFg: roleC[role][1],
+      border: s.sel === name ? t.accent : t.line,
+      pick: () => this.setState({ sel: name })
+    }));
+    const sel = data.find(d => d[0] === s.sel);
+    const isSelf = s.sel === 'desk1';
+    const mk = (name, cmd, off, danger) => ({ name, cmd, off, bg: off ? 'transparent' : (danger ? 'color-mix(in srgb, ' + t.alert + ' 14%, ' + t.raised + ')' : t.raised), fg: off ? t.dim : (danger ? t.alert : t.text), border: off ? t.line : (danger ? 'color-mix(in srgb, ' + t.alert + ' 55%, transparent)' : t.line) });
+    const acts = [
+      mk('Invite', 'Invite Station "' + s.sel + '"', isSelf || sel[1] === 'Member' || sel[1] === 'Master'),
+      mk('Dismiss', 'Dismiss Station "' + s.sel + '"', isSelf || sel[1] === 'Invited', true),
+      mk('Hand master over', 'Claim LumaSession (on ' + s.sel + ')', isSelf || sel[1] !== 'Member'),
+      mk('Leave', 'Leave LumaSession', false, true)
+    ];
+    return { t, stations, acts, selLabel: 'Selected: ' + s.sel };
+  }
+}
+</script>
+</body>
+</html>

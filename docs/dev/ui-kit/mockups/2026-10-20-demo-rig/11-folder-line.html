@@ -1,0 +1,64 @@
+<title>Folder On A Line</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 11 · 2026-10-20 · discussion only</div>
+<h1>What a folder does on a line</h1>
+<p>Decided: a folder is a fixture with children (3, 4), an internal key and an order (5, 6), ids FID · type · CID (7), named <code>Fixture Media 7003</code> or <code>Fixture Generic n</code> (8, 10). Now the behaviour: what <code>Fixture Media 1</code> on a line means, what the grid and the sidebar show, what Move and Delete carry.</p>
+</header>
+
+<section class="card">
+<h2>Facts</h2>
+<table>
+<tr><th>The desk</th><td><code>Media 7003</code> resolves to the folder object itself (count 1, 286 children); <code>Media 1 Thru 9</code> to the five folders that exist in that range. The established rule for the Grouping fixture type: selecting it selects everything below it, and programming it programs the children (stated from the manual, not probed — the API reads objects, not the programmer).</td></tr>
+<tr><th>LumaCore rules in force</th><td>Every selection goes through <code>Programmer::apply_selection</code> (GUIDs); the one range rule; the one nesting rule (<code>Move &lt;node&gt; At &lt;node&gt;</code> asks first — MVR groups and tags have it); Delete of an MVR node asks Keep / Delete the fixtures (round 3); sub-fixtures are dotted ids (<code>Fixture 849.1</code>, a Parts(n) id).</td></tr>
+<tr><th>The Patch dialog today</th><td>Tree sidebar: MVR tree (layers › groups) · Class · Tag; picking a node filters the grid; the grid is flat, FID order; the kind rail; the claim button.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>A folder on a line</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>The subtree, like the desk; the folder itself with <code>/Only</code></h3><p><code>Fixture Media 1</code> selects every fixture below Stage 1 Mainstage, in tree order; <code>Fixture Media 1 At 50</code> programs them; <code>Fixture Media 1 Thru 9</code> is the union. The folder itself is in the selection too (it has no attributes, so values pass it by) — that is what <code>Move</code>, <code>Delete</code>, <code>Set … "Name"</code> act on. <code>/Only</code> on a line (or a tap on the folder row in the grid) takes the folder alone. Delete asks Keep / Delete the children as MVR nodes do; Move carries the subtree and asks on a nesting change (the one nesting rule).</p><ul><li>+ the desk's behaviour; one rule for folders, groups and layers in the sidebar</li><li>+ a folder with no children is just a fixture of a channel-less type</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>The folder only; the subtree with <code>/Children</code></h3><p><code>Fixture Media 1</code> is the folder; <code>Fixture Media 1 /Children</code> its subtree.</p><ul><li>− the usual intent (program the stage) needs an option every time; the desk's lines mean something else here</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>The grid and the sidebar (no question: follows A)</h2>
+<ul>
+<li>The sidebar's MVR tree shows layers › groups › fixtures-with-children, any depth, counts per node; picking a node shows its subtree in the grid.</li>
+<li>The grid keeps its flat views (FID order, by universe) and gains a <b>tree view</b> in parent + order: folders as rows with a disclosure and the count, children indented one level per depth; the No cell of a folder shows its id (<code>Media 7003</code>) in grey where a FID would be. The two-line review cell and this share the grid's row-height work.</li>
+<li>Insert fixtures… and Import place new fixtures at the end of the picked node (the next free order); drag in the tree re-parents through the lift gesture and the nesting ask.</li>
+<li>Export writes the tree back: <code>ChildList</code> per folder, in order.</li>
+</ul>
+</section>
+
+<section class="card">
+<h2>Then · the demo itself</h2>
+<ul>
+<li>Groups from the Default pool (87, matching the rig) through a small pool XML reader, or by hand per folder and type.</li>
+<li>One show or two (the tests' six AuraXB vs the showcase).</li>
+<li>What is committed (the MVR + the groups extract, the show built by gen-demo; or the 8.6 MB show).</li>
+<li>Names.</li>
+</ul>
+</section>
+</main>

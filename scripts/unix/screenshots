@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Dev screenshots (decisions §29 "11d"): a test station with the demo show,
+# every window type, menu and overlay opened in a headless browser and
+# captured through the real Screenshot path, into target/screenshots/.
+# Not a test run: look at the pictures. Takes about a minute.
+#
+# Usage: ./scripts/unix/screenshots
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+source "$HOME/.cargo/env" 2>/dev/null || true
+
+OUT="$REPO_ROOT/target/screenshots"
+rm -rf "$OUT"
+mkdir -p "$OUT"
+cd "$REPO_ROOT/tests/e2e"
+[ -d node_modules ] || npm install
+SCREENSHOTS_OUT="$OUT" npx playwright test tests/screenshots-all.spec.ts
+echo "Screenshots: $OUT ($(ls "$OUT" | wc -l | tr -d ' ') files)"

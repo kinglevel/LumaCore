@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tokens, sizes, icons</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1200px; height: 960px; box-sizing: border-box; padding: 40px 48px; background: {{t.bg}}; color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; align-items: center; justify-content: space-between">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 500">Theme tokens · sizes · icons</h1>
+      <p style="margin: 0; color: {{t.dim}}; font-size: 14px">14 palette colours you can edit; everything else is derived. Tap a preset to see it.</p>
+    </div>
+    <div style="display: flex; gap: 6px; background: {{t.surface}}; padding: 4px; border-radius: 6px; border: 1px solid {{t.line}}">
+      <sc-for list="{{presets}}" as="p" hint-placeholder-count="3">
+        <button type="button" onClick="{{p.pick}}" style="height: 44px; padding: 0 18px; border-radius: 5px; border: none; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; background: {{p.bg}}; color: {{p.fg}}">{{p.name}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2 style="margin: 0; font-size: 13px; font-weight: 500; color: {{t.dim}}">Palette — editable (14)</h2>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px">
+      <sc-for list="{{swatches}}" as="s" hint-placeholder-count="14">
+        <div style="display: flex; flex-direction: column; gap: 8px; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 6px; padding: 10px">
+          <div style="height: 56px; border-radius: 6px; background: {{s.hex}}; border: 1px solid {{t.line}}"></div>
+          <div style="font-size: 13px; font-weight: 500">{{s.name}}</div>
+          <div class="mono" style="font-size: 11px; color: {{t.dim}}">{{s.hex}}</div>
+        </div>
+      </sc-for>
+    </div>
+    <p style="margin: 0; font-size: 13px; color: {{t.dim}}">Derived, not editable: hover, pressed, alt row, focus ring, on-accent text, disabled, terminal colours. Adjusters on top: brightness · contrast · saturation · tint · accent.</p>
+  </section>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px">
+    <section style="display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 500; color: {{t.dim}}">Sizes (desk-proven)</h2>
+      <div style="display: flex; flex-direction: column; gap: 8px; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 6px; padding: 16px">
+        <sc-for list="{{sizes}}" as="z" hint-placeholder-count="6">
+          <div style="display: flex; align-items: center; gap: 14px">
+            <div style="width: 160px; font-size: 13px">{{z.name}}</div>
+            <div style="height: 14px; width: {{z.px}}px; background: color-mix(in srgb, {{t.accent}} 55%, {{t.raised}}); border-radius: 3px"></div>
+            <div class="mono" style="font-size: 12px; color: {{t.dim}}">{{z.label}}</div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 6px; padding: 16px">
+        <div style="font-size: 22px; font-weight: 500">Heading 22 · semibold</div>
+        <div style="font-size: 16px">Body on touch 16 (no iOS zoom on focus)</div>
+        <div style="font-size: 14px">Body on desktop 14</div>
+        <div style="font-size: 12px; color: {{t.dim}}">Caption 12 — smallest text, never 8–11 px</div>
+        <div class="mono" style="font-size: 14px; color: {{t.accent}}">[Admin@station] Root&gt; Group 3 At 50</div>
+      </div>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px">
+      <h2 style="margin: 0; font-size: 13px; font-weight: 500; color: {{t.dim}}">Own SVG icons (no emoji)</h2>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 6px; padding: 16px">
+        <sc-for list="{{icons}}" as="i" hint-placeholder-count="18">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 0; border-radius: 5px; background: {{t.raised}}">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="{{t.text}}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{i.d}}"></path></svg>
+            <div style="font-size: 11px; color: {{t.dim}}">{{i.name}}</div>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 0; font-size: 13px; color: {{t.dim}}">A vendored MIT/ISC line-icon subset as one sprite, plus our own cat glyphs (Meow paw, PURR). Shown here as stand-ins.</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1200,"height":960}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { theme: null }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const name = this.state.theme ?? this.props.theme ?? 'Dark';
+    const t = P[name];
+    const presets = Object.keys(P).map(n => ({ name: n, pick: () => this.setState({ theme: n }), bg: n === name ? t.accent : 'transparent', fg: n === name ? t.onAccent : t.text }));
+    const labels = [['Background','bg'],['Surface','surface'],['Raised','raised'],['Line','line'],['Text','text'],['Text dim','dim'],['Accent','accent'],['Info','info'],['OK','ok'],['Warn','warn'],['Alert','alert'],['Programmer','prog'],['Blind','blind'],['Park','park']];
+    const swatches = labels.map(([n,k]) => ({ name: n, hex: t[k] }));
+    const sizes = [
+      { name: 'Touch target (coarse)', px: 48, label: '44–48 px' },
+      { name: 'Target (fine pointer)', px: 40, label: '≥ 40 px' },
+      { name: 'Title / tab row', px: 50, label: '50 px touch (desktop 36)' },
+      { name: 'Window bar', px: 44, label: '44 px touch (desktop 34)' },
+      { name: 'Action row', px: 60, label: '60 px' },
+      { name: 'Hold for more', px: 125, label: '500 ms (profile hold time)' }
+    ];
+    const icons = [
+      { name: 'power', d: 'M12 3v8M6.3 6.3a8 8 0 1 0 11.4 0' },
+      { name: 'menu', d: 'M4 7h16M4 12h16M4 17h16' },
+      { name: 'close', d: 'M6 6l12 12M18 6L6 18' },
+      { name: 'settings', d: 'M12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1' },
+      { name: 'folder', d: 'M3 7h6l2 2h10v10H3z' },
+      { name: 'save', d: 'M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6' },
+      { name: 'download', d: 'M12 4v11M7 10l5 5l5-5M5 20h14' },
+      { name: 'trash', d: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13' },
+      { name: 'pin', d: 'M9 4h6l-1 6l3 3H7l3-3zM12 13v7' },
+      { name: 'more', d: 'M5 12h.01M12 12h.01M19 12h.01' },
+      { name: 'keyboard', d: 'M3 6h18v12H3zM7 10h.01M11 10h.01M15 10h.01M7 14h10' },
+      { name: 'keypad', d: 'M6 5h3v3H6zM10.5 5h3v3h-3zM15 5h3v3h-3zM6 10.5h3v3H6zM10.5 10.5h3v3h-3zM15 10.5h3v3h-3zM10.5 16h3v3h-3z' },
+      { name: 'network', d: 'M12 3v6M5 15v-3h14v3M12 9v3M3 15h4v5H3zM10 15h4v5h-4zM17 15h4v5h-4z' },
+      { name: 'session', d: 'M7 7a3 3 0 1 0 0 .01M17 7a3 3 0 1 0 0 .01M12 17a3 3 0 1 0 0 .01M9 8.5l2 6M15 8.5l-2 6' },
+      { name: 'oops', d: 'M9 14L4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3' },
+      { name: 'eye', d: 'M2 12s4-7 10-7s10 7 10 7s-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6a3 3 0 1 0 0-6' },
+      { name: 'paw (Meow)', d: 'M8 8a1.5 2 0 1 0 0 .01M16 8a1.5 2 0 1 0 0 .01M5 12a1.5 2 0 1 0 0 .01M19 12a1.5 2 0 1 0 0 .01M12 13c-3 0-5 3-4 5c1 1.5 3 1 4 1s3 .5 4-1c1-2-1-5-4-5z' },
+      { name: 'screenshot', d: 'M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3M9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0' }
+    ];
+    return { t, presets, swatches, sizes, icons };
+  }
+}
+</script>
+</body>
+</html>

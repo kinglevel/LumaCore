@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>User asks</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #121212">
+  <div style="position: absolute; top: 24px; left: 32px; right: 32px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="6">
+      <button type="button" onClick="{{t.go}}" style="height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid {{t.b}}; background: #1c1c1c; color: #d1d1d1; font: inherit; font-size: 14px">{{t.label}}</button>
+    </sc-for>
+  </div>
+  <p style="position: absolute; top: 82px; left: 32px; right: 32px; margin: 0; font-size: 14px; color: #9c9c9c">{{caption}}</p>
+  <div style="position: absolute; inset: 124px 32px 32px 32px; border-radius: 6px; background: #1c1c1c; border: 1px solid #262626; opacity: 0.6"></div>
+
+  <section style="position: absolute; top: 140px; left: 50%; width: 700px; margin-left: -350px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden">
+    <div style="height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500">{{d.title}}</span><span class="mono" style="font-size: 13px; color: {{d.metaC}}">{{d.meta}}</span></div>
+    <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px">
+      <p style="margin: 0; font-size: 16px; line-height: 1.45">{{d.text}}</p>
+      <sc-if value="{{d.hasFields}}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{d.fields}}" as="f" hint-placeholder-count="4">
+            <button type="button" onClick="{{f.tap}}" style="height: 72px; border-radius: 6px; border: 1px solid {{f.border}}; background: #303030; color: #d1d1d1; font: inherit; text-align: left; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between; grid-column: {{f.span}}">
+              <span style="font-size: 12px; color: #9c9c9c">{{f.label}}</span>
+              <span style="font-size: 17px; font-weight: 500; display: flex; align-items: center; gap: 8px"><span style="width: {{f.swW}}px; height: 18px; border-radius: 9px; background: {{f.sw}}"></span>{{f.value}}<span style="font-size: 12px; font-weight: 400; color: #9c9c9c">{{f.note}}</span></span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{d.hasRows}}" hint-placeholder-val="{{ false }}">
+        <div style="border-radius: 6px; border: 1px solid #424242; overflow: hidden">
+          <sc-for list="{{d.rows}}" as="r" hint-placeholder-count="3"><div style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px; font-size: 14px; border-bottom: 1px solid #303030"><span style="color: #9c9c9c">{{r.k}}</span><span style="font-size: 14px; color: {{r.c}}; text-align: right">{{r.v}}</span></div></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{d.hasToggle}}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{toggle}}" style="height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 12px; border-radius: 6px; border: 1px solid #424242; background: #262626; color: #d1d1d1; font: inherit; font-size: 15px; text-align: left"><span style="width: 22px; height: 22px; border-radius: 4px; background: {{tBox}}; color: #f3ecd3; display: flex; align-items: center; justify-content: center; font-size: 14px">{{tMark}}</span>{{d.toggleText}}</button>
+      </sc-if>
+      <div style="display: grid; grid-template-columns: repeat({{d.cols}}, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{d.buttons}}" as="b" hint-placeholder-count="2">
+          <button type="button" style="height: 60px; border-radius: 6px; border: {{b.border}}; background: {{b.bg}}; color: {{b.fg}}; font: inherit; font-size: 15px; font-weight: {{b.w}}">{{b.t}}</button>
+        </sc-for>
+      </div>
+      <span class="mono" style="font-size: 12px; color: #9c9c9c; line-height: 1.5">{{d.note}}</span>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { k: 'newuser', prof: 'own', src: 'default', alsoProfile: true }; }
+  renderVals() {
+    const s = this.state;
+    const go = k => () => this.setState({ k });
+    const primary = t => ({ t, bg: '#9a7a08', fg: '#f3ecd3', border: 'none', w: 500 });
+    const danger = t => ({ t, bg: 'color-mix(in srgb, #e10000 14%, #303030)', fg: '#ff6a5a', border: '1px solid color-mix(in srgb, #e10000 55%, transparent)', w: 500 });
+    const plain = t => ({ t, bg: '#303030', fg: '#d1d1d1', border: '1px solid #424242', w: 400 });
+    const F = (label, value, extra) => ({ label, value, note: '', sw: 'transparent', swW: 0, span: 'auto', border: '#424242', tap: () => {}, ...extra });
+    const profVal = { own: 'Own — a copy of Default', share: 'Share “Stage”' }[s.prof];
+    const srcVal = { default: 'From Default', copy: 'Copy of “Bob”', import: 'Import file… Stage.json' }[s.src];
+    const D = {
+      newuser: {
+        title: 'New user', meta: 'Store User', metaC: '#787878',
+        text: 'A new user always gets a profile: their own copy of Default, or one you share with others.',
+        hasFields: true, hasRows: false, hasToggle: false, cols: 2,
+        fields: [F('Name', 'Anna', { border: '#9a7a08' }), F('Role', 'Programmer', { note: 'Admin · Programmer · Guest' }),
+          F('Profile', profVal, { span: '1 / -1', note: s.prof === 'own' ? '→ new profile “Anna”' : 'used by Bob, Phone', border: '#9a7a08', tap: () => this.setState({ prof: s.prof === 'own' ? 'share' : 'own' }) }),
+          F('Password', '••••••', { note: 'optional' }), F('Colour', 'Teal', { sw: '#3f9a90', swW: 18, note: 'next free' })],
+        buttons: [primary('Create'), plain('Cancel')],
+        note: s.prof === 'own' ? 'Create → Store User "Anna" /Role Programmer /Profile New /Password "***" /Colour Teal' : 'Create → Store User "Anna" /Role Programmer /Profile "Stage" /Password "***" /Colour Teal'
+      },
+      newprofile: {
+        title: 'New profile', meta: 'Store UserProfile', metaC: '#787878',
+        text: 'A profile starts from something that works — never blank.',
+        hasFields: true, hasRows: false, hasToggle: false, cols: 2,
+        fields: [F('Name', 'Stage 2', { note: '“Stage” exists → next free' }),
+          F('Start from', srcVal, { border: '#9a7a08', note: 'tap: Default · Copy of… · Import file…', tap: () => this.setState({ src: { default: 'copy', copy: 'import', import: 'default' }[s.src] }) })],
+        buttons: [primary('Create'), plain('Cancel')],
+        note: { default: 'Create → Store UserProfile "Stage 2"', copy: 'Create → Copy UserProfile "Bob" At "Stage 2"', import: 'Create → Import UserProfile "Stage.json" /As "Stage 2"' }[s.src]
+      },
+      deluser: {
+        title: 'Delete User “Bob”', meta: 'one Oops step', metaC: '#c27a12',
+        text: 'Bob is logged in. Deleting logs Bob out everywhere and removes their work:',
+        hasFields: false, hasRows: true, hasToggle: true, cols: 2,
+        rows: [{ k: 'Logged in', v: 'Station B · 2 screens · logged out now', c: '#c27a12' }, { k: 'Programmer', v: '14 values — go with Bob', c: '#d1d1d1' }, { k: 'Selection', v: '6 fixtures — goes with Bob', c: '#d1d1d1' }, { k: 'Claims', v: 'Group 3, Patch — released', c: '#d1d1d1' }],
+        toggleText: 'Also delete profile “Bob” (nobody else uses it)',
+        buttons: [danger('Delete Bob'), plain('Cancel')],
+        note: 'Delete Bob → Delete User "Bob" ' + (s.alsoProfile ? '/WithProfile ' : '') + '/NoConfirmation · Oops brings Bob, the programmer and the profile back (not the session or claims)'
+      },
+      refused: {
+        title: 'Delete', meta: 'refused', metaC: '#e10000',
+        text: 'These are refused with a coded error — no ask:',
+        hasFields: false, hasRows: true, hasToggle: false, cols: 1,
+        rows: [{ k: 'Delete User "Admin"', v: 'Admin always exists [E-USER-0xx]', c: '#ff6a5a' }, { k: 'Delete User (yourself)', v: 'You can’t delete yourself [E-USER-0xx]', c: '#ff6a5a' }, { k: 'Delete the last Admin', v: 'At least one Admin must remain [E-USER-0xx]', c: '#ff6a5a' }, { k: 'Delete UserProfile "Stage"', v: 'Used by Bob, Phone — move them first [E-USER-0xx]', c: '#ff6a5a' }, { k: 'Delete / Set UserProfile "Default"', v: 'Default is locked: a template for new profiles [E-USER-0xx]', c: '#ff6a5a' }, { k: 'Store User as Programmer', v: 'Only an Admin can [E-RIGHTS-001]', c: '#ff6a5a' }],
+        buttons: [plain('OK')], note: 'the codes are numbered when built'
+      },
+      delprofile: {
+        title: 'Delete UserProfile “Stage 2”', meta: 'one Oops step', metaC: '#c27a12',
+        text: 'Nobody uses “Stage 2”. Its screens, views, keys, presets and look go with it.',
+        hasFields: false, hasRows: true, hasToggle: false, cols: 2,
+        rows: [{ k: 'Screens / views', v: '3 / 5', c: '#d1d1d1' }, { k: 'Window presets', v: '2', c: '#d1d1d1' }],
+        buttons: [danger('Delete'), plain('Cancel')],
+        note: 'Delete → Delete UserProfile "Stage 2" /NoConfirmation'
+      }
+    };
+    const k = s.k;
+    const captions = {
+      newuser: 'Users & Profiles › New user runs a bare Store User; the station asks. Tap Profile to switch Own / Share. The same ask shows in a terminal.',
+      newprofile: 'New profile: from Default, a copy of a profile, or an imported file. Tap Start from to cycle. Duplicate names get the next free.',
+      deluser: 'Every user delete asks and says exactly what goes. Tap the box: keep or delete the user’s own profile.',
+      refused: 'What can’t be deleted or done is refused at once, with a code.',
+      delprofile: 'A profile nobody uses: one ask. One in use is refused (see Refused).'
+    };
+    const tabs = [['newuser', 'New user'], ['newprofile', 'New profile'], ['deluser', 'Delete user'], ['delprofile', 'Delete profile'], ['refused', 'Refused']]
+      .map(([key, label]) => ({ label, go: go(key), b: k === key ? '#9a7a08' : '#424242' }));
+    return { tabs, caption: captions[k], d: D[k],
+      toggle: () => this.setState({ alsoProfile: !s.alsoProfile }), tBox: s.alsoProfile ? '#9a7a08' : '#303030', tMark: s.alsoProfile ? '✓' : '' };
+  }
+}
+</script>
+</body>
+</html>

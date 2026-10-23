@@ -1,0 +1,40 @@
+{
+ "Dimmer": [
+  "Dimmer"
+ ],
+ "Position": [
+  "PanTilt",
+  "XYZ",
+  "Rotation",
+  "Scale"
+ ],
+ "Gobo": [
+  "Gobo",
+  "Media"
+ ],
+ "Color": [
+  "Color",
+  "RGB",
+  "HSB",
+  "CIE",
+  "Indirect",
+  "ColorCorrection",
+  "HSBC_Shift",
+  "ColorKey"
+ ],
+ "Beam": [
+  "Beam"
+ ],
+ "Focus": [
+  "Focus"
+ ],
+ "Control": [
+  "Control"
+ ],
+ "Shapers": [
+  "Shapers"
+ ],
+ "Video": [
+  "Video"
+ ]
+}

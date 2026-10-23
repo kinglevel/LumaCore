@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140" width="140" height="140" role="img" aria-label="LumaCore">
+  <path d="M24 46 L22 14 L46 32 Q70 26 94 32 L118 14 L116 46 Q122 60 120 82 Q116 124 70 124 Q24 124 20 82 Q18 60 24 46 Z" fill="#1c1c1c" stroke="#d4a634" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M44 62 L62 76 L44 90" fill="none" stroke="#e0b341" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="70" y="84" width="26" height="7" rx="2" fill="#3fc8d8"/>
+</svg>

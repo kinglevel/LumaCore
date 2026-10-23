@@ -1,0 +1,24 @@
+[package]
+name = "lumacore-cmd-treeshell"
+version.workspace = true
+edition.workspace = true
+description = "The tree shell's words: cd, ls, pwd, cat, tree, find, grep, stat, diff, du, head, tail, wc, cp, mv, rm, Enter, Exit (decisions §33 18, §34 25.7, §35 19)"
+
+[dependencies]
+lumacore-registry = { path = "../../../foundation/lumacore-registry" }
+lumacore-syntax = { path = "../../../foundation/lumacore-syntax" }
+lumacore-wire = { path = "../../../foundation/lumacore-wire" }
+lumacore-objects = { path = "../../../model/lumacore-objects" }
+lumacore-luma = { path = "../../../formats/lumacore-luma" }
+chrono = { workspace = true }
+nu-ansi-term = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+uuid = { workspace = true }
+lumacore-fixtures = { path = "../../../model/lumacore-fixtures" }
+lumacore-tree = { path = "../../../model/lumacore-tree" }
+
+[lints]
+workspace = true

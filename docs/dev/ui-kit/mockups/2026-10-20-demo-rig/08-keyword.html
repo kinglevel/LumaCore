@@ -1,0 +1,55 @@
+<title>Second Id Keyword</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 8 · 2026-10-20 · discussion only · a lum.md question</div>
+<h1>How a line names a second id</h1>
+<p>Decided: a fixture carries FID · id type · CID (7). The desk reaches a Media fixture as <code>Media 7003</code>; lum.md, decided and built, reaches it as <code>Fixture Media 7003</code>. Any change to the syntax is a hard discussion first, so here it is.</p>
+</header>
+
+<section class="card">
+<h2>Facts</h2>
+<table>
+<tr><th>lum.md today</th><td><code>segment = OBJECT [ id-kind ] [ ids ]</code>; <code>id-kind = WORD</code>, "a kind its object declares for its ids": <code>Fixture Houselights 4</code>, <code>Fixture Houselights 1 Thru 4 + Fixture 101</code>. The Fixture object declares the kinds Channel · Houselights · NonDim · Media · Fog · Effect · Pyro · Marker (lum words golden). Built: the parser and the resolver's second-id walk.</td></tr>
+<tr><th>A reference console</th><td>The id type is the keyword: <code>Fixture 849</code>, <code>Media 7003</code>, <code>Channel 12</code>, <code>Universal 1</code>. <code>Fixture 849.1</code> is a sub-fixture.</td></tr>
+<tr><th>The one namespace (§15)</th><td>Every keyword, alias and abbreviation means one thing across both registries, enforced by a test. Today: <code>Effect</code> is §28's object (<code>Effect — object</code>), <code>Media</code> / <code>Channel</code> / <code>Marker</code> / <code>Fog</code> / <code>Pyro</code> / <code>Houselights</code> / <code>NonDim</code> are values (the kinds) — none is an object word.</td></tr>
+<tr><th>The rest of the grammar</th><td>Owner-first paths: <code>Fixture 3 DMX 2</code>, <code>Fixture 201 Multipatch 1</code>, <code>Fixture 849.1</code> (a sub-fixture, Parts(n)). A bare id is the verb's default object or yours (<code>Fixture&gt;</code> in the prompt).</td></tr>
+</table>
+</section>
+
+<section>
+<h2>The keyword</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3><code>Fixture Media 7003</code> — as lum.md has it</h3><p>The kind sits inside the fixture's id; the object word stays <code>Fixture</code>. Everything a fixture path allows follows: <code>Fixture Media 7003 DMX</code>, <code>Fixture Media 1 At 50</code>, <code>Fixture Media 1 Thru 9</code>, and with the default object <code>Fixture&gt;</code> a bare <code>Media 7003</code> is written out as <code>Fixture Media 7003</code> (the bare-id rule, §33 21) — so the desk's habit still types.</p><ul><li>+ already decided and built; no clash with <code>Effect</code> or any future word</li><li>+ one object, one completion (<code>Fixture Media &lt;Tab&gt;</code>: the Media ids)</li><li>− two words where the bare form types one, unless Fixture is the default object</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>The bare <code>Media 7003</code></h3><p>Each id type becomes an alias of Fixture that fixes the kind: <code>Media 7003</code>, <code>Channel 12</code>. A new alias kind in the registry ("an object word with a kind preset").</p><ul><li>+ the desk's lines paste in unchanged</li><li>− <code>Effect 3</code> is an effect already; the fixture kind Effect needs another word or goes</li><li>− nine more object words in one namespace (Media, Channel, Marker, Fog, Pyro, Houselights, NonDim, Universal, …), each one a word no other area may take</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>Both</h3><p>A as the grammar, B's aliases for the kinds that don't clash.</p><ul><li>− two spellings for one thing, and "which kinds have an alias" is a list to remember</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Then</h2>
+<ul>
+<li>An untyped CustomId on import: the export writes <code>CustomId 7003</code> and no <code>CustomIdType</code>. The preset's <code>MvrIdType</code> (default Media) types a numberless fixture's CustomId; the review's No cell shows <code>Media 7003</code>; <code>/IdType</code> on the line overrides; a numbered fixture's CustomId 0 is none.</li>
+<li>A folder on a line: <code>Fixture Media 1 At 50</code> programs the subtree (the established rule); the sidebar shows nested fixtures; Move / Delete carry the children.</li>
+<li>Groups from the Default pool, the show split for the tests, what is committed, the names.</li>
+</ul>
+</section>
+</main>

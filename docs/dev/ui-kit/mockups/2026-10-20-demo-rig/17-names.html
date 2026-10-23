@@ -1,0 +1,45 @@
+<title>Demo Names</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 17 · 2026-10-20 · the last one before the write-up</div>
+<h1>Names</h1>
+<p>Everything else is decided. The sources name a real production: the MVR is "The International 2026 R67 fina", the DataPool is "Default" of that show, the layer is "Fixture Layer", the folders are "Stage 1 Mainstage", "ACME Icarus", "Pyro", "Previz" …, the fixtures carry their manufacturer names ("ACME ICARUS 620(CM-620Z)"), the groups "Photon", "Fram", "LB Bakre", "TYGTAK", "RIKNERS SUPER POLAR" …; the fixture id 1337 is in there too.</p>
+</header>
+
+<section class="card">
+<h2>What the names reach</h2>
+<table>
+<tr><th>In git</th><td>the MVR, the groups extract, the manual script, the e2e and Rust tests that name fixtures and groups, the screenshots in <code>target/</code> (not committed) and in the docs where a capture is pasted.</td></tr>
+<tr><th>On screen</th><td>every grid, the sidebar tree, the pool windows, the Showroom's captures, the manuals' screenshots.</td></tr>
+<tr><th>Files on disk</th><td><code>library/mvr/ti2026.mvr</code>, <code>library/poolxml/ti2026-groups.xml</code>, <code>library/shows/demo.luma</code> (built), <code>library/demo/manual.lum</code>.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>What stays</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>Everything as it is; the show is called "Demo"</h3><p>Fixture, folder, layer and group names stay exactly as the desk had them — they are the data the import must round-trip, and renaming them would hide what the words do. The show's own name is <code>Demo</code> (today's name, the tests' name); the files are <code>ti2026.mvr</code> / <code>ti2026-groups.xml</code>. The script and the docs say where the rig is from in one line.</p><ul><li>+ nothing to maintain; the captures show real names</li><li>− the production's name is in the repo (it is already, in the file names of <code>../ExternalData</code>, outside the repo)</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>The rig renamed to a generic venue</h3><p>Folders and groups renamed by a table in gen-demo ("Stage 1 Mainstage" → "Main stage", "TYGTAK" → "Ceiling" …), fixtures keep manufacturer names, the show is "Demo".</p><ul><li>− a rename table to keep; the groups extract and the MVR still carry the originals, so the rename is only cosmetic</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>Keep the production's name on the show too</h3><p>The show is "The International 2026"; everything else as A.</p><ul><li>− the tests and docs call the demo by that name forever; "Demo" says what it is</li></ul></div>
+</div>
+</section>
+</main>

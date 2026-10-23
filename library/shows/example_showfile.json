@@ -1,0 +1,95 @@
+{
+  "devices": {
+    "patch": {
+      "fixture_types": {},
+      "fixtures": {},
+      "universes": {},
+      "universe_ranges": {}
+    },
+    "live_patch_name": ""
+  },
+  "datapools": {
+    "1": {
+      "meta": {
+        "id": 1,
+        "guid": "d000d000-d000-4000-8000-d000d000d000",
+        "name": "Default"
+      },
+      "groups": {},
+      "preset_pools": {},
+      "layouts": {},
+      "filters": {},
+      "worlds": {},
+      "macros": {},
+      "distribute_presets": {},
+      "dynamic_states": {},
+      "plugins": {},
+      "timecodes": {},
+      "priorities": {}
+    }
+  },
+  "datapool_priority_orders": {},
+  "show_settings": {
+    "show_name": "Example Show",
+    "description": "Minimal valid show file with all required fields.",
+    "created_with_version": "0.1.0"
+  },
+  "spatial_3d": {
+    "world": {},
+    "stages": {},
+    "layers": {},
+    "cameras": {},
+    "patch": {},
+    "tracking": {}
+  },
+  "playback": {
+    "executors": {},
+    "sequences": {},
+    "masters": {},
+    "curve_presets": {},
+    "timing_presets": {}
+  },
+  "user_profiles": {
+    "1": {
+      "meta": {
+        "id": 1,
+        "guid": "00000000-0000-4000-8000-000000000001",
+        "name": "Admin"
+      },
+      "role": "Admin",
+      "programmer": {
+        "selected_fixtures": [],
+        "values": {}
+      },
+      "prog_lang": "Lum",
+      "alias_depth": "Base",
+      "keybindings": {},
+      "views": [],
+      "preferences": {
+        "show_descriptions": false,
+        "clear_buffer": false,
+        "preferred_ui_engine": "Shell"
+      },
+      "user_variables": {},
+      "permissions": {
+        "can_edit_show": true,
+        "can_edit_patch": true,
+        "can_trigger_playback": true,
+        "can_configure_engines": false
+      },
+      "show_descriptions": false,
+      "clear_buffer": false,
+      "verbosity": "Summary",
+      "selected_datapool": 1
+    }
+  },
+  "protocols": {
+    "outputs": {},
+    "inputs": {},
+    "bidirectional": {}
+  },
+  "effect_engines": {
+    "engines": {}
+  },
+  "variables": {}
+}

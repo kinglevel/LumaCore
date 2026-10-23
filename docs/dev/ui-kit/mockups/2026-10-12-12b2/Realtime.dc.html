@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Realtime</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 40px 48px; background: color-mix(in srgb, {{t.bg}} 70%, #000); color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; gap: 24px">
+  <section style="width: 1000px; flex-shrink: 0; display: flex; flex-direction: column; border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+    <div style="height: 44px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-bottom: 1px solid {{t.line}}"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{t.accent}}"></span><span style="font-size: 15px; font-weight: 500">Realtime</span><span style="margin-left: auto; font-size: 12px; color: {{t.dim}}">every frame · 16 ms batches</span></div>
+    <div style="display: flex; flex-wrap: wrap; gap: 18px; padding: 12px 14px; font-size: 14px; border-bottom: 1px solid {{t.line}}">
+      <span>Rate <b>60 Hz</b></span><span>Frame <b>{{frameNow}}</b> <small style="color: {{t.dim}}">max {{frameMax}}</small></span><span>Headroom <b>{{headNow}}</b></span><span>Jitter <b>0.08 ms</b></span><span>Late <b style="color: {{lateC}}">{{late}}</b> · skipped 0</span><span style="color: {{gapC}}">{{gapText}}</span><span style="color: {{t.ok}}">OK</span>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 10px 14px; min-height: 0">
+      <sc-for list="{{graphs}}" as="g" hint-placeholder-count="6">
+        <div style="display: flex; align-items: center; gap: 12px; height: 84px">
+          <span style="width: 120px; flex-shrink: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; color: {{t.dim}}">{{g.name}}</span><span class="mono" style="font-size: 17px; font-weight: 500">{{g.now}}</span><span class="mono" style="font-size: 11px; color: {{t.dim}}">max {{g.max}}</span></span>
+          <svg width="830" height="76" viewBox="0 0 830 76" style="background: {{t.gap}}; border-radius: 4px; flex-shrink: 0" role="img" aria-label="{{g.name}} over the last 10 seconds">
+            <line x1="0" x2="830" y1="{{g.budgetY}}" y2="{{g.budgetY}}" stroke="{{t.line}}" stroke-dasharray="4 4"></line>
+            <rect x="{{gapX}}" y="0" width="{{gapW}}" height="76" fill="{{gapFill}}"></rect>
+            <polyline points="{{g.a}}" fill="none" stroke="{{g.c}}" stroke-width="1.4"></polyline>
+            <polyline points="{{g.b}}" fill="none" stroke="{{g.c}}" stroke-width="1.4"></polyline>
+            <circle cx="{{g.lx}}" cy="{{g.ly}}" r="{{g.lr}}" fill="{{t.alert}}"></circle>
+          </svg>
+        </div>
+      </sc-for>
+      <span style="font-size: 12px; color: {{t.dim}}">10 s · one point per frame (600) · dashed = budget · red dot = late frame · a shaded break = gap</span>
+    </div>
+  </section>
+  <section style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+    <span style="font-size: 13px; color: {{t.dim}}">Board: try it</span>
+    <button type="button" onClick="{{lateFrame}}" style="height: 56px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 15px; text-align: left; padding: 0 14px">A late frame</button>
+    <button type="button" onClick="{{stall}}" style="height: 56px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 15px; text-align: left; padding: 0 14px">{{stallLabel}}</button>
+    <div class="mono" style="padding: 12px; border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; font-size: 12px; color: {{t.dim}}; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere">{{wire}}</div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { late: false, gap: false }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',gap:'#080808',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',gap:'#d4d4d4',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',gap:'#050202',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const N = 600, W = 830, H = 76;
+    const rnd = i => { const x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); };
+    const g0 = 380, g1 = 455;
+    const series = (name, base, amp, c, budget, scale) => {
+      const v = []; for (let i = 0; i < N; i++) v.push(base + amp * (0.5 + 0.5 * Math.sin(i / 23 + base)) * 0.6 + amp * rnd(i + base * 100) * 0.4);
+      if (s.late) v[540] = budget * 1.15;
+      const y = x => (H - 4 - Math.min(1, x / scale) * (H - 8)).toFixed(1);
+      const pts = (a, b) => { const o = []; for (let i = a; i < b; i++) o.push((i / (N - 1) * W).toFixed(1) + ',' + y(v[i])); return o.join(' '); };
+      const cut = s.gap ? [pts(0, g0), pts(g1, N)] : [pts(0, N), ''];
+      const max = Math.max(...v);
+      return { name, c, a: cut[0], b: cut[1], now: v[N - 1].toFixed(2) + ' ms', max: max.toFixed(2) + ' ms', budgetY: budget ? y(budget) : -10,
+        lx: s.late ? (540 / (N - 1) * W).toFixed(1) : -10, ly: s.late ? y(v[540]) : -10, lr: s.late && name === 'Frame' ? 4 : 0 };
+    };
+    const graphs = [series('Frame', 2.0, 1.2, t.accent, 16.67, 18), series('Inputs', 0.15, 0.2, t.info, 0, 1), series('Resolve', 0.6, 0.5, t.info, 0, 2), series('Masters', 0.3, 0.3, t.info, 0, 1), series('Output', 0.5, 0.6, t.info, 0, 2), series('Headroom', 14.4, 1.2, t.ok, 0, 18)];
+    return { t, graphs, frameNow: graphs[0].now, frameMax: graphs[0].max, headNow: graphs[5].now, late: s.late ? 1 : 0, lateC: s.late ? t.alert : t.text,
+      gapText: s.gap ? 'gap 75 frames (stalled)' : '', gapC: t.warn, gapX: s.gap ? (g0 / (N - 1) * W).toFixed(1) : 0, gapW: s.gap ? ((g1 - g0) / (N - 1) * W).toFixed(1) : 0,
+      gapFill: 'color-mix(in srgb, ' + t.warn + ' 18%, transparent)',
+      lateFrame: () => this.setState({ late: !s.late }), stall: () => this.setState({ gap: !s.gap }), stallLabel: s.gap ? 'Client caught up' : 'A client stalled past the ring (→ gap)',
+      wire: s.gap
+        ? '{"feed":"health.render","kind":"samples","epoch":"a1",\n "from_seq":90455,"to_seq":90455,\n "gap":{"from":90380,"to":90454},\n "cols":{"t_ms":[…],"frame_us":[…],…}}'
+        : '{"op":"sub","id":3,"feed":"health.render","period_ms":16}\n→ {"feed":"health.render","kind":"samples","epoch":"a1",\n   "from_seq":90401,"to_seq":90401,"gap":null,\n   "cols":{"t_ms":[…],"frame_us":[2041],"late":[0],…}}\nhidden tab → period 250 ms: 15 frames per message' };
+  }
+}
+</script>
+</body>
+</html>

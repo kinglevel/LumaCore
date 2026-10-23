@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Surface states</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.lock-bg{background-image:url(./lockbg.jpg);background-size:cover;background-position:center}
+</style>
+</helmet>
+<div class="lock-bg" style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #121212">
+  <div style="position: absolute; inset: 0; background: rgba(10,10,10,.35)"></div>
+
+  <div style="position: absolute; top: {{clockTop}}px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 6px">
+    <span style="font-size: 22px; color: #9c9c9c">Monday 12 October</span>
+    <span style="font-size: {{clockSize}}px; font-weight: 300; line-height: 1; letter-spacing: -2px">12:41</span>
+    <span style="font-size: 17px; color: #9c9c9c; display: flex; align-items: center; gap: 10px"><span style="width: 10px; height: 10px; border-radius: 50%; background: #9a7a08"></span>desk1 · LumaSession "Festival" · show Gala</span>
+    <span style="font-size: 15px; color: #787878">Rig day 2 — don't touch the FOH desk</span>
+  </div>
+
+  <sc-if value="{{isNobody}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; top: 400px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 26px">
+      <span style="font-size: 20px; color: #9c9c9c">Who's working here?</span>
+      <div style="display: flex; gap: 36px">
+        <sc-for list="{{bigUsers}}" as="u" hint-placeholder-count="5">
+          <button type="button" onClick="{{u.pick}}" style="display: flex; flex-direction: column; align-items: center; gap: 8px; border: none; background: none; color: #d1d1d1; font: inherit; padding: 0; opacity: {{u.op}}">
+            <span style="width: 96px; height: 96px; border-radius: 50%; border: 3px solid {{u.c}}; background: rgba(48,48,48,.9); display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 300">{{u.ini}}</span>
+            <span style="font-size: 16px">{{u.name}} <span style="font-size: 12px; padding: 2px 6px; border-radius: 4px; background: rgba(48,48,48,.85); color: #9c9c9c">{{u.profile}}</span></span>
+            <span style="font-size: 12px; color: #787878">{{u.state}}</span>
+          </button>
+        </sc-for>
+      </div>
+      <span style="font-size: 13px; color: #787878">After Logout nobody is picked. Ann may only log in on desk1 itself (Remote Login off), so she is dimmed on other devices.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isPassword}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; top: 340px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 14px">
+      <span style="width: 128px; height: 128px; border-radius: 50%; border: 3px solid #9a7a08; background: #303030; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 300">AD</span>
+      <span style="font-size: 24px">Admin <span style="font-size: 13px; padding: 3px 8px; border-radius: 4px; background: rgba(48,48,48,.85); color: #9c9c9c; vertical-align: middle">Admin</span></span>
+      <label style="width: 320px; height: 48px; border-radius: 24px; background: rgba(28,28,28,.8); border: 1px solid {{pwBorder}}; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 18px; font-size: 18px; color: #d1d1d1">{{pwText}}<button type="button" onClick="{{openKeyboard}}" aria-label="Keyboard" style="margin-left: auto; width: 38px; height: 38px; border-radius: 50%; border: 1px solid #424242; background: rgba(48,48,48,.9); color: #d1d1d1; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h18v12H3zM7 10h.01M11 10h.01M15 10h.01M7 14h10"></path></svg></button><button type="button" onClick="{{wrong}}" aria-label="Log in" style="width: 38px; height: 38px; border-radius: 50%; border: none; background: #9a7a08; color: #f3ecd3; font-size: 18px">→</button></label>
+      <span style="font-size: 14px; color: {{errC}}; min-height: 18px">{{err}}</span>
+      <span style="font-size: 13px; color: #787878">Admin always asks: its password is admin and can't be changed.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isKeyboard}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; top: 300px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 10px">
+      <span style="font-size: 22px">Bob <span style="font-size: 13px; padding: 3px 8px; border-radius: 4px; background: rgba(48,48,48,.85); color: #9c9c9c; vertical-align: middle">LD</span></span>
+      <label style="width: 320px; height: 48px; border-radius: 24px; background: rgba(28,28,28,.8); border: 2px solid #9a7a08; display: flex; align-items: center; padding: 0 6px 0 18px; font-size: 20px; letter-spacing: 3px; color: #d1d1d1">•••••<span style="width: 2px; height: 22px; background: #9a7a08; margin-left: 2px"></span><span style="margin-left: auto; width: 38px; height: 38px; border-radius: 50%; background: #9a7a08; color: #f3ecd3; display: flex; align-items: center; justify-content: center; font-size: 18px; letter-spacing: 0">→</span></label>
+    </div>
+    <div style="position: absolute; left: 50%; bottom: 84px; width: 760px; margin-left: -380px; border-radius: 8px; background: rgba(22,22,22,.92); border: 1px solid #303030; padding: 12px; display: flex; flex-direction: column; gap: 8px">
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+        <div style="display: flex; gap: 6px; padding-left: {{r.indent}}px">
+          <sc-for list="{{r.keys}}" as="k" hint-placeholder-count="10">
+            <button type="button" style="flex: {{k.f}}; height: 52px; border-radius: 5px; border: 1px solid #424242; background: {{k.bg}}; color: {{k.fg}}; font: inherit; font-size: 17px">{{k.t}}</button>
+          </sc-for>
+        </div>
+      </sc-for>
+      <span style="font-size: 12px; color: #787878">Password mode: no command-word row, typing masked, Please = log in. Opens from the keyboard button, or by itself on a Kiosk device.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isWaiting}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; top: 360px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 14px">
+      <span style="width: 128px; height: 128px; border-radius: 50%; border: 3px solid #3f9a90; background: #303030; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 300">LD</span>
+      <span style="font-size: 24px">LD <span style="font-size: 13px; padding: 3px 8px; border-radius: 4px; background: rgba(48,48,48,.85); color: #9c9c9c; vertical-align: middle">LD</span></span>
+      <span style="height: 40px; padding: 0 18px; border-radius: 20px; background: rgba(28,28,28,.75); display: flex; align-items: center; font-size: 15px; color: #9c9c9c">Tap or press F9 to unlock</span>
+      <span style="height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid #c27a12; color: #e0a24a; display: flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #c27a12"></span>2 waiting — Bob asks for Group 5 · Oops confirm</span>
+      <span style="font-size: 13px; color: #787878; max-width: 480px; text-align: center">Nothing opens over the lock; asks run to their timeouts. Unlocking shows what is still open.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isCount}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; top: 360px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 14px">
+      <button type="button" onClick="{{pickNobody}}" aria-label="Log in as LD now" style="width: 128px; height: 128px; border-radius: 50%; border: 3px solid #3f9a90; background: #303030; color: #d1d1d1; font: inherit; font-size: 44px; font-weight: 300">LD</button>
+      <span style="font-size: 24px">LD</span>
+      <div style="width: 260px; height: 6px; border-radius: 3px; background: rgba(66,66,66,.9)"><div style="width: 40%; height: 100%; border-radius: 3px; background: #9a7a08"></div></div>
+      <span style="font-size: 15px; color: #9c9c9c">Logging in in 3 s — tap, Enter or Space now · Esc stops</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showRow}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; bottom: 92px; left: 0; right: 0; display: flex; justify-content: center; gap: 30px">
+      <sc-for list="{{users}}" as="u" hint-placeholder-count="4">
+        <span style="display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: {{u.op}}">
+          <span style="width: 68px; height: 68px; border-radius: 50%; border: 2px solid {{u.c}}; background: rgba(48,48,48,.9); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 300">{{u.ini}}</span>
+          <span style="font-size: 14px">{{u.name}}</span>
+          <span style="font-size: 11px; color: #787878">{{u.state}}</span>
+        </span>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <div style="position: absolute; left: 24px; right: 24px; bottom: 20px; display: flex; align-items: center; gap: 16px; font-size: 13px; color: #9c9c9c">
+    <span style="height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid #424242; background: rgba(28,28,28,.8); display: flex; align-items: center; color: #d1d1d1; font-size: 14px">Servers…</span>
+    <span style="flex: 1; display: flex; justify-content: center; gap: 18px">
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #00a60a"></span>DMX output running</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #9a7a08"></span>Master</span>
+      <span style="display: flex; align-items: center; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #e10000"></span>2 unsaved changes</span>
+    </span>
+    <span style="height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid #424242; background: rgba(28,28,28,.8); display: flex; align-items: center; color: #d1d1d1">Normal theme · Meow + F9</span>
+  </div>
+
+  <div style="position: absolute; top: 16px; left: 16px; display: flex; flex-direction: column; gap: 6px">
+    <sc-for list="{{states}}" as="st" hint-placeholder-count="5">
+      <button type="button" onClick="{{st.go}}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid {{st.b}}; background: rgba(28,28,28,.85); color: #d1d1d1; font: inherit; font-size: 13px; text-align: left">{{st.label}}</button>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { mode: 'nobody', wrong: false }; }
+  renderVals() {
+    const s = this.state;
+    const U = [
+      { name: 'Admin', ini: 'AD', profile: 'Admin', c: '#9a7a08', state: 'this desk', op: 1 },
+      { name: 'LD', ini: 'LD', profile: 'LD', c: '#3f9a90', state: 'on desk1, FOH', op: 1 },
+      { name: 'Bob', ini: 'BO', profile: 'LD', c: '#758ba0', state: 'on FOH', op: 1 },
+      { name: 'Ann', ini: 'AN', profile: 'LD', c: '#c27a6a', state: 'only on desk1', op: 0.45 },
+      { name: 'Guest', ini: 'GU', profile: 'Guest', c: '#787878', state: 'logged out', op: 1 }
+    ];
+    const key = (t, f, bg, fg) => ({ t, f: f || 1, bg: bg || '#303030', fg: fg || '#d1d1d1' });
+    const row = (s2) => s2.split(' ').map(t => key(t));
+    const rows = [
+      { indent: 0, keys: [...row('Q W E R T Y U I O P'), key('⌫', 1.6, '#1c1c1c')] },
+      { indent: 18, keys: [...row('A S D F G H J K L'), key('Please', 2.2, '#00a60a', '#f3ecd3')] },
+      { indent: 0, keys: [key('⇧', 1.6, '#1c1c1c'), ...row('Z X C V B N M'), key('⇧', 1.6, '#1c1c1c')] },
+      { indent: 0, keys: [key('123', 1.4, '#1c1c1c'), key('Esc', 1.4, '#1c1c1c'), key('space', 6), key('◀', 1, '#1c1c1c'), key('▶', 1, '#1c1c1c'), key('Hide', 1.4, '#1c1c1c')] }
+    ];
+    const m = s.mode;
+    const go = mode => () => this.setState({ mode, wrong: false });
+    const states = [['nobody', 'After Logout: nobody picked'], ['password', 'Admin: password, wrong'], ['keyboard', 'Built-in keyboard (password)'], ['waiting', 'Locked: 2 waiting'], ['count', 'Countdown (no password)']]
+      .map(([k, label]) => ({ label, go: go(k), b: m === k ? '#9a7a08' : '#424242' }));
+    return {
+      states, rows,
+      bigUsers: U.map(u => ({ ...u, pick: go(u.name === 'Admin' ? 'password' : 'count') })),
+      users: U.filter(u => !(m === 'password' && u.name === 'Admin') && !(m === 'waiting' && u.name === 'LD') && !(m === 'count' && u.name === 'LD')),
+      isNobody: m === 'nobody', isPassword: m === 'password', isKeyboard: m === 'keyboard', isWaiting: m === 'waiting', isCount: m === 'count',
+      showRow: m !== 'nobody' && m !== 'keyboard',
+      clockTop: m === 'keyboard' ? 40 : 70, clockSize: m === 'keyboard' ? 96 : 132,
+      pwText: s.wrong ? '•••••' : 'Password',
+      pwBorder: s.wrong ? '#e10000' : '#424242',
+      err: s.wrong ? 'Wrong password for Admin' : '', errC: '#ff6a5a',
+      wrong: () => this.setState({ wrong: true }),
+      openKeyboard: go('keyboard'),
+      pickNobody: go('nobody')
+    };
+  }
+}
+</script>
+</body>
+</html>

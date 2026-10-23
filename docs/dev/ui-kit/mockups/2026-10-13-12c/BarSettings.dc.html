@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bar settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 40px; background: color-mix(in srgb, {{t.bg}} 70%, #000); color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; gap: 24px">
+  <section style="width: 1060px; flex-shrink: 0; display: flex; flex-direction: column; border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+    <div style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 6px 0 18px; border-bottom: 1px solid {{t.line}}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      <span style="font-size: 18px; font-weight: 500; margin-right: auto">Settings · Window 1.4 · DMX <span style="font-size: 13px; color: {{t.dim}}; font-weight: 400">from preset 2 “Big DMX” · changed</span></span>
+      <button type="button" style="height: 40px; padding: 0 14px; border-radius: 5px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 14px">Load preset</button>
+      <button type="button" style="height: 40px; padding: 0 14px; border-radius: 5px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 14px">Save preset</button>
+      <button type="button" onClick="{{resetWin}}" style="height: 40px; padding: 0 14px; border-radius: 5px; border: 1px solid color-mix(in srgb, {{t.warn}} 55%, transparent); background: color-mix(in srgb, {{t.warn}} 12%, {{t.raised}}); color: {{t.warn}}; font: inherit; font-size: 14px">Reset window</button>
+      <button type="button" style="height: 40px; padding: 0 14px; border-radius: 5px; border: 1px solid color-mix(in srgb, {{t.alert}} 55%, transparent); background: color-mix(in srgb, {{t.alert}} 14%, {{t.raised}}); color: {{t.alert}}; font: inherit; font-size: 14px">Delete window</button>
+      <button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: {{t.text}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+    </div>
+    <div style="flex: 1; display: flex; min-height: 0">
+      <div style="width: 150px; flex-shrink: 0; border-right: 1px solid {{t.line}}; display: flex; flex-direction: column">
+        <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="3">
+          <button type="button" onClick="{{tb.pick}}" style="height: 56px; border: none; border-bottom: 1px solid {{t.line}}; background: {{tb.bg}}; color: {{tb.fg}}; font: inherit; font-size: 15px; text-align: left; padding: 0 16px; box-shadow: {{tb.mark}}">{{tb.name}}</button>
+        </sc-for>
+      </div>
+      <div style="flex: 1; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0">
+        <sc-if value="{{isCells}}" hint-placeholder-val="{{ true }}">
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+            <sc-for list="{{cells}}" as="c" hint-placeholder-count="6">
+              <div style="height: 76px; border-radius: 6px; border: 1px solid {{c.border}}; background: {{t.raised}}; display: flex; align-items: stretch">
+                <button type="button" style="flex: 1; border: none; background: none; color: {{t.text}}; font: inherit; text-align: left; padding: 10px 12px; display: flex; flex-direction: column; justify-content: space-between">
+                  <span style="font-size: 12px; color: {{t.dim}}">{{c.label}}</span>
+                  <span style="font-size: 17px; font-weight: 500">{{c.value}}</span>
+                </button>
+                <div style="width: 44px; display: flex; flex-direction: column; border-left: 1px solid {{t.line}}">
+                  <button type="button" onClick="{{c.pin}}" aria-label="{{c.pinLabel}}" style="flex: 1; border: none; background: {{c.pinBg}}; color: {{c.pinFg}}; font: inherit; border-radius: 0 6px 0 0"><svg width="16" height="16" viewBox="0 0 24 24" fill="{{c.pinFill}}" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"></path><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"></path></svg></button>
+                  <sc-if value="{{c.changed}}" hint-placeholder-val="{{ true }}">
+                    <button type="button" onClick="{{c.reset}}" aria-label="Reset to default" style="flex: 1; border: none; border-top: 1px solid {{t.line}}; background: none; color: {{t.warn}}; font: inherit; font-size: 16px; border-radius: 0 0 6px 0">↺</button>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{isBar}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 18px; min-height: 0; flex: 1">
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; align-items: center; gap: 12px">
+                <button type="button" onClick="{{toggleBar}}" style="height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 5px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 15px"><span style="width: 18px; height: 18px; border-radius: 3px; background: {{barBox}}; color: {{t.onAccent}}; font-size: 12px; display: flex; align-items: center; justify-content: center">{{barMark}}</span>Window bar</button>
+                <span style="font-size: 13px; color: {{t.dim}}; margin-right: auto">In the bar, left → right · drag the handle or use ↑ ↓</span>
+                <button type="button" onClick="{{loadDefaults}}" style="height: 44px; padding: 0 14px; border-radius: 5px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 14px">Load defaults</button>
+              </div>
+              <sc-for list="{{items}}" as="it" hint-placeholder-count="5">
+                <div style="height: 50px; border-radius: 5px; background: {{t.raised}}; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 10px">
+                  <span style="color: {{t.dim}}; font-size: 18px; cursor: grab" aria-hidden="true">⠿</span>
+                  <span style="flex: 1; font-size: 15px">{{it.name}}</span>
+                  <span style="font-size: 11px; padding: 2px 8px; border-radius: 9px; background: {{it.kindBg}}; color: {{t.text}}">{{it.kind}}</span>
+                  <button type="button" onClick="{{it.up}}" aria-label="Move up" style="width: 40px; height: 40px; border: none; border-radius: 4px; background: {{t.surface}}; color: {{t.text}}; font: inherit">↑</button>
+                  <button type="button" onClick="{{it.down}}" aria-label="Move down" style="width: 40px; height: 40px; border: none; border-radius: 4px; background: {{t.surface}}; color: {{t.text}}; font: inherit">↓</button>
+                  <button type="button" onClick="{{it.drop}}" aria-label="Remove from bar" style="width: 40px; height: 40px; border: none; border-radius: 4px; background: {{t.surface}}; color: {{t.alert}}; font: inherit">×</button>
+                </div>
+              </sc-for>
+            </div>
+            <div style="width: 280px; display: flex; flex-direction: column; gap: 8px">
+              <span style="font-size: 13px; color: {{t.dim}}">Actions of the DMX window (declared by the type)</span>
+              <sc-for list="{{actions}}" as="a" hint-placeholder-count="4">
+                <button type="button" onClick="{{a.add}}" style="height: 50px; border-radius: 5px; border: 1px dashed {{t.line}}; background: none; color: {{a.fg}}; font: inherit; font-size: 14px; text-align: left; padding: 0 12px; display: flex; flex-direction: column; justify-content: center"><span>{{a.name}}</span><span class="mono" style="font-size: 11px; color: {{t.dim}}">{{a.line}}</span></button>
+              </sc-for>
+              <span style="font-size: 12px; color: {{t.dim}}">Settings are added with their pin on the other tabs.</span>
+            </div>
+          </div>
+        </sc-if>
+        <div class="mono" style="margin-top: auto; padding: 10px 12px; border-radius: 5px; background: {{t.bg}}; font-size: 13px; color: {{t.dim}}">› {{last}}</div>
+      </div>
+    </div>
+  </section>
+  <section style="flex: 1; display: flex; flex-direction: column; gap: 12px; font-size: 13px; color: {{t.dim}}">
+    <span style="font-size: 15px; color: {{t.text}}; font-weight: 500">Resets</span>
+    <sc-for list="{{resets}}" as="r" hint-placeholder-count="4">
+      <div style="border-radius: 6px; background: {{t.raised}}; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px"><span style="color: {{t.text}}; font-size: 14px">{{r.name}}</span><span class="mono" style="font-size: 11px">{{r.line}}</span><span>{{r.note}}</span></div>
+    </sc-for>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { tab: 0, bar: true, items: ['universe', 'prev', 'next', 'readout', 'show_input'], readout: 'Decimal', last: 'Set Window 1.4 WindowBarItems "universe,prev,next,readout,show_input"' }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const DEF = ['universe', 'prev', 'next', 'readout'];
+    const label = { universe: 'Universe', prev: 'Universe −', next: 'Universe +', readout: 'Values', show_input: 'Show input', view: 'View', columns: 'Columns', only_selection: 'Only selection', level_bar: 'Level bar', font_size: 'Font size', show_value: 'Show value', show_id: 'Show ID' };
+    const isAction = k => k === 'prev' || k === 'next';
+    const setItems = items => this.setState({ items, last: 'Set Self WindowBarItems "' + items.join(',') + '"   → Window 1.4' });
+    const C = (key, value, changed) => {
+      const pinned = s.items.includes(key);
+      return { label: label[key], value, changed, border: pinned ? t.accent : t.line,
+        pinLabel: pinned ? 'Unpin from the window bar' : 'Pin to the window bar',
+        pinBg: pinned ? 'color-mix(in srgb, ' + t.accent + ' 22%, ' + t.raised + ')' : 'none', pinFg: pinned ? t.accent : t.dim, pinFill: pinned ? 'currentColor' : 'none',
+        pin: () => setItems(pinned ? s.items.filter(i => i !== key) : s.items.concat(key)),
+        reset: () => this.setState({ readout: 'Percent', last: 'Set Self Readout Default   → Window 1.4' }) };
+    };
+    const TABS = {
+      Display: [C('universe', '1 "Front"', false), C('view', 'Grid', false), C('readout', s.readout, s.readout !== 'Percent'), C('columns', 'Fit', false), C('font_size', 'Default', false), C('level_bar', 'Yes', false)],
+      Mask: [C('only_selection', 'No', false), C('show_value', 'Yes', false), C('show_input', 'No', false), C('show_id', 'Yes', false)],
+      'Window bar': null
+    };
+    const names = Object.keys(TABS);
+    const tabs = names.map((n, i) => ({ name: n, pick: () => this.setState({ tab: i }), bg: i === s.tab ? t.raised : 'transparent', fg: i === s.tab ? t.text : t.dim, mark: i === s.tab ? 'inset 3px 0 0 ' + t.accent : 'none' }));
+    const move = (i, d) => () => { const a = s.items.slice(); const j = i + d; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; setItems(a); };
+    const items = s.items.map((k, i) => ({ name: label[k], kind: isAction(k) ? 'action' : 'setting', kindBg: isAction(k) ? 'color-mix(in srgb, ' + t.info + ' 35%, ' + t.surface + ')' : 'color-mix(in srgb, ' + t.park + ' 35%, ' + t.surface + ')', up: move(i, -1), down: move(i, 1), drop: () => setItems(s.items.filter(x => x !== k)) }));
+    const acts = [['prev', 'Set Self Universe - 1'], ['next', 'Set Self Universe + 1'], ['first', 'Set Self Universe 1'], ['inputs', 'Set Self ShowInput Toggle']];
+    label.first = 'First universe'; label.inputs = 'Input on / off';
+    const actions = acts.map(([k, line]) => ({ name: (s.items.includes(k) ? '✓ ' : '+ ') + label[k], line, fg: s.items.includes(k) ? t.dim : t.text, add: () => { if (!s.items.includes(k)) setItems(s.items.concat(k)); } }));
+    return {
+      t, tabs, cells: TABS[names[s.tab]] || [], isCells: !!TABS[names[s.tab]], isBar: !TABS[names[s.tab]], items, actions,
+      barBox: s.bar ? t.accent : t.surface, barMark: s.bar ? '✓' : '',
+      toggleBar: () => this.setState({ bar: !s.bar, last: 'Set Self WindowBar ' + (s.bar ? 'Off' : 'On') + '   → Window 1.4' }),
+      loadDefaults: () => this.setState({ items: DEF, last: 'Set Self WindowBarItems Default   → Window 1.4' }),
+      resetWin: () => this.setState({ items: DEF, readout: 'Percent', bar: true, last: 'Reset Self   → Window 1.4 (DMX defaults, one Oops step)' }),
+      last: s.last,
+      resets: [
+        { name: 'One setting', line: 'Set Self Readout Default', note: '↺ on a changed cell.' },
+        { name: 'The bar', line: 'Set Self WindowBarItems Default', note: 'Load defaults on the Window bar tab.' },
+        { name: 'This window', line: 'Reset Self', note: 'Every setting + the bar back to the DMX defaults; label, colour and position stay.' },
+        { name: 'Every DMX window of a profile', line: 'Reset UserProfile 2 Window /Type DMX', note: 'Asks first: it touches more than one window. One Oops step each.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

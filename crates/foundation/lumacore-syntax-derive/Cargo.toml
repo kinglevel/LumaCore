@@ -1,0 +1,21 @@
+[package]
+name = "lumacore-syntax-derive"
+version.workspace = true
+edition.workspace = true
+
+# `#[derive(Args)]` (decisions §33 decision 4): a verb's typed arguments are its signature.
+# Kept out of `lumacore-syntax` so the language crate stays dependency-free (decision 5);
+# `syn` here reads Rust structs, not Lum.
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = { version = "2", features = ["full"] }
+quote = "1"
+proc-macro2 = "1"
+
+[dev-dependencies]
+lumacore-syntax = { path = "../lumacore-syntax" }
+
+[lints]
+workspace = true

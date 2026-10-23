@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>App connect page</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.lock-bg{background-image:url(./lockbg.jpg);background-size:cover;background-position:center}
+</style>
+</helmet>
+<div class="lock-bg" style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #121212">
+  <div style="position: absolute; inset: 0; background: rgba(10,10,10,.45)"></div>
+
+  <div style="position: absolute; top: 70px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 6px">
+    <span style="font-size: 22px; color: #9c9c9c">Monday 12 October</span>
+    <span style="font-size: 132px; font-weight: 300; line-height: 1; letter-spacing: -2px">12:41</span>
+    <span style="font-size: 17px; color: #9c9c9c">LumaCore · this computer</span>
+  </div>
+
+  <sc-if value="{{isCount}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; top: 350px; left: 50%; width: 520px; margin-left: -260px; display: flex; flex-direction: column; align-items: center; gap: 16px">
+      <span style="font-size: 22px">Connecting to desk1 as LD</span>
+      <span class="mono" style="font-size: 14px; color: #9c9c9c">192.0.2.212:47656 · show Gala</span>
+      <div style="width: 360px; height: 6px; border-radius: 3px; background: rgba(66,66,66,.9)"><div style="width: 60%; height: 100%; border-radius: 3px; background: #9a7a08"></div></div>
+      <span style="font-size: 15px; color: #9c9c9c">in 3 s</span>
+      <div style="display: flex; gap: 12px">
+        <button type="button" onClick="{{go}}" style="height: 48px; padding: 0 26px; border-radius: 24px; border: none; background: #9a7a08; color: #f3ecd3; font: inherit; font-size: 16px">Connect now</button>
+        <button type="button" onClick="{{showServers}}" style="height: 48px; padding: 0 22px; border-radius: 24px; border: 1px solid #424242; background: rgba(28,28,28,.8); color: #d1d1d1; font: inherit; font-size: 16px">Servers… (Esc)</button>
+      </div>
+      <span style="font-size: 13px; color: #787878; text-align: center">The station's own page opens next and shows its surface: LD has no password, so it logs in by itself.</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isServers}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; top: 290px; left: 50%; width: 600px; margin-left: -300px; border-radius: 8px; background: rgba(22,22,22,.88); border: 1px solid #303030; padding: 16px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; justify-content: space-between"><span style="font-size: 18px">Servers</span><span style="font-size: 13px; color: #787878">Searching… (mDNS and LumaCore beacons)</span></div>
+      <div style="display: flex; align-items: center; gap: 10px; height: 56px; padding: 0 12px; border-radius: 6px; background: #1c1c1c">
+        <span style="display: flex; flex-direction: column; flex: 1"><span style="font-size: 15px">This computer</span><span style="font-size: 12px; color: #787878">desk1 is running · show Gala</span></span>
+        <button type="button" onClick="{{go}}" style="height: 44px; padding: 0 16px; border-radius: 5px; border: none; background: #9a7a08; color: #f3ecd3; font: inherit; font-size: 14px">Connect</button>
+        <button type="button" onClick="{{clean}}" style="height: 44px; padding: 0 14px; border-radius: 5px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 14px">Clean start…</button>
+      </div>
+      <sc-for list="{{servers}}" as="s" hint-placeholder-count="3">
+        <button type="button" onClick="{{s.pick}}" style="height: 56px; padding: 0 12px; border-radius: 6px; border: 1px solid {{s.border}}; background: #262626; color: {{s.fg}}; font: inherit; text-align: left; display: flex; align-items: center; gap: 12px; opacity: {{s.op}}"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{s.dot}}"></span><span style="display: flex; flex-direction: column; gap: 2px; flex: 1"><span style="font-size: 16px">{{s.name}}</span><span class="mono" style="font-size: 12px; color: #787878">{{s.info}}</span></span><span style="font-size: 13px; color: {{s.noteC}}">{{s.note}}</span></button>
+      </sc-for>
+      <div style="display: flex; gap: 8px"><span style="flex: 1; height: 44px; border-radius: 5px; border: 1px solid #424242; background: #121212; display: flex; align-items: center; padding: 0 12px; font-size: 15px; color: #787878">Address or host:port</span><button type="button" style="height: 44px; padding: 0 16px; border-radius: 5px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 14px">Connect</button></div>
+      <div style="display: flex; gap: 22px">
+        <button type="button" onClick="{{toggleAuto}}" style="display: flex; align-items: center; gap: 8px; height: 44px; border: none; background: none; color: #9c9c9c; font: inherit; font-size: 14px; padding: 0"><span style="width: 16px; height: 16px; border-radius: 2px; background: {{autoBg}}; border: 1px solid #787878; display: flex; align-items: center; justify-content: center; color: #f3ecd3; font-size: 11px">{{autoMark}}</span>Connect to the last server at launch</button>
+        <button type="button" onClick="{{toggleKiosk}}" style="display: flex; align-items: center; gap: 8px; height: 44px; border: none; background: none; color: #9c9c9c; font: inherit; font-size: 14px; padding: 0"><span style="width: 16px; height: 16px; border-radius: 2px; background: {{kioskBg}}; border: 1px solid #787878; display: flex; align-items: center; justify-content: center; color: #f3ecd3; font-size: 11px">{{kioskMark}}</span>Kiosk — built-in keyboard opens by itself</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isBusy}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; top: 380px; left: 0; right: 0; display: flex; flex-direction: column; align-items: center; gap: 16px">
+      <span style="font-size: 20px">Starting the local server…</span>
+      <div style="width: 300px; height: 6px; border-radius: 3px; background: rgba(66,66,66,.9); overflow: hidden"><div style="width: 35%; height: 100%; background: #9a7a08"></div></div>
+      <button type="button" onClick="{{showServers}}" style="height: 44px; padding: 0 18px; border-radius: 22px; border: 1px solid #424242; background: rgba(28,28,28,.8); color: #d1d1d1; font: inherit; font-size: 15px">Cancel</button>
+    </div>
+  </sc-if>
+
+  <div style="position: absolute; left: 24px; right: 24px; bottom: 20px; display: flex; align-items: center; gap: 12px; font-size: 13px; color: #9c9c9c">
+    <span style="display: flex; gap: 8px">
+      <button type="button" onClick="{{showCount}}" style="height: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid {{b1}}; background: rgba(28,28,28,.8); color: #d1d1d1; font: inherit; font-size: 13px">State: countdown</button>
+      <button type="button" onClick="{{showServers}}" style="height: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid {{b2}}; background: rgba(28,28,28,.8); color: #d1d1d1; font: inherit; font-size: 13px">State: servers</button>
+      <button type="button" onClick="{{showBusy}}" style="height: 44px; padding: 0 14px; border-radius: 22px; border: 1px solid {{b3}}; background: rgba(28,28,28,.8); color: #d1d1d1; font: inherit; font-size: 13px">State: busy</button>
+    </span>
+    <span style="flex: 1; text-align: right">Bundled in the app (kit elements). The station's page takes over once connected. No users here: login happens on the station's surface.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { mode: 'count', auto: true, kiosk: false }; }
+  renderVals() {
+    const s = this.state;
+    const on = m => s.mode === m ? '#9a7a08' : '#424242';
+    const servers = [
+      { name: 'desk1', info: '192.0.2.212:47656 · Gala · v0.12', note: 'last', noteC: '#9a7a08', dot: '#00a60a', border: '#9a7a08', fg: '#d1d1d1', op: 1 },
+      { name: 'FOH', info: '192.0.2.40:47656 · Gala · v0.12', note: 'Bob, Ann', noteC: '#9c9c9c', dot: '#00a60a', border: '#303030', fg: '#d1d1d1', op: 1 },
+      { name: 'Stage', info: '10.0.0.6:47656 · v0.11', note: 'wrong version — update the app [E-WIRE-001]', noteC: '#c27a12', dot: '#787878', border: '#303030', fg: '#9c9c9c', op: 0.6 }
+    ].map(x => ({ ...x, pick: () => this.setState({ mode: 'count' }) }));
+    return {
+      servers,
+      isCount: s.mode === 'count', isServers: s.mode === 'servers', isBusy: s.mode === 'busy',
+      b1: on('count'), b2: on('servers'), b3: on('busy'),
+      autoBg: s.auto ? '#9a7a08' : 'transparent', autoMark: s.auto ? '✓' : '',
+      kioskBg: s.kiosk ? '#9a7a08' : 'transparent', kioskMark: s.kiosk ? '✓' : '',
+      go: () => this.setState({ mode: 'busy' }),
+      clean: () => this.setState({ mode: 'busy' }),
+      showServers: () => this.setState({ mode: 'servers' }),
+      showCount: () => this.setState({ mode: 'count' }),
+      showBusy: () => this.setState({ mode: 'busy' }),
+      toggleAuto: () => this.setState({ auto: !s.auto }),
+      toggleKiosk: () => this.setState({ kiosk: !s.kiosk })
+    };
+  }
+}
+</script>
+</body>
+</html>

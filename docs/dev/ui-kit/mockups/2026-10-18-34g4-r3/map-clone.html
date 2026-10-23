@@ -1,0 +1,595 @@
+<title>Map and Clone</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the "opened by" switch above one Map & clone window — title, From → To, the step bar
+   (Summary · 1 What · 2 Doesn't match · 3 Colour & gobos · 4 Check), a fixed-height body, the
+   decisions bar, the line — then notes. Attribute model (parts are hardened separately).
+   Console look of the round 2 / 3 mockups (single dark). */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --del-t: #f2a3a3; --new: #4f8fd6; --new-t: #9cc3f0; --ask: #d08a2a; --ask-t: #f0c27a;
+  --menu: #242424; --menu-hi: #33302a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+header h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 88ch; line-height: 1.5; }
+.icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+code, .mono { font-family: var(--mono); font-size: 12px; }
+button { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.lab { color: var(--dim); font-size: 13px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; flex-wrap: wrap; }
+.seg button { color: var(--dim); background: var(--cell); border: 0; border-right: 1px solid var(--line); height: 36px; padding: 0 12px; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--head); color: var(--text); box-shadow: inset 0 -3px 0 var(--gold-hi); }
+.seg.small button { height: 30px; font-size: 12.5px; padding: 0 10px; }
+.chip { height: 32px; display: inline-flex; align-items: center; gap: 6px; padding: 0 11px; border-radius: 16px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; white-space: nowrap; cursor: pointer; }
+.chip[aria-pressed="true"] { border-color: var(--gold-hi); color: var(--gold-hi); }
+.pill { height: 22px; display: inline-flex; align-items: center; padding: 0 8px; border-radius: 11px; font-size: 11.5px; white-space: nowrap; }
+.p-auto { background: color-mix(in srgb, var(--ok) 20%, transparent); color: var(--ok-t); }
+.p-sug { background: color-mix(in srgb, var(--gold-hi) 22%, transparent); color: var(--gold-hi); }
+.p-hand { background: var(--gold); color: var(--gold-text); }
+.p-conv { background: color-mix(in srgb, var(--new) 22%, transparent); color: var(--new-t); }
+.p-none { background: color-mix(in srgb, var(--del) 20%, transparent); color: var(--del-t); }
+.tick { width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--line); display: grid; place-items: center; background: var(--cell); flex: none; font-size: 13px; }
+.tick.on { background: var(--gold); border-color: var(--gold); color: var(--gold-text); }
+.tick.part { background: color-mix(in srgb, var(--gold) 45%, var(--cell)); border-color: var(--gold); }
+
+.dlg { border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; min-width: 0; position: relative; }
+.title { min-height: 50px; display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.title .t { font-size: 17px; font-weight: 500; }
+.title .sub { color: var(--dim); font-size: 13px; }
+.x { margin-left: auto; width: 46px; height: 42px; display: grid; place-items: center; border-radius: 6px; background: none; border: 0; cursor: pointer; }
+.fromto { display: flex; gap: 8px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--cell-line); flex-wrap: wrap; }
+.fromto b { font-weight: 500; }
+.steps { display: flex; padding: 0 8px; border-bottom: 1px solid var(--line); background: var(--head); overflow-x: auto; }
+.step { height: 44px; padding: 0 14px; border: 0; background: none; color: var(--dim); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; box-shadow: inset 0 -3px 0 transparent; }
+.step .n { width: 22px; height: 22px; border-radius: 11px; border: 1px solid var(--line); display: grid; place-items: center; font-size: 12px; }
+.step[aria-selected="true"] { color: var(--text); box-shadow: inset 0 -3px 0 var(--gold-hi); }
+.step[aria-selected="true"] .n { background: var(--gold); border-color: var(--gold); color: var(--gold-text); }
+.step .q { color: var(--ask-t); font-size: 12px; }
+.body { height: 480px; overflow: auto; position: relative; }
+.bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--cell-line); position: sticky; top: 0; background: var(--dlg); z-index: 5; }
+.bar .r { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+/* Summary */
+.headline { padding: 14px 16px 4px; font-size: 16px; line-height: 1.45; }
+.headline small { display: block; color: var(--dim); font-size: 13px; margin-top: 2px; }
+.topics { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); margin: 8px 14px 14px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--cell); }
+.tp { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 8px; align-items: start; padding: 9px 12px; border-right: 1px solid var(--cell-line); border-bottom: 1px solid var(--cell-line); font-size: 13px; min-height: 54px; }
+.st { width: 22px; height: 22px; border-radius: 11px; display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+.st.kept { background: color-mix(in srgb, var(--ok) 22%, transparent); color: var(--ok-t); }
+.st.conv { background: color-mix(in srgb, var(--new) 25%, transparent); color: var(--new-t); }
+.st.ask { background: color-mix(in srgb, var(--ask) 30%, transparent); color: var(--ask-t); }
+.st.gone { background: var(--head); color: var(--faint); border: 1px solid var(--cell-line); }
+.tp b { font-weight: 500; display: block; }
+.tp small { color: var(--dim); }
+.tp .go2 { margin-top: 5px; height: 28px; padding: 0 10px; border-radius: 14px; border: 1px solid var(--gold-hi); background: none; color: var(--gold-hi); font-size: 12px; cursor: pointer; }
+.noise { padding: 0 16px 14px; color: var(--faint); font-size: 12.5px; }
+
+/* 1 What: the tree */
+.what { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.wcol { border-right: 1px solid var(--cell-line); padding: 8px 10px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.wcol:last-child { border-right: 0; }
+.wcol h4 { margin: 2px 0 4px; font-size: 11.5px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.wk { display: grid; grid-template-columns: 16px 22px minmax(0, 1fr) auto; gap: 6px; align-items: center; min-height: 34px; font-size: 13px; cursor: pointer; border-radius: 4px; padding: 0 4px; }
+.wk:hover { background: var(--cell); }
+.wk .fold { color: var(--faint); font-size: 11px; text-align: center; }
+.wk small { display: block; color: var(--faint); font-size: 11.5px; }
+.wk.sub { padding-left: 26px; font-size: 12.5px; color: var(--dim); }
+.wk.sub2 { padding-left: 48px; font-size: 12px; color: var(--dim); }
+.wk .n { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
+.wk.later, .wk.never, .wk.listed { cursor: default; color: var(--faint); }
+.wk.later:hover, .wk.never:hover, .wk.listed:hover { background: none; }
+.wk.never { font-style: italic; }
+.ref { font-size: 10.5px; color: var(--faint); border: 1px solid var(--cell-line); border-radius: 3px; padding: 0 4px; margin-left: 4px; }
+
+/* 2 The node graph */
+.vb { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(70px, .35fr) minmax(0, 1fr); padding: 10px; }
+.colB { display: flex; flex-direction: column; gap: 5px; min-width: 0; z-index: 2; }
+.colB h3 { margin: 0 0 2px; font-size: 12px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.colB .g { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; margin: 6px 0 0; }
+.nodeL, .nodeR { min-height: 38px; display: flex; align-items: center; gap: 8px; padding: 0 8px 0 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); font-size: 13px; user-select: none; -webkit-user-select: none; transition: opacity .15s; }
+.nodeL { justify-content: space-between; cursor: pointer; }
+.nodeL:hover { border-color: var(--gold-hi); }
+.nodeL small, .nodeR small { color: var(--dim); font-size: 11.5px; }
+.nm { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.nm b { font-weight: 500; }
+.nodeL.none { border-color: color-mix(in srgb, var(--del) 50%, var(--line)); border-style: dashed; }
+.nodeL.sug { border-color: var(--gold-hi); border-style: dashed; }
+.nodeL.colourrow, .nodeR.colourrow { border-color: color-mix(in srgb, var(--new) 60%, var(--line)); }
+.nodeL.open { border-color: var(--gold-hi); background: color-mix(in srgb, var(--gold) 18%, var(--cell)); }
+.nodeR.over { border-color: var(--gold-hi); background: color-mix(in srgb, var(--gold) 25%, var(--cell)); }
+.nodeR:not(.used) { color: var(--dim); }
+.fade { opacity: .35; }
+.dot { width: 20px; height: 20px; border-radius: 10px; border: 2px solid var(--gold-hi); background: var(--head); cursor: crosshair; touch-action: none; flex: none; }
+.nodeL.colourrow .dot { border-color: var(--new); }
+.dotR { width: 12px; height: 12px; border-radius: 6px; background: var(--line); flex: none; }
+svg.links { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+svg.links path { fill: none; stroke-width: 2; }
+svg.links path.hit { stroke: transparent; stroke-width: 16; pointer-events: stroke; cursor: pointer; }
+svg.links path.l-auto { stroke: color-mix(in srgb, var(--ok) 70%, transparent); }
+svg.links path.l-sug { stroke: var(--gold-hi); stroke-dasharray: 6 4; }
+svg.links path.l-hand { stroke: var(--gold-hi); }
+svg.links path.l-colour { stroke: var(--new); stroke-dasharray: 5 4; }
+svg.links path.l-live { stroke: var(--gold-hi); stroke-dasharray: 3 4; }
+svg.links path.faded { opacity: .25; }
+svg.links path.hit:hover + path { stroke: var(--del); }
+
+/* 3 Colour & gobos */
+.copts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding: 10px 12px; }
+.copt { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); padding: 9px 10px; display: flex; flex-direction: column; gap: 3px; text-align: left; cursor: pointer; }
+.copt b { font-weight: 500; }
+.copt small { color: var(--dim); font-size: 12px; }
+.copt[aria-pressed="true"] { border-color: var(--gold-hi); background: color-mix(in srgb, var(--gold) 14%, var(--cell)); }
+.sec3 { padding: 6px 12px 2px; font-size: 11.5px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; display: flex; gap: 10px; align-items: center; }
+.crow { display: grid; grid-template-columns: minmax(0, 1.2fr) 24px 16px 24px minmax(0, 1.6fr) 70px; gap: 8px; align-items: center; font-size: 13px; padding: 5px 12px; border-bottom: 1px solid var(--cell-line); }
+.crow .sw { width: 24px; height: 24px; border-radius: 4px; }
+.crow small { color: var(--dim); }
+.crow .de { text-align: right; font-variant-numeric: tabular-nums; }
+.crow .de.bad, .de.bad { color: var(--del-t); }
+.slotmap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.sl { display: grid; grid-template-columns: 20px minmax(0, 1fr) 16px minmax(0, 1.25fr); align-items: center; gap: 8px; padding: 4px 12px; border-bottom: 1px solid var(--cell-line); font-size: 13px; min-height: 40px; }
+.sl:nth-child(odd) { border-right: 1px solid var(--cell-line); }
+.sw, .gob { width: 20px; height: 20px; border-radius: 10px; border: 1px solid rgba(255,255,255,.25); flex: none; display: inline-block; }
+.gob { background: #0d0d0d; display: inline-grid; place-items: center; overflow: hidden; }
+.gob svg { width: 18px; height: 18px; }
+.to { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--cell); font-size: 12.5px; cursor: pointer; min-width: 0; overflow: hidden; white-space: nowrap; }
+.to.exact { border-color: color-mix(in srgb, var(--ok) 55%, var(--line)); }
+.to.near { border-color: var(--gold-hi); border-style: dashed; }
+.to.hand { border-color: var(--gold-hi); }
+.to.mix { border-color: var(--new); }
+.to small { color: var(--dim); }
+.src-tag { font-size: 10.5px; color: var(--faint); border: 1px solid var(--cell-line); border-radius: 3px; padding: 0 4px; }
+.sl .d { color: var(--faint); text-align: center; }
+
+/* 4 Check */
+.check4 { padding: 12px 14px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.card { border: 1px solid var(--line); border-radius: 6px; background: var(--cell); overflow: hidden; min-width: 0; }
+.card h4 { margin: 0; padding: 8px 12px; font-size: 12px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; border-bottom: 1px solid var(--cell-line); display: flex; justify-content: space-between; gap: 8px; }
+.card h4 button { text-transform: none; letter-spacing: 0; font-weight: 400; background: none; border: 0; color: var(--new-t); cursor: pointer; font-size: 12px; }
+.card table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.card td { padding: 6px 12px; border-bottom: 1px solid var(--cell-line); vertical-align: middle; }
+.card td.n { text-align: right; font-variant-numeric: tabular-nums; color: var(--dim); }
+.card .wide { grid-column: 1 / -1; }
+.card.full { grid-column: 1 / -1; }
+.ba { display: grid; grid-template-columns: max-content minmax(0, 1fr) minmax(0, 1fr); font-size: 13px; }
+.ba > div { padding: 6px 12px; border-bottom: 1px solid var(--cell-line); }
+.ba .h { color: var(--faint); font-size: 12px; }
+.ba .sw { width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 4px; display: inline-block; }
+.warnline { color: var(--ask-t); }
+
+/* menus, sub-dialog */
+.menu { position: fixed; z-index: 60; width: 340px; max-height: min(78vh, 620px); overflow: auto; background: var(--menu); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 14px 44px #000b; padding: 4px 0; }
+.menu .mh { padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.menu .mh small { display: block; color: var(--dim); font-size: 12px; }
+.menu .sec { padding: 8px 12px 3px; color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; }
+.menu .mi { width: 100%; min-height: 40px; display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 0 12px; background: none; border: 0; text-align: left; cursor: pointer; font-size: 13.5px; }
+.menu .mi:hover { background: var(--menu-hi); }
+.menu .mi small, .menu .mi .k { color: var(--dim); font-size: 12px; }
+.menu .mi.on .ck { color: var(--gold-hi); }
+.menu .mi.dl { color: var(--del-t); }
+.menu hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+.menu .search { margin: 6px 10px; display: flex; }
+.menu .search input { flex: 1; height: 36px; border-radius: 4px; border: 1px solid var(--line); background: var(--cell); color: var(--text); padding: 0 10px; font: inherit; font-size: 13px; }
+.menu .msrc { display: flex; gap: 4px; flex-wrap: wrap; padding: 2px 10px 6px; }
+.menu .msrc button { height: 28px; padding: 0 9px; border-radius: 14px; border: 1px solid var(--line); background: var(--cell); font-size: 12px; color: var(--dim); cursor: pointer; }
+.menu .msrc button[aria-pressed="true"] { border-color: var(--gold-hi); color: var(--gold-hi); }
+.veil { position: absolute; inset: 0; background: rgba(0,0,0,.55); z-index: 20; }
+.subdlg { position: absolute; z-index: 21; left: 50%; top: 50px; transform: translateX(-50%); width: min(860px, calc(100% - 24px)); border-radius: 6px; background: var(--dlg); border: 1px solid var(--gold-hi); box-shadow: 0 16px 48px #000c; overflow: hidden; }
+.rtable { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 620px; }
+.rtable th { text-align: left; font-weight: 400; color: var(--dim); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.rtable td { padding: 7px 10px; border-bottom: 1px solid var(--cell-line); }
+.rtable tr.builtin td { color: var(--dim); }
+.rtable tr.hit td { background: color-mix(in srgb, var(--gold) 20%, var(--dlg)); }
+.rtable tr.sep td { background: var(--head); color: var(--faint); font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; }
+.tryrow { display: flex; gap: 8px; align-items: center; padding: 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tryrow input { height: 36px; width: 220px; border-radius: 4px; border: 1px solid var(--line); background: var(--cell); color: var(--text); font-family: var(--mono); font-size: 13px; padding: 0 10px; }
+.tryrow .res { color: var(--gold-hi); font-size: 13px; }
+
+.decisions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; padding: 8px 12px; border-top: 1px solid var(--gold); background: color-mix(in srgb, var(--gold) 12%, var(--dlg)); }
+.decisions .dl { color: var(--gold-text); font-size: 12px; text-transform: uppercase; letter-spacing: .07em; font-weight: 600; }
+.check { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); font-size: 13px; cursor: pointer; }
+.check .box { width: 18px; height: 18px; border-radius: 3px; border: 1px solid var(--line); display: grid; place-items: center; font-size: 12px; }
+.check[aria-pressed="true"] .box { background: var(--gold); border-color: var(--gold); color: var(--gold-text); }
+.foot { border-top: 1px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 8px; flex-wrap: wrap; }
+.line { flex: 1 1 340px; min-width: 0; font-family: var(--mono); font-size: 12.5px; color: var(--dim); background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 9px 12px; overflow-x: auto; white-space: pre; }
+.line b { color: var(--text); font-weight: 400; }
+.go { height: 48px; min-width: 110px; border-radius: 6px; border: 0; background: var(--gold); color: var(--gold-text); font-size: 15px; font-weight: 600; cursor: pointer; padding: 0 16px; }
+.go.ghost { background: var(--cell); color: var(--text); border: 1px solid var(--line); font-weight: 400; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 10px; }
+.notes > div { min-width: 0; border: 1px solid var(--cell-line); border-radius: 6px; background: var(--dlg); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.notes .h { font-size: 15px; }
+.notes ul { margin: 0; padding-left: 18px; color: var(--dim); display: flex; flex-direction: column; gap: 3px; line-height: 1.45; }
+@media (max-width: 860px) {
+  .what { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .wcol:nth-child(2) { border-right: 0; }
+  .copts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .slotmap, .check4 { grid-template-columns: minmax(0, 1fr); } .sl:nth-child(odd) { border-right: 0; }
+  .crow { grid-template-columns: minmax(0, 1fr) 22px 14px 22px; } .crow .tg, .crow .de { grid-column: 1 / -1; text-align: left; }
+  .menu { left: 0 !important; right: 0; top: auto !important; bottom: 0; width: auto; border-radius: 12px 12px 0 0; }
+}
+@media (max-width: 520px) { .what { grid-template-columns: minmax(0, 1fr); } .wcol { border-right: 0; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-rules" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+</svg>
+
+<main>
+<header>
+  <h1>Map &amp; clone · round 3 · v7</h1>
+  <p>After the v6 review: <b>one window for a type change and Clone</b> (no switch — the From → To line says which), <b>Everything</b> converted by default, and <b>Colour &amp; gobos in sub-tabs</b>. The attribute model (parts are hardened on their own later). The <b>summary</b> stays; every step has its own job — <b>1 What</b> the full tree of object kinds · <b>2 Doesn't match</b> the node graph, filtered to what needs attention · <b>3 Colour &amp; gobos</b> the conversion and the slot mapping with the cross-wheel picker · <b>4 Check</b> a real review before Apply. Data: six MAC Aura XB (Extended) → a two-wheel spot (example: wheels 1 + 2, CMY, CTO).</p>
+</header>
+
+
+<div class="dlg" id="mw">
+  <div class="title"><span class="t" id="wt"></span><span class="sub" id="ws"></span><button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button></div>
+  <div class="fromto" id="fromto"></div>
+  <div class="steps" role="tablist" id="steps"></div>
+  <div class="body" id="body"></div>
+  <div class="decisions" id="decisions"></div>
+  <div class="foot"><div class="line" id="mline"></div><button class="go ghost" id="back">Back</button><button class="go" id="next"></button></div>
+  <div class="veil" id="veil" hidden></div>
+  <div class="subdlg" id="rules" hidden></div>
+</div>
+
+<div class="notes">
+  <div><span class="h">One job per step</span><ul>
+    <li><b>Summary</b>: one sentence, one row per topic (kept / converted / needs a choice / not used); a "?" row takes you to the step that answers it. Apply works here.</li>
+    <li><b>1 What</b>: the full tree — kinds, then the objects inside (sequences › cues, preset pools › presets, groups…), ticks with counts, quick sets, Limit to attributes.</li>
+    <li><b>2 Doesn't match</b>: the node graph. "Needs attention" fades every line that already matches; "All" shows them full. A press on a source = Connect to…; Defined attributes… from here.</li>
+  </ul></div>
+  <div><span class="h">&nbsp;</span><ul>
+    <li><b>3 Colour &amp; gobos</b>, in sub-tabs: <b>Conversion</b> (four choices, the swatches with ΔE) · <b>Colour slots</b> (every wheel slot → any colour source, the picker) · <b>Gobos</b> (by role, then number).</li>
+    <li><b>4 Check</b>: what changes per object kind, attribute totals, the worst colours, held and unused values, one cue before / after, the line — each card links back to its step.</li>
+    <li>One window for a type change and Clone. The decisions bar — Meaning / DMX output, Remember for this pair, Referenced presets too — stays on every step; Keep theirs / Take mine / Overwrite joins it only when the targets already have values (Clone onto programmed fixtures).</li>
+  </ul></div>
+</div>
+</main>
+
+<div class="menu" id="menu" hidden></div>
+
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = id => document.getElementById(id);
+const menu = $('menu');
+const W = { open: 'change', step: 0, meaning: true, remember: true, merge: 'low', deps: true, limit: new Set(['All']), colour: 'colour', tried: 'Gobo2WheelSpin', attention: true, wheel: 'color', ctab: 'conv', hasValues: false };
+
+// ---------- What ----------
+const WHAT = [
+  ['Values', [
+    { id: 'cues', name: 'Cues', ref: 'Sequences', kids: [['Sequence 1 · Main', 96, [['Cue 1–20', 40], ['Cue 21–48', 56]]], ['Sequence 2 · Song 3', 38, [['Cue 1–12', 38]]], ['Sequence 7 · Encore', 14, [['Cue 1–4', 14]]]] },
+    { id: 'presets', name: 'Presets', ref: 'Presets', kids: [['Dimmer pool', 3], ['Position pool', 4], ['Color pool', 9], ['Beam pool', 2], ['All pool', 6]] },
+    { id: 'prog', name: 'Programmers', kids: [['Yours (Admin)', 12], ['Bob', 0]] },
+    { id: 'park', name: 'Parked values', n: 2 },
+    { id: 'fx', name: 'Effects', later: '§28' },
+  ]],
+  ['Membership and places', [
+    { id: 'groups', name: 'Groups', sub: 'order and grid spot', ref: 'Groups', kids: [['Group 3 · Auras', 6], ['Group 10 · Truss', 6]] },
+    { id: 'tags', name: 'Tags', kids: [['FOH', 6], ['Song 3', 4], ['Spare', 1]] },
+    { id: 'sel', name: 'Selections', sub: 'users\' current selection', n: 2 },
+    { id: 'layouts', name: 'Layout views', sub: 'positions', ref: 'Layouts', later: 'with layouts' },
+    { id: 'pixel', name: 'Pixelmapper mappings', later: 'future aim' },
+  ]],
+  ['The fixture itself', [
+    { id: 'luma', name: 'Settings', sub: 'offsets, inverts, MasterReact', kids: [['Pan / tilt offsets', 6], ['Inverts', 2], ['MasterReact', 6]] },
+    { id: 'meta', name: 'Name, note, paint', n: 6 },
+  ]],
+  ['Named, not cloned', [
+    { id: 'lines', name: 'Key, macro and OSC lines', sub: 'naming 101–106 — listed to fix', listed: '4 lines' },
+    { id: 'worlds', name: 'Worlds', sub: 'not here — tags and If cover it', ref: 'Worlds', never: true },
+    { id: 'patch', name: 'The patch', sub: 'address, type, MVR', never: true },
+  ]],
+];
+const KINDS = WHAT.flatMap(([, ks]) => ks);
+const kidsOf = k => k.kids || [];
+const kN = k => k.kids ? k.kids.reduce((a, x) => a + x[1], 0) : k.n;
+const on = new Set(), open = new Set(['cues']);
+const setKind = (id, v) => { const k = KINDS.find(x => x.id === id); if (v) { on.add(id); kidsOf(k).forEach((_, i) => on.add(`${id}/${i}`)); } else { on.delete(id); kidsOf(k).forEach((_, i) => on.delete(`${id}/${i}`)); } };
+const SETS = { values: ['cues', 'presets', 'prog', 'park'], everything: ['cues', 'presets', 'prog', 'park', 'groups', 'tags', 'sel', 'luma', 'meta'], cuesonly: ['cues'], presetsonly: ['presets'] };
+const useSet = s => { on.clear(); SETS[s].forEach(id => setKind(id, true)); };
+useSet('everything');
+const counted = () => KINDS.filter(k => !k.never && !k.later && !k.listed && on.has(k.id)).reduce((a, k) => a + (k.kids ? k.kids.filter((_, i) => on.has(`${k.id}/${i}`)).reduce((x, y) => x + y[1], 0) : k.n), 0);
+const FAMS = ['All', 'Dimmer', 'Position', 'Gobo', 'Color', 'Beam', 'Focus', 'Control'];
+function stepWhat() {
+  return `<div class="bar"><span class="lab">Convert in</span>${[['values', 'All values'], ['everything', 'Everything'], ['cuesonly', 'Only cues'], ['presetsonly', 'Only presets']].map(([k, l]) => `<button class="chip" data-set="${k}">${l}</button>`).join('')}
+    <span class="r"><span class="lab">Limit to attributes</span>${FAMS.map(f => `<button class="chip" data-fam="${f}" aria-pressed="${W.limit.has(f)}">${f}</button>`).join('')}</span></div>
+  <div class="what">${WHAT.map(([h, kinds]) => `<div class="wcol"><h4>${h}</h4>` + kinds.map(k => {
+    const label = `<span>${esc(k.name)}${k.ref ? `<span class="ref">≈ ${esc(k.ref)}</span>` : ''}${k.sub ? `<small>${esc(k.sub)}</small>` : ''}</span>`;
+    if (k.never) return `<div class="wk never"><span></span><span></span>${label}<span></span></div>`;
+    if (k.listed) return `<div class="wk listed"><span></span><span class="tick" style="opacity:.4"></span>${label}<span class="n">${k.listed}</span></div>`;
+    if (k.later) return `<div class="wk later"><span></span><span class="tick" style="opacity:.4"></span>${label}<span class="n">${esc(k.later)}</span></div>`;
+    const kOn = kidsOf(k).filter((_, i) => on.has(`${k.id}/${i}`)).length, tk = on.has(k.id) ? (k.kids && kOn < k.kids.length ? 'part' : 'on') : '';
+    const folded = k.kids && !open.has(k.id);
+    let h = `<div class="wk" data-wk="${k.id}"><span class="fold" ${k.kids ? `data-fold="${k.id}"` : ''}>${k.kids ? (folded ? '▸' : '▾') : ''}</span><span class="tick ${tk}">${tk === 'on' ? '✓' : ''}</span>${label}<span class="n">${kN(k)}</span></div>`;
+    if (k.kids && !folded) h += k.kids.map(([kn, c, sub], i) => {
+      const id = `${k.id}/${i}`;
+      let r = `<div class="wk sub" data-wk="${id}"><span class="fold" ${sub ? `data-fold="${id}"` : ''}>${sub ? (open.has(id) ? '▾' : '▸') : ''}</span><span class="tick ${on.has(id) ? 'on' : ''}">${on.has(id) ? '✓' : ''}</span><span>${esc(kn)}</span><span class="n">${c}</span></div>`;
+      if (sub && open.has(id)) r += sub.map(([sn, sc]) => `<div class="wk sub2"><span></span><span class="tick ${on.has(id) ? 'on' : ''}" style="width:18px;height:18px">${on.has(id) ? '✓' : ''}</span><span>${esc(sn)}</span><span class="n">${sc}</span></div>`).join('');
+      return r;
+    }).join('');
+    return h;
+  }).join('') + `</div>`).join('')}</div>`;
+}
+
+// ---------- Attributes (the node graph) ----------
+const SRC = [
+  ['Dimmer', [['Dimmer', 'Dim', 42, 'Beams', 'Dimmer'], ['Shutter1', 'Sh1', 11, 'Beams', 'Dimmer']]],
+  ['Position', [['Pan', 'P', 18, 'Yoke', 'Position'], ['Tilt', 'T', 18, 'Head', 'Position']]],
+  ['Color', [['Color', 'Color (C1, RGBW, CTC)', 64, 'Beams', 'Color']]],
+  ['Focus', [['Zoom', 'Zoom', 16, 'Head', 'Focus']]],
+  ['Beam', [['Effects1', 'FX1', 7, 'Base', 'Beam'], ['Effects1Rate', 'FX1 Rate', 7, 'Base', 'Beam'], ['Effects2', 'FX2', 3, 'Base', 'Beam']]],
+  ['Aura ring', [['Aura.Dimmer', 'Aura Dim', 20, 'Auras', 'Dimmer'], ['Aura.Color', 'Aura Color', 20, 'Auras', 'Color']]],
+  ['Control', [['Control1', 'Ctrl1', 2, 'Base', 'Control']]],
+];
+const DST = [['Dimmer', ['Dimmer', 'Shutter1']], ['Position', ['Pan', 'Tilt']], ['Color', ['Color']], ['Gobo', ['Gobo1', 'Gobo1Pos', 'Gobo2', 'AnimationWheel1', 'AnimationWheel1Pos']], ['Beam', ['Prism1', 'Frost1', 'Iris']], ['Focus', ['Zoom', 'Focus1']], ['Control', ['Control1']]];
+const NICE = { Color: 'Color (CMY, CTO, wheels 1 + 2)', AnimationWheel1: 'Animation1', AnimationWheel1Pos: 'Animation1 Pos' };
+const nice = t => NICE[t] || t;
+const SRCS = SRC.flatMap(([, r]) => r), SRCN = SRCS.map(x => x[0]), DSTN = DST.flatMap(([, r]) => r), groupOf = t => DST.find(([, r]) => r.includes(t))[0];
+const auto = () => { const m = {}; for (const s of SRCN) m[s] = DSTN.includes(s) ? [{ t: s, how: s === 'Color' ? 'colour' : 'auto' }] : []; m.Effects1 = [{ t: 'AnimationWheel1', how: 'sug' }]; m.Effects1Rate = [{ t: 'AnimationWheel1Pos', how: 'sug' }]; return m; };
+let map = auto(), openSrc = null, drag = null;
+const needs = s => { const ts = map[s]; return !ts.length || ts.some(x => x.how === 'sug' || x.how === 'hand'); };
+function counts() {
+  let a = 0, sg = 0, h = 0, c = 0, n = 0;
+  for (const ts of Object.values(map)) { if (!ts.length) n++; else if (ts.some(x => x.how === 'hand')) h++; else if (ts.some(x => x.how === 'sug')) sg++; else if (ts.some(x => x.how === 'colour')) c++; else a++; }
+  return { a, sg, h, c, n };
+}
+const pills = k => `<span class="pill p-auto">${k.a} mapped</span><span class="pill p-sug">${k.sg} suggested</span><span class="pill p-conv">${k.c} colour</span>${k.h ? `<span class="pill p-hand">${k.h} by hand</span>` : ''}<span class="pill p-none">${k.n} unused</span>`;
+function stepGraph() {
+  const used = t => Object.values(map).some(ts => ts.some(x => x.t === t));
+  const fadeL = s => W.attention && !needs(s), fadeR = t => W.attention && !Object.entries(map).some(([s, ts]) => needs(s) && ts.some(x => x.t === t)) && used(t);
+  return `<div class="bar"><div class="seg small" role="group" aria-label="Show"><button data-att="1" aria-pressed="${W.attention}">Needs attention</button><button data-att="0" aria-pressed="${!W.attention}">All</button></div><span class="lab">Press a source · drag from its dot · tap a line to remove it</span><span class="r">${pills(counts())}<button class="chip" id="openrules"><svg class="icon"><use href="#i-rules"/></svg>Defined attributes…</button></span></div>
+  <div class="vb" id="vb"><div class="colB"><h3>MAC Aura XB · Extended</h3>` + SRC.map(([g, rows]) => `<div class="g">${esc(g)}</div>` + rows.map(([s, p, n, geo]) => {
+    const ts = map[s], col = s === 'Color', hint = col ? COPTS.find(o => o[0] === W.colour)[1] : ts.length ? ts.map(x => nice(x.t)).join(' + ') : 'kept unused';
+    const cls = !ts.length ? 'none' : ts.some(x => x.how === 'sug') ? 'sug' : '';
+    return `<div class="nodeL ${cls} ${col ? 'colourrow' : ''} ${openSrc === s ? 'open' : ''} ${fadeL(s) ? 'fade' : ''}" data-src="${s}"><span class="nm"><b>${esc(p)}</b><small>${geo} · ${n} values · → ${esc(hint)}</small></span><span class="dot"></span></div>`;
+  }).join('')).join('') + `</div><div></div><div class="colB"><h3>Two-wheel spot · Mode 1</h3>` + DST.map(([g, rows]) => `<div class="g">${esc(g)}</div>` + rows.map(t =>
+    `<div class="nodeR ${used(t) ? 'used' : ''} ${t === 'Color' ? 'colourrow' : ''} ${fadeR(t) ? 'fade' : ''}" data-node="${t}"><span class="dotR"></span><span class="nm"><b>${esc(nice(t))}</b><small>${esc(t)}</small></span></div>`).join('')).join('') + `</div><svg class="links" id="links"></svg></div>`;
+}
+function drawLinks() {
+  const vb = $('vb'); if (!vb) return;
+  const box = vb.getBoundingClientRect(), svg = $('links');
+  const pt = (el, side) => { const r = el.getBoundingClientRect(); return [side === 'L' ? r.right - box.left : r.left - box.left, r.top + r.height / 2 - box.top]; };
+  let h = '';
+  for (const [s, ts] of Object.entries(map)) {
+    const L = vb.querySelector(`.nodeL[data-src="${CSS.escape(s)}"] .dot`); if (!L) continue;
+    const f = W.attention && !needs(s) ? ' faded' : '';
+    for (const x of ts) { const R = vb.querySelector(`.nodeR[data-node="${CSS.escape(x.t)}"]`); if (!R) continue;
+      const [x1, y1] = pt(L, 'L'), [x2, y2] = pt(R, 'R'), mx = (x1 + x2) / 2, d = `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;
+      h += `<path class="hit" d="${d}" data-link="${s}|${x.t}"></path><path class="l-${x.how}${f}" d="${d}"></path>`; }
+  }
+  if (drag && drag.moved) { const L = vb.querySelector(`.nodeL[data-src="${CSS.escape(drag.s)}"] .dot`), [x1, y1] = pt(L, 'L'), x2 = drag.x - box.left, y2 = drag.y - box.top, mx = (x1 + x2) / 2; h += `<path class="l-live" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"></path>`; }
+  svg.innerHTML = h;
+}
+function connList(s, q) {
+  const ts = map[s], has = t => ts.some(r => r.t === t), feeds = t => Object.entries(map).filter(([k, v]) => k !== s && v.some(r => r.t === t)).map(([k]) => k);
+  const src = SRCS.find(r => r[0] === s), sib = DSTN.filter(t => t.replace(/\d+/g, '') === s.replace(/\d+/g, '').replace(/^Aura\./, '')).slice(0, 2);
+  const item = t => `<button class="mi ${has(t) ? 'on' : ''}" data-conn="${t}" data-s="${s}"><span class="ck">${has(t) ? '✓' : ''}</span><span>${esc(nice(t))} <small class="mono">${esc(t)}</small></span><span class="k">${feeds(t).length ? 'from ' + feeds(t).join(', ') : ''}</span></button>`;
+  const ql = q.toLowerCase();
+  if (ql) return DSTN.filter(t => (t + nice(t)).toLowerCase().includes(ql)).map(item).join('') || '<div class="sec">No attribute matches</div>';
+  return (sib.length ? `<div class="sec">Same name, other number</div>${sib.map(item).join('')}` : '') + DST.map(([g, rows]) => `<div class="sec">${esc(g)}${g === src[4] ? ' · same feature' : ''}</div>${rows.map(item).join('')}`).join('');
+}
+function openConnect(s, x, y) {
+  openSrc = s; render();
+  const src = SRCS.find(r => r[0] === s);
+  let h = `<div class="mh"><b>${esc(src[1])}</b> → connect to<small>${src[2]} values · ${esc(src[3])} · feature ${esc(src[4])}</small></div>`;
+  if (s === 'Color') h += `<div class="sec">How colour converts — step 3 shows the result</div>` + COPTS.map(([k, l, sub]) => `<button class="mi ${W.colour === k ? 'on' : ''}" data-colour="${k}"><span class="ck">${W.colour === k ? '●' : ''}</span><span>${esc(l)}<br><small>${esc(sub)}</small></span><span></span></button>`).join('');
+  else h += `<div class="search"><input id="msearch" placeholder="Search the target's attributes" aria-label="Search"></div><div id="mlist">${connList(s, '')}</div>`;
+  h += `<hr><button class="mi dl" data-unused="${s}"><span>×</span><span>Keep unused</span><small>values stay, listed</small></button>`;
+  menu.innerHTML = h; place(x, y);
+}
+function place(x, y) { menu.hidden = false; const r = menu.getBoundingClientRect(); menu.style.left = `${Math.max(8, Math.min(x, innerWidth - r.width - 8))}px`; menu.style.top = `${Math.max(8, Math.min(y, innerHeight - r.height - 8))}px`; }
+function closeMenu() { if (menu.hidden) return; menu.hidden = true; if (openSrc) { openSrc = null; render(); } }
+
+// ---------- Colour & gobos ----------
+const COPTS = [['colour', 'Through colour', 'CMY, CTO and both wheels together'], ['wheel', 'Wheels only', 'nearest slot on either wheel, CMY open'], ['cmy', 'CMY only', 'exact mixes, wheels open'], ['split', 'Split by attribute', 'C1 → a wheel, RGBW → CMY, CTC → CTO']];
+const CROWS = {
+  colour: [['Cue 3 · Congo Blue (slot 8)', '#3a1fa8', '#3628a6', 'W2 Deep Blue + CMY M8', 1.6], ['Cue 5 · R100 G40 B0', '#ff6600', '#fb6a0a', 'CMY C0 M58 Y100', 0.9], ['Preset Color 4 · RGBW full', '#ffffff', '#fffbf2', 'Open, CTO 0', 1.3], ['Cue 12 · CTC 2500 K', '#ffa04a', '#ffad60', 'CTO full = 2700 K — held, listed', 3.8]],
+  wheel: [['Cue 3 · Congo Blue', '#3a1fa8', '#2f2a9e', 'W2 Deep Blue', 3.9], ['Cue 5 · R100 G40 B0', '#ff6600', '#f08a22', 'W1 Orange', 6.4], ['Preset Color 4 · RGBW full', '#ffffff', '#f4f4f4', 'Open', 0.4], ['Cue 12 · CTC 2500 K', '#ffa04a', '#f6b26b', 'W2 CTO ½', 4.4]],
+  cmy: [['Cue 3 · Congo Blue', '#3a1fa8', '#3f2aa6', 'CMY C10 M78 Y0', 3.0], ['Cue 5 · R100 G40 B0', '#ff6600', '#fb6a0a', 'CMY C0 M58 Y100', 0.9], ['Preset Color 4 · RGBW full', '#ffffff', '#ffffff', 'CMY open', 0.2], ['Cue 12 · CTC 2500 K', '#ffa04a', '#ffb070', 'CMY C0 M24 Y52', 3.6]],
+  split: [['Cue 3 · Congo Blue (slot 8)', '#3a1fa8', '#2f2a9e', 'C1 → W2 Deep Blue', 3.9], ['Cue 5 · R100 G40 B0', '#ff6600', '#fb6a0a', 'RGBW → CMY C0 M58 Y100', 0.9], ['Preset Color 4 · RGBW full', '#ffffff', '#ffffff', 'RGBW → CMY open', 0.2], ['Cue 12 · CTC 2500 K', '#ffa04a', '#ffad60', 'CTC → CTO full = 2700 K, held', 3.8]],
+};
+const AURA = [['Open','#f4f4f4'],['Moroccan Pink','#f2a9c4'],['Special Rose Pink','#e2579a'],['Fuchsia Pink','#d63fb6'],['Surprise Pink','#c58ed9'],['Congo Blue','#3a1fa8'],['Tokyo Blue','#3b2fb8'],['Deep Blue','#1d3fd1'],['Medium Blue','#2b66e8'],['Full CT Blue','#9db8f4'],['Light Blue','#5fb3ee'],['Medium Blue Green','#1fa3a0'],['Primary Green','#22b44a'],['Lime Green','#a4d63a'],['Spring Yellow','#efe85a'],['Deep Amber','#f0a020'],['Orange','#f08a22'],['Flame Red','#e8322a']];
+const T = [
+  ...[['Open', '#f4f4f4'], ['Blue', '#2b66e8'], ['Green', '#22b44a'], ['Minus Green', '#e88ac4'], ['Orange', '#f08a22'], ['Deep Magenta', '#c0308f'], ['CTB', '#9db8f4'], ['Red', '#e8322a']].map(([n, c]) => ({ src: 'W1', n, c })),
+  ...[['Open', '#f4f4f4'], ['Deep Blue', '#2f2a9e'], ['Lavender', '#c48dd4'], ['Congo', '#3c22a4'], ['Lime', '#a6d53c'], ['Amber', '#f2a632'], ['Cyan', '#2fc4d8'], ['CTO ½', '#f6b26b'], ['Pink', '#f2a6c8']].map(([n, c]) => ({ src: 'W2', n, c })),
+];
+const hex = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const dE = (a, b) => { const [r1, g1, b1] = hex(a), [r2, g2, b2] = hex(b); return Math.sqrt(2 * (r1 - r2) ** 2 + 4 * (g1 - g2) ** 2 + 3 * (b1 - b2) ** 2) / 6.5; };
+function candidates(c) {
+  const out = T.filter(x => x.n !== 'Open' || dE(c, x.c) < 20).map(x => ({ key: `${x.src}|${x.n}`, tag: x.src, n: x.n, c: x.c, d: dE(c, x.c) }));
+  out.push({ key: 'CMY', tag: 'CMY', n: 'CMY mix', c, d: 0.6 });
+  const b2 = T.filter(x => x.src === 'W2' && x.n !== 'Open').sort((a, b) => dE(c, a.c) - dE(c, b.c))[0];
+  if (b2 && dE(c, b2.c) > 1.2) out.push({ key: `W2|${b2.n}|CMY`, tag: 'W2 + CMY', n: `${b2.n} + CMY tint`, c, d: Math.max(0.4, dE(c, b2.c) / 4) });
+  return out.sort((a, b) => a.d - b.d);
+}
+const firstSlot = c => candidates(c).filter(x => !x.key.endsWith('|CMY') && x.key !== 'CMY')[0];
+const WH = { picks: {}, gobo: {}, filter: 'All' };
+const GOBO_SRC = [['Open', 'open', 'rot'], ['Breakup 1', 'breakup', 'rot'], ['Dots', 'dots', 'rot'], ['Bars', 'lines', 'static'], ['Cone', 'circle', 'static'], ['Star', 'star', 'static']];
+const GOBO_DST = [['Open', 'open', 'G1 · rotating'], ['Breakup leaves', 'breakup', 'G1 · rotating'], ['Dot ring', 'dots', 'G1 · rotating'], ['Lines', 'lines', 'G2 · static'], ['Circle', 'circle', 'G2 · static'], ['Triangle', 'star', 'G2 · static'], ['Cloud breakup', 'breakup', 'G2 · static'], ['Spiral', 'spiral', 'G1 · rotating']];
+const GSVG = { open: '<circle cx="12" cy="12" r="9" fill="#ddd"/>', breakup: '<circle cx="12" cy="12" r="9" fill="#ddd"/><path d="M5 9c3-2 5 2 8 0s4 3 6 1M6 15c2 1 4-2 7 0s3 1 5-1" stroke="#0d0d0d" stroke-width="2.4" fill="none"/>', dots: '<g fill="#ddd"><circle cx="12" cy="5" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/></g>', lines: '<g stroke="#ddd" stroke-width="2"><path d="M7 4v16M12 3v18M17 4v16"/></g>', circle: '<circle cx="12" cy="12" r="7" stroke="#ddd" stroke-width="2.5" fill="none"/>', star: '<path d="M12 3l2.6 6 6.4.6-4.9 4.2 1.5 6.2L12 16.8 6.4 20l1.5-6.2L3 9.6l6.4-.6z" fill="#ddd"/>', spiral: '<path d="M12 12a2 2 0 1 1 2-2 4 4 0 1 1-4-4 6 6 0 1 1 6 6" stroke="#ddd" stroke-width="2" fill="none"/>' };
+const gob = k => `<span class="gob"><svg viewBox="0 0 24 24">${GSVG[k]}</svg></span>`;
+const goboFor = (n, f, role) => WH.gobo[n] || (GOBO_DST.find(g => g[1] === f && g[2].includes(role === 'rot' ? 'rotating' : 'static')) || GOBO_DST.find(g => g[1] === f) || GOBO_DST[0])[0];
+function stepColour() {
+  const tabs = [['conv', 'Conversion', COPTS.find(o => o[0] === W.colour)[1]], ['slots', 'Colour slots', `${AURA.length} slots${Object.keys(WH.picks).length ? ` · ${Object.keys(WH.picks).length} by hand` : ''}`], ['gobos', 'Gobos', `${GOBO_SRC.length} slots · by role`]];
+  let h = `<div class="bar"><div class="seg small" role="tablist" aria-label="Colour and gobos">${tabs.map(([k, l, sub]) => `<button data-ctab="${k}" aria-pressed="${W.ctab === k}">${l} <span style="color:var(--faint);font-size:11.5px">${esc(sub)}</span></button>`).join('')}</div>${W.ctab !== 'conv' ? '<span class="r"><button class="chip" id="wreset">Reset to suggested</button></span>' : ''}</div>`;
+  if (W.ctab === 'conv') {
+    h += `<div class="copts">${COPTS.map(([k, l, s]) => `<button class="copt" data-colour="${k}" aria-pressed="${W.colour === k}"><b>${l}</b><small>${s}</small></button>`).join('')}</div>`;
+    h += `<div class="sec3">What it does to stored colours</div>` + CROWS[W.colour].map(([w, a, b, how, d]) => `<div class="crow"><span>${esc(w)}</span><span class="sw" style="background:${a}"></span><span style="color:var(--faint);text-align:center">→</span><span class="sw" style="background:${b}"></span><span class="tg"><small>${esc(how)}</small></span><span class="de ${d > 3 ? 'bad' : ''}">ΔE ${d.toFixed(1)}</span></div>`).join('');
+    return h;
+  }
+  const col = W.ctab === 'slots';
+  const rows = col ? AURA.map(([n, c], i) => {
+    const pk = WH.picks[n], cur = pk ? candidates(c).find(x => x.key === pk) : firstSlot(c);
+    const cls = pk ? (cur.tag.includes('CMY') ? 'mix' : 'hand') : cur.d < 3 ? 'exact' : 'near';
+    return `<div class="sl"><span class="sw" style="background:${c}"></span><span>${i + 1} · ${esc(n)}</span><span class="d">→</span><button class="to ${cls}" data-slot="${esc(n)}"><span class="sw" style="background:${cur.c};width:14px;height:14px"></span><span class="src-tag">${cur.tag}</span>${esc(cur.n)} <small>ΔE ${cur.d.toFixed(1)}</small></button></div>`;
+  }) : GOBO_SRC.map(([n, f, role], i) => {
+    const t = goboFor(n, f, role), g = GOBO_DST.find(x => x[0] === t), cls = WH.gobo[n] ? 'hand' : g[1] === f ? 'exact' : 'near';
+    return `<div class="sl">${gob(f)}<span>${i + 1} · ${esc(n)} <small style="color:var(--faint)">${role === 'rot' ? 'rotating' : 'static'}</small></span><span class="d">→</span><button class="to ${cls}" data-gslot="${esc(n)}">${gob(g[1])}<span class="src-tag">${g[2]}</span>${esc(t)}</button></div>`;
+  });
+  return h + `<div class="sec3">${col ? 'Aura XB colour wheel → any colour source of the spot (tap a target to change it)' : 'A source gobo wheel (example — the Aura XB has none) → the spot\'s gobo wheels, rotating to rotating first'}</div><div class="slotmap">${rows.join('')}</div>`;
+}
+function pickerList(n, q) {
+  const c = AURA.find(a => a[0] === n)[1], cand = candidates(c), cur = WH.picks[n] || firstSlot(c).key;
+  const f = WH.filter, filt = cand.filter(x => (f === 'All' || x.tag === f || (f === 'CMY' && x.tag.includes('CMY'))) && (!q || x.n.toLowerCase().includes(q.toLowerCase())));
+  const item = x => `<button class="mi ${x.key === cur ? 'on' : ''}" data-pick="${esc(x.key)}" data-n="${esc(n)}"><span class="ck">${x.key === cur ? '●' : ''}</span><span style="display:flex;gap:8px;align-items:center"><span class="sw" style="background:${x.c}"></span><span class="src-tag">${x.tag}</span>${esc(x.n)}</span><small>ΔE ${x.d.toFixed(1)}</small></button>`;
+  return (f === 'All' && !q ? `<div class="sec">Best matches · every source</div>${filt.slice(0, 4).map(item).join('')}<div class="sec">Everything, by ΔE</div>${filt.slice(4).map(item).join('')}` : filt.map(item).join('')) || '<div class="sec">Nothing matches</div>';
+}
+function openPicker(n, x, y) {
+  menu.innerHTML = `<div class="mh"><b>${esc(n)}</b> → on the two-wheel spot<small>Wheel 1 · 8 slots · Wheel 2 · 9 slots · CMY · CTO</small></div><div class="msrc">${['All', 'W1', 'W2', 'CMY'].map(s => `<button data-pf="${s}" data-n="${esc(n)}" aria-pressed="${WH.filter === s}">${s === 'W1' ? 'Wheel 1' : s === 'W2' ? 'Wheel 2' : s}</button>`).join('')}</div><div class="search"><input id="psearch" data-n="${esc(n)}" placeholder="Search slots" aria-label="Search slots"></div><div id="plist">${pickerList(n, '')}</div>`;
+  place(x, y);
+}
+function openGoboPicker(n, x, y) {
+  const s = GOBO_SRC.find(g => g[0] === n), cur = goboFor(n, s[1], s[2]);
+  const list = [...GOBO_DST].sort((a, b) => (a[1] === s[1] ? 0 : 1) - (b[1] === s[1] ? 0 : 1));
+  menu.innerHTML = `<div class="mh"><b>${esc(n)}</b> (${s[2] === 'rot' ? 'rotating' : 'static'}) → on the two-wheel spot<small>Gobo wheel 1 rotating · Gobo wheel 2 static</small></div><div class="sec">Same family first</div>` + list.map(([gn, gf, w]) => `<button class="mi ${gn === cur ? 'on' : ''}" data-gpick="${esc(gn)}" data-n="${esc(n)}"><span class="ck">${gn === cur ? '●' : ''}</span><span style="display:flex;gap:8px;align-items:center">${gob(gf)}<span class="src-tag">${w}</span>${esc(gn)}</span><small>${gf === s[1] ? 'same family' : gf}</small></button>`).join('') + `<hr><button class="mi" data-gpick="Open" data-n="${esc(n)}"><span></span><span>Leave the gobo open</span><small></small></button>`;
+  place(x, y);
+}
+
+// ---------- Defined attributes ----------
+let RULES = [{ from: 'ColorAdd_W', to: 'kept unused', scope: 'Aura XB → spot', src: 'remembered' }, { from: 'Effects1', to: 'AnimationWheel1', scope: 'Aura XB → spot', src: 'remembered' }, { from: 'Shutter{n}', to: 'Shutter{n}', scope: 'all', src: 'by hand' }, { from: 'Gobo{n}WheelSpin', to: 'Gobo{n}', scope: 'all', src: 'by hand' }];
+const BUILTIN = [{ from: 'NoFeature* · Dummy* · *Reset · *MSpeed', to: 'ignored (placeholders)' }, { from: 'ColorAdd_* · ColorSub_* · ColorRGB_*', to: 'Color (through colour)' }, { from: 'CTC · CTO · CTB', to: 'through kelvin (mired)' }, { from: 'Gobo{n}', to: 'by role (rotating / static), then number' }, { from: '*', to: 'same GDTF name' }];
+const toRe = p => new RegExp('^' + p.replace(/[.+?^$()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\{n\}/g, '\\d+') + '$', 'i');
+const firstMatch = n => { for (const [i, r] of RULES.entries()) if (toRe(r.from).test(n)) return ['show', i]; for (const [i, r] of BUILTIN.entries()) if (r.from.split(' · ').some(f => toRe(f).test(n))) return ['built', i]; return null; };
+function renderRules() {
+  const m = firstMatch(W.tried);
+  $('rules').innerHTML = `<div class="title"><span class="t">Defined attributes</span><span class="sub">rules in this show · first match wins</span><button class="x" id="closerules" aria-label="Close">✕</button></div>
+  <div class="tryrow"><span class="lab">Try a name</span><input id="try" value="${esc(W.tried)}" aria-label="Attribute name"><span class="res">${m ? `→ ${m[0] === 'show' ? 'rule ' + (m[1] + 1) : 'built-in'}: ${esc((m[0] === 'show' ? RULES : BUILTIN)[m[1]].to)}` : 'no rule — kept unused'}</span></div>
+  <div style="overflow-x:auto"><table class="rtable"><thead><tr><th>#</th><th>From</th><th>To</th><th>Scope</th><th>From where</th></tr></thead><tbody>${RULES.map((r, i) => `<tr class="${m && m[0] === 'show' && m[1] === i ? 'hit' : ''}"><td>${i + 1}</td><td class="mono">${esc(r.from)}</td><td class="mono">${esc(r.to)}</td><td>${esc(r.scope)}</td><td><small style="color:var(--dim)">${esc(r.src)}</small></td></tr>`).join('')}<tr class="sep"><td colspan="5">Built in · read-only</td></tr>${BUILTIN.map((r, i) => `<tr class="builtin ${m && m[0] === 'built' && m[1] === i ? 'hit' : ''}"><td>—</td><td class="mono">${esc(r.from)}</td><td class="mono">${esc(r.to)}</td><td>all</td><td><small>built-in</small></td></tr>`).join('')}</tbody></table></div>
+  <div class="foot"><span class="lab" style="flex:1">A hand edit writes an exact rule; Remember writes the whole map for the pair.</span><button class="go" id="donerules">Done</button></div>`;
+}
+
+// ---------- Summary and Check ----------
+function topicsData() {
+  const k = counts(), effectsAsk = map.Effects1.some(x => x.how === 'sug'), aura = !map['Aura.Dimmer'].length || !map['Aura.Color'].length;
+  const handPicks = Object.keys(WH.picks).length + Object.keys(WH.gobo).length;
+  return [
+    ['Intensity', 'kept', 'Dimmer, shutter — same names'],
+    ['Position', 'kept', 'Pan, Tilt in native degrees'],
+    ['Colour', 'conv', `${COPTS.find(o => o[0] === W.colour)[1]} · worst ΔE ${Math.max(...CROWS[W.colour].map(r => r[4])).toFixed(1)}`, 3],
+    ['Colour wheel slots', handPicks ? 'conv' : 'conv', `18 slots → wheel 1, wheel 2 or CMY by ΔE${handPicks ? ` · ${handPicks} by hand` : ''}`, 3],
+    ['Focus', 'kept', 'Zoom'],
+    ['Effects', effectsAsk ? 'ask' : 'conv', effectsAsk ? 'FX1, FX1 Rate → Animation1 suggested — check it' : 'mapped by hand', 2],
+    ['Aura ring', aura ? 'gone' : 'conv', aura ? 'No ring on the spot — 40 values kept unused, listed' : 'mapped by hand', 2],
+    ['FX2', map.Effects2.length ? 'conv' : 'ask', map.Effects2.length ? 'mapped by hand' : 'No target — use for something, or keep unused', 2],
+  ];
+}
+function stepSummary() {
+  const t = topicsData(), asks = t.filter(x => x[1] === 'ask').length;
+  return `<div class="headline">6 fixtures become two-wheel spots.<small>${counted()} values · 6 attributes match by name · colour converts as a whole · ${asks} need${asks === 1 ? 's' : ''} a look · Control1 ignored (placeholder)</small></div>
+  <div class="topics">${t.map(([n, st, txt, go]) => `<div class="tp"><span class="st ${st}">${{ kept: '✓', conv: '↻', ask: '?', gone: '–' }[st]}</span><span><b>${esc(n)}</b><small>${esc(txt)}</small>${(st === 'ask' || st === 'gone') && go ? `<button class="go2" data-goto="${go}">Open step ${go} ›</button>` : ''}</span></div>`).join('')}</div>
+  <div class="noise">1 placeholder channel ignored (Control1) · never carried, never counted as a loss</div>`;
+}
+function stepCheck() {
+  const k = counts(), unused = Object.entries(map).filter(([, ts]) => !ts.length).map(([s]) => SRCS.find(r => r[0] === s));
+  const hand = Object.entries(map).flatMap(([s, ts]) => ts.filter(x => x.how === 'hand').map(x => `${s} → ${x.t}`));
+  const worst = [...CROWS[W.colour]].sort((a, b) => b[4] - a[4]).slice(0, 3);
+  const kinds = KINDS.filter(x => !x.never && !x.later && !x.listed && on.has(x.id));
+  return `<div class="check4">
+    <div class="card"><h4>What changes <button data-goto="1">1 What ›</button></h4><table>${kinds.map(x => `<tr><td>${esc(x.name)}${x.kids ? `<small style="color:var(--dim)"> · ${x.kids.filter((_, i) => on.has(`${x.id}/${i}`)).map(y => y[0]).join(', ')}</small>` : ''}</td><td class="n">${x.kids ? x.kids.filter((_, i) => on.has(`${x.id}/${i}`)).reduce((a, y) => a + y[1], 0) : x.n}</td></tr>`).join('')}<tr><td><b>Total</b>${W.limit.has('All') ? '' : ` · only ${[...W.limit].join(', ')}`}</td><td class="n"><b>${counted()}</b></td></tr></table></div>
+    <div class="card"><h4>Attributes <button data-goto="2">2 Doesn't match ›</button></h4><table><tr><td>Same name</td><td class="n">${k.a}</td></tr><tr><td>Colour, converted as a whole</td><td class="n">${k.c}</td></tr><tr><td>Suggested — not confirmed</td><td class="n">${k.sg}</td></tr><tr><td>By hand${hand.length ? `<small style="color:var(--dim)"> · ${esc(hand.join(', '))}</small>` : ''}</td><td class="n">${k.h}</td></tr><tr><td>Kept unused</td><td class="n">${k.n}</td></tr><tr><td>Placeholders ignored</td><td class="n">1</td></tr></table></div>
+    <div class="card"><h4>Colour · the worst three <button data-goto="3">3 Colour ›</button></h4><table>${worst.map(([w, a, b, how, d]) => `<tr><td><span class="sw" style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${a};vertical-align:-2px"></span> → <span class="sw" style="display:inline-block;width:14px;height:14px;border-radius:3px;background:${b};vertical-align:-2px"></span> ${esc(w)}<small style="color:var(--dim)"> · ${esc(how)}</small></td><td class="n ${d > 3 ? 'de bad' : ''}">ΔE ${d.toFixed(1)}</td></tr>`).join('')}</table></div>
+    <div class="card"><h4>Held and unused — nothing is lost</h4><table>${unused.map(u => `<tr><td>${esc(u[1])} <small style="color:var(--dim)">${esc(u[0])}</small></td><td class="n">${u[2]} values kept unused</td></tr>`).join('')}<tr><td class="warnline">CTC 2500 K in cue 12</td><td class="n">held at 2700 K, listed</td></tr><tr><td colspan="2" class="lab">Listed in <code>List Reference /Unused</code>; changing back restores them.</td></tr></table></div>
+    <div class="card full"><h4>One cue, before and after · Sequence 1 · Cue 3 · fixture 101</h4><div class="ba"><div class="h">Attribute</div><div class="h">Aura XB now</div><div class="h">Two-wheel spot after</div>
+      <div>Dimmer</div><div>80 %</div><div>80 %</div>
+      <div>Pan / Tilt</div><div>−45° / 30°</div><div>−45° / 30°</div>
+      <div>Colour</div><div><span class="sw" style="background:#3a1fa8"></span>Congo Blue (slot 8)</div><div><span class="sw" style="background:#3628a6"></span>${esc(CROWS[W.colour][0][3])} · ΔE ${CROWS[W.colour][0][4]}</div>
+      <div>Zoom</div><div>20°</div><div>20° (native)</div>
+      <div>FX1</div><div>Effect 3, 40 %</div><div>${map.Effects1.length ? esc(nice(map.Effects1[0].t)) + ' · 40 %' : 'kept unused'}</div>
+      <div>Aura Dim / Color</div><div>60 %, <span class="sw" style="background:#c58ed9"></span>Surprise Pink</div><div>${map['Aura.Dimmer'].length ? esc(nice(map['Aura.Dimmer'][0].t)) : 'kept unused'}</div></div></div>
+  </div>`;
+}
+
+// ---------- Frame ----------
+const STEPS = ['Summary', '1 What', '2 Doesn\'t match', '3 Colour & gobos', '4 Check'];
+function decisions() {
+  return `<span class="dl">Decisions</span><span class="lab">Values keep their</span><div class="seg small" role="group"><button data-keep="m" aria-pressed="${W.meaning}">Meaning</button><button data-keep="o" aria-pressed="${!W.meaning}">DMX output</button></div>` +
+    `<button class="check" id="remember" aria-pressed="${W.remember}"><span class="box">✓</span>Remember for this pair</button><button class="check" id="deps" aria-pressed="${W.deps}"><span class="box">✓</span>Referenced presets too</button>` +
+    (W.hasValues ? `<span class="lab">The targets already have values</span><div class="seg small" role="group"><button data-merge="low" aria-pressed="${W.merge === 'low'}">Keep theirs</button><button data-merge="high" aria-pressed="${W.merge === 'high'}">Take mine</button><button data-merge="over" aria-pressed="${W.merge === 'over'}">Overwrite</button></div>` : '');
+}
+function line() {
+  const n = counted(), lim = W.limit.has('All') ? '' : ` Attribute ${[...W.limit].join(' + ')}`, off = Object.entries(map).filter(([, ts]) => !ts.length).map(([s]) => s);
+  $('mline').innerHTML = `<b>Set Fixture 101 Thru 106 "FixtureType" "Two-wheel spot" /Mode "Mode 1" /Map 1${W.meaning ? '' : ' /KeepOutput'}${W.remember ? ' /RememberMap' : ''}${W.deps ? '' : ' /NoDependencies'}</b>\n  ${n} values${lim ? ' ·' + lim : ''} · colour: ${W.colour} · kept unused: ${off.join(', ') || 'none'}\n  (Clone opens this same window: Clone Fixture 101 Thru 106${lim} At Fixture 201 Thru 206)`;
+}
+function render() {
+  $('wt').textContent = 'Map & clone';
+  $('ws').textContent = 'a type change in the claimed patch · Clone opens the same window';
+  $('fromto').innerHTML = `<span class="lab">From</span><b>101–106 · MAC Aura XB · Extended</b><span class="lab">→</span><b>Two-wheel spot · Mode 1</b>`;
+  const asks = topicsData().filter(x => x[1] === 'ask').length;
+  $('steps').innerHTML = STEPS.map((s, i) => `<button class="step" role="tab" data-step="${i}" aria-selected="${W.step === i}">${i ? `<span class="n">${i}</span>${esc(s.slice(2))}` : esc(s)}${i === 2 && asks ? `<span class="q">${asks} ?</span>` : ''}</button>`).join('');
+  const st = $('body').scrollTop;
+  $('body').innerHTML = [stepSummary, stepWhat, stepGraph, stepColour, stepCheck][W.step]();
+  $('body').scrollTop = st;
+  $('decisions').innerHTML = decisions();
+  $('back').hidden = W.step === 0;
+  $('next').textContent = W.step === 0 || W.step === 4 ? 'Apply' : 'Next';
+  if (W.step === 2) drawLinks();
+  line();
+}
+document.addEventListener('pointerdown', e => {
+  if (!menu.hidden && !e.target.closest('#menu')) closeMenu();
+  const n = e.target.closest('.nodeL'); if (!n) return;
+  e.preventDefault(); drag = { s: n.dataset.src, id: e.pointerId, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY, moved: false, fromDot: !!e.target.closest('.dot') };
+});
+document.addEventListener('pointermove', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 6) return;
+  if (!drag.fromDot || drag.s === 'Color') return;
+  drag.moved = true; drag.x = e.clientX; drag.y = e.clientY;
+  document.querySelectorAll('.nodeR.over').forEach(x => x.classList.remove('over'));
+  document.elementFromPoint(e.clientX, e.clientY)?.closest('.nodeR')?.classList.add('over');
+  drawLinks();
+});
+document.addEventListener('pointerup', e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  const d = drag; drag = null;
+  if (d.moved) { const t = document.elementFromPoint(e.clientX, e.clientY)?.closest('.nodeR')?.dataset.node; if (t && t !== 'Color' && !map[d.s].some(x => x.t === t)) map[d.s] = map[d.s].filter(x => x.how !== 'sug').concat({ t, how: 'hand' }); render(); }
+  else openConnect(d.s, e.clientX + 8, e.clientY - 10);
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'msearch') $('mlist').innerHTML = connList(openSrc, e.target.value);
+  if (e.target.id === 'psearch') $('plist').innerHTML = pickerList(e.target.dataset.n, e.target.value);
+  if (e.target.id === 'try') { W.tried = e.target.value; const p = e.target.selectionStart; renderRules(); const i = $('try'); i.focus(); i.setSelectionRange(p, p); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeMenu(); $('rules').hidden = true; $('veil').hidden = true; } });
+$('body').addEventListener('scroll', () => { if (W.step === 2) drawLinks(); });
+document.addEventListener('click', e => {
+  const hit = e.target.closest('path.hit'); if (hit) { const [s, t] = hit.dataset.link.split('|'); if (s !== 'Color') { map[s] = map[s].filter(x => x.t !== t); render(); } return; }
+  const fold = e.target.closest('[data-fold]'); if (fold) { const f = fold.dataset.fold; open.has(f) ? open.delete(f) : open.add(f); render(); return; }
+  const wk = e.target.closest('[data-wk]'); if (wk) { const k = wk.dataset.wk; if (k.includes('/')) on.has(k) ? on.delete(k) : on.add(k); else setKind(k, !on.has(k)); render(); return; }
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.ctab) { W.ctab = b.dataset.ctab; closeMenu(); render(); }
+  else if (b.dataset.step) { W.step = +b.dataset.step; closeMenu(); $('body').scrollTop = 0; render(); }
+  else if (b.dataset.goto) { W.step = +b.dataset.goto; $('body').scrollTop = 0; render(); }
+  else if (b.id === 'back') { W.step = Math.max(0, W.step - 1); $('body').scrollTop = 0; render(); }
+  else if (b.id === 'next') { if (W.step > 0 && W.step < 4) { W.step++; $('body').scrollTop = 0; render(); } }
+  else if (b.dataset.set) { useSet(b.dataset.set); render(); }
+  else if (b.dataset.fam) { const f = b.dataset.fam; if (f === 'All') W.limit = new Set(['All']); else { W.limit.delete('All'); W.limit.has(f) ? W.limit.delete(f) : W.limit.add(f); if (!W.limit.size) W.limit.add('All'); } render(); }
+  else if (b.dataset.keep) { W.meaning = b.dataset.keep === 'm'; render(); }
+  else if (b.dataset.merge) { W.merge = b.dataset.merge; render(); }
+  else if (b.id === 'remember') { W.remember = !W.remember; render(); }
+  else if (b.id === 'deps') { W.deps = !W.deps; render(); }
+  else if (b.dataset.att) { W.attention = b.dataset.att === '1'; render(); }
+  else if (b.dataset.conn) { const s = b.dataset.s, t = b.dataset.conn; map[s] = map[s].some(x => x.t === t) ? map[s].filter(x => x.t !== t) : map[s].filter(x => x.how !== 'sug').concat({ t, how: 'hand' }); const q = $('msearch')?.value || ''; render(); if ($('mlist')) $('mlist').innerHTML = connList(s, q); }
+  else if (b.dataset.colour) { W.colour = b.dataset.colour; closeMenu(); render(); }
+  else if (b.dataset.unused) { map[b.dataset.unused] = []; closeMenu(); render(); }
+  else if (b.id === 'openrules') { renderRules(); $('rules').hidden = false; $('veil').hidden = false; }
+  else if (b.id === 'closerules' || b.id === 'donerules') { $('rules').hidden = true; $('veil').hidden = true; }
+  else if (b.id === 'wreset') { WH.picks = {}; WH.gobo = {}; render(); }
+  else if (b.dataset.slot) { const r = b.getBoundingClientRect(); openPicker(b.dataset.slot, r.left, r.bottom + 4); }
+  else if (b.dataset.gslot) { const r = b.getBoundingClientRect(); openGoboPicker(b.dataset.gslot, r.left, r.bottom + 4); }
+  else if (b.dataset.pf) { WH.filter = b.dataset.pf; menu.querySelectorAll('[data-pf]').forEach(x => x.setAttribute('aria-pressed', x === b)); $('plist').innerHTML = pickerList(b.dataset.n, $('psearch').value); }
+  else if (b.dataset.pick) { WH.picks[b.dataset.n] = b.dataset.pick; menu.hidden = true; render(); }
+  else if (b.dataset.gpick) { WH.gobo[b.dataset.n] = b.dataset.gpick; menu.hidden = true; render(); }
+});
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(drawLinks, 100); });
+render();
+</script>

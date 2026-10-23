@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Setup Network Grid</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0b0b0b">
+  <p style="position: absolute; top: 14px; left: 32px; right: 32px; margin: 0; font-size: 14px; color: #9c9c9c; line-height: 1.5">Network › Interfaces on the same &lt;luma-grid&gt;. Example: tap the Shell header (whole column), − on en5, then Edit → Shell No → one line for every selected interface. Interfaces come from the hardware, so New / Cut / Delete are greyed with the reason.</p>
+
+  <section style="position: absolute; top: 64px; left: 40px; width: 1360px; height: 816px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden; display: flex; flex-direction: column">
+    <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 16px; border-bottom: 1px solid #424242">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M9 2h6v6H9zM3 16h6v6H3zM15 16h6v6h-6zM6 16v-4h12v4M12 12V8"></path></svg>
+      <span style="font-size: 17px; font-weight: 500">Network</span>
+      <span style="height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid #303030; background: #262626; font-size: 13px"><span style="width: 8px; height: 8px; border-radius: 4px; background: {{onlineDot}}"></span>{{onlineWord}}</span>
+      <span style="height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid #303030; background: #262626; font-size: 13px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #c27a12"></span>4 interfaces · 1 no link</span>
+      <button type="button" onClick="{{toggleFilter}}" style="height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid {{filterB}}; background: #262626; color: #d1d1d1; font: inherit; font-size: 13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"></path></svg>Filter row</button>
+      <span style="height: 30px; display: flex; align-items: center; padding: 0 11px; border-radius: 15px; border: 1px solid #303030; background: #262626; font-size: 13px; color: #9c9c9c">Columns: Full</span>
+      <span style="margin-left: auto; font-size: 12px; color: #787878">This station · never in the show</span>
+      <button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+    </div>
+    <div style="flex: 1; display: flex; min-height: 0">
+      <div style="width: 140px; flex-shrink: 0; border-right: 1px solid #303030; display: flex; flex-direction: column">
+        <button type="button" style="height: 76px; border: none; border-bottom: 1px solid #262626; background: #262626; color: #d1d1d1; font: inherit; font-size: 15px; text-align: left; padding: 0 14px; box-shadow: inset 3px 0 0 #9a7a08; display: flex; flex-direction: column; justify-content: center; gap: 4px"><span>Interfaces</span><span style="font-size: 12px; color: #9c9c9c">4 · 1 no link</span></button>
+        <button type="button" style="height: 76px; border: none; border-bottom: 1px solid #262626; background: transparent; color: #9c9c9c; font: inherit; font-size: 15px; text-align: left; padding: 0 14px; display: flex; flex-direction: column; justify-content: center; gap: 4px"><span>Networks</span><span style="font-size: 12px; color: #9c9c9c">2 in the show</span></button>
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+        <div style="height: 50px; flex-shrink: 0; display: flex; gap: 6px; align-items: center; padding: 0 12px; border-bottom: 1px solid #303030">
+          <span style="font-size: 14px; color: #9c9c9c; padding-left: 4px">Interfaces of FOH</span>
+          <div style="margin-left: auto; display: flex; gap: 6px; align-items: center">
+            <span style="font-size: 13px; color: #9c9c9c; margin-right: 4px">{{count}}</span>
+            <sc-for list="{{modes}}" as="m" hint-placeholder-count="3"><button type="button" onClick="{{m.go}}" style="width: 52px; height: 44px; border-radius: 6px; border: 1px solid {{m.b}}; background: {{m.bg}}; color: {{m.fg}}; font: inherit; font-size: 15px; font-weight: 500">{{m.t}}</button></sc-for>
+            <sc-for list="{{quick}}" as="m" hint-placeholder-count="3"><button type="button" onClick="{{m.go}}" style="height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid #424242; background: #262626; color: #d1d1d1; font: inherit; font-size: 13px">{{m.t}}</button></sc-for>
+            <span title="Lasso: device setting Drag Auto" style="height: 44px; padding: 0 12px; border-radius: 6px; border: 1px dashed #424242; display: flex; align-items: center; gap: 6px; font-size: 13px; color: #9c9c9c"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"></rect></svg>Lasso: Auto</span>
+          </div>
+        </div>
+        <div style="flex: 1; overflow: hidden; padding: 0">
+          <div style="display: grid; grid-template-columns: 56px 0.9fr 1.3fr 1.1fr 1fr 0.9fr 0.9fr; grid-auto-rows: 48px; font-size: 14px">
+            <span style="background: #181818; border-bottom: 1px solid #303030; border-right: 1px solid #303030; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #787878">No</span>
+            <sc-for list="{{heads}}" as="h" hint-placeholder-count="7">
+              <button type="button" onClick="{{h.go}}" style="background: {{h.bg}}; border: none; border-bottom: 1px solid #303030; border-right: 1px solid #262626; color: {{h.fg}}; font: inherit; font-size: 12px; text-align: left; padding: 0 10px; display: flex; align-items: center; justify-content: space-between">{{h.t}}<span style="color: #787878">{{h.mark}}</span></button>
+            </sc-for>
+            <sc-if value="{{showFilter}}" hint-placeholder-val="{{ false }}">
+              <span style="background: #3a3300; border-bottom: 1px solid #303030; display: flex; align-items: center; justify-content: center"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e6c200" stroke-width="2" aria-hidden="true"><path d="M3 4h18l-7 8v6l-4 2v-8z"></path></svg></span>
+              <sc-for list="{{filters}}" as="f" hint-placeholder-count="7"><span style="background: #2e2a0a; border-bottom: 1px solid #303030; border-right: 1px solid #262626; display: flex; align-items: center; padding: 0 10px; font-size: 13px; color: {{f.c}}">{{f.t}}</span></sc-for>
+            </sc-if>
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+              <button type="button" onClick="{{r.pickRow}}" style="background: {{r.noBg}}; border: none; border-bottom: 1px solid #262626; border-right: 1px solid #303030; color: #9c9c9c; font: inherit; font-size: 13px; box-shadow: {{r.rowMark}}">{{r.no}}</button>
+              <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="7">
+                <button type="button" onClick="{{c.pick}}" style="margin: 3px 2px; border-radius: 4px; border: {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; font: inherit; font-size: 14px; text-align: left; padding: 0 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; position: relative"><span style="width: {{c.dw}}px; height: 8px; border-radius: 4px; background: {{c.dot}}; flex-shrink: 0"></span>{{c.t}}<sc-if value="{{c.chip}}" hint-placeholder-val="{{ false }}"><span onClick="{{openEdit}}" style="position: absolute; right: 4px; top: 6px; height: 28px; padding: 0 10px; border-radius: 14px; background: #9a7a08; color: #f3ecd3; font-size: 12px; display: flex; align-items: center">Edit</span></sc-if></button>
+              </sc-for>
+            </sc-for>
+            <span style="border-right: 1px solid #303030; display: flex; align-items: center; justify-content: center; color: #787878">+</span>
+            <span style="grid-column: 2 / span 6; border-bottom: 1px dashed #303030; color: #787878; font-size: 13px; display: flex; align-items: center; padding: 0 10px">No new-object line: interfaces come from the hardware</span>
+          </div>
+        </div>
+        <div style="height: 34px; flex-shrink: 0; display: flex; align-items: center; padding: 0 16px; border-top: 1px solid #303030; font-size: 12px; color: #9c9c9c" class="mono">{{echo}}</div>
+      </div>
+    </div>
+    <div style="height: 136px; flex-shrink: 0; border-top: 1px solid #424242; padding: 8px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 12px repeat(4, minmax(0, 1fr)) 210px; grid-template-rows: 60px 60px; gap: 6px; box-sizing: border-box">
+      <sc-for list="{{left}}" as="a" hint-placeholder-count="10">
+        <button type="button" onClick="{{a.run}}" title="{{a.why}}" style="border-radius: 6px; border: 1px solid #424242; background: {{a.bg}}; color: {{a.fg}}; font: inherit; font-size: 14px; padding: 0 10px; text-align: left; display: flex; align-items: center; gap: 10px; grid-column: {{a.col}}; grid-row: {{a.row}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{a.ic}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{a.d}}"></path></svg>{{a.t}}</button>
+      </sc-for>
+      <span style="grid-column: 6; grid-row: 1 / span 2; border-left: 1px solid #303030; margin-left: 5px"></span>
+      <sc-for list="{{right}}" as="a" hint-placeholder-count="8">
+        <button type="button" onClick="{{a.run}}" style="border-radius: 6px; border: 1px solid #424242; background: {{a.bg}}; color: #d1d1d1; font: inherit; text-align: left; padding: 6px 10px; display: flex; flex-direction: column; justify-content: center; gap: 3px; grid-column: {{a.col}}; grid-row: {{a.row}}"><span style="font-size: {{a.ls}}px; color: {{a.lc}}">{{a.label}}</span><span style="font-size: 15px">{{a.v}}</span></button>
+      </sc-for>
+      <button type="button" onClick="{{power.press}}" style="grid-column: 11; grid-row: 1 / span 2; border-radius: 6px; border: 1px solid {{power.border}}; background: {{power.bg}}; color: #d1d1d1; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; position: relative; overflow: hidden">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="{{power.icon}}" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v10"></path><path d="M18.4 6.6a9 9 0 1 1-12.8 0"></path></svg>
+        <span style="font-size: 15px; font-weight: 600; letter-spacing: 0.04em">{{power.word}}</span>
+        <span style="font-size: 12px; color: #9c9c9c">{{power.sub}}</span>
+        <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: {{power.icon}}"></span>
+      </button>
+    </div>
+  </section>
+
+  <sc-if value="{{editing}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.45)"></div>
+    <section style="position: absolute; top: 250px; left: 470px; width: 500px; border-radius: 6px; background: #1c1c1c; border: 1px solid #9a7a08; overflow: hidden">
+      <div style="height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500">{{ed.title}}</span><span style="font-size: 13px; color: #9c9c9c">{{ed.mixed}}</span></div>
+      <div style="padding: 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{ed.choices}}" as="o" hint-placeholder-count="8"><button type="button" onClick="{{o.go}}" style="height: 56px; border-radius: 6px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 15px">{{o.t}}</button></sc-for>
+      </div>
+      <div style="padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px">
+        <button type="button" onClick="{{cancelEdit}}" style="height: 52px; border-radius: 6px; border: 1px solid #424242; background: #262626; color: #d1d1d1; font: inherit; font-size: 15px">Cancel</button>
+        <span class="mono" style="font-size: 12px; color: #9c9c9c">Touch: a two-finger tap on the grid opens this too · Desktop: Enter, F2, double-click, typing</span>
+      </div>
+    </section>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.state = {
+      data: [
+        { no: 1, name: 'en0', addr: '192.168.1.40/24', link: 'up · 1 Gb/s', ls: 'Yes', shell: 'Yes', http: 'Yes' },
+        { no: 2, name: 'en1', addr: '10.0.0.40/16', link: 'up · 1 Gb/s', ls: 'Yes', shell: 'Yes', http: 'No' },
+        { no: 3, name: 'en2', addr: '10.10.0.40/16', link: 'up · 100 Mb/s', ls: 'No', shell: 'Yes', http: 'Yes' },
+        { no: 4, name: 'en5', addr: '—', link: 'no link', ls: 'No', shell: 'No', http: 'No' }
+      ],
+      sel: ['1:4'], held: false, online: 'on', mode: 'replace', latch: false, anchor: '2:5', filter: false, editing: false, echo: '', sort: null
+    };
+  }
+  key(r, c) { return r + ':' + c; }
+  pick(r, c) {
+    const s = this.state; const k = this.key(r, c);
+    let sel = s.sel.slice();
+    if (s.mode === 'add') { if (!sel.includes(k)) sel.push(k); }
+    else if (s.mode === 'remove') { sel = sel.filter(x => x !== k); }
+    else if (s.mode === 'thru') {
+      const [ar, ac] = (s.anchor || k).split(':').map(Number);
+      const lo = Math.min(ar, r), hi = Math.max(ar, r), clo = Math.min(ac, c), chi = Math.max(ac, c);
+      sel = [];
+      for (let i = lo; i <= hi; i++) for (let j = clo; j <= chi; j++) sel.push(this.key(i, j));
+    } else sel = [k];
+    this.setState({ sel, anchor: s.mode === 'thru' ? s.anchor : k, mode: s.latch ? s.mode : 'replace', echo: '' });
+  }
+  renderVals() {
+    const s = this.state;
+    const COLS = [['name', 'Interface', false], ['addr', 'Address', false], ['link', 'Link', false], ['ls', 'LumaSession', true], ['shell', 'Shell', true], ['http', 'HTTP', true]];
+    const selRows = [...new Set(s.sel.map(k => +k.split(':')[0]))].sort((a, b) => a - b);
+    const selCols = [...new Set(s.sel.map(k => +k.split(':')[1]))];
+    const OK = '#00a60a', IN = '#c27a12', AL = '#e10000';
+    const rows = s.data.map((d, ri) => {
+      const rowAll = COLS.every((_, ci) => s.sel.includes(this.key(ri, ci)));
+      const lastSelInRow = Math.max(-1, ...COLS.map((_, ci) => s.sel.includes(this.key(ri, ci)) ? ci : -1));
+      const showChipRow = ri === selRows[selRows.length - 1];
+      const cells = COLS.map(([f, , editable], ci) => {
+        const on = s.sel.includes(this.key(ri, ci));
+        const ro = !editable;
+        let t = d[f], dot = null, fg = '#d1d1d1';
+        if (f === 'link') { dot = d.link === 'no link' ? IN : OK; fg = d.link === 'no link' ? '#e0a050' : '#d1d1d1'; }
+        if (editable) { dot = d[f] === 'Yes' ? OK : '#5a5a5a'; fg = d[f] === 'Yes' ? '#d1d1d1' : '#9c9c9c'; }
+        return { t, dot: dot || 'transparent', dw: dot ? 8 : 0, fg: ro && !on ? '#9c9c9c' : fg,
+          bg: on ? '#1d3a5a' : (ro ? 'transparent' : '#262626'),
+          border: on ? '1px solid #4d8fd6' : (ro ? '1px solid transparent' : '1px solid #303030'),
+          chip: on && showChipRow && ci === lastSelInRow && !s.editing,
+          pick: () => this.pick(ri, ci) };
+      });
+      return { no: d.no, cells, noBg: rowAll ? '#2b2716' : '#181818', rowMark: rowAll ? 'inset 0 0 0 1px #9a7a08' : 'none',
+        pickRow: () => { const all = COLS.map((_, ci) => this.key(ri, ci)); let sel; if (s.mode === 'add') sel = [...new Set([...s.sel, ...all])]; else if (s.mode === 'remove') sel = s.sel.filter(k => !all.includes(k)); else if (s.mode === 'thru') { const ar = +s.anchor.split(':')[0]; sel = []; for (let i = Math.min(ar, ri); i <= Math.max(ar, ri); i++) COLS.forEach((_, ci) => sel.push(this.key(i, ci))); } else sel = all; this.setState({ sel, anchor: this.key(ri, 0), mode: s.latch ? s.mode : 'replace', echo: '' }); } };
+    });
+    const heads = COLS.map(([f, t], ci) => ({ t, mark: s.sort === f ? '▲' : '⋮', bg: selCols.includes(ci) && s.sel.length > 1 ? '#22303e' : '#181818', fg: '#9c9c9c',
+      go: () => { const rs = selRows.length > 1 ? selRows : s.data.map((_, i) => i); this.setState({ sel: rs.map(r => this.key(r, ci)), echo: '' }); } }));
+    const mk = (m, t) => ({ t, b: s.mode === m ? '#9a7a08' : '#424242', bg: s.mode === m ? (s.latch ? '#9a7a08' : '#3a3214') : '#262626', fg: s.mode === m && s.latch ? '#f3ecd3' : '#d1d1d1',
+      go: () => { if (s.mode === m) this.setState({ mode: 'replace', latch: false }); else this.setState({ mode: m, latch: m !== 'thru' }); } });
+    const modes = [mk('add', '+'), mk('remove', '−'), mk('thru', 'Thru')];
+    const allKeys = s.data.flatMap((_, r) => COLS.map((_, c) => this.key(r, c)));
+    const quick = [
+      { t: 'All', go: () => this.setState({ sel: allKeys }) },
+      { t: 'None', go: () => this.setState({ sel: [] }) },
+      { t: 'Invert', go: () => this.setState({ sel: allKeys.filter(k => !s.sel.includes(k)) }) }
+    ];
+    const n = selRows.length;
+    const names = selRows.map(r => s.data[r].no);
+    const target = n === 0 ? '' : (n === 1 ? s.data[selRows[0]].name : ('Interface ' + selRows.map(r => s.data[r].name).join(' + ')));
+    const editCol = selCols.length === 1 ? COLS[selCols[0]] : null;
+    const why = n ? '' : 'Select first';
+    const IC = {
+      Select: ['M4 3l7 17 2.5-7.5L21 10z', '#c9a227'], New: ['M5 12h14M12 5v14', '#3fbf4a'],
+      Copy: ['M9 9h11v11H9zM5 15H4V4h11v1', '#4d8fd6'], Cut: ['M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12', '#e08a2c'],
+      Paste: ['M9 3h6v4H9zM16 5h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2', '#4d8fd6'], Delete: ['M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6', '#ff5a4a'],
+      Oops: ['M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3', '#e6b422'], Import: ['M12 3v12M7 10l5 5 5-5M5 21h14', '#3fb0a6'],
+      Export: ['M12 21V9M7 14l5-5 5 5M5 3h14', '#3fb0a6'], Edit: ['M17 3l4 4L8 20H4v-4z', '#c9a227']
+    };
+    const L = (t, col, row, run, dis) => { const [d, ic] = IC[t.split(' ')[0]]; return { t, col, row, d, ic: dis ? '#5a5a5a' : ic, run: dis ? () => {} : run, why: dis ? dis : '', bg: dis ? '#232323' : '#2c2c2c', fg: dis ? '#5a5a5a' : (t.startsWith('Delete') ? '#ff8a7a' : '#d1d1d1') }; };
+    const say = line => () => this.setState({ echo: '› ' + line + '   → ok' });
+    const left = [
+      L('Select', 1, 1, () => this.setState({ mode: 'add', latch: true })),
+      L('New', 2, 1, () => {}, 'Interfaces come from the hardware'),
+      L(n ? `Copy ${n}` : 'Copy', 3, 1, say(`Copy ${target}`), why),
+      L('Cut', 4, 1, () => {}, 'Interfaces come from the hardware'),
+      L('Paste', 5, 1, say('Paste'), 'Nothing copied'),
+      L('Delete', 1, 2, () => {}, 'Interfaces come from the hardware'),
+      L('Oops', 2, 2, say('Oops')),
+      L('Import', 3, 2, say('Import Interface … (services from a file)')),
+      L('Export', 4, 2, say(`Export ${target || 'Interface *'}`)),
+      L(n ? `Edit ${n}` : 'Edit', 5, 2, () => this.setState({ editing: true }), editCol && editCol[2] ? '' : 'Select cells in one editable column')
+    ];
+    const R = (label, v, col, row, run, small) => ({ label, v, col, row, run: run || (() => {}), ls: small ? 12 : 14, lc: small ? '#9c9c9c' : '#d1d1d1', bg: small ? '#262626' : '#303030' });
+        const right = [
+      R('All services', '', 7, 1, say(`Set ${target} LumaSession Yes Shell Yes HTTP Yes`)), R('Info', '', 8, 1, say(`Info ${target}`)), R('Networks…', '', 9, 1, () => {}), R('Settings tab', '', 10, 1, say('EditSetting Station')),
+      R('Station name', 'FOH', 7, 2, null, true), R('Location', 'Front of house', 8, 2, null, true), R('Priority', '100', 9, 2, null, true), R('Multicast base', '239.255.76.0', 10, 2, null, true)
+    ];
+    let ed = { title: '', mixed: '', choices: [] };
+    if (editCol) {
+      const f = editCol[0];
+      const vals = selRows.map(r => s.data[r][f]);
+      const uniq = [...new Set(vals)];
+      const mixed = uniq.length > 1 ? 'Mixed (' + vals.filter(v => v === 'Yes').length + ' Yes, ' + vals.filter(v => v === 'No').length + ' No)' : 'Now ' + uniq[0];
+      const apply = (label, fn) => ({ t: label, go: () => {
+        const data = s.data.map((d, i) => selRows.includes(i) ? { ...d, [f]: fn(d[f]) } : d);
+        this.setState({ data, editing: false, echo: `› Set ${target} ${editCol[1]} ${label}   → ok · one Oops step` + (f === 'http' && label !== 'Yes' ? ' (asks first if this page uses it)' : '') });
+      } });
+      const choices = [apply('Yes', () => 'Yes'), apply('No', () => 'No'), apply('Toggle', v => v === 'Yes' ? 'No' : 'Yes')];
+      ed = { title: `${editCol[1]} · ${n} interface${n > 1 ? 's' : ''}`, mixed, choices };
+    }
+    const filters = COLS.map(([f]) => ({ t: f === 'link' ? 'up' : '', c: '#e6c200' }));
+    const modeWord = s.mode === 'replace' ? '' : ` · next tap: ${s.mode === 'add' ? '+' : s.mode === 'remove' ? '−' : 'Thru'}${s.latch ? ' (latched)' : ''}`;
+    const P = { on: { word: 'ONLINE', sub: 'Press: go offline (asks)', icon: '#00a60a', bg: '#262626', border: '#424242' },
+      off: { word: 'OFFLINE', sub: 'Press: go online', icon: '#a03030', bg: '#262626', border: '#424242' },
+      fail: { word: 'ONLINE · FAILING', sub: 'No link serves LumaSession', icon: '#ff6a5a', bg: '#4a1414', border: '#a01010' } }[s.online];
+    const nextLook = { on: 'off', off: 'fail', fail: 'on' }[s.online];
+    const power = { ...P, press: () => this.setState({ online: nextLook, echo: s.online === 'off' ? '› Set Station Online On   → ok' : '› Set Station Online Off   → asked → ok   (board: next press shows "failing")' }) };
+    const onlineDot = s.online === 'on' ? '#00a60a' : s.online === 'fail' ? '#e10000' : '#5a5a5a';
+    const onlineWord = s.online === 'off' ? 'Offline' : 'Online';
+    return { power, onlineDot, onlineWord, rows, heads, modes, quick, left, right, editing: s.editing && !!editCol, ed, count: `${s.sel.length} cells · ${n} rows${modeWord}`,
+      showFilter: s.filter, filters, filterB: s.filter ? '#e6c200' : '#303030', toggleFilter: () => this.setState({ filter: !s.filter }),
+      openEdit: () => editCol && editCol[2] && this.setState({ editing: true }), cancelEdit: () => this.setState({ editing: false }),
+      
+      echo: s.echo || (target ? `lines name their rows: ${target}` : 'nothing selected') };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Every ask on the standard dialog</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #121212">
+  <div style="position: absolute; top: 24px; left: 32px; right: 32px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="6">
+      <button type="button" onClick="{{t.go}}" style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid {{t.b}}; background: #1c1c1c; color: #d1d1d1; font: inherit; font-size: 13px">{{t.label}}</button>
+    </sc-for>
+  </div>
+  <p style="position: absolute; top: 76px; left: 32px; right: 32px; margin: 0; font-size: 13px; color: #9c9c9c">{{caption}}</p>
+
+  <div style="position: absolute; inset: 120px 32px 32px 32px; border-radius: 6px; background: #1c1c1c; border: 1px solid #262626; opacity: {{dim}}"></div>
+
+  <sc-if value="{{showDialog}}" hint-placeholder-val="{{ true }}">
+    <section style="position: absolute; top: 470px; left: 50%; width: 680px; margin-left: -340px; transform: translateY(-50%); border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden; opacity: {{d.op}}">
+      <div style="height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500">{{d.title}}</span><span class="mono" style="font-size: 13px; color: {{d.metaC}}">{{d.meta}}</span></div>
+      <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <p style="margin: 0; font-size: 16px; line-height: 1.45">{{d.text}}</p>
+        <sc-if value="{{d.hasRows}}" hint-placeholder-val="{{ true }}">
+          <div style="border-radius: 6px; border: 1px solid #424242; overflow: hidden">
+            <sc-for list="{{d.rows}}" as="r" hint-placeholder-count="2"><div style="height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 14px; border-bottom: 1px solid #303030"><span style="color: #9c9c9c">{{r.k}}</span><span class="mono" style="font-size: 13px; color: {{r.c}}">{{r.v}}</span></div></sc-for>
+          </div>
+        </sc-if>
+        <div style="display: grid; grid-template-columns: repeat({{d.cols}}, minmax(0, 1fr)); gap: 10px">
+          <sc-for list="{{d.buttons}}" as="b" hint-placeholder-count="3">
+            <button type="button" onClick="{{b.tap}}" style="height: 60px; border-radius: 6px; border: {{b.border}}; background: {{b.bg}}; color: {{b.fg}}; font: inherit; font-size: 15px; font-weight: {{b.w}}; opacity: {{b.op}}">{{b.t}}</button>
+          </sc-for>
+        </div>
+        <span class="mono" style="font-size: 12px; color: #787878; line-height: 1.5">{{d.note}}</span>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{showToast}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; left: 50%; top: 735px; width: 680px; margin-left: -340px; height: 56px; border-radius: 6px; background: #262626; border: 1px solid #424242; display: flex; align-items: center; gap: 12px; padding: 0 16px; box-sizing: border-box">
+      <span style="width: 8px; height: 8px; border-radius: 4px; background: #758ba0"></span>
+      <span style="font-size: 15px">Answered by <b style="font-weight: 500">Bob</b> on desk2 · Overwrite</span>
+      <span class="mono" style="margin-left: auto; font-size: 12px; color: #787878">closed here first, then Store Group 4 /Overwrite ran</span>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{showLock}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 120px 32px 32px 32px; border-radius: 6px; background: #0e0e0e; border: 1px solid #262626; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px">
+      <span style="font-size: 96px; font-weight: 300; letter-spacing: -2px">21:47</span>
+      <span style="font-size: 18px; color: #9c9c9c">desk1 · Festival · Gala</span>
+      <span style="margin-top: 28px; height: 36px; padding: 0 16px; border-radius: 18px; border: 1px solid #424242; background: #1c1c1c; display: flex; align-items: center; gap: 8px; font-size: 14px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #c27a12"></span>3 waiting</span>
+      <div style="margin-top: 22px; width: 560px; border-radius: 6px; border: 1px solid #303030; overflow: hidden">
+        <sc-for list="{{waiting}}" as="w" hint-placeholder-count="3"><div style="height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 14px; border-bottom: 1px solid #262626"><span>{{w.k}}</span><span class="mono" style="font-size: 12px; color: {{w.c}}">{{w.v}}</span></div></sc-for>
+      </div>
+      <span class="mono" style="font-size: 12px; color: #787878">nothing is drawn over the lock · after unlock the open ones show, newest on top</span>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { k: 'store' }; }
+  renderVals() {
+    const go = k => () => this.setState({ k });
+    const primary = t => ({ t, tap: go(this.state.k), bg: '#9a7a08', fg: '#f3ecd3', border: 'none', w: 500, op: 1 });
+    const danger = t => ({ t, tap: go(this.state.k), bg: 'color-mix(in srgb, #e10000 14%, #303030)', fg: '#ff6a5a', border: '1px solid color-mix(in srgb, #e10000 55%, transparent)', w: 400, op: 1 });
+    const plain = (t, op) => ({ t, tap: go(this.state.k), bg: '#303030', fg: '#d1d1d1', border: '1px solid #424242', w: 400, op: op ?? 1 });
+    const D = {
+      store: {
+        title: 'Store Group 4', meta: 'waits for you', metaC: '#787878', op: 1,
+        text: 'Group 4 "Front wash" already has 12 fixtures. Your selection has 8.',
+        hasRows: false, rows: [], cols: 4,
+        buttons: [primary('Merge'), danger('Overwrite'), plain('Remove'), plain('Cancel')],
+        note: 'Merge → Store Group 4 /Merge · Overwrite → Store Group 4 /Overwrite · Remove → Store Group 4 /Remove · a terminal keeps the flag hint'
+      },
+      patch: {
+        title: 'Leaving the patch', meta: 'waits for you', metaC: '#787878', op: 1,
+        text: 'You changed the patch while you had it claimed. Keep the changes for everyone, or throw them away?',
+        hasRows: true, rows: [{ k: 'Fixtures added', v: '6', c: '#00a60a' }, { k: 'Fixtures moved', v: '2', c: '#c27a12' }], cols: 3,
+        buttons: [primary('Keep'), danger('Discard'), plain('Cancel')],
+        note: 'Keep → Unclaim Patch /Keep · Discard → Unclaim Patch /Discard · no timeout: a patch draft is never taken by a countdown (was terminal-only)'
+      },
+      oops: {
+        title: 'Oops', meta: 'OopsConfirmation · Always', metaC: '#787878', op: 1,
+        text: 'Undo the newest step of Admin?',
+        hasRows: true, rows: [{ k: 'Step 14 · Programmer', v: 'At 50 on Group 3', c: '#d1d1d1' }], cols: 2,
+        buttons: [primary('Oops'), plain('Cancel')],
+        note: 'Oops → Oops /NoConfirmation · goes only to the device that pressed Oops'
+      },
+      profile: {
+        title: 'Import UserProfile "Bob"', meta: 'same GUID', metaC: '#c27a12', op: 1,
+        text: 'This show already has the profile "Bob" (same GUID). Replace it with the one from Bob.lumaprofile?',
+        hasRows: true, rows: [{ k: 'In the show', v: '4 screens · Theme Night · 3 icons', c: '#d1d1d1' }, { k: 'In the file', v: '5 screens · Theme Dark · 7 icons', c: '#d1d1d1' }], cols: 2,
+        buttons: [danger('Overwrite'), plain('Cancel')],
+        note: 'Overwrite → Import UserProfile "Bob" /Overwrite (was: refused without the flag)'
+      },
+      feedback: {
+        title: 'Output line stopped', meta: 'critical', metaC: '#e10000', op: 1,
+        text: 'sACN line 2 on network "Stage" lost its interface en1. Nothing is sent on universes 5–8.',
+        hasRows: false, rows: [], cols: 2,
+        buttons: [primary('OK'), plain('Open Network…')],
+        note: 'critical feedback → the same dialog · OK closes it on your devices · Open Network… → Menu Network'
+      },
+      answered: {
+        title: 'Store Group 4', meta: 'answered', metaC: '#787878', op: 0.35,
+        text: 'Group 4 "Front wash" already has 12 fixtures. Your selection has 8.',
+        hasRows: false, rows: [], cols: 4,
+        buttons: [primary('Merge'), danger('Overwrite'), plain('Remove'), plain('Cancel')],
+        note: 'the first answer wins: the station closes the dialog on every device, then runs the line'
+      }
+    };
+    const k = this.state.k;
+    const captions = {
+      store: 'Store over a used slot asks in a UI. Every button is a command-line template; the station builds the line after closing the dialog everywhere.',
+      patch: 'Unclaim Patch moves out of the terminal: now every client gets the dialog. No countdown — it waits, and counts in "n waiting" while locked.',
+      oops: 'OopsConfirmation (profile preference) uses the dialog; the step it would undo is listed.',
+      profile: 'Import UserProfile with the same GUID asks Overwrite / Cancel instead of only refusing.',
+      feedback: 'Critical feedback and OK / Confirm feedback pop-ups are the same dialog (the Message Center window stays later).',
+      answered: 'Bob answered on desk2: this device fades the dialog and shows who answered.',
+      locked: 'While locked: nothing over the lock, a waiting count; asks with a countdown run to their default with their real deadline.'
+    };
+    const tabs = [['store', 'Store over existing'], ['patch', 'Unclaim Patch'], ['oops', 'Oops confirm'], ['profile', 'Import profile'], ['feedback', 'Critical feedback'], ['answered', 'Answered elsewhere'], ['locked', 'Locked: 3 waiting']]
+      .map(([key, label]) => ({ label, go: go(key), b: k === key ? '#9a7a08' : '#424242' }));
+    const waiting = [
+      { k: 'Bob asks for Group 5', v: 'hands over in 6 s', c: '#c27a12' },
+      { k: 'Leaving the patch', v: 'waits', c: '#787878' },
+      { k: 'Rejoin LumaSession "Festival"', v: 'Merge in 41 s', c: '#c27a12' }
+    ];
+    return { tabs, caption: captions[k], d: D[k] ?? D.store, showDialog: k !== 'locked', showToast: k === 'answered', showLock: k === 'locked', dim: k === 'locked' ? 0 : 0.6, waiting };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+[package]
+name = "lumacore-engines"
+version.workspace = true
+edition.workspace = true
+description = "The engine registry: capability-gated engines started, stopped and joined against a deadline — the render, Perfetto and HTTP engines (decisions §26, §34 20.4)"
+
+[dependencies]
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+lumacore-trace = { path = "../../foundation/lumacore-trace" }
+lumacore-render = { path = "../lumacore-render" }
+lumacore-http = { path = "../../ui/lumacore-http", optional = true }
+crossbeam-channel = { workspace = true }
+arc-swap = { workspace = true }
+log = { workspace = true }
+tokio = { workspace = true, optional = true }
+axum = { workspace = true, optional = true }
+tower-http = { workspace = true, optional = true }
+
+[features]
+http = ["dep:lumacore-http", "dep:tokio"]
+perfetto = ["dep:lumacore-http", "dep:tokio", "dep:axum", "dep:tower-http", "lumacore-trace/perfetto"]
+
+[lints]
+workspace = true

@@ -1,0 +1,467 @@
+<title>4d4 2: Cards and Drag</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the question (the real capture of the phone's Universes › Map + what is decided), then
+   four phone frames (390 × 844 at 0.78) that each run their option's rules — the mouse plays the
+   finger. Every frame has the whole phone map: the cards, a tap zooms into a universe's slot grid
+   (Edit Patch), ‹ back, hold lifts a run (question 1). The console look of the round 3 mockups. */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --t1: #4f6f91; --t2: #6a5f9e; --t3: #5f8a6a; --t4: #8a6a4f;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 88ch; line-height: 1.5; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+figure { margin: 0; display: flex; flex-direction: column; gap: 6px; max-width: 100%; }
+figure img { width: 250px; max-width: 100%; border: 1px solid var(--line); border-radius: 8px; display: block; }
+figcaption { color: var(--dim); font-size: 12.5px; max-width: 250px; line-height: 1.4; }
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 13px; margin: 0; max-width: 92ch; min-width: 0; flex: 1 1 420px; line-height: 1.45; }
+.facts dt { color: var(--faint); } .facts dd { margin: 0; }
+.facts code, p code, .opt code { font-family: var(--mono); font-size: 12px; color: var(--gold-text); }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 92ch; line-height: 1.5; margin: 0; }
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 22px; }
+.opt { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.opt h3 { margin: 0; font-size: 15px; font-weight: 500; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.opt h3 .tag { font-size: 11px; border: 1px solid var(--gold); color: var(--gold-hi); border-radius: 9px; padding: 0 7px; }
+.opt p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.45; }
+.opt ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--dim); line-height: 1.4; }
+.opt li::before { content: "＋ "; color: var(--ok-t); } .opt li.m::before { content: "－ "; color: var(--del); }
+.try { font-size: 12px; color: var(--faint); font-style: italic; }
+
+/* ── The phone ── */
+.phone { width: 304px; height: 658px; border-radius: 22px; border: 6px solid #000; outline: 1px solid var(--line); background: var(--dlg); overflow: hidden;
+  display: flex; flex-direction: column; position: relative; font-size: 12px; max-width: 100%; user-select: none; -webkit-user-select: none; }
+.t { flex: none; height: 38px; display: flex; align-items: center; gap: 6px; padding: 0 6px 0 10px; border-bottom: 1px solid var(--line); }
+.t b { font-weight: 500; font-size: 14px; }
+.t .live { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 12px; padding: 2px 8px; color: var(--dim); }
+.t .live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.t .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin-left: 4px; }
+.t .seg span { padding: 2px 8px; color: var(--dim); } .t .seg span.on { background: var(--gold); color: var(--gold-text); }
+.t .x { margin-left: auto; color: var(--dim); }
+.t .back { min-width: 34px; height: 34px; display: grid; place-items: center; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); margin-left: -4px; }
+.tabs { flex: none; display: flex; gap: 6px; padding: 7px 8px; border-bottom: 1px solid var(--line); overflow: hidden; }
+.tabs span { height: 30px; padding: 0 10px; display: flex; align-items: center; border: 1px solid var(--line); border-radius: 15px; color: var(--dim); white-space: nowrap; }
+.tabs span.on { border-color: var(--gold-hi); color: var(--gold-text); }
+.tabs span.sel { border-color: var(--gold-hi); background: color-mix(in srgb, var(--gold) 40%, var(--cell)); color: var(--gold-text); gap: 8px; }
+.tabs span.sel i { font-style: normal; color: var(--dim); }
+.list { flex: 1; min-height: 0; overflow: auto; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+.card { display: flex; border: 1px solid var(--line); border-radius: 8px; background: var(--cell); min-height: 64px; position: relative; overflow: hidden; }
+.card .body { flex: 1; min-width: 0; padding: 8px 10px; display: flex; flex-direction: column; gap: 4px; border: 0; background: none; color: inherit; font: inherit; text-align: left; }
+.card .body:active { background: #2e2e2e; }
+.card .top { display: flex; align-items: baseline; gap: 8px; } .card .top b { flex: 1; font-weight: 600; font-size: 13.5px; } .card .top small { color: var(--dim); font-variant-numeric: tabular-nums; }
+.card .sub { display: flex; gap: 8px; color: var(--dim); } .card .sub span { flex: 1; } .card .sub i { font-style: normal; }
+.card .strip { height: 7px; border-radius: 3px; background: #121212; position: relative; overflow: hidden; }
+.card .strip i { position: absolute; top: 0; bottom: 0; }
+.card .go { flex: none; width: 78px; border: 0; border-left: 1px solid var(--line); background: color-mix(in srgb, var(--gold) 55%, var(--cell)); color: var(--gold-text); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font: inherit; font-weight: 500; }
+.card .go small { font-family: var(--mono); font-size: 10.5px; opacity: .85; }
+.card .go.no { background: var(--cell); color: var(--faint); font-weight: 400; }
+.card .go:active:not(.no) { filter: brightness(1.2); }
+.card.hot { outline: 2px solid var(--gold-hi); outline-offset: -2px; background: color-mix(in srgb, var(--gold) 30%, var(--cell)); }
+.card.hot.bad { outline-color: var(--del); background: color-mix(in srgb, var(--del) 25%, var(--cell)); }
+.okline { flex: none; padding: 7px 10px; color: var(--ok-t); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; border-top: 1px solid var(--cell-line); }
+.bar0 { flex: none; display: flex; gap: 5px; padding: 6px; border-top: 1px solid var(--line); }
+.bar0 div { flex: 1; height: 44px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10px; color: var(--dim); }
+.bar0 div.lock { flex: 0 0 60px; border-color: var(--ok); color: var(--ok-t); }
+.bar0 em { font-style: normal; font-size: 13px; }
+
+/* the slot grid (Edit Patch, question 1's frame) */
+.cur { flex: none; display: flex; gap: 6px; align-items: center; padding: 6px 8px; border-bottom: 1px solid var(--line); background: var(--head); }
+.cur .c { flex: 1; min-width: 0; } .cur .c b { font-weight: 500; } .cur .c small { display: block; color: var(--dim); }
+.nav { height: 34px; min-width: 34px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: grid; place-items: center; }
+.ub { flex: none; display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-bottom: 1px solid var(--cell-line); color: var(--dim); position: relative; }
+.ub span:nth-child(2) { flex: 1; text-align: center; color: var(--text); }
+.ub.target { background: color-mix(in srgb, var(--gold) 35%, var(--head)); color: var(--gold-text); border-bottom-color: var(--gold-hi); }
+.ub.target span:nth-child(2) { color: var(--gold-text); }
+.sheet { flex: 1; min-height: 0; overflow: auto; padding: 6px; touch-action: none; cursor: default; }
+.sheet .in { position: relative; }
+.g { display: grid; gap: 2px; grid-template-columns: 34px repeat(10, 1fr); }
+.lb { font-family: var(--mono); font-size: 9.5px; color: var(--faint); display: flex; align-items: center; }
+.s { border-radius: 3px; background: var(--cell); font-size: 9.5px; color: var(--faint); display: flex; align-items: flex-end; padding: 1px 3px; position: relative; border: 0; font-family: inherit; height: 44px; min-width: 0; cursor: default; }
+.s .f { position: absolute; top: 2px; left: 3px; color: #fff; font-size: 10px; }
+.s.k1 { background: var(--t1); color: #c9d6e8; } .s.k2 { background: color-mix(in srgb, var(--t1) 80%, #fff); color: #c9d6e8; }
+.s.k3 { background: var(--t3); color: #d2e6d6; } .s.k4 { background: var(--t4); color: #ead9c9; }
+.s.cu { background: color-mix(in srgb, var(--gold) 72%, var(--cell)); color: var(--gold-text); }
+.s.picked { box-shadow: inset 0 0 0 2px var(--gold-hi); }
+.s.parked { background: repeating-linear-gradient(135deg, #7a2a2a 0 6px, #5a1f1f 6px 12px); color: #f0c0c0; }
+.s.drag { opacity: .35; }
+.s.g { box-shadow: inset 0 0 0 2px var(--gold-hi); background: color-mix(in srgb, var(--gold) 40%, var(--cell)); color: var(--gold-text); }
+.s.gbad { box-shadow: inset 0 0 0 2px var(--del); background: color-mix(in srgb, var(--del) 40%, var(--cell)); color: #fff; }
+.s.g.lift, .s.gbad.lift { transform: scale(1.08); box-shadow: 0 0 0 2px var(--gold-hi), 0 6px 14px rgb(0 0 0 / .7); z-index: 2; }
+.s.gbad.lift { box-shadow: 0 0 0 2px var(--del), 0 6px 14px rgb(0 0 0 / .7); }
+.sheet.dimmed .s:not(.g):not(.gbad), .sheet.dimmed .lb { opacity: .3; }
+.lassobox { position: absolute; border: 1px dashed var(--gold-hi); background: color-mix(in srgb, var(--gold) 15%, transparent); pointer-events: none; z-index: 3; }
+.ring { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; pointer-events: none; z-index: 5; }
+.ring circle { fill: none; stroke-width: 3; }
+.ring .tr { stroke: color-mix(in srgb, var(--gold-hi) 25%, transparent); }
+.ring .fi { stroke: var(--gold-hi); stroke-dasharray: 120; stroke-dashoffset: 120; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset 360ms linear 140ms; }
+.ring.on .fi { stroke-dashoffset: 0; }
+.chip { position: absolute; transform: translate(-50%, -100%); background: var(--gold-hi); color: #1a1500; border-radius: 8px; padding: 5px 9px; font-size: 12px; font-weight: 500; white-space: nowrap; pointer-events: none; z-index: 9; box-shadow: 0 4px 12px rgb(0 0 0 / .6); }
+.chip::after { content: ""; position: absolute; left: 50%; bottom: -6px; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--gold-hi); border-bottom: 0; }
+.chip.bad { background: var(--del); color: #fff; } .chip.bad::after { border-top-color: var(--del); }
+.bar1 { flex: none; display: flex; gap: 5px; padding: 6px; border-top: 1px solid var(--line); overflow-x: auto; }
+.bar1 div { flex: 0 0 74px; height: 44px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 10px; color: var(--dim); }
+.bar1 div.on { border-color: var(--gold-hi); color: var(--gold-hi); }
+.bar1 em { font-style: normal; font-size: 13px; }
+.last { flex: none; font-family: var(--mono); font-size: 10.5px; color: var(--dim); padding: 4px 8px 6px; min-height: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.last b { color: var(--gold-text); font-weight: 500; }
+/* B: the universes drop over the grid while a run is lifted */
+.over { position: absolute; left: 0; right: 0; top: 38px; bottom: 0; z-index: 7; background: rgb(0 0 0 / .62); display: flex; flex-direction: column; }
+.over .hd { flex: none; padding: 8px 10px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 35%, var(--dlg)); border-bottom: 1px solid var(--gold-hi); }
+.over .list { background: var(--dlg); border-bottom: 1px solid var(--line); flex: 0 1 auto; }
+/* the context sheet and the pick sheet (D) */
+.ctx { position: absolute; left: 0; right: 0; bottom: 0; background: var(--dlg); border-top: 1px solid var(--gold-hi); border-radius: 14px 14px 0 0; padding: 6px 10px 10px; z-index: 8; box-shadow: 0 -10px 30px rgb(0 0 0 / .6); }
+.ctx .h { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 6px; }
+.ctx .hd { display: flex; justify-content: space-between; color: var(--dim); margin-bottom: 4px; }
+.ctx .r { height: 44px; display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--cell-line); }
+.ctx .r.sub { color: var(--dim); } .ctx .r.go { color: var(--gold-text); }
+.ctx .r small { margin-left: auto; font-family: var(--mono); color: var(--dim); } .ctx .r.off { color: var(--faint); }
+.ctx .r b { font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { .ring .fi { transition: none; } }
+</style>
+
+<main>
+  <header>
+    <h1>4d4 · 2 · the phone map has nothing to drag</h1>
+    <p>The second question of the 4d4 hardening. On the desk the Map is a bar per universe with the fixtures' blocks on it: tap a block selects, drag it along its universe or onto another one, tap a free run with fixtures selected patches them there (§34 round 3, 18). §37 made the phone's Map a <b>list of cards</b> — number, name, used of 512, how many fixtures, a colour strip — and a card is a door: a tap zooms into that universe's slot grid, where question 1's hold lifts a run. So a phone has no block to tap and no bar to drop on. How does a phone move a fixture to <b>another universe</b>: only inside the slot grid (question 3 then has to work on a phone), or do the cards take a drop — or the selection?</p>
+  </header>
+
+  <section class="board">
+    <h2>The question — real capture, what is fixed</h2>
+    <div class="row">
+      <figure><img src="data:image/jpeg;base64,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/f1f8aNyf89of+/q/wCNYtFAG1uT/ntD/wB/V/xo3J/z2h/7+r/jWLRQBtbk/wCe0P8A39X/ABo3J/z2h/7+r/jWLRQBtbk/57Q/9/V/xo3J/wA9of8Av6v+NYtFAG1uT/ntD/39X/Gjcn/PaH/v6v8AjWLRQBtbk/57Q/8Af1f8aNyf89of+/q/41i0UAbW5P8AntD/AN/V/wAaNyf89of+/q/41i0UAbW5P+e0P/f1f8aNyf8APaH/AL+r/jWLRQBtbk/57Q/9/V/xo3J/z2h/7+r/AI1i0UAbW5P+e0P/AH9X/Gjcn/PaH/v6v+NYtFAG1uT/AJ7Q/wDf1f8AGjcn/PaH/v6v+NYtFAG1uT/ntD/39X/Gjcn/AD2h/wC/q/41i0UAbW5P+e0P/f1f8aNyf89of+/q/wCNYtFAG1uT/ntD/wB/V/xo3J/z2h/7+r/jWLRQBtbk/wCe0P8A39X/ABo3J/z2h/7+r/jWLRQBtbk/57Q/9/V/xo3J/wA9of8Av6v+NYtFAG1uT/ntD/39X/Gjcn/PaH/v6v8AjWLRQBtbk/57Q/8Af1f8aNyf89of+/q/41i0UAbW5P8AntD/AN/V/wAaNyf89of+/q/41i0UAbW5P+e0P/f1f8aNyf8APaH/AL+r/jWLRQBtbo/+e0P/AH8X/Gs+/uFmKIhyqZ59Sf8A9VVaKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigB+Lf/AJ/If++X/wDiaMW//P5D/wB8v/8AE1nUUAaOLf8A5/If++X/APiaMW//AD+Q/wDfL/8AxNZ1FAGji3/5/If++X/+Joxb/wDP5D/3y/8A8TWdRQBo4t/+fyH/AL5f/wCJoxb/APP5D/3y/wD8TWdRQBo4t/8An8h/75f/AOJoxb/8/kP/AHy//wATWdRQBo4t/wDn8h/75f8A+Joxb/8AP5D/AN8v/wDE1nUUAaOLf/n8h/75f/4mjFv/AM/kP/fL/wDxNZ1FAGji3/5/If8Avl//AImjFv8A8/kP/fL/APxNZ1FAGji3/wCfyH/vl/8A4mjFv/z+Q/8AfL//ABNZ1FAGji3/AOfyH/vl/wD4mjFv/wA/kP8A3y//AMTWdRQBo4t/+fyH/vl//iaMW/8Az+Q/98v/APE1nUUAaOLf/n8h/wC+X/8AiaMW/wDz+Q/98v8A/E1nUUAaOLf/AJ/If++X/wDiaMW//P5D/wB8v/8A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" alt="The phone's Patch dialog, Universes › Map: two cards, 1 · Main 84 / 512 · 6 fixtures, 2 · Aux 0 / 512 · 0 fixtures, the conflict line below, the bar Oops · More · Live" width="390" height="844"><figcaption>Real capture, 390 × 844 (<code>phone.spec.ts</code>, <code>target/screenshots/phone-map.png</code>): Universes › Map on a phone. Cards, nothing to drag; a tap on a card opens the universe's slot grid.</figcaption></figure>
+      <dl class="facts">
+        <dt>Decided, the desk</dt><dd>The Map's bars: tap a block selects (Shift / Meow adds), a drag moves it along its universe or onto another one's bar (the ghost snaps, gold / red), <b>tap a free run with fixtures selected patches them there</b> — one <code>Assign Fixture … At DMX u.aaa</code> line. A tablet keeps the bars.</dd>
+        <dt>Decided, the phone (§37 5–6)</dt><dd>Universes › Map is a list of cards; a tap on a card zooms into that universe's slot grid (rows of 10, ‹ back to the list); the conflict list stays under the cards. Edit Patch on a phone is full screen: the current fixture on one line with ‹ ›, the universe bar with ‹ ›, the grid, the function bar.</dd>
+        <dt>Decided, question 1</dt><dd>In the grid the hold is the press: hold still on a run, it lifts (the run pops, a chip above the finger names it and where it lands), let go on a slot is the line; hold and let go without moving is the context sheet; a plain finger scrolls.</dd>
+        <dt>Found on the way</dt><dd>On a phone a card opens Edit Patch with <b>no fixtures</b>: the setup hands it the map's own selection (the blocks' taps), which a phone never has — the Patch list's selection is not carried. Whichever option wins, a card should open Edit Patch with the Patch list's selection (the selection chip already knows it).</dd>
+        <dt>In the kit already</dt><dd>The phone's selection chip in the grid's No cell (§37) with its + / − / ⋯ menu; the setup's state chip; the sheet (<code>sheet.js</code>) for every phone pop-up; the universal context menu on a selection (18) with its Set part — <code>Address</code> is a column there, typed on a keypad; the Patch tool's line for several fixtures (<code>/Every n</code> keeps the list's offset).</dd>
+        <dt>lum.md</dt><dd>Every option below is the existing <code>Assign Fixture … At DMX u.aaa</code> line; no new word.</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="board">
+    <h2>The options — 390 × 844, four universes, Fixture 102 selected in the Patch list · try each frame</h2>
+    <p style="margin:0;color:var(--dim);max-width:88ch;line-height:1.5">Every frame is the whole phone map: tap a card to zoom in, ‹ to come back, hold a run to lift it (the ring), tap a run to select it, hold and let go for the context sheet. Universe 1 Main has six fixtures, 2 Aux is empty, 3 Stage is half full, 4 Truss is full (no room). The frames differ only in how Fixture 102 gets to universe 2.</p>
+    <div class="opts" id="opts"></div>
+    <p class="decide"><b>C chosen</b> (the user, 2026-10-19; decisions §34 "4d4 hardened" 2). Recommended was: <b>C · the cards take the selection</b> — the desk's "tap a free run with fixtures selected" is a phone's tap on a card: while fixtures are selected (the chip), every card shows where they would land ("Patch here · 2.001", the first free run that fits them one after another; a full universe says "No room"); one tap is the one line, and the list scrolls, so many universes are no harder than two; many fixtures go at once; nothing is dragged across two screens. The drag stays in the slot grid (question 3 decides another universe from there). The card's body still zooms; a card opens Edit Patch with the Patch list's selection. B is the only real drop and it reads well, but it is a drag that changes screen mid-gesture — the heaviest to build and the hardest to find; D is one more way to the context menu's <code>Set Address</code>; A leaves a phone with no way to another universe until question 3.</p>
+  </section>
+</main>
+
+<script>
+const a3 = n => String(n).padStart(3, '0');
+const HOLD = 500, SLOP = 8;
+const ids = a => [...a].sort((x, y) => x - y).join(' + ');
+const mk = (no, s, n, k) => ({ no, s, n, k });
+const fresh = () => ({
+  unis: [
+    { no: 1, name: 'Main', fx: [101, 102, 103, 104, 105, 106].map((no, i) => mk(no, 1 + i * 14, 14, no % 2 ? 1 : 2)) },
+    { no: 2, name: 'Aux', fx: [] },
+    { no: 3, name: 'Stage', fx: Array.from({ length: 7 }, (_, i) => mk(301 + i, 1 + i * 38, 38, 3)) },
+    { no: 4, name: 'Truss', fx: Array.from({ length: 16 }, (_, i) => mk(401 + i, 1 + i * 32, 32, 4)) },
+  ],
+  view: 'cards', u: 1, cur: 102, picked: new Set([102]), line: '', ghost: new Map(), dragging: new Set(),
+});
+const uni = (st, no) => st.unis.find(u => u.no === no);
+const allFx = st => st.unis.flatMap(u => u.fx.map(f => ({ ...f, u: u.no })));
+const used = u => Math.min(512, u.fx.reduce((a, f) => a + f.n, 0));
+const owners = (u, s) => u.fx.filter(f => s >= f.s && s < f.s + f.n);
+/** The first free run of `need` slots in universe u, or null. */
+function firstFree(u, need, skip = new Set()) {
+  const taken = new Array(514).fill(false);
+  for (const f of u.fx) if (!skip.has(f.no)) for (let s = f.s; s < f.s + f.n && s <= 512; s++) taken[s] = true;
+  for (let s = 1; s + need - 1 <= 512; s++) { let ok = true; for (let i = 0; i < need && ok; i++) ok = !taken[s + i]; if (ok) return s; }
+  return null;
+}
+/** The selection (or one run) as items, bunched: total footprint and the line's word. */
+function moving(st, no) { const sel = st.picked.has(no) ? [...st.picked] : [no]; const items = allFx(st).filter(f => sel.includes(f.no)).sort((a, b) => a.u - b.u || a.s - b.s); return { sel, items, need: items.reduce((a, f) => a + f.n, 0) }; }
+/** Move items to universe `to` at `at`, one after another; the line. */
+function moveTo(st, items, to, at) {
+  const target = uni(st, to);
+  let s = at;
+  for (const f of items) { const from = uni(st, f.u); from.fx = from.fx.filter(x => x.no !== f.no); target.fx.push(mk(f.no, s, f.n, f.k)); s += f.n; }
+  target.fx.sort((a, b) => a.s - b.s);
+  st.line = `Assign Fixture ${ids(items.map(f => f.no))} At DMX ${to}.${a3(at)}`;
+}
+
+const OPTS = [
+  { id: 'a', title: 'A · The cards are doors, the drag lives in the grid',
+    text: 'Nothing on the cards. A move is only in the slot grid: hold lifts, let go on a slot. Another universe is question 3\'s answer in that grid (‹ › or the edge); until then a phone moves a fixture to another universe by typing the address (the context menu\'s Set › Address, the keypad).',
+    pros: ['Nothing new; the cards stay what §37 made them', 'One place to move things: the grid'],
+    cons: ['A phone has no way to another universe until question 3 — and then it is a drag across the bar of a 52-row grid', 'Nothing in the Map uses the selection, unlike the desk\'s tap on a free run'] },
+  { id: 'b', title: 'B · Drag out of the grid onto the cards',
+    text: 'Hold lifts a run in the grid; drag it up over the universe bar and the list of universes drops over the grid; the card under the finger lights gold with where the run would land ("→ 2.001", its first free run that fits) or red "no room"; let go on it is the line, and the grid shows that universe with the run there. Drag back down and the list goes.',
+    pros: ['A real drop on a card — one continuous gesture from the slot to the universe', 'The same bar could drop the list on the desk: a candidate for question 3'],
+    cons: ['A drag that changes screen mid-gesture: the finger must reach the bar, the list must appear under it; the hint line has to teach it', 'Lands at the first free run, not a chosen slot (a second hold refines)', 'The heaviest to build: the pointer core retargets to a list that was not there when the press began'] },
+  { id: 'c', tag: 'recommended', title: 'C · The cards take the selection',
+    text: 'The desk\'s "tap a free run with fixtures selected" on a phone: while fixtures are selected (the chip), every card grows a gold cell with where they would land — "Patch here · 2.001", the first free run that fits them one after another; a full universe says "No room". The tap is the one line; the card\'s body still zooms in. The Map has no No cell, so the selection chip sits in the tab strip. No drag on the Map; the drag stays in the grid.',
+    pros: ['No drag across screens; the chip and the line already exist', 'Many fixtures at once, many universes: the list scrolls, every card names its free run before you tap', 'Discoverable: the cells appear the moment something is selected'],
+    cons: ['Lands at the first free run (refine in the grid)', 'A card gives 78 px of its width to the cell while there is a selection', 'The selection is made first, in the Patch list or the grid'] },
+  { id: 'd', title: 'D · Move to… from the context sheet',
+    text: 'No gesture: hold and let go on a run (or the selection chip\'s ⋯ in the Patch list) opens the context sheet, "Move to universe…" opens the universes as a sheet — each with its free space and first free run, a full one greyed — and a tap is the line. The cards stay doors.',
+    pros: ['Works from the Patch list too, where a phone selects most', 'The kit\'s one context menu, nothing drawn on the cards'],
+    cons: ['Three taps and two sheets for one move', 'A second way beside the context menu\'s Set › Address, which already types any address', 'The Map itself does nothing with the selection'] },
+];
+document.getElementById('opts').innerHTML = OPTS.map(o => `<div class="opt"><h3>${o.title}${o.tag ? `<span class="tag">${o.tag}</span>` : ''}</h3><div class="phone" id="ph-${o.id}" data-opt="${o.id}"></div><p>${o.text}</p><ul>${o.pros.map(p => `<li>${p}</li>`).join('')}${o.cons.map(c => `<li class="m">${c}</li>`).join('')}</ul><p class="try">Try: tap a card · ‹ back · hold Fixture 102 in the grid${o.id === 'b' ? ', drag it up over the universe bar, let go on 2 · Aux' : o.id === 'c' ? ' · tap "Patch here" on 2 · Aux' : o.id === 'd' ? ', let go, Move to universe…' : ''}.</p></div>`).join('');
+
+// ── Drawing ──
+function cardsHtml(ph, st, { go = false } = {}) {
+  const mv = st.picked.size ? moving(st, [...st.picked][0]) : null;
+  return st.unis.map(u => {
+    const strip = u.fx.map(f => `<i class="k" style="left:${((f.s - 1) / 512) * 100}%;width:${(f.n / 512) * 100}%;background:var(--t${f.k})"></i>`).join('');
+    let cell = '';
+    if (go && mv) {
+      const at = firstFree(u, mv.need, new Set(mv.sel));
+      cell = at ? `<button type="button" class="go" data-go="${u.no}" data-at="${at}">Patch here<small>${u.no}.${a3(at)}</small></button>` : `<span class="go no">No room</span>`;
+    }
+    return `<div class="card" data-card="${u.no}"><button type="button" class="body" data-zoom="${u.no}">
+      <span class="top"><b>${u.no} · ${u.name}</b><small>${used(u)} / 512</small></span>
+      <span class="sub"><span>${u.fx.length} fixture${u.fx.length === 1 ? '' : 's'}</span><i>›</i></span>
+      <span class="strip">${strip}</span></button>${cell}</div>`;
+  }).join('');
+}
+function draw(ph) {
+  const st = ph.st, opt = ph.dataset.opt;
+  if (st.view === 'cards') {
+    const sel = st.picked.size ? `<span class="sel">${st.picked.size} selected <i>Fixture ${ids(st.picked)}</i><i data-clear>✕</i></span>` : '<span>⌄ All</span>';
+    ph.innerHTML = `<div class="t"><b>⏚ Patch</b><span class="live">Live</span><span class="seg"><span>List</span><span class="on">Map</span></span><span class="x">✕</span></div>
+      <div class="tabs">${sel}<span>Patch</span><span>Fixture types</span><span class="on">Universes</span></div>
+      <div class="list" data-list>${cardsHtml(ph, st, { go: opt === 'c' })}</div>
+      <div class="last" data-last>${st.line ? `› <b>${st.line}</b>` : opt === 'c' && st.picked.size ? 'Tap a card to open it · Patch here moves the selection' : 'Tap a card to open its slots'}</div>
+      <div class="okline">No overlaps — every fixture sends</div>
+      <div class="bar0"><div><em>↶</em>Oops</div><div><em>⋯</em>More</div><div class="lock"><em>🔓</em>Live</div></div>`;
+    for (const b of ph.querySelectorAll('[data-zoom]')) b.onclick = () => { st.view = 'grid'; st.u = +b.dataset.zoom; st.line = ''; draw(ph); };
+    for (const b of ph.querySelectorAll('[data-go]')) b.onclick = () => { const mv = moving(st, [...st.picked][0]); moveTo(st, mv.items, +b.dataset.go, +b.dataset.at); draw(ph); };
+    ph.querySelector('[data-clear]')?.addEventListener('click', () => { st.picked = new Set(); st.line = ''; draw(ph); });
+    return;
+  }
+  // The slot grid (Edit Patch on a phone)
+  if (!ph.querySelector('[data-sheet]')) {
+    ph.innerHTML = `<div class="t"><span class="back" data-back>‹</span><b>Edit Patch</b><span style="color:var(--dim)" data-sub></span><span class="x">✕</span></div>
+      <div class="cur"><span class="nav">‹</span><span class="c" data-curline></span><span class="nav">›</span></div>
+      <div class="ub" data-ub><span class="nav" data-u="-1">‹</span><span data-uname></span><span class="nav" data-u="1">›</span></div>
+      <div class="sheet" data-sheet><div class="in"><div class="g" data-grid></div></div></div><div class="last" data-last></div>
+      <div class="bar1"><div class="on"><em>⏚</em>Patch</div><div><em>⌖</em>Probe</div><div><em>⌕</em>Find</div><div><em>◎</em>Identify</div><div><em>⤼</em>Unpatch</div></div>`;
+    ph.querySelector('[data-back]').onclick = () => { st.view = 'cards'; st.line = ''; draw(ph); };
+    for (const b of ph.querySelectorAll('[data-u]')) b.onclick = () => { const i = st.unis.findIndex(u => u.no === st.u); const n = st.unis[(i + +b.dataset.u + st.unis.length) % st.unis.length]; st.u = n.no; st.line = ''; draw(ph); };
+    wireSheet(ph);
+  }
+  const u = uni(st, st.u);
+  const sheet = ph.querySelector('[data-sheet]'), top = sheet.scrollTop;
+  let html = '';
+  for (let s = 1; s <= 512; s++) {
+    if ((s - 1) % 10 === 0) html += `<span class="lb">${u.no}:${a3(s)}</span>`;
+    const on = owners(u, s), f = on[on.length - 1];
+    const cls = ['s'];
+    if (f) cls.push(f.no === st.cur ? 'cu' : `k${f.k}`);
+    if (f && st.picked.has(f.no) && f.no !== st.cur) cls.push('picked');
+    if (on.length > 1) cls.push('parked');
+    if (f && st.dragging.has(f.no)) cls.push('drag');
+    if (st.ghost.has(s)) { cls.push(st.ghost.get(s) ? 'gbad' : 'g'); if (ph.lifted) cls.push('lift'); }
+    html += `<button type="button" class="${cls.join(' ')}" data-s="${s}"${f ? ` data-no="${f.no}"` : ''}>${f && f.s === s ? `<span class="f">${f.no}</span>` : ''}${s}</button>`;
+  }
+  ph.querySelector('[data-grid]').innerHTML = html;
+  sheet.scrollTop = top;
+  const cur = allFx(st).find(f => f.no === st.cur);
+  ph.querySelector('[data-curline]').innerHTML = cur ? `<b>Fixture ${cur.no}</b><small>${cur.n === 14 ? 'Aura 4' : cur.n === 38 ? 'Mac Ultra' : 'Spot 32'} · ${cur.n} ch · ${cur.u}.${a3(cur.s)} · ${st.picked.size} selected</small>` : '<b>No fixture</b><small>tap a run</small>';
+  ph.querySelector('[data-uname]').textContent = `Universe ${u.no} · ${u.name} · ${used(u)} / 512`;
+  ph.querySelector('[data-sub]').textContent = st.picked.size ? `Fixture ${ids(st.picked)}` : '';
+  const hint = { a: 'Hold a run to move it · another universe: question 3', b: 'Hold a run to move it · drag it up to the universes to move it there', c: 'Hold a run to move it · ‹ the cards patch the selection', d: 'Hold a run to move it · hold and let go: Move to universe…' }[opt];
+  ph.querySelector('[data-last]').innerHTML = st.line ? `› <b>${st.line}</b>` : hint;
+  sheet.classList.toggle('dimmed', !!ph.lifted);
+}
+
+// ── The grid's gestures (question 1's engine, A chosen) ──
+function slotAt(ph, x, y) { const el = document.elementFromPoint(x, y)?.closest('.s'); return el && ph.contains(el) ? +el.dataset.s : null; }
+function plan(ph, d, at) {
+  const st = ph.st, u = uni(st, st.u);
+  const mv = moving(st, d.f.no);
+  const here = mv.items.filter(f => f.u === u.no), away = mv.items.filter(f => f.u !== u.no);
+  // The run under the finger moves by the grab; the rest of the selection in this universe keeps its spacing, the rest of it from elsewhere lands after.
+  let delta = at - d.grab - d.f.s;
+  const lo = Math.min(...here.map(f => f.s)), hi = Math.max(...here.map(f => f.s + f.n - 1));
+  delta = Math.max(1 - lo, Math.min(512 - hi, delta));
+  const ghost = new Map(); let bad = false;
+  const place = [];
+  for (const f of here) place.push({ f, s: f.s + delta });
+  let tail = Math.max(...here.map(f => f.s + f.n)) + delta;
+  for (const f of away) { place.push({ f, s: tail }); tail += f.n; }
+  for (const p of place) for (let s = p.s; s < p.s + p.f.n; s++) {
+    const clash = s > 512 || u.fx.some(o => !mv.sel.includes(o.no) && s >= o.s && s < o.s + o.n);
+    bad ||= clash; ghost.set(s, clash);
+  }
+  if (bad) for (const s of ghost.keys()) ghost.set(s, true);
+  st.ghost = ghost; st.dragging = new Set(mv.sel);
+  const first = Math.min(...place.map(p => p.s));
+  d.plan = { place, first, bad, moved: delta !== 0 || away.length > 0, line: `Assign Fixture ${ids(mv.sel)} At DMX ${u.no}.${a3(first)}` };
+  if (ph.lifted) { ph.lifted.to = `${u.no}.${a3(first)}`; ph.lifted.bad = bad; ph.lifted.moved = delta !== 0; }
+  st.line = ph.lifted?.moved ? d.plan.line + (bad ? '   ← overlap: parks both' : '') : '';
+}
+function chip(ph, x, y, text, bad) {
+  let el = ph.querySelector('[data-chip]');
+  if (!el) { el = document.createElement('div'); el.className = 'chip'; el.dataset.chip = ''; ph.append(el); }
+  const r = ph.getBoundingClientRect();
+  el.style.left = `${x - r.left}px`; el.style.top = `${Math.max(60, y - r.top - 44)}px`;
+  el.textContent = text; el.classList.toggle('bad', !!bad);
+}
+function liftChip(ph, d, x, y) { const L = ph.lifted; chip(ph, x, y, L.moved ? `Fixture ${L.no} → ${L.to}${L.bad ? ' · parks both' : ''}` : `Fixture ${L.no} · ${ph.st.u}.${a3(d.f.s)}`, L.bad); }
+function lift(ph, d, x, y) { ph.lifted = { no: d.f.no, to: null, bad: false, moved: false }; try { navigator.vibrate?.(12); } catch (_) {} plan(ph, d, d.s); liftChip(ph, d, x, y); draw(ph); }
+function applyPlan(ph, d) {
+  const st = ph.st, u = uni(st, st.u);
+  for (const p of d.plan.place) { const from = uni(st, p.f.u); from.fx = from.fx.filter(x => x.no !== p.f.no); u.fx.push(mk(p.f.no, p.s, p.f.n, p.f.k)); }
+  u.fx.sort((a, b) => a.s - b.s);
+  st.line = d.plan.line;
+}
+function ring(ph, x, y) {
+  hideRing(ph);
+  const r = ph.getBoundingClientRect(), el = document.createElement('div');
+  el.className = 'ring'; el.dataset.ring = '';
+  el.style.left = `${x - r.left}px`; el.style.top = `${y - r.top}px`;
+  el.innerHTML = '<svg viewBox="0 0 44 44"><circle class="tr" cx="22" cy="22" r="19"/><circle class="fi" cx="22" cy="22" r="19"/></svg>';
+  ph.append(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('on')));
+}
+function hideRing(ph) { ph.querySelector('[data-ring]')?.remove(); }
+function closeCtx(ph) { ph.querySelector('[data-ctx]')?.remove(); }
+function ctx(ph, f) {
+  closeCtx(ph);
+  const st = ph.st, opt = ph.dataset.opt, mv = moving(st, f.no);
+  const el = document.createElement('div');
+  el.className = 'ctx'; el.dataset.ctx = '';
+  el.innerHTML = `<div class="h"></div><div class="hd"><span>${mv.sel.length} Fixture · ${ids(mv.sel)}</span><span>Live · ✕</span></div>
+    <div class="r">Edit…</div>${opt === 'd' ? '<div class="r go" data-move>Move to universe…<small>›</small></div>' : ''}<div class="r">Swap addresses…</div><div class="r">Unpatch</div><div class="r">Identify</div><div class="r sub">Set · Address, Name, … ›</div>`;
+  ph.append(el);
+  el.querySelector('[data-move]')?.addEventListener('click', e => { e.stopPropagation(); pickUniverse(ph, mv); });
+  el.onclick = () => closeCtx(ph);
+}
+function pickUniverse(ph, mv) {
+  closeCtx(ph);
+  const st = ph.st, el = document.createElement('div');
+  el.className = 'ctx'; el.dataset.ctx = '';
+  el.innerHTML = `<div class="h"></div><div class="hd"><span>Move Fixture ${ids(mv.sel)} to…</span><span>✕</span></div>` + st.unis.map(u => {
+    const at = firstFree(u, mv.need, new Set(mv.sel));
+    return `<div class="r${at ? ' go' : ' off'}" ${at ? `data-to="${u.no}" data-at="${at}"` : ''}><b>${u.no} · ${u.name}</b><span style="color:var(--dim)">${used(u)} / 512</span><small>${at ? `first free ${u.no}.${a3(at)}` : 'no room'}</small></div>`;
+  }).join('');
+  ph.append(el);
+  for (const r of el.querySelectorAll('[data-to]')) r.onclick = e => { e.stopPropagation(); closeCtx(ph); moveTo(st, mv.items, +r.dataset.to, +r.dataset.at); st.u = +r.dataset.to; draw(ph); };
+  el.onclick = () => closeCtx(ph);
+}
+// B: the universes over the grid while a run is lifted
+function showOver(ph, d) {
+  if (ph.querySelector('[data-over]')) return;
+  const st = ph.st, el = document.createElement('div');
+  el.className = 'over'; el.dataset.over = '';
+  el.innerHTML = `<div class="hd">Let go on a universe · Fixture ${ids(moving(st, d.f.no).sel)}</div><div class="list">${cardsHtml(ph, st)}</div>`;
+  ph.append(el);
+  ph.querySelector('[data-ub]').classList.add('target');
+}
+function hideOver(ph) { ph.querySelector('[data-over]')?.remove(); ph.querySelector('[data-ub]')?.classList.remove('target'); }
+function overMove(ph, d, x, y) {
+  const st = ph.st, mv = moving(st, d.f.no);
+  const card = document.elementFromPoint(x, y)?.closest('[data-card]');
+  for (const c of ph.querySelectorAll('[data-over] [data-card]')) c.classList.toggle('hot', c === card);
+  d.over = null;
+  if (!card) { chip(ph, x, y, `Fixture ${ids(mv.sel)} · let go on a universe`, false); return; }
+  const u = uni(st, +card.dataset.card), at = firstFree(u, mv.need, new Set(mv.sel));
+  card.classList.toggle('bad', !at);
+  if (at) { d.over = { to: u.no, at }; chip(ph, x, y, `Fixture ${ids(mv.sel)} → ${u.no}.${a3(at)}`, false); }
+  else chip(ph, x, y, `Universe ${u.no} · no room`, true);
+}
+function lassoBox(ph, d, x, y) {
+  const inner = ph.querySelector('.in');
+  let box = inner.querySelector('.lassobox');
+  if (!box) { box = document.createElement('span'); box.className = 'lassobox'; inner.append(box); }
+  const r = inner.getBoundingClientRect();
+  const x0 = Math.min(d.x, x), x1 = Math.max(d.x, x), y0 = Math.min(d.y0, y), y1 = Math.max(d.y0, y);
+  Object.assign(box.style, { left: `${x0 - r.left}px`, top: `${y0 - r.top}px`, width: `${x1 - x0}px`, height: `${y1 - y0}px` });
+  const picked = new Set();
+  for (const el of ph.querySelectorAll('.s[data-no]')) { const b = el.getBoundingClientRect(); if (b.right > x0 && b.left < x1 && b.bottom > y0 && b.top < y1) picked.add(+el.dataset.no); }
+  d.picked = picked;
+  for (const el of ph.querySelectorAll('.s[data-no]')) el.classList.toggle('picked', picked.has(+el.dataset.no) && +el.dataset.no !== ph.st.cur);
+}
+function select(st, f) { st.picked = new Set([f.no]); st.cur = f.no; st.line = ''; }
+
+function wireSheet(ph) {
+  const opt = ph.dataset.opt, sheet = ph.querySelector('[data-sheet]');
+  const end = () => { const d = ph.d; if (!d) return; ph.d = null; clearTimeout(d.timer); hideRing(ph); hideOver(ph); ph.querySelector('.lassobox')?.remove(); ph.st.ghost = new Map(); ph.st.dragging = new Set(); ph.lifted = null; ph.querySelector('[data-chip]')?.remove(); try { sheet.releasePointerCapture(d.id); } catch (_) {} return d; };
+  sheet.addEventListener('pointerdown', e => {
+    if (e.button || ph.d) return;
+    if (ph.querySelector('[data-ctx]')) { closeCtx(ph); return; }
+    const st = ph.st, u = uni(st, st.u);
+    const slotEl = e.target.closest('.s'), s = slotEl ? +slotEl.dataset.s : null;
+    const on = s ? owners(u, s) : [], f = on[on.length - 1] ? { ...on[on.length - 1], u: u.no } : null;
+    const d = ph.d = { id: e.pointerId, x: e.clientX, y0: e.clientY, s, f, kind: 'press', scroll: sheet.scrollTop, moved: false, held: false };
+    try { sheet.setPointerCapture(e.pointerId); } catch (_) {}
+    e.preventDefault();
+    ring(ph, e.clientX, e.clientY);
+    d.timer = setTimeout(() => {
+      if (ph.d !== d) return;
+      hideRing(ph); d.held = true;
+      if (!f) d.kind = 'lasso';
+      else { d.kind = 'move'; d.grab = s - f.s; lift(ph, d, e.clientX, e.clientY); }
+    }, HOLD);
+  });
+  sheet.addEventListener('pointermove', e => {
+    const d = ph.d;
+    if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x, dy = e.clientY - d.y0, dist = Math.hypot(dx, dy);
+    if (d.kind === 'press') { if (dist > SLOP) { clearTimeout(d.timer); hideRing(ph); d.kind = 'scroll'; } return; }
+    if (d.kind === 'scroll') { sheet.scrollTop = d.scroll - dy; return; }
+    if (d.kind === 'move') {
+      if (dist > 4) d.moved = true;
+      if (!d.moved) return;
+      const r = sheet.getBoundingClientRect();
+      if (opt === 'b') {
+        if (e.clientY < r.top) { showOver(ph, d); overMove(ph, d, e.clientX, e.clientY); return; }
+        if (ph.querySelector('[data-over]')) { // back over the grid: the list goes
+          const list = ph.querySelector('[data-over] .list').getBoundingClientRect();
+          if (e.clientY < list.bottom) { overMove(ph, d, e.clientX, e.clientY); return; }
+          hideOver(ph); d.over = null;
+        }
+      }
+      if (e.clientY < r.top + 28) sheet.scrollTop -= 8; else if (e.clientY > r.bottom - 28) sheet.scrollTop += 8;
+      const at = slotAt(ph, e.clientX, e.clientY);
+      if (at) { plan(ph, d, at); draw(ph); }
+      liftChip(ph, d, e.clientX, e.clientY);
+      return;
+    }
+    if (d.kind === 'lasso') { d.moved = true; lassoBox(ph, d, e.clientX, e.clientY); }
+  });
+  const up = e => {
+    const d = ph.d;
+    if (!d || e.pointerId !== d.id) return;
+    const st = ph.st, over = d.over;
+    end();
+    if (e.type !== 'pointerup') { draw(ph); return; }
+    if (d.kind === 'press') {
+      if (d.f) select(st, d.f);
+      else if (d.s && st.cur) { // Patch: the current fixture goes there
+        const cur = allFx(st).find(f => f.no === st.cur);
+        if (cur) { const dd = { f: cur, grab: 0, s: d.s }; const keep = st.picked; st.picked = new Set([cur.no]); plan(ph, dd, d.s); st.picked = keep; st.ghost = new Map(); st.dragging = new Set(); applyPlan(ph, dd); }
+      }
+    } else if (d.kind === 'move') {
+      if (over) { const mv = moving(st, d.f.no); moveTo(st, mv.items, over.to, over.at); st.u = over.to; }
+      else if (d.moved && d.plan && d.plan.moved) applyPlan(ph, d);
+      else if (d.held && !d.moved) { st.line = ''; ctx(ph, d.f); }
+      else st.line = '';
+    } else if (d.kind === 'lasso') {
+      if (d.moved && d.picked?.size) { st.picked = d.picked; st.cur = Math.min(...st.picked); st.line = `Select Fixture ${ids(st.picked)}`; }
+    }
+    draw(ph);
+  };
+  sheet.addEventListener('pointerup', up);
+  sheet.addEventListener('pointercancel', up);
+  sheet.addEventListener('lostpointercapture', e => { if (ph.d && e.pointerId === ph.d.id) up({ ...e, type: 'pointercancel', pointerId: e.pointerId }); });
+}
+
+for (const ph of document.querySelectorAll('.phone')) { ph.st = fresh(); draw(ph); }
+</script>

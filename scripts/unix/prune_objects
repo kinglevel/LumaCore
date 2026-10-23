@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+"""Delete the object files rustc leaves behind in target/<profile>/deps (rust#161824).
+
+Usage:
+  ./scripts/unix/prune_objects [--quiet] [--force]
+
+Since Rust 1.88 every incremental build gives the .o files it keeps for
+split-debuginfo=unpacked (the macOS default) new names, so the old names are
+never overwritten: ~12,000 more entries per full relink here. rustc lists
+deps/ on every run; at 739,000 files a relink took 2:36 instead of 10 s
+(handoffs/2026-10-18-test-speed.md, docs/dev/build-times.md).
+
+A .o is kept while any executable in deps/ names it in its debug map (that is
+where backtraces, lldb and samply read file:line from); every other *.rcgu.o
+goes. Age can't decide it: a reused codegen unit is a hard link into the
+incremental cache and keeps its old mtime. Cargo still sees every crate as
+fresh afterwards.
+
+  (none)    prune a deps/ dir only when it holds more than
+            LC_PRUNE_MAX_ENTRIES (40000) entries
+  --force   prune whatever the count
+  --quiet   print only when something was deleted
+  --hook    as a Claude Code PostToolUse hook: reads the tool call (JSON) on
+            stdin and runs (quietly) only when the Bash command ran cargo
+
+It takes cargo's build lock without waiting: while a build runs it skips that
+profile, and a build that starts meanwhile waits for it (a few seconds).
+Run by ./scripts/unix/build after each build and, after cargo commands, by the
+project's Claude Code hook. Remove it once rust#162561 (or another fix) is in
+the stable toolchain.
+"""
+
+import fcntl
+import json
+import os
+import re
+import sys
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+MAX_ENTRIES = int(os.environ.get("LC_PRUNE_MAX_ENTRIES", "40000"))
+# An object path as it stands in a debug map; the file name is the part after
+# the last "/" (or "(" for an rlib member), which also holds when the string
+# table runs two paths together.
+OBJECT_PATH = re.compile(rb"/[^\x00-\x20\x7f]+?\.rcgu\.o")
+
+
+def entries(directory: Path) -> int:
+    """About how many entries a directory holds, without listing it: on APFS a
+    directory's size is ~32 bytes per entry (rust#161824)."""
+    if sys.platform == "darwin":
+        return directory.stat().st_size // 32
+    return sum(1 for _ in os.scandir(directory))
+
+
+def is_executable(entry: os.DirEntry) -> bool:
+    return entry.is_file() and "." not in entry.name and os.access(entry.path, os.X_OK)
+
+
+def objects_named_in(path: str) -> set[str]:
+    with open(path, "rb") as f:
+        data = f.read()
+    return {re.split(rb"[/(]", m)[-1].decode("utf-8", "replace") for m in OBJECT_PATH.findall(data)}
+
+
+def prune(deps: Path, force: bool, quiet: bool) -> None:
+    shown = deps.relative_to(ROOT) if deps.is_relative_to(ROOT) else deps
+    count = entries(deps)
+    if not force and count <= MAX_ENTRIES:
+        if not quiet:
+            print(f"prune_objects: {shown} ~{count} entries (limit {MAX_ENTRIES}), nothing to do")
+        return
+    lock_path = deps.parent / ".cargo-build-lock"
+    with open(lock_path, "a") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            print(f"prune_objects: {shown} ~{count} entries, a build is running: skipped")
+            return
+        scan = list(os.scandir(deps))
+        executables = [e.path for e in scan if is_executable(e)]
+        named: set[str] = set()
+        with ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
+            for objects in pool.map(objects_named_in, executables):
+                named |= objects
+        deleted = 0
+        for e in scan:
+            if e.name.endswith(".rcgu.o") and e.name not in named:
+                os.unlink(e.path)
+                deleted += 1
+    if deleted or not quiet:
+        print(
+            f"prune_objects: {shown} ~{count} entries → deleted {deleted} stale .o "
+            f"(kept {len(named & {e.name for e in scan})} named by {len(executables)} executables)"
+        )
+
+
+def main() -> int:
+    args = sys.argv[1:]
+    if "-h" in args or "--help" in args:
+        print(__doc__)
+        return 0
+    unknown = [a for a in args if a not in ("--quiet", "--force", "--hook")]
+    if unknown:
+        print(f"prune_objects: unknown argument: {unknown[0]}", file=sys.stderr)
+        return 2
+    if "--hook" in args:
+        try:
+            command = json.load(sys.stdin).get("tool_input", {}).get("command", "")
+        except (ValueError, AttributeError):
+            return 0
+        if not re.search(r"(^|[\s;&|(])cargo\s", command):
+            return 0
+        args.append("--quiet")
+    target = Path(os.environ.get("CARGO_TARGET_DIR", ROOT / "target"))
+    if not target.is_absolute():
+        target = ROOT / target
+    for deps in sorted(target.glob("*/deps")):
+        if deps.is_dir():
+            prune(deps, "--force" in args, "--quiet" in args)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

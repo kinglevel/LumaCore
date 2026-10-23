@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Phone layout</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: {{t.bg}}; color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <header style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 0 6px; background: {{t.surface}}; border-bottom: 1px solid {{t.line}}">
+    <button type="button" aria-label="Menu" style="width: 44px; height: 44px; border: none; background: none; color: {{t.text}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+    <div style="flex: 1; display: flex; gap: 2px; overflow: hidden">
+      <span style="height: 40px; display: flex; align-items: center; padding: 0 12px 0 0; border-radius: 5px; background: {{t.raised}}; font-size: 15px; font-weight: 500; white-space: nowrap"><span style="width: 40px; display: flex; justify-content: center"><span style="width: 12px; height: 12px; border-radius: 50%; background: {{t.accent}}"></span></span>Groups</span>
+      <span style="height: 40px; display: flex; align-items: center; padding: 0 12px; font-size: 15px; color: {{t.dim}}; white-space: nowrap"><span style="width: 12px; height: 12px; border-radius: 50%; background: color-mix(in srgb, {{t.accent}} 35%, {{t.bg}}); display: inline-block; margin-right: 8px"></span>Terminal</span>
+      <span style="height: 40px; display: flex; align-items: center; padding: 0 12px; font-size: 15px; color: {{t.dim}}; white-space: nowrap">Seq…</span>
+    </div>
+    <span style="height: 32px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 500; display: flex; align-items: center; background: {{t.accent}}; color: {{t.onAccent}}">HI</span>
+  </header>
+  <div style="flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding: 10px; align-content: start; overflow: hidden">
+    <sc-for list="{{cells}}" as="c" hint-placeholder-count="9">
+      <div style="height: 84px; border-radius: 6px; border: 2px solid {{c.border}}; background: {{t.raised}}; padding: 8px 10px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between"><span style="font-size: 13px; color: {{t.dim}}">{{c.no}}</span><span style="font-size: 16px; font-weight: 500">{{c.name}}</span></div>
+    </sc-for>
+  </div>
+  <div style="flex-shrink: 0; height: 56px; display: flex; align-items: stretch; background: {{t.surface}}; border-top: 1px solid {{t.line}}">
+    <button type="button" style="width: 64px; border: none; background: none; color: {{t.accent}}; font: inherit; font-weight: 500">PURR</button>
+    <div class="mono" style="flex: 1; display: flex; align-items: center; padding: 0 10px; font-size: 16px; border-left: 1px solid {{t.line}}; border-right: 1px solid {{t.line}}"><span style="color: {{t.dim}}">&gt;&nbsp;</span>Label Group 4 "Fr<span style="width: 2px; height: 20px; background: {{t.accent}}"></span></div>
+    <button type="button" aria-label="Hide keyboard" style="width: 56px; border: none; background: color-mix(in srgb, {{t.accent}} 18%, {{t.surface}}); color: {{t.text}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h18v12H3zM7 10h.01M11 10h.01M15 10h.01M7 14h10"></path></svg></button>
+  </div>
+  <div style="flex-shrink: 0; height: 290px; background: #c9ccd3; color: #5a5d66; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 14px; border-top: 1px solid {{t.line}}">
+    <span style="font-weight: 500">OS keyboard</span>
+    <span style="font-size: 12px; text-align: center; padding: 0 30px">Screen keyboard = Auto → OS on phones. The command line bar rides above it (visualViewport); the window shrinks, nothing is covered.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const names = ['All', 'Odd', 'Even', 'Front', 'Back', 'Spots', 'Wash L', 'Wash R', 'Floor'];
+    const cells = names.map((n, i) => ({ no: i + 1, name: n, border: i === 3 ? t.accent : t.line }));
+    return { t, cells };
+  }
+}
+</script>
+</body>
+</html>

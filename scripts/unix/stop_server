@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Stop the local lumacore-server (SIGTERM: it autosaves unsaved changes and
+# shuts down in order; waits up to 8 s). Same as `./server stop`.
+#
+# Usage:
+#   ./scripts/unix/stop_server [--force]     # --force: SIGKILL if it doesn't stop
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+
+FORCE=""
+for arg in "$@"; do
+    case "$arg" in
+        --force) FORCE="--force" ;;
+        --debug) ;; # accepted for old callers: any lumacore-server is stopped
+        -h|--help) sed -n '2,5p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        *) die "Unknown argument: $arg" ;;
+    esac
+done
+lc_profile 0
+stop_server "$FORCE"

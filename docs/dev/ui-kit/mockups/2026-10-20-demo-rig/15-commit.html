@@ -1,0 +1,51 @@
+<title>Demo In Git</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 15 · 2026-10-20 · the demo itself</div>
+<h1>The demo in git</h1>
+<p>Decided on 14: one show, the rig replaces the demo — "a large dataset now when we start to test things". So every test, screenshot and sweep runs on 1 348 fixtures. What git carries is the last open point about the show itself.</p>
+</header>
+
+<section class="card">
+<h2>Facts</h2>
+<table>
+<tr><th>Good news from the rig</th><td>Fixtures 101–106 exist (ACME units now, not AuraXB), universes 1 and 2 exist, groups 1–3 will be Photon · Icarus · Blinder: many of the 12 e2e files keep their numbers; the ones asserting six fixtures, AuraXB names or two universes are rewritten.</td></tr>
+<tr><th>Today</th><td><code>gen-demo</code> writes <code>library/shows/demo.luma</code> (committed); the test <code>the_demo_show_builds_loads_and_is_committed</code> builds the show again and compares it with the committed file, so a show change fails until the file is regenerated and committed. 45 versions, 41 MB of history.</td></tr>
+<tr><th>The rig's sources</th><td>The MVR (4.4 MB, written once) and the Default pool's Groups element (0.8 MB, written once). The built show: 8.6 MB, of which the 22 GDTFs with their models are nearly all; the JSON of 1 371 fixtures is small.</td></tr>
+<tr><th>Who needs the file on disk</th><td>Every e2e server (8 workers, one server per spec file) loads it at start; the screenshots script; the sweep; the station's first start on a fresh checkout.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>What is committed</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>The sources; the show is built, not committed</h3><p><code>library/mvr/ti2026.mvr</code> and <code>library/poolxml/ti2026-groups.xml</code> are committed. <code>gen-demo</code> builds <code>library/shows/demo.luma</code> from them through the station's own lines (<code>Import Mvr "ti2026.mvr"</code>, <code>Import PoolXml "ti2026-groups.xml" Groups</code>, the users and lines, <code>SaveShow "demo"</code>); the file is gitignored. The e2e support, the screenshots script and the station's start build it when it is missing or older than the sources or the binary (0.5 s in release). The demo test builds it and checks its counts and a golden of the normalized JSON without the GDTF bytes (as <code>normalized</code> does today) — so a show change still shows up in review, as a diff of the golden, not of a zip.</p><ul><li>+ no 8.6 MB per format bump; the sources are the truth</li><li>+ a fresh checkout works: the first start builds the show</li><li>− one more "build when missing" rule (the station, the e2e support, the scripts share one door for it)</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>The built show, as today</h3><p><code>demo.luma</code> (8.6 MB) committed and regenerated on every show-format change; the sources committed too.</p><ul><li>+ nothing to build on a checkout</li><li>− 8.6 MB a regeneration in history, at today's pace about 45 a fortnight → hundreds of MB; a second copy of every GDTF in git</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>The built show with the GDTFs stripped of models</h3><p>As B, but gen-demo strips models and thumbnails from the embedded GDTFs (description.xml only, ~2 MB total).</p><ul><li>− a demo whose fixture types differ from the real files; the 3D work later needs the models back</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Then</h2>
+<ul><li>Names: the file names a real production and real fixtures; what stays.</li><li>After that: the write-up (decisions §40, lum.md, roadmap) and the build plan for your Go.</li></ul>
+</section>
+</main>

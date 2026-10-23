@@ -1,0 +1,23 @@
+[package]
+name = "lumacore-shell"
+version.workspace = true
+edition.workspace = true
+description = "The TCP shell port: one thread per client hosting its terminal, every key and gesture a job on the state thread (decisions §23 \"Step 8\", §34 24.2)"
+
+[dependencies]
+lumacore-sysmon = { path = "../../foundation/lumacore-sysmon" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-lanes = { path = "../../foundation/lumacore-lanes" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-objects = { path = "../../model/lumacore-objects" }
+lumacore-terminal = { path = "../lumacore-terminal" }
+uuid = { workspace = true }
+log = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

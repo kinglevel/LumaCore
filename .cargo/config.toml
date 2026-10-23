@@ -1,0 +1,11 @@
+# Decisions §34 "Build times hardened" 3 (replaces §31's two jobs): all logical cores minus 2, so
+# a build leaves room for a running station (baselines: MacBook M3, Threadripper 1950X).
+# Override with `cargo build -j N`.
+[build]
+jobs = -2
+
+# Decisions §34 23.6: the repo root, for code and tests that read files beside the crates (the
+# demo show, lum.md, fixtures, the frontend kit) — one door instead of `../..` counted from a
+# crate's depth. `relative` makes it this folder's parent (the repo), whatever the cwd.
+[env]
+LUMACORE_ROOT = { value = "", relative = true }

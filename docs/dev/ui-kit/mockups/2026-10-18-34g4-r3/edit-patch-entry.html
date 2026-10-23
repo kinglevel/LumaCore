@@ -1,0 +1,371 @@
+<title>Edit Patch Entry</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the patch window as one piece (grid + function block), the ways into Edit Patch marked
+   on it, and Edit Patch itself below; a variant strip picks which ways exist. The console look
+   of the round 3 mockups (single dark). */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --del-t: #f2a3a3; --sel: #2d3a52; --t1: #3b5f8a; --t1b: #46709f; --t2: #5a4a86;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 26px; }
+header h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 84ch; line-height: 1.5; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.why { color: var(--dim); margin: 0; line-height: 1.5; max-width: 86ch; }
+.board { display: flex; flex-direction: column; gap: 10px; }
+code, .mono { font-family: var(--mono); font-size: 12px; }
+button { font: inherit; color: inherit; }
+button:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+
+/* Variant strip */
+.variants { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px; }
+.var { text-align: left; border: 1px solid var(--line); background: var(--dlg); border-radius: 6px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.var b { font-weight: 500; display: flex; gap: 8px; align-items: center; }
+.var small { color: var(--dim); line-height: 1.4; }
+.var[aria-pressed="true"] { border-color: var(--gold-hi); background: color-mix(in srgb, var(--gold) 14%, var(--dlg)); }
+.var .tick { width: 16px; height: 16px; border-radius: 3px; border: 1px solid var(--line); flex: none; display: grid; place-items: center; font-size: 11px; }
+.var[aria-pressed="true"] .tick { background: var(--gold-hi); border-color: var(--gold-hi); color: #111; }
+.rec { font-size: 11px; color: var(--gold-hi); border: 1px solid var(--gold); border-radius: 9px; padding: 0 6px; margin-left: auto; }
+.presets { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; color: var(--dim); }
+.chipb { height: 32px; padding: 0 12px; border-radius: 16px; border: 1px solid var(--line); background: var(--cell); cursor: pointer; }
+.chipb.on { border-color: var(--gold-hi); color: var(--gold-hi); }
+
+/* The patch window */
+.dlg { border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; min-width: 0; position: relative; }
+.title { min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.crumb { font-size: 16px; display: flex; gap: 8px; align-items: center; }
+.crumb .up { color: var(--dim); } .crumb .sep { color: var(--faint); }
+.state { height: 26px; display: inline-flex; align-items: center; gap: 6px; padding: 0 10px; border-radius: 13px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 12.5px; }
+.state i { width: 8px; height: 8px; border-radius: 4px; background: var(--ok); }
+.tabs { display: flex; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; align-items: center; }
+.tab { height: 36px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--dim); cursor: pointer; }
+.tab.on { color: var(--text); border-color: var(--gold-hi); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-left: auto; }
+.seg button { background: var(--cell); border: 0; border-right: 1px solid var(--line); height: 36px; padding: 0 12px; color: var(--dim); cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button.on { color: var(--text); box-shadow: inset 0 -3px 0 var(--gold-hi); background: var(--head); }
+.wrap { overflow-x: auto; }
+table.grid { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; min-width: 560px; }
+.grid th { text-align: left; font-weight: 400; color: var(--dim); padding: 8px 10px; border-bottom: 1px solid var(--line); background: var(--head); }
+.grid td { padding: 0; border-bottom: 1px solid var(--cell-line); }
+.grid td > span { display: block; padding: 9px 10px; cursor: default; user-select: none; }
+.grid tr.sel td { background: var(--sel); }
+.grid td.adr > span { position: relative; }
+.grid td.adr.live > span { cursor: pointer; }
+.grid td.adr .hint { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--gold-hi); border: 1px solid var(--gold); border-radius: 8px; padding: 0 5px; background: var(--dlg); }
+.funcs { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.fb { min-height: 50px; min-width: 104px; flex: 1 1 104px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px 8px; cursor: pointer; text-align: center; position: relative; }
+.fb small { color: var(--faint); font-size: 11px; }
+.fb.new { border-color: var(--gold-hi); }
+.fb .badge, .mark { position: absolute; top: -8px; right: -6px; font-size: 10.5px; background: var(--gold-hi); color: #111; border-radius: 8px; padding: 0 6px; font-weight: 600; }
+.last { font-family: var(--mono); font-size: 12px; color: var(--dim); padding: 8px 12px; border-top: 1px solid var(--cell-line); background: var(--head); white-space: pre-wrap; min-height: 18px; }
+.last b { color: var(--text); font-weight: 400; }
+
+/* Floating pieces: context menu and value dialog */
+.float { position: absolute; z-index: 5; background: var(--dlg); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 12px 32px rgb(0 0 0 / .55); min-width: 230px; }
+.menu { padding: 4px; display: flex; flex-direction: column; }
+.menu .sec { font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; padding: 6px 10px 2px; }
+.menu button { text-align: left; background: none; border: 0; border-radius: 4px; padding: 8px 10px; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; position: relative; }
+.menu button:hover { background: var(--cell); }
+.menu button small { color: var(--faint); }
+.menu button.new { color: var(--gold-hi); }
+.vd { padding: 10px; display: flex; flex-direction: column; gap: 8px; width: 290px; }
+.vd .hd { display: flex; justify-content: space-between; color: var(--dim); font-size: 12.5px; }
+.vd .field { display: flex; gap: 6px; }
+.vd .field input { flex: 1; min-width: 0; height: 40px; border-radius: 6px; border: 1px solid var(--gold-hi); background: var(--cell); color: var(--text); font: inherit; font-size: 18px; padding: 0 10px; font-variant-numeric: tabular-nums; }
+.vd .pm { width: 40px; height: 40px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); cursor: pointer; }
+.vd .hint { font-size: 12.5px; color: var(--ok-t); }
+.vd .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.vd .chips span { font-size: 12px; border: 1px dashed var(--line); border-radius: 10px; padding: 1px 8px; color: var(--dim); }
+.vd .row { display: flex; gap: 6px; align-items: center; }
+.vd .link { background: none; border: 1px solid var(--gold); color: var(--gold-hi); border-radius: 6px; height: 34px; padding: 0 10px; cursor: pointer; position: relative; }
+.vd .apply { margin-left: auto; height: 34px; padding: 0 16px; border-radius: 6px; border: 1px solid var(--gold-hi); background: var(--gold); color: var(--gold-text); cursor: pointer; }
+
+/* Map strip */
+.umap { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.urow { display: grid; grid-template-columns: 90px minmax(480px, 1fr); gap: 10px; align-items: center; }
+.ubar { position: relative; height: 46px; border-radius: 4px; border: 1px solid var(--cell-line); background: repeating-linear-gradient(90deg, var(--cell) 0 calc(100% / 32 - 1px), var(--cell-line) calc(100% / 32 - 1px) calc(100% / 32)); cursor: zoom-in; }
+.blk { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; background: var(--t1); font-size: 11px; padding: 2px 4px; overflow: hidden; white-space: nowrap; color: #dfe8f3; }
+.blk:nth-child(even) { background: var(--t1b); }
+.blk.sel { outline: 2px solid var(--gold-hi); outline-offset: -2px; }
+.zoom { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); height: 30px; padding: 0 10px; border-radius: 15px; border: 1px solid var(--gold); background: var(--dlg); color: var(--gold-hi); cursor: pointer; font-size: 12px; }
+
+/* Edit Patch */
+.ep { display: grid; grid-template-columns: minmax(260px, .7fr) minmax(0, 1.6fr); }
+.eleft { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+.etable { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.etable th { text-align: left; font-weight: 400; color: var(--dim); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.etable td { padding: 6px 10px; border-bottom: 1px solid var(--cell-line); }
+.etable tr.cur td { background: var(--sel); }
+.etable td.a span { border: 1px solid var(--cell-line); background: var(--cell); border-radius: 4px; padding: 3px 8px; }
+.etable tr.cur td.a span { border-color: var(--gold-hi); color: var(--gold-hi); }
+.eright { display: flex; flex-direction: column; min-width: 0; }
+.sheetbar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--cell-line); background: var(--head); flex-wrap: wrap; }
+.mini { height: 32px; min-width: 32px; padding: 0 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--cell); cursor: pointer; font-size: 12.5px; }
+.sheet { padding: 6px 8px; overflow-x: auto; }
+.srow { display: grid; grid-template-columns: 48px repeat(20, minmax(22px, 1fr)); gap: 2px; margin-bottom: 2px; min-width: 520px; }
+.srow .lab { font-family: var(--mono); font-size: 11px; color: var(--faint); display: flex; align-items: center; }
+.slot { height: 28px; border-radius: 3px; background: var(--cell); font-size: 10px; color: var(--faint); display: flex; align-items: flex-end; padding: 1px 3px; position: relative; overflow: hidden; }
+.slot .fid { position: absolute; top: 1px; left: 3px; color: #fff; }
+.slot.a { background: var(--t1); color: #c9d6e8; } .slot.b { background: var(--t1b); color: #c9d6e8; }
+.slot.cur { background: color-mix(in srgb, var(--gold) 72%, var(--cell)); color: var(--gold-text); }
+.efn { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.efn .fb { min-width: 96px; }
+.from { display: inline-flex; gap: 6px; align-items: center; font-size: 12.5px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 22%, var(--dlg)); border: 1px solid var(--gold); border-radius: 13px; padding: 2px 10px; }
+.closed { padding: 16px; color: var(--faint); }
+
+dl.rules { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 13px; }
+dl.rules dt { color: var(--faint); } dl.rules dd { margin: 0; line-height: 1.45; }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 92ch; line-height: 1.5; margin: 0; }
+@media (max-width: 860px) {
+  .ep { grid-template-columns: minmax(0, 1fr); }
+  .eleft { border-right: 0; border-bottom: 1px solid var(--line); }
+}
+@media (prefers-reduced-motion: no-preference) { .float, .ep-wrap { animation: pop .14s ease-out; } }
+@keyframes pop { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+</style>
+
+<main>
+  <header>
+    <h1>Edit Patch · ways in · round 3 · v1</h1>
+    <p>Patch to… is the small value dialog (built, approved). Edit Patch is the zoomed-in DMX map: the selected fixtures on the left with a cell per break, the universe's slot grid on the right, Find, Identify, Probe and the address tools. Where does it open from, in the patch list and while patching? Pick the ways below; each marked control opens the same Edit Patch on the selection, and the last line shows what it runs. Data: the demo's six MAC Aura XB (101–106) on universe 1.</p>
+  </header>
+
+  <section class="board">
+    <h2>1 · The ways in — tick to try them</h2>
+    <div class="variants" id="variants"></div>
+    <div class="presets"><span>Sets:</span><button class="chipb" data-set="rec">Recommended</button><button class="chipb" data-set="min">Fewest</button><button class="chipb" data-set="all">Every way</button></div>
+  </section>
+
+  <section class="board">
+    <h2>2 · The patch window — try the gold-marked controls</h2>
+    <p class="why">Select rows (tap the FID; Shift adds), then use a marked way in. Right-click or hold a row for the context menu.</p>
+    <div class="dlg" id="win">
+      <div class="title">
+        <span class="crumb"><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span>Patch</span></span>
+        <span class="state"><i></i>Live patch · nobody has claimed it</span>
+      </div>
+      <div class="tabs">
+        <button class="tab on" data-tab="patch">Patch</button><button class="tab" data-tab="types">Fixture types</button><button class="tab" data-tab="universes">Universes</button>
+        <span class="seg" id="useg" hidden><button data-v="list">List</button><button class="on" data-v="map">Map</button></span>
+      </div>
+      <div id="body"></div>
+      <div class="funcs" id="funcs"></div>
+      <div class="last" id="last">Select fixtures, then a way in.</div>
+      <div id="floats"></div>
+    </div>
+  </section>
+
+  <section class="board">
+    <h2>3 · Edit Patch — what every way opens</h2>
+    <div id="ep"></div>
+  </section>
+
+  <section class="board">
+    <h2>4 · While patching — Insert fixtures › Place</h2>
+    <p class="why">The Place step already has First FID and Address with free chips. Its DMX sheet (4c3) is the same element, zoomed in: here it is not a way into Edit Patch but the same slot grid inside the dialog, showing where the new block lands.</p>
+    <div class="dlg">
+      <div class="title"><span class="crumb"><span class="up">Insert fixtures</span><span class="sep">›</span><span>Place</span></span><span class="state" style="margin-left:auto">6 × MAC Aura XB · Mode 1 · 14 slots</span></div>
+      <div class="ep">
+        <div class="eleft" style="padding:10px;gap:8px">
+          <dl class="rules"><dt>Name</dt><dd>Aura</dd><dt>Quantity</dt><dd>6</dd><dt>First FID</dt><dd>201 <span class="mono" style="color:var(--faint)">· free 201, 301</span></dd><dt>Address</dt><dd>1.085 <span class="mono" style="color:var(--faint)">· free 1.085, 2.001</span></dd><dt>Every</dt><dd>14 (packed)</dd></dl>
+          <p class="why" style="font-size:12.5px">Tap a slot in the sheet = Address. The block's outline follows the fields.</p>
+        </div>
+        <div class="eright"><div class="sheetbar"><button class="mini">‹</button><span>Universe 1</span><button class="mini">›</button><span style="margin-left:auto;color:var(--dim);font-size:12px">new block 1.085–1.168</span></div><div class="sheet" id="placesheet"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="board">
+    <h2>5 · Rules this mockup shows</h2>
+    <dl class="rules">
+      <dt>One Edit Patch</dt><dd>Every way in opens the same dialog on the selection (or the fixture you came from); the universe shown is the first fixture's. It is a floating dialog over the patch window, like the value dialog grown up — Esc and ✕ close it, and its Identify / Probe end with it (<code>Off Identify Fixture Thru; Off Identify DMX Thru</code>).</dd>
+      <dt>Quick vs full</dt><dd>Patch to… stays the quick way (one address, Apply). Edit Patch is for looking: where things are, Find, Identify, Probe, several breaks, moving runs on the grid.</dd>
+      <dt>Lines</dt><dd>Opening Edit Patch runs nothing. Tapping a slot runs <code>Assign Fixture n At DMX u.aaa</code>; Find and Identify run their Identify lines; each tool is one line as decided.</dd>
+      <dt>Live</dt><dd>An address is a live column: Edit Patch works in Live and in your draft; Insert fixtures needs the draft.</dd>
+    </dl>
+    <p class="decide">To decide: which ways in exist. Recommended: the function block's <b>Edit Patch…</b> cell, <b>Slot grid…</b> in the value dialog, <b>Edit Patch…</b> in the context menu, and <b>zoom in</b> on a universe in the Map view. The Address cell keeps opening the value dialog.</p>
+  </section>
+</main>
+
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const a3 = n => String(n).padStart(3, '0');
+const ids = list => { const n = [...list].sort((a, b) => a - b), out = []; for (let i = 0; i < n.length;) { let j = i; while (j + 1 < n.length && n[j + 1] === n[j] + 1) j++; out.push(j > i ? `${n[i]} Thru ${n[j]}` : `${n[i]}`); i = j + 1; } return out.join(' + '); };
+
+const FX = [1, 15, 29, 43, 57, 71].map((start, i) => ({ fid: 101 + i, name: `Aura ${i + 1}`, u: 1, start, len: 14 }));
+const WAYS = [
+  { id: 'cell', label: 'Function block: Edit Patch…', text: 'A cell beside Patch to… in the function block (and on the phone slab). Opens on the selection.', rec: true },
+  { id: 'vd', label: 'Value dialog: Slot grid…', text: 'Patch to…\'s small dialog gets a link that grows it into Edit Patch on the same fixtures, the typed address kept.', rec: true },
+  { id: 'ctx', label: 'Context menu: Edit Patch…', text: 'Right-click / hold a row: Patch to… (quick) and Edit Patch… (full) side by side.', rec: true },
+  { id: 'map', label: 'Map view: zoom in', text: 'Universes › Map: a zoom button on a universe (or double-tap its bar) opens Edit Patch on that universe with the map\'s selection.', rec: true },
+  { id: 'adr', label: 'Address cell: double-tap', text: 'A double-tap on an Address cell opens Edit Patch on that fixture; a single tap selects as today, Edit… keeps the value dialog.', rec: false },
+  { id: 'adrbtn', label: 'Address cell: ⌗ button', text: 'The selected row\'s Address cell shows a small grid button that opens Edit Patch on it.', rec: false },
+];
+const SETS = { rec: WAYS.filter(w => w.rec).map(w => w.id), min: ['cell'], all: WAYS.map(w => w.id) };
+const st = { ways: new Set(SETS.rec), sel: new Set([104, 105]), tab: 'patch', float: null, ep: null };
+
+function drawVariants() {
+  document.getElementById('variants').innerHTML = WAYS.map(w => `<button class="var" data-way="${w.id}" aria-pressed="${st.ways.has(w.id)}"><b><span class="tick">${st.ways.has(w.id) ? '✓' : ''}</span>${esc(w.label)}${w.rec ? '<span class="rec">recommended</span>' : ''}</b><small>${esc(w.text)}</small></button>`).join('');
+  for (const [k, v] of Object.entries(SETS)) document.querySelector(`[data-set="${k}"]`).classList.toggle('on', v.length === st.ways.size && v.every(x => st.ways.has(x)));
+}
+function line(text) { document.getElementById('last').innerHTML = `› <b>${esc(text)}</b>`; }
+
+function drawBody() {
+  document.getElementById('useg').hidden = st.tab !== 'universes';
+  const body = document.getElementById('body');
+  if (st.tab === 'universes') {
+    const blocks = FX.map(f => `<span class="blk${st.sel.has(f.fid) ? ' sel' : ''}" style="left:${(f.start - 1) / 512 * 100}%;width:calc(${f.len / 512 * 100}% - 2px)">${f.fid}</span>`).join('');
+    body.innerHTML = `<div class="wrap"><div class="umap">
+      <div class="urow"><span>1 · Main<br><small style="color:var(--dim)">84 / 512</small></span><div class="ubar" data-u="1">${blocks}${st.ways.has('map') ? '<button class="zoom" data-open="map" data-u="1">⤢ Zoom in<span class="mark">way in</span></button>' : ''}</div></div>
+      <div class="urow"><span>2 · Aux<br><small style="color:var(--dim)">0 / 512</small></span><div class="ubar" data-u="2">${st.ways.has('map') ? '<button class="zoom" data-open="map" data-u="2">⤢ Zoom in</button>' : ''}</div></div>
+    </div></div>`;
+  } else if (st.tab === 'types') {
+    body.innerHTML = '<div class="closed">Fixture types grid (not part of this question).</div>';
+  } else {
+    body.innerHTML = `<div class="wrap"><table class="grid"><thead><tr><th>FID</th><th>Name</th><th>Fixture type</th><th>Mode</th><th>Address</th></tr></thead><tbody>${FX.map(f => `
+      <tr data-fid="${f.fid}" class="${st.sel.has(f.fid) ? 'sel' : ''}"><td><span data-pick>${f.fid}</span></td><td><span data-pick>${esc(f.name)}</span></td><td><span data-pick>MAC Aura XB</span></td><td><span data-pick>Mode 1</span></td>
+      <td class="adr${st.ways.has('adr') ? ' live' : ''}"><span data-adr="${f.fid}">${f.u}.${a3(f.start)}${st.ways.has('adrbtn') && st.sel.has(f.fid) ? `<button class="hint" data-open="adrbtn" data-fid="${f.fid}" title="Edit Patch">⌗</button>` : ''}${st.ways.has('adr') && f.fid === 101 ? '<span class="hint" style="right:auto;left:62px">double-tap</span>' : ''}</span></td></tr>`).join('')}</tbody></table></div>`;
+  }
+  const f = [
+    ['Insert fixtures…', 'needs the draft', ''],
+    ['Patch to…', 'value dialog', 'data-act="patchto"'],
+    ...(st.ways.has('cell') ? [['Edit Patch…', 'slot grid', 'data-open="cell" class-new']] : []),
+    ['Next free address', 'packed', 'data-act="next"'],
+    ['Multipatch…', 'needs the draft', ''],
+    ['Info', '', ''],
+    ['Sort · FID', 'view', ''],
+    ['Offset · 0', 'view', ''],
+  ];
+  document.getElementById('funcs').innerHTML = f.map(([l, s, a]) => `<button class="fb${a.includes('class-new') ? ' new' : ''}" ${a.replace('class-new', '')}>${esc(l)}${s ? `<small>${esc(s)}</small>` : ''}${a.includes('class-new') ? '<span class="badge">way in</span>' : ''}</button>`).join('');
+}
+
+function showFloat(html, x, y) {
+  const win = document.getElementById('win').getBoundingClientRect();
+  const fl = document.getElementById('floats');
+  fl.innerHTML = `<div class="float" style="left:${Math.max(8, Math.min(x - win.left, win.width - 300))}px;top:${Math.max(8, y - win.top)}px">${html}</div>`;
+}
+function closeFloat() { document.getElementById('floats').innerHTML = ''; }
+
+function valueDialog(x, y) {
+  const first = FX.find(f => st.sel.has(f.fid));
+  showFloat(`<div class="vd"><div class="hd"><span>Patch to · Fixture ${ids(st.sel)}</span><button class="mini" data-close>✕</button></div>
+    <div class="field"><button class="pm">−</button><input id="vdin" value="${first.u}.${a3(first.start)}" aria-label="Address"><button class="pm">+</button></div>
+    <div class="hint">→ ${first.u}.${a3(first.start)}–${first.u}.${a3(first.start + 14 * st.sel.size - 1)} · all free</div>
+    <div class="chips"><span>1.085</span><span>2.001</span></div>
+    <div class="row">${st.ways.has('vd') ? '<button class="link" data-open="vd">Slot grid…<span class="mark">way in</span></button>' : ''}<button class="apply" data-apply>Apply</button></div></div>`, x, y);
+}
+function contextMenu(x, y) {
+  showFloat(`<div class="menu"><span class="sec">Fixture ${esc(ids(st.sel))}</span>
+    <button>Edit…<small>card</small></button><button>Renumber…</button><button>Label</button>
+    <span class="sec">Patch</span>
+    <button data-act="patchto">Patch to…<small>quick</small></button>
+    ${st.ways.has('ctx') ? '<button class="new" data-open="ctx">Edit Patch…<small>slot grid</small><span class="mark">way in</span></button>' : ''}
+    <button>Next free address</button><button>Swap addresses…</button><button>Unpatch</button><button>Info</button></div>`, x, y);
+}
+
+function openEP(from, u) {
+  closeFloat();
+  const fx = st.sel.size ? FX.filter(f => st.sel.has(f.fid)) : [];
+  st.ep = { from, u: u || fx[0]?.u || 1, fx };
+  const label = { cell: 'function block · Edit Patch…', vd: 'value dialog · Slot grid…', ctx: 'context menu · Edit Patch…', map: `Map · zoom in on universe ${st.ep.u}`, adr: 'Address cell · double-tap', adrbtn: 'Address cell · ⌗' }[from];
+  line(`(opens Edit Patch — no line) via ${label}`);
+  drawEP(label);
+  document.getElementById('ep').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+}
+function drawEP(label) {
+  const host = document.getElementById('ep');
+  if (!st.ep) { host.innerHTML = '<div class="dlg"><div class="closed">Closed — open it from a way in above.</div></div>'; return; }
+  const { fx, u } = st.ep;
+  const cur = fx[0]?.fid;
+  let sheet = '';
+  for (let row = 0; row < 6; row++) {
+    sheet += `<div class="srow"><span class="lab">${u}:${a3(row * 20 + 1)}</span>`;
+    for (let c = 1; c <= 20; c++) {
+      const s = row * 20 + c;
+      const f = u === 1 ? FX.find(x => s >= x.start && s < x.start + x.len) : null;
+      const cls = !f ? '' : f.fid === cur ? 'cur' : (f.fid % 2 ? 'a' : 'b');
+      sheet += `<span class="slot ${cls}">${f && f.start === s ? `<span class="fid">${f.fid}</span>` : ''}${s}</span>`;
+    }
+    sheet += '</div>';
+  }
+  host.innerHTML = `<div class="dlg ep-wrap">
+    <div class="title"><span class="crumb"><span class="up">Patch</span><span class="sep">›</span><span>Edit Patch</span></span>
+      <span class="state">${fx.length ? `${fx.length} fixture${fx.length === 1 ? '' : 's'} · ${ids(fx.map(f => f.fid))}` : `universe ${u} · nothing selected`}</span>
+      <span class="from">opened from: ${esc(label)}</span><button class="mini" style="margin-left:auto" data-epclose>✕</button></div>
+    <div class="ep">
+      <div class="eleft"><table class="etable"><thead><tr><th>FID</th><th>Name</th><th>Break 1</th></tr></thead><tbody>${fx.length ? fx.map((f, i) => `<tr class="${i === 0 ? 'cur' : ''}"><td>${f.fid}</td><td>${esc(f.name)}</td><td class="a"><span>${f.u}.${a3(f.start)}</span></td></tr>`).join('') : '<tr><td colspan="3" style="color:var(--faint)">Tap a block in the grid to pick fixtures.</td></tr>'}</tbody></table></div>
+      <div class="eright"><div class="sheetbar"><button class="mini">‹</button><span>Universe ${u}</span><button class="mini">›</button><span style="margin-left:auto;color:var(--dim);font-size:12px">slots ${u}.001–${u}.120 of 512</span></div><div class="sheet">${sheet}</div></div>
+    </div>
+    <div class="efn">${['Patch to', 'Unpatch', 'Next free address', 'Next free universe', 'Move to this universe', 'Keep spacing', 'Swap addresses…', 'Identify', 'Probe', 'Find', 'Multipatch…', 'Offset 0', 'Skip patched'].map(l => `<button class="fb">${l}</button>`).join('')}</div>
+  </div>`;
+}
+
+function placeSheet() {
+  let html = '';
+  for (let row = 0; row < 9; row++) {
+    html += `<div class="srow"><span class="lab">1:${a3(row * 20 + 1)}</span>`;
+    for (let c = 1; c <= 20; c++) {
+      const s = row * 20 + c;
+      const f = FX.find(x => s >= x.start && s < x.start + x.len);
+      const nw = s >= 85 && s <= 168;
+      html += `<span class="slot ${nw ? 'cur' : f ? (f.fid % 2 ? 'a' : 'b') : ''}">${nw && (s - 85) % 14 === 0 ? `<span class="fid">${201 + (s - 85) / 14}</span>` : f && f.start === s ? `<span class="fid">${f.fid}</span>` : ''}${s}</span>`;
+    }
+    html += '</div>';
+  }
+  document.getElementById('placesheet').innerHTML = html;
+}
+
+function render() { drawVariants(); drawBody(); drawEP(st.ep ? document.querySelector('.from')?.textContent.replace('opened from: ', '') : ''); }
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('button, [data-pick], [data-adr]');
+  if (!t) { if (!e.target.closest('.float')) closeFloat(); return; }
+  if (t.dataset.way) { st.ways.has(t.dataset.way) ? st.ways.delete(t.dataset.way) : st.ways.add(t.dataset.way); closeFloat(); render(); return; }
+  if (t.dataset.set) { st.ways = new Set(SETS[t.dataset.set]); closeFloat(); render(); return; }
+  if (t.dataset.tab) { st.tab = t.dataset.tab; for (const b of document.querySelectorAll('.tab')) b.classList.toggle('on', b === t); closeFloat(); drawBody(); return; }
+  if (t.dataset.v) { if (t.dataset.v === 'list') { line('List view: the Universes grid (not part of this question)'); } return; }
+  if (t.dataset.open) {
+    e.stopPropagation();
+    if (t.dataset.open === 'adrbtn') st.sel = new Set([+t.dataset.fid]);
+    if (!st.sel.size && t.dataset.open !== 'map') { line('Select fixtures first'); return; }
+    openEP(t.dataset.open, t.dataset.u ? +t.dataset.u : 0); drawBody(); return;
+  }
+  if (t.dataset.act === 'patchto') { if (!st.sel.size) { line('Select fixtures first'); return; } const r = t.getBoundingClientRect(); valueDialog(r.left, r.top - 230); return; }
+  if (t.dataset.act === 'next') { if (st.sel.size) line(`Assign Fixture ${ids(st.sel)} At DMX`); return; }
+  if (t.dataset.apply !== undefined) { line(`Assign Fixture ${ids(st.sel)} At DMX ${document.getElementById('vdin').value}`); closeFloat(); return; }
+  if (t.dataset.close !== undefined) { closeFloat(); return; }
+  if (t.dataset.epclose !== undefined) { st.ep = null; drawEP(); line('Off Identify Fixture Thru; Off Identify DMX Thru'); return; }
+  if (t.dataset.pick !== undefined || t.dataset.adr) {
+    const fid = +t.closest('tr').dataset.fid;
+    if (e.shiftKey) { st.sel.has(fid) ? st.sel.delete(fid) : st.sel.add(fid); } else st.sel = new Set([fid]);
+    closeFloat(); drawBody(); line(`lines name their fixtures: Fixture ${ids(st.sel)}`);
+  }
+});
+document.addEventListener('dblclick', e => {
+  const a = e.target.closest('[data-adr]');
+  if (a && st.ways.has('adr')) { st.sel = new Set([+a.dataset.adr]); openEP('adr'); drawBody(); }
+  else if (e.target.closest('.ubar') && st.ways.has('map')) openEP('map', +e.target.closest('.ubar').dataset.u);
+});
+document.addEventListener('contextmenu', e => {
+  const tr = e.target.closest('tr[data-fid]');
+  if (!tr) return;
+  e.preventDefault();
+  const fid = +tr.dataset.fid;
+  if (!st.sel.has(fid)) { st.sel = new Set([fid]); drawBody(); }
+  contextMenu(e.clientX, e.clientY);
+});
+let holdT = null;
+document.addEventListener('pointerdown', e => { const tr = e.target.closest('tr[data-fid]'); if (!tr || e.pointerType === 'mouse') return; holdT = setTimeout(() => { const fid = +tr.dataset.fid; if (!st.sel.has(fid)) { st.sel = new Set([fid]); drawBody(); } contextMenu(e.clientX, e.clientY); }, 500); });
+for (const ev of ['pointerup', 'pointercancel', 'pointermove']) document.addEventListener(ev, () => clearTimeout(holdT));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFloat(); });
+
+render(); placeSheet();
+</script>

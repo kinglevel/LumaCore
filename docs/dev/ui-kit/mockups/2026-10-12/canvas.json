@@ -1,0 +1,185 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Chrome.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "title": "Window chrome: tab dot, window bar, window menu",
+      "w": 1440,
+      "x": 0,
+      "y": 1920
+    },
+    "Dialogs.dc.html": {
+      "h": 1000,
+      "is_interactive": true,
+      "title": "One standard dialog",
+      "w": 1440,
+      "x": 0,
+      "y": 3240
+    },
+    "Elements.dc.html": {
+      "h": 1500,
+      "is_interactive": true,
+      "title": "Element gallery",
+      "w": 1440,
+      "x": 1280,
+      "y": 0
+    },
+    "Keyboards.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "title": "Keypad + built-in keyboard",
+      "w": 1280,
+      "x": 2800,
+      "y": 0
+    },
+    "LumaSessions.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "title": "Menu: LumaSessions (setup layout)",
+      "w": 1440,
+      "x": 1520,
+      "y": 4660
+    },
+    "Main.dc.html": {
+      "h": 960,
+      "is_interactive": true,
+      "title": "Tokens, sizes, icons",
+      "w": 1200,
+      "x": 0,
+      "y": 236
+    },
+    "Network.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "title": "Menu: Network (setup layout)",
+      "w": 1440,
+      "x": 0,
+      "y": 4660
+    },
+    "Phone.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Phone 390\u00d7844",
+      "w": 390,
+      "x": 4144,
+      "y": 1920
+    },
+    "PoolHold.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "title": "Hold on a pool object: full-screen selector + action row",
+      "w": 1440,
+      "x": 1520,
+      "y": 1920
+    },
+    "Settings.dc.html": {
+      "h": 1000,
+      "is_interactive": true,
+      "title": "Window settings shell + EditSetting",
+      "w": 1440,
+      "x": 1520,
+      "y": 3240
+    },
+    "Tablet.dc.html": {
+      "h": 768,
+      "is_interactive": true,
+      "title": "Tablet 1024\u00d7768",
+      "w": 1024,
+      "x": 3040,
+      "y": 1920
+    },
+    "Theme.dc.html": {
+      "h": 1000,
+      "is_interactive": true,
+      "title": "Theme editor (12g)",
+      "w": 1440,
+      "x": 3040,
+      "y": 4660
+    },
+    "Lock.dc.html": {
+      "x": 0,
+      "y": 6080,
+      "w": 1440,
+      "h": 900,
+      "title": "Lock \u00b7 login \u00b7 connect (one surface)",
+      "is_interactive": true
+    },
+    "LockPhone.dc.html": {
+      "x": 1520,
+      "y": 6080,
+      "w": 390,
+      "h": 844,
+      "title": "Lock on a phone",
+      "is_interactive": true
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-12T12:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "row1": {
+      "kind": "title1",
+      "maxW": 4080,
+      "text": "Elements \u2014 tokens, sizes, every kit element",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "row2": {
+      "kind": "title1",
+      "maxW": 4534,
+      "text": "Window chrome and touch \u2014 desktop, tablet, phone",
+      "w": 240,
+      "x": 0,
+      "y": 1620
+    },
+    "row3": {
+      "kind": "title1",
+      "maxW": 2960,
+      "text": "Dialogs and settings",
+      "w": 240,
+      "x": 0,
+      "y": 2940
+    },
+    "row4": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "Menus and theme editor",
+      "w": 240,
+      "x": 0,
+      "y": 4360
+    },
+    "row5": {
+      "kind": "title1",
+      "maxW": 1910,
+      "text": "Lock, switch user, connect",
+      "x": 0,
+      "y": 5780
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Elements.dc.html",
+    "Keyboards.dc.html",
+    "Chrome.dc.html",
+    "PoolHold.dc.html",
+    "Tablet.dc.html",
+    "Phone.dc.html",
+    "Dialogs.dc.html",
+    "Settings.dc.html",
+    "Network.dc.html",
+    "LumaSessions.dc.html",
+    "Theme.dc.html",
+    "Lock.dc.html",
+    "LockPhone.dc.html"
+  ],
+  "pages": [],
+  "title": "LumaCore UI Kit Mockups"
+}

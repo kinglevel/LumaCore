@@ -1,0 +1,16 @@
+{
+  "id": "en-US",
+  "name": "English (US)",
+  "short": "EN",
+  "note": "A built-in keyboard layout (decisions §30 \"12b\"): per key the value, the shifted value and the AltGr value (null = none). Add a layout by adding a file and listing it in layouts/index.json.",
+  "letters": [
+    [["q","Q",null],["w","W",null],["e","E",null],["r","R",null],["t","T",null],["y","Y",null],["u","U",null],["i","I",null],["o","O",null],["p","P",null]],
+    [["a","A",null],["s","S",null],["d","D",null],["f","F",null],["g","G",null],["h","H",null],["j","J",null],["k","K",null],["l","L",null]],
+    [["z","Z",null],["x","X",null],["c","C",null],["v","V",null],["b","B",null],["n","N",null],["m","M",null],["\"","'",null]]
+  ],
+  "symbols": [
+    [["1","!",null],["2","@",null],["3","#",null],["4","$",null],["5","%",null],["6","^",null],["7","&",null],["8","*",null],["9","(",null],["0",")",null]],
+    [["-","_",null],["/","?",null],[":",";",null],["(","[",null],[")","]",null],["@","{",null],[".",">",null],[",","<",null],["=","+",null]],
+    [["*","~",null],["+","|",null],["#","\\",null],["!","`",null],["?","§",null],["'","°",null],["\"","€",null]]
+  ]
+}

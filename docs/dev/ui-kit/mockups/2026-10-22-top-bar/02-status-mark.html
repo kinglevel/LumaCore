@@ -1,0 +1,125 @@
+<title>Status Mark Round 1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* A comparison page: one table of marks (designs as rows, states as columns), drawn on the kit's dark strip; notes and questions around it follow the viewer. */
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#9a7a08;--code:#ecebe4;
+  --font:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+  --k-bg:#121212;--k-surface:#1c1c1c;--k-raised:#303030;--k-line:#424242;--k-gap:#0a0a0a;--k-text:#d1d1d1;--k-dim:#8a8a8a;--k-strong:#ececec;--k-accent:#d4a634;
+  --s-ok:#2fc23a;--s-info:#5b9ad6;--s-warn:#d89a22;--s-alert:#e5483a;--s-off:#6a6a6a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--font);margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1180px;margin:0 auto;display:grid;gap:28px}
+.narrow{max-width:900px}
+h1{font-size:1.75rem;margin:0;text-wrap:balance;line-height:1.2}h2{font-size:1.18rem;margin:0 0 8px;text-wrap:balance}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:600}
+p{max-width:74ch;margin:.4em 0}.mute{color:var(--mute)}
+code{font:.86em var(--mono);background:var(--code);padding:1px 5px;border-radius:4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.wrap{overflow-x:auto;min-width:0}
+.q{border-left:3px solid var(--gold);padding:4px 0 4px 12px}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+table.mx{border-collapse:separate;border-spacing:0;background:var(--k-gap);border-radius:8px;overflow:hidden;font:12px var(--font);color:var(--k-dim)}
+.mx th{font-weight:600;color:var(--k-dim);text-align:left;padding:8px 10px;white-space:nowrap;background:var(--k-bg)}
+.mx th.d{color:#d4c08a;min-width:150px}
+.mx td{padding:0;border-top:1px solid var(--k-gap)}
+.cell{height:30px;display:flex;align-items:center;padding:0 10px;background:var(--k-surface);min-width:150px;gap:6px;white-space:nowrap}
+.mx tr.rec th.d{box-shadow:inset 3px 0 0 var(--gold)}
+/* M1: the ring */
+.ring{width:13px;height:13px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--c);position:relative;flex:none}
+.ring::after{content:"";position:absolute;inset:3.5px;border-radius:50%;background:var(--c)}
+.ring.hollow::after{background:transparent}
+.ring.split{box-shadow:none;background:conic-gradient(var(--c) 0 50%,transparent 50%)}
+.ring.split::after{inset:2px;background:var(--k-surface)}
+.ring.pulse{animation:pulse 1.2s ease-in-out infinite}
+.ring.spin{background:conic-gradient(var(--c) 0 25%,transparent 25%);box-shadow:inset 0 0 0 2px #333;animation:spin 1s linear infinite}
+.ring.spin::after{inset:3px;background:var(--k-surface)}
+@keyframes pulse{50%{opacity:.35}}@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.ring.pulse,.ring.spin{animation:none}}
+.nm{color:var(--k-strong);font-weight:600}.sub{color:var(--k-dim);font:500 11px var(--mono)}
+/* M2: the chip */
+.chip{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 9px 0 7px;border-radius:11px;background:color-mix(in srgb,var(--c) 14%,var(--k-raised));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 55%,transparent);color:var(--k-strong);font-weight:600}
+.chip i{width:7px;height:7px;border-radius:50%;background:var(--c)}
+.chip.pulse i{animation:pulse 1.2s ease-in-out infinite}
+.chip small{font:500 10.5px var(--mono);color:var(--k-dim)}
+/* M3: the signal */
+.sig{display:inline-flex;align-items:flex-end;gap:2px;height:13px;flex:none}
+.sig b{width:3px;background:#3a3a3a;border-radius:1px}
+.sig b:nth-child(1){height:5px}.sig b:nth-child(2){height:9px}.sig b:nth-child(3){height:13px}
+.sig b.on{background:var(--c)}
+.sig.pulse b.on{animation:pulse 1.2s ease-in-out infinite}
+.pop{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;background:var(--k-surface);color:var(--k-text);border:1px solid var(--k-line);border-radius:8px;padding:12px 14px;font:12.5px var(--font);max-width:340px;box-shadow:0 8px 24px #0008}
+.pop .k{color:var(--k-dim)}.pop .v{font-family:var(--mono)}
+.pop h4{grid-column:1/-1;margin:0 0 4px;font-size:13px;color:var(--k-strong);display:flex;gap:8px;align-items:center}
+</style>
+
+<main>
+<header class="narrow" style="display:grid;gap:8px">
+  <div class="kicker">Top bar · round 1 · page 2 of 2 · 2026-10-22</div>
+  <h1>A status mark instead of the green dot</h1>
+  <p>Today's dot says one thing: this page's socket is open. The command line says the same thing again as <b>ONLINE</b>. What an operator wants from the corner is more: am I talking to the station, is the station the master or a member of a LumaSession, how many stations, is it slow or busy, is the output on. The mark answers those in one glance and opens the details on a tap; the bottom <b>ONLINE</b> key can then go.</p>
+</header>
+
+<section style="display:grid;gap:10px">
+  <h2>Three designs, every state</h2>
+  <p class="mute">Green = all well; blue = a member following a master; amber = waiting (busy, reconnecting); red = lost; grey = output off. The letter is the station (<code>--station A</code>); a member shows its latency to the master.</p>
+  <div class="wrap"><table class="mx" id="mx"></table></div>
+</section>
+
+<section class="card" style="display:grid;gap:10px">
+  <h2>A tap on the mark</h2>
+  <p>The details as one pop-up, the station's own facts (from <code>Status.lumasession</code>, <code>/api/station</code> and <code>Runtime.Health</code>), with the lines you'd want next. This replaces the bottom ONLINE key's menu.</p>
+  <div class="pop">
+    <h4><span class="ring" style="--c:var(--s-info)"></span>Station B · member</h4>
+    <span class="k">LumaSession</span><span class="v">“Festival”, master A</span>
+    <span class="k">Latency</span><span class="v">12 ms · clock offset 0.4 ms</span>
+    <span class="k">Stations</span><span class="v">A (master) · B · C</span>
+    <span class="k">Output</span><span class="v">Online · 6 lines</span>
+    <span class="k">This device</span><span class="v">web · screen 1</span>
+    <span class="k" style="grid-column:1/-1;margin-top:6px">Menu "LumaSessions" · Info Health Clock</span>
+  </div>
+</section>
+
+<section class="card narrow" style="display:grid;gap:10px">
+  <h2>Why the ring is recommended</h2>
+  <ul>
+    <li>It keeps the corner small: the strip (page 1) needs the room for the show and the modes.</li>
+    <li>Its shape changes with the state, not only its colour: full, hollow (output off), half (a member), spinning (busy), blinking (reconnecting). That reads for colour-blind eyes too.</li>
+    <li>The station letter next to it is what you need when two stations sit side by side (A and B on one desk).</li>
+  </ul>
+  <p>The <b>chip</b> says the most in words, but it is the widest and competes with the Show tab. The <b>signal</b> is good at “how fast” but weak at “which role”.</p>
+</section>
+
+<section class="card narrow" style="display:grid;gap:6px">
+  <h2>To decide on this page</h2>
+  <div class="q"><b>1.</b> The mark: the <b>ring</b> (recommended), the <b>chip</b> or the <b>signal</b>?</div>
+  <div class="q"><b>2.</b> Left or right? A1 S1 puts the dot at the far right, after the clock; the ring is drawn at the left on page 1, where the word LumaCore is today.</div>
+  <div class="q"><b>3.</b> Does the bottom ONLINE key go (its menu moves to the mark's pop-up)?</div>
+  <div class="q"><b>4.</b> Should the word “LumaCore” stay beside the mark, or only the station letter?</div>
+</section>
+</main>
+
+<script>
+const STATES = [
+  ['Standalone', 'ok', 'full', 'A', ''],
+  ['Master · 3 stations', 'ok', 'full', 'A', '3'],
+  ['Member', 'info', 'split', 'B', '12 ms'],
+  ['Station busy', 'warn', 'spin', 'A', 'busy'],
+  ['Output off', 'off', 'hollow', 'A', 'output off'],
+  ['Reconnecting', 'warn', 'pulse', 'A', 'retry 3'],
+  ['Lost', 'alert', 'full', 'A', 'lost'],
+];
+const c = s => `var(--s-${s})`;
+const designs = [
+  ['Ring', true, ([, s, shape, letter, sub]) => `<span class="ring ${shape === 'full' ? '' : shape}" style="--c:${c(s)}"></span><span class="nm">${letter}</span>${sub ? `<span class="sub">${sub}</span>` : ''}`],
+  ['Chip', false, ([, s, shape, letter, sub]) => `<span class="chip${shape === 'pulse' || shape === 'spin' ? ' pulse' : ''}" style="--c:${c(s)}"><i></i>${letter}${shape === 'split' ? ' · member' : sub === '3' ? ' · master' : ''}${sub && sub !== '3' ? ` <small>${sub}</small>` : sub === '3' ? ' <small>3</small>' : ''}</span>`],
+  ['Signal', false, ([, s, shape, letter, sub]) => {
+    const n = { ok: 3, info: 2, warn: 1, alert: 0, off: 3 }[s];
+    return `<span class="sig${shape === 'pulse' ? ' pulse' : ''}" style="--c:${c(s)}">${[1, 2, 3].map(i => `<b class="${i <= n ? 'on' : ''}"></b>`).join('')}</span><span class="nm">${letter}</span>${sub ? `<span class="sub">${sub}</span>` : ''}`;
+  }],
+];
+document.getElementById('mx').innerHTML = `<tr><th></th>${STATES.map(s => `<th>${s[0]}</th>`).join('')}</tr>`
+  + designs.map(([name, rec, f]) => `<tr class="${rec ? 'rec' : ''}"><th class="d">${name}${rec ? ' · recommended' : ''}</th>${STATES.map(s => `<td><div class="cell">${f(s)}</div></td>`).join('')}</tr>`).join('');
+</script>

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Suggestions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: {{t.bg}}; color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; position: relative; overflow: hidden">
+  <div style="position: absolute; inset: 0 0 52px 0; padding: 8px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-auto-rows: 64px; gap: 4px; opacity: {{deskOp}}">
+    <sc-for list="{{cells}}" as="c" hint-placeholder-count="48"><span style="border-radius: 4px; background: {{c.bg}}; border: 1px solid {{t.line}}; font-size: 11px; color: {{t.dim}}; padding: 4px 6px">{{c.n}}</span></sc-for>
+  </div>
+  <sc-if value="{{isBar}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; left: 160px; bottom: 58px; width: 640px; border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; box-shadow: 0 10px 30px rgba(0,0,0,.5); padding: 6px; display: flex; flex-direction: column; gap: 2px">
+      <sc-for list="{{barItems}}" as="it" hint-placeholder-count="6">
+  <button type="button" onClick="{{it.pick}}" style="height: 44px; border: none; border-radius: 4px; background: {{it.bg}}; color: {{it.fg}}; font: inherit; display: flex; align-items: center; gap: 10px; padding: 0 10px; text-align: left">
+    <sc-if value="{{it.k_obj}}" hint-placeholder-val="{{ false }}"><span style="display: flex; color: {{it.ic}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path> <path d="m3.3 7 8.7 5 8.7-5"></path> <path d="M12 22V12"></path></svg></span></sc-if><sc-if value="{{it.k_verb}}" hint-placeholder-val="{{ false }}"><span style="display: flex; color: {{it.ic}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg></span></sc-if><sc-if value="{{it.k_key}}" hint-placeholder-val="{{ false }}"><span style="display: flex; color: {{it.ic}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"></path></svg></span></sc-if><sc-if value="{{it.k_hist}}" hint-placeholder-val="{{ false }}"><span style="display: flex; color: {{it.ic}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path> <path d="M3 3v5h5"></path> <path d="M12 7v5l4 2"></path></svg></span></sc-if><sc-if value="{{it.k_help}}" hint-placeholder-val="{{ false }}"><span style="display: flex; color: {{it.ic}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path> <path d="M12 17h.01"></path></svg></span></sc-if><span class="mono" style="font-size: 14px; min-width: 120px">{{it.title}}</span><span style="font-size: 13px; color: {{t.dim}}; flex: 1">{{it.sub}}</span><span style="font-size: 11px; color: {{t.dim}}; border: 1px solid {{t.line}}; border-radius: 4px; padding: 2px 6px; opacity: {{it.chipOp}}">Tab</span>
+  </button>
+</sc-for>
+      <span style="font-size: 11px; color: {{t.dim}}; padding: 6px 10px 2px">Tab takes · ↑ ↓ move · Enter runs the line as typed · → takes the grey text · Esc closes</span>
+    </div>
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 12px; background: {{t.raised}}; border-top: 1px solid {{t.line}}"><span style="font-size: 14px; font-weight: 600; color: {{t.accent}}; width: 60px">PURR</span><span class="mono" style="flex: 1; height: 40px; display: flex; align-items: center; padding: 0 10px; background: {{t.bg}}; font-size: 15px; white-space: pre">[Admin@desk1] Root&gt; {{typed}}<span style="display: inline-block; width: 9px; height: 18px; background: {{t.text}}"></span><span style="color: {{t.dim}}">{{ghost}}</span></span></div>
+  </sc-if>
+  <sc-if value="{{isPal}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: color-mix(in srgb, #000 40%, transparent)"></div>
+    <div style="position: absolute; left: 50%; top: 110px; transform: translateX(-50%); width: 1000px; height: 560px; border-radius: 10px; background: {{t.surface}}; border: 1px solid {{t.line}}; box-shadow: 0 20px 60px rgba(0,0,0,.6); display: flex; flex-direction: column; overflow: hidden">
+      <div style="height: 64px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 18px; border-bottom: 1px solid {{t.line}}">
+        <span style="display: flex; color: {{t.dim}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path> <circle cx="11" cy="11" r="8"></circle></svg></span>
+        <sc-if value="{{crumb}}" hint-placeholder-val="{{ false }}"><span class="mono" style="font-size: 14px; padding: 5px 10px; border-radius: 5px; background: {{t.raised}}; border: 1px solid {{t.accent}}">Group 4 ›</span></sc-if>
+        <span class="mono" style="font-size: 18px; flex: 1; white-space: pre">{{palQuery}}<span style="display: inline-block; width: 10px; height: 20px; background: {{t.text}}; vertical-align: -3px"></span></span>
+        <span style="font-size: 12px; color: {{t.dim}}">{{palCount}}</span>
+      </div>
+      <div style="flex: 1; display: flex; min-height: 0">
+        <div style="flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 2px; overflow: hidden">
+          <sc-for list="{{sections}}" as="sec" hint-placeholder-count="3">
+            <span style="font-size: 11px; color: {{t.dim}}; padding: 8px 12px 4px; letter-spacing: .04em">{{sec.name}}</span>
+            <sc-for list="{{sec.items}}" as="it" hint-placeholder-count="3">
+  <button type="button" onClick="{{it.pick}}" style="height: 52px; border: none; border-radius: 5px; background: {{it.bg}}; color: {{it.fg}}; font: inherit; display: flex; align-items: center; gap: 12px; padding: 0 12px; text-align: left">
+    <sc-if value="{{it.k_obj}}" hint-placeholder-val="{{ false }}"><span style="display: flex; color: {{it.ic}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path> <path d="m3.3 7 8.7 5 8.7-5"></path> <path d="M12 22V12"></path></svg></span></sc-if><sc-if value="{{it.k_verb}}" hint-placeholder-val="{{ false }}"><span style="display: flex; color: {{it.ic}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"></path></svg></span></sc-if><sc-if value="{{it.k_key}}" hint-placeholder-val="{{ false }}"><span style="display: flex; color: {{it.ic}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"></path></svg></span></sc-if><sc-if value="{{it.k_hist}}" hint-placeholder-val="{{ false }}"><span style="display: flex; color: {{it.ic}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path> <path d="M3 3v5h5"></path> <path d="M12 7v5l4 2"></path></svg></span></sc-if><sc-if value="{{it.k_help}}" hint-placeholder-val="{{ false }}"><span style="display: flex; color: {{it.ic}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path> <path d="M12 17h.01"></path></svg></span></sc-if><span style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0"><span style="font-size: 15px">{{it.title}}</span><span style="font-size: 12px; color: {{t.dim}}">{{it.sub}}</span></span><span style="font-size: 11px; color: {{t.dim}}">{{it.right}}</span>
+  </button>
+</sc-for>
+          </sc-for>
+        </div>
+        <aside style="width: 340px; flex-shrink: 0; border-left: 1px solid {{t.line}}; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: color-mix(in srgb, {{t.bg}} 35%, {{t.surface}})">
+          <span style="font-size: 18px; font-weight: 500">{{pv.title}}</span>
+          <span style="font-size: 13px; color: {{t.dim}}; line-height: 1.5">{{pv.text}}</span>
+          <span class="mono" style="font-size: 12px; color: {{t.dim}}; margin-top: auto">{{pv.src}}</span>
+        </aside>
+      </div>
+      <div style="height: 40px; flex-shrink: 0; display: flex; align-items: center; gap: 18px; padding: 0 16px; border-top: 1px solid {{t.line}}; font-size: 12px; color: {{t.dim}}"><span>Enter {{primary}}</span><span>Meow + Enter {{secondary}}</span><span>Tab open</span><span>Esc back</span><span style="margin-left: auto" class="mono">{{palLine}}</span></div>
+    </div>
+  </sc-if>
+  <div style="position: absolute; top: 16px; right: 16px; display: flex; gap: 6px; padding: 6px; border-radius: 8px; background: color-mix(in srgb, {{t.surface}} 92%, transparent); border: 1px dashed {{t.dim}}">
+    <span style="font-size: 12px; color: {{t.dim}}; align-self: center; padding: 0 6px">board:</span>
+    <sc-for list="{{modes}}" as="m" hint-placeholder-count="4"><button type="button" onClick="{{m.pick}}" style="height: 36px; padding: 0 12px; border-radius: 5px; border: 1px solid {{m.border}}; background: {{m.bg}}; color: {{t.text}}; font: inherit; font-size: 13px">{{m.name}}</button></sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { mode: 0, sel: 0, psel: 0 }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',gap:'#080808',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',gap:'#d4d4d4',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',gap:'#050202',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const names = ['Bottom bar: "Gr"', 'Bottom bar: "Group 3 At "', 'Palette: "front"', 'Palette: Group 4 ›'];
+    const modes = names.map((n, i) => ({ name: n, pick: () => this.setState({ mode: i, sel: 0, psel: 0 }), border: i === s.mode ? t.accent : t.line, bg: i === s.mode ? t.raised : 'transparent' }));
+    const K = k => ({ k_obj: k === 'obj', k_verb: k === 'verb', k_key: k === 'key', k_hist: k === 'hist', k_help: k === 'help' });
+    const kc = { obj: t.park, verb: t.accent, key: t.info, hist: t.dim, help: t.blind };
+    const mk = (list, sel, setKey) => list.map((x, i) => ({ ...x, ...K(x.k), ic: x.off ? t.line : kc[x.k], fg: x.off ? t.dim : t.text,
+      bg: i === sel ? 'color-mix(in srgb, ' + t.accent + ' 18%, ' + t.raised + ')' : 'transparent', chipOp: i === sel ? 1 : 0, pick: () => this.setState({ [setKey]: i }) }));
+    const barSets = [
+      [{ k: 'key', title: 'Group', sub: 'Group <n> — select, At, Store, Label …' }, { k: 'obj', title: 'Group 3', sub: '"Even" · used 12× today' }, { k: 'obj', title: 'Group 1', sub: '"All"' }, { k: 'obj', title: 'Group 2', sub: '"Odd"' }, { k: 'key', title: 'GrandMaster', sub: 'GrandMaster At <0–100>' }, { k: 'key', title: 'Grid', sub: "isn't built yet (planned)", off: true }],
+      [{ k: 'hist', title: '50', sub: 'last: Group 3 At 50 · 2 min ago' }, { k: 'key', title: 'Full', sub: '100 %' }, { k: 'key', title: '+ 10', sub: 'relative' }, { k: 'obj', title: 'Preset 4.2', sub: '"Front blue"' }, { k: 'key', title: 'Zero', sub: '0 %' }]
+    ];
+    const cells = []; const gn = ['All', 'Odd', 'Even', 'Front wash', 'Back', 'Wash'];
+    for (let i = 0; i < 48; i++) cells.push({ n: (i + 1) + ' ' + (gn[i] || ''), bg: i < 6 ? t.raised : t.surface });
+    const isBar = s.mode < 2;
+    const barItems = isBar ? mk(barSets[s.mode], s.sel, 'sel') : [];
+    const typed = s.mode === 0 ? 'Gr' : 'Group 3 At ';
+    const ghost = s.mode === 0 ? 'oup 3 At 50' : '50';
+    const top = [
+      ['OBJECTS', [{ k: 'obj', title: 'Group 4  "Front wash"', sub: 'DataPool 1 · 8 fixtures', right: 'used 12×', pv: ['Group 4 "Front wash"', '8 fixtures: 101–108 · Master 100 % · stored by Admin', 'Info Group 4'], p: 'Select', q: 'At …', line: 'Group 4' },
+        { k: 'obj', title: 'Preset 4.2  "Front blue"', sub: 'Color · 8 fixtures', right: '', pv: ['Preset 4.2 "Front blue"', 'Color preset, selective, 8 fixtures', 'Info Preset 4.2'], p: 'Call', q: 'Edit', line: 'Preset 4.2' },
+        { k: 'obj', title: 'Sequence 3  "Front cues"', sub: '12 cues · on Executor 3', right: '', pv: ['Sequence 3 "Front cues"', '12 cues, running cue 4 at 100 %', 'Info Sequence 3'], p: 'Go', q: 'Off', line: 'Go Sequence 3' }]],
+      ['HISTORY', [{ k: 'hist', title: 'Group 4 At 80', sub: '2 min ago', right: '', pv: ['Group 4 At 80', 'You ran this 2 minutes ago on Screen 1', 'history'], p: 'Run again', q: 'Edit line', line: 'Group 4 At 80' }]],
+      ['HELP', [{ k: 'help', title: 'Front / Back', sub: 'Help topic: stage directions in Pawtern', right: '', pv: ['Help: Front / Back', 'How groups keep their grid spot …', 'Help Front'], p: 'Open', q: '', line: 'Help Front' }]]
+    ];
+    const page = [['GROUP 4 — ACTIONS', [
+      { k: 'verb', title: 'Select', sub: 'Group 4', right: 'Enter', pv: ['Select', 'Selects the 8 fixtures', 'Group 4'], p: 'Select', q: '', line: 'Group 4' },
+      { k: 'verb', title: 'At …', sub: 'Group 4 At <value> — the keypad asks', right: 'Meow+Enter', pv: ['At', 'Opens the keypad (12b Ask)', 'Group 4 At'], p: 'At', q: '', line: 'Group 4 At ' },
+      { k: 'verb', title: 'Edit', sub: 'Edit Group 4', right: '', pv: ['Edit', 'Opens the group editor', 'Edit Group 4'], p: 'Edit', q: '', line: 'Edit Group 4' },
+      { k: 'verb', title: 'Label …', sub: 'Label Group 4 — asks the name', right: '', pv: ['Label', 'Asks the name (12b)', 'Label Group 4'], p: 'Label', q: '', line: 'Label Group 4' },
+      { k: 'verb', title: 'Info', sub: 'Info Group 4', right: '', pv: ['Info', 'Shows the group\'s details', 'Info Group 4'], p: 'Info', q: '', line: 'Info Group 4' }]]];
+    const src = s.mode === 3 ? page : top;
+    let n = 0, chosen = null;
+    const sections = s.mode >= 2 ? src.map(([name, items]) => ({ name, items: items.map(x => { const i = n++; const o = { ...x, ...K(x.k), ic: kc[x.k], fg: t.text, bg: i === s.psel ? 'color-mix(in srgb, ' + t.accent + ' 18%, ' + t.raised + ')' : 'transparent', pick: () => this.setState({ psel: i }) }; if (i === s.psel) chosen = x; return o; }) })) : [];
+    chosen = chosen || { pv: ['', '', ''], p: '', q: '', line: '' };
+    return { t, modes, cells, isBar, isPal: !isBar, barItems, typed, ghost, deskOp: isBar ? 1 : 0.6,
+      sections, crumb: s.mode === 3, palQuery: s.mode === 2 ? 'front' : '', palCount: s.mode === 2 ? '5 of 214' : '5 actions',
+      pv: { title: chosen.pv[0], text: chosen.pv[1], src: '› ' + chosen.pv[2] }, primary: chosen.p, secondary: chosen.q || '—', palLine: 'line: ' + chosen.line };
+  }
+}
+</script>
+</body>
+</html>

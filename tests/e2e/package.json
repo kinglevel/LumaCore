@@ -1,0 +1,12 @@
+{
+  "name": "lumacore-e2e",
+  "private": true,
+  "description": "End-to-end tests that drive the LumaCore web UI, the app's home page and the server's sysmon",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.59.1"
+  }
+}

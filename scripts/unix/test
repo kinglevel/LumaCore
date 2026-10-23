@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# Tests, generators and the fuzz run. Every step's output shows live and goes
+# to target/script-logs/test_<time>.log at the same time; follow a run from
+# another terminal with ./scripts/unix/logs.
+#
+# Usage:
+#   ./scripts/unix/test [quick]                 # cargo test, every crate but the desktop app (default-members)
+#   ./scripts/unix/test crate <name> [filter]   # cargo test -p <name> [filter]
+#   ./scripts/unix/test e2e [playwright args]   # UI end-to-end (tests/e2e)
+#   ./scripts/unix/test smoke                   # release server start/stop smoke test
+#   ./scripts/unix/test all                     # every crate (the app too) + e2e + smoke, then a summary
+#   ./scripts/unix/test check                   # before a commit: fmt, clippy (warnings fail), every crate's tests, the app too
+#   ./scripts/unix/test regen                   # gen-docs + gen-demo (after a registry or show change)
+#   ./scripts/unix/test screenshots             # every window into target/screenshots/
+#   ./scripts/unix/test fuzz [minutes] [--fresh] [--no-fuzz]
+#                                               # the long run (fuzz_long); Ctrl-C stops, run again continues
+#   ./scripts/unix/test fuzz-report             # target/fuzz-report/summary.md
+#   ./scripts/unix/test replay <file>           # replay a finding (target/fuzz-report/replays/)
+set -uo pipefail
+# fuzz hands over to fuzz_long (its own log); the report is read-only.
+case "${1:-}" in fuzz|fuzz-report|-h|--help) export LC_NO_LOG=1 ;; esac
+source "$(dirname "$0")/lib.sh"
+SCRIPTS="$REPO_ROOT/scripts/unix"
+
+usage() { sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; }
+
+need_cargo() {
+    have_cargo || die "cargo not found for $(id -un). Install Rust for $(id -un) (https://rustup.rs) or run as a user who has it."
+}
+
+# Stale .o files rustc leaves in deps/ (rust#161824) — only past 40,000 entries; keeps the exit code.
+prune_after() { local code=$?; "$SCRIPTS/prune_objects" --quiet || true; return "$code"; }
+
+run_quick() { need_cargo; step "cargo test (every crate but the app)" cargo test; prune_after; }
+
+# Every crate, the desktop app too (decisions §36 5: it is out of default-members).
+run_workspace() { need_cargo; step "cargo test --workspace" cargo test --workspace; prune_after; }
+
+run_e2e() {
+    need_cargo
+    if [ ! -d "$REPO_ROOT/tests/e2e/node_modules" ]; then
+        step "npm install (tests/e2e)" bash -c "cd '$REPO_ROOT/tests/e2e' && npm install" || return 1
+    fi
+    step "e2e (Playwright)" bash -c 'cd "$1/tests/e2e" && shift && npx playwright test "$@"' _ "$REPO_ROOT" "$@"
+}
+
+run_smoke() { step "smoke test" "$SCRIPTS/smoke_test"; }
+
+# The local stand-in for CI (decisions §31; §25: no CI): stops at the first step that fails.
+run_check() {
+    need_cargo
+    step "cargo fmt --check" cargo fmt --all --check \
+        && step "cargo clippy (warnings fail)" cargo clippy --workspace --all-targets -- -D warnings \
+        && run_workspace
+}
+
+ACTION="${1:-quick}"
+[ $# -gt 0 ] && shift
+case "$ACTION" in
+    quick) run_quick ;;
+    crate)
+        [ $# -ge 1 ] || die "usage: test crate <name> [filter]"
+        need_cargo
+        step "cargo test -p $1" cargo test -p "$@"; prune_after ;;
+    e2e) run_e2e "$@" ;;
+    smoke) run_smoke ;;
+    check) run_check ;;
+    all)
+        STARTED=$SECONDS
+        results=()
+        failed=0
+        for part in workspace e2e smoke; do
+            if "run_$part"; then
+                results+=("✔ $part  $(fmt_secs "$RUN_SECONDS")")
+            else
+                results+=("✘ $part  $(fmt_secs "${RUN_SECONDS:-0}") (exit ${RUN_CODE:-?})")
+                failed=1
+            fi
+        done
+        log "Summary ($(fmt_secs $((SECONDS - STARTED)))):"
+        for r in "${results[@]}"; do log "  $r"; done
+        log "Log: $SCRIPT_LOG"
+        exit "$failed" ;;
+    regen)
+        need_cargo
+        step "gen-docs" cargo run -q -p lumacore-station --bin gen-docs \
+            && step "gen-demo" cargo run -q -p lumacore-station --bin gen-demo \
+            && log "Regenerated docs/user/reference/ and library/shows/demo.luma — review with git diff." ;;
+    screenshots) step "screenshots" "$SCRIPTS/screenshots" ;;
+    fuzz)
+        need_cargo
+        args=("$@")
+        if [[ " ${args[*]-} " != *" --no-fuzz "* ]] && ! has_cargo_fuzz; then
+            log "Nightly + cargo-fuzz not found: running the sweep without the cargo-fuzz targets."
+            log "  (rustup toolchain install nightly && cargo install cargo-fuzz)"
+            args+=(--no-fuzz)
+        fi
+        unset LC_NO_LOG
+        exec "$SCRIPTS/fuzz_long" ${args[@]+"${args[@]}"} ;;
+    fuzz-report)
+        report="$REPO_ROOT/target/fuzz-report/summary.md"
+        [ -f "$report" ] || die "No fuzz report yet ($report) — run: ./scripts/unix/test fuzz"
+        cat "$report"
+        echo
+        echo "Findings: $REPO_ROOT/target/fuzz-report/findings.jsonl · replays: target/fuzz-report/replays/" ;;
+    replay)
+        [ $# -eq 1 ] || die "usage: test replay <file>"
+        need_cargo
+        BUILD_ARGS=(--profile sweep)
+        cargo_build -p lumacore-station --bin lumacore-sweep || die "Build failed!"
+        step "replay $1" "$REPO_ROOT/target/sweep/lumacore-sweep" replay "$1" ;;
+    -h|--help) usage ;;
+    *) usage; exit 1 ;;
+esac

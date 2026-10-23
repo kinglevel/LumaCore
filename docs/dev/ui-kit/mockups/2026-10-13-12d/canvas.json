@@ -1,0 +1,79 @@
+{
+  "v": 3,
+  "boards": {
+    "SetupNetwork.dc.html": {
+      "x": 0,
+      "y": 22220,
+      "w": 1440,
+      "h": 900,
+      "title": "12d \u00b7 Setup frame: Network (Interfaces \u00b7 Networks), power toggle looks, row actions (approved)",
+      "is_interactive": true
+    },
+    "SetupDmx.dc.html": {
+      "x": 1520,
+      "y": 22220,
+      "w": 1440,
+      "h": 900,
+      "title": "12d \u00b7 <luma-grid> (try it): cells / rows / columns, + \u2212 Thru, Edit, multi-edit, new line, filter row, function block (approved)",
+      "is_interactive": true
+    },
+    "SetupSessions.dc.html": {
+      "x": 3040,
+      "y": 22220,
+      "w": 1440,
+      "h": 900,
+      "title": "12d \u00b7 LumaSessions on <luma-grid> + slab: Stations grid | cards, multi-station edit (desktop + phone) (approved)",
+      "is_interactive": true
+    },
+    "SetupBackup.dc.html": {
+      "x": 0,
+      "y": 23240,
+      "w": 1440,
+      "h": 900,
+      "title": "12d \u00b7 Backup: Library \u00b7 Show history (List | Matrix) \u00b7 Recovery \u00b7 Load show dialog \u00b7 coloured show actions (approved)",
+      "is_interactive": true
+    },
+    "SetupSettings.dc.html": {
+      "x": 1520,
+      "y": 23240,
+      "w": 1440,
+      "h": 900,
+      "title": "12d \u00b7 Settings: kinds shown (text \u00b7 number \u00b7 switch \u00b7 list), home marks, rights levels (desktop + phone) (approved)",
+      "is_interactive": true
+    },
+    "SetupUsers.dc.html": {
+      "x": 1520,
+      "y": 24260,
+      "w": 1440,
+      "h": 900,
+      "title": "12d \u00b7 Users & Profiles on <luma-grid> + slab (desktop + phone, one selection) (approved)",
+      "is_interactive": true
+    },
+    "PowerToggle.dc.html": {
+      "x": 0,
+      "y": 24260,
+      "w": 1440,
+      "h": 900,
+      "title": "12d \u00b7 Power toggle: A approved (approved)",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "SetupNetwork.dc.html",
+    "SetupDmx.dc.html",
+    "SetupSessions.dc.html",
+    "SetupBackup.dc.html",
+    "SetupSettings.dc.html",
+    "SetupUsers.dc.html",
+    "PowerToggle.dc.html"
+  ],
+  "notes": {
+    "row12": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "12d \u2014 setup menus on <luma-grid> + slab (locked)",
+      "x": 0,
+      "y": 21920
+    }
+  }
+}

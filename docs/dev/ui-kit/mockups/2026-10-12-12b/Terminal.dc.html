@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The dialog in a terminal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #121212">
+  <div style="position: absolute; top: 24px; left: 32px; right: 32px; display: flex; align-items: center; gap: 8px">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="4">
+      <button type="button" onClick="{{t.go}}" style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid {{t.b}}; background: #1c1c1c; color: #d1d1d1; font: inherit; font-size: 13px">{{t.label}}</button>
+    </sc-for>
+    <span style="width: 24px"></span>
+    <sc-for list="{{themes}}" as="t" hint-placeholder-count="3">
+      <button type="button" onClick="{{t.go}}" style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid {{t.b}}; background: #1c1c1c; color: #d1d1d1; font: inherit; font-size: 13px">{{t.label}}</button>
+    </sc-for>
+    <span style="flex: 1; text-align: right; font-size: 13px; color: #9c9c9c">The station draws the TUI in the user's profile theme (truecolor); lumacore-cli shows the same frames.</span>
+  </div>
+
+  <section class="mono" style="position: absolute; top: 88px; left: 32px; right: 32px; bottom: 32px; border-radius: 6px; background: {{c.bg}}; border: 1px solid {{c.line}}; overflow: hidden; font-size: 15px; line-height: 22px">
+    <div style="height: 30px; display: flex; align-items: center; padding: 0 14px; font-family: 'Myriad Pro', 'Segoe UI', system-ui, sans-serif; font-size: 13px; color: {{c.dim}}; border-bottom: 1px solid {{c.line}}">{{who}}</div>
+    <div style="padding: 10px 16px; color: {{c.behind}}; white-space: pre">
+      <sc-for list="{{behind}}" as="b" hint-placeholder-count="20"><div>{{b}}</div></sc-for>
+    </div>
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 30px; display: flex; align-items: center; padding: 0 16px; border-top: 1px solid {{c.line}}; color: {{c.behind}}">[Admin@desk1] Root&gt; {{typed}}</div>
+
+    <div style="position: absolute; top: 50%; left: 50%; width: {{w}}px; margin-left: {{ml}}px; transform: translateY(-50%); background: {{c.surface}}; border: 2px solid {{c.accent}}; border-radius: 8px; color: {{c.text}}; box-sizing: border-box">
+      <div style="position: absolute; top: -12px; left: 18px; padding: 0 8px; background: {{c.surface}}; color: {{c.accent}}; font-weight: 600">{{title}}</div>
+      <div style="position: absolute; top: -12px; right: 18px; padding: 0 8px; background: {{c.surface}}; color: {{metaC}}">{{meta}}</div>
+      <div style="padding: 22px 22px 14px; display: flex; flex-direction: column; gap: 10px">
+        <sc-for list="{{body}}" as="l" hint-placeholder-count="3"><div style="white-space: pre-wrap; color: {{l.c}}">{{l.t}}</div></sc-for>
+        <sc-if value="{{hasBar}}" hint-placeholder-val="{{ true }}">
+          <div style="height: 12px; background: {{c.raised}}; border-radius: 2px; overflow: hidden"><div style="width: {{bar}}%; height: 100%; background: {{c.warn}}"></div></div>
+        </sc-if>
+        <sc-if value="{{hasInput}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; gap: 10px; align-items: center"><span style="color: {{c.dim}}">{{inLabel}}</span><span style="flex: 1; border: 1px solid {{c.accent}}; padding: 2px 8px; border-radius: 3px">{{inValue}}<span style="background: {{c.accent}}; color: {{c.surface}}">&#160;</span></span></div>
+        </sc-if>
+        <div style="display: flex; gap: 12px; justify-content: center; margin-top: 6px; flex-wrap: wrap">
+          <sc-for list="{{buttons}}" as="b" hint-placeholder-count="4"><button type="button" onClick="{{b.pick}}" style="font: inherit; padding: 2px 14px; border-radius: 3px; border: 1px solid {{b.line}}; background: {{b.bg}}; color: {{b.fg}}">{{b.t}}</button></sc-for>
+        </div>
+      </div>
+      <div style="border-top: 1px solid {{c.line}}; padding: 6px 22px; color: {{c.dim}}; font-size: 13px">{{keys}}</div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { k: 'store', sel: 0 }; }
+  renderVals() {
+    const s = this.state;
+    const PAL = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#9c9c9c',accent:'#9a7a08',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',onAccent:'#f3ecd3',behind:'#3a3a3a'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',ok:'#007a07',warn:'#9a5600',alert:'#c00000',onAccent:'#ffffff',behind:'#b0b0b0'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',onAccent:'#0b0505',behind:'#3a1c18'}
+    };
+    const theme = s.theme ?? 'Dark';
+    const c = PAL[theme];
+    const T = c.text, W = c.warn, G = c.ok, R = c.alert, D = c.dim;
+    const L = (t, c) => ({ t, c: c ?? T });
+    const S = {
+      store: { who: 'lumacore-cli · Admin@desk1 (TCP shell)', typed: 'Store Group 4', w: 760, title: ' Store Group 4 ', meta: ' waits for you ', metaC: D,
+        body: [L('Group 4 "Front wash" already has 12 fixtures. Your selection has 8.')],
+        bar: 0, hasBar: false, hasInput: false, buttons: ['1 Merge', '2 Overwrite', '3 Remove', '4 Cancel'], danger: 1,
+        keys: '←/→ or Tab choose · Enter · 1–4 · Esc = Cancel' },
+      merge: { who: 'TUI shell · Admin@desk3 (server console)', typed: '', w: 880, title: ' Rejoin LumaSession "Festival" ', meta: ' Merge in 41 s ', metaC: W,
+        body: [L('desk3 was apart for 12 min. The master is desk1.'), L('  Group 3 "Even"        changed on both', W), L('  Group 7 "Floor"       new here', G), L('  Sequence 1 Cue 4      deleted on master', R)],
+        bar: 68, hasBar: true, hasInput: false, buttons: ['1 Merge', '2 Use master', '3 Use mine', '4 Cancel'], danger: 2,
+        keys: '←/→ choose · Enter · p = Pause LumaSession · ↑/↓ scroll the list · Esc = Cancel' },
+      label: { who: 'lumacore-cli · LD@desk2', typed: 'Label Group 4', w: 720, title: ' Label Group 4 ', meta: '', metaC: D,
+        body: [L('A new name for Group 4. Empty clears the label.', D)],
+        bar: 0, hasBar: false, hasInput: true, inLabel: 'Name', inValue: 'Front warm', buttons: ['Please', 'Cancel'], danger: -1,
+        keys: 'type · Tab to the buttons · Enter = Please · Esc = Cancel' },
+      claim: { who: 'TUI shell · Bob@desk2', typed: '', w: 720, title: ' Admin asks for Group 5 ', meta: ' hands over in 7 s ', metaC: W,
+        body: [L('Admin on desk1 wants to change Group 5, which you have claimed.'), L('[x] Remember for this session', D)],
+        bar: 70, hasBar: true, hasInput: false, buttons: ['1 Hand over', '2 Keep'], danger: -1,
+        keys: '←/→ · Enter · Space toggles Remember · any key pauses the countdown' }
+    };
+    const d = S[s.k];
+    const buttons = d.buttons.map((t, i) => {
+      const on = i === s.sel;
+      const dg = i === d.danger;
+      return { t: ' ' + t + ' ', pick: () => this.setState({ sel: i }), bg: on ? (dg ? c.alert : c.accent) : 'transparent', fg: on ? c.onAccent : (dg ? R : T), line: on ? 'transparent' : c.line };
+    });
+    const behind = ['> List Group', 'No  Name          Fixtures', ' 1  All           48', ' 2  Spots         16', ' 3  Even          24', ' 4  Front wash    12', ' 5  Back           8', '', '> Group 4 At 80', '12 fixtures at 80 %', '', '> Fixture 1 Thru 8', '8 fixtures selected', '', '', '', '', '', '', ''];
+    const tabs = [['store', 'Store over existing'], ['merge', 'Merge decision'], ['label', 'Text input'], ['claim', 'Claim ask']]
+      .map(([key, label]) => ({ label, go: () => this.setState({ k: key, sel: 0 }), b: s.k === key ? '#9a7a08' : '#424242' }));
+    const themes = ['Dark', 'Daylight', 'Night'].map(n => ({ label: 'Theme ' + n, go: () => this.setState({ theme: n }), b: theme === n ? '#9a7a08' : '#424242' }));
+    return { ...d, buttons, behind, tabs, themes, c, ml: -d.w / 2 };
+  }
+}
+</script>
+</body>
+</html>

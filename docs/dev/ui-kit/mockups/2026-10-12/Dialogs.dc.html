@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Standard dialog</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; box-sizing: border-box; padding: 40px 48px; background: {{t.bg}}; color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 22px">
+  <div style="display: flex; flex-direction: column; gap: 6px">
+    <h1 style="margin: 0; font-size: 28px; font-weight: 500">One standard dialog — four uses</h1>
+    <p style="margin: 0; color: {{t.dim}}; font-size: 14px">One <span class="mono">luma-dialog</span> built from a server <span class="mono">dialog</span> event: title, text, inputs, toggles, selectors, buttons, optional countdown. It replaces the five confirm / prompt patterns. Every button runs a command line.</p>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px">
+
+    <section style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+      <div style="height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 18px; border-bottom: 1px solid {{t.line}}"><span style="font-size: 17px; font-weight: 500">Shutdown</span><span class="mono" style="margin-right: 12px; font-size: 14px; color: {{t.warn}}">closes in 8 s</span></div>
+      <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <p style="margin: 0; font-size: 16px; line-height: 1.45">The show "Festival" has unsaved changes. Save before shutting down?</p>
+        <div style="height: 6px; border-radius: 3px; background: {{t.line}}"><div style="width: 80%; height: 100%; border-radius: 3px; background: {{t.warn}}"></div></div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+          <button type="button" style="height: 60px; border-radius: 6px; border: none; background: {{t.accent}}; color: {{t.onAccent}}; font: inherit; font-size: 16px; font-weight: 500">Save</button>
+          <button type="button" style="height: 60px; border-radius: 6px; border: 1px solid color-mix(in srgb, {{t.alert}} 55%, transparent); background: color-mix(in srgb, {{t.alert}} 14%, {{t.raised}}); color: {{t.alert}}; font: inherit; font-size: 16px">Don't save</button>
+          <button type="button" style="height: 60px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 16px">Cancel</button>
+        </div>
+        <span class="mono" style="font-size: 12px; color: {{t.dim}}">Save → Shutdown /Save /NC · Don't save → Shutdown /NoSave /NC · touch pauses the countdown</span>
+      </div>
+    </section>
+
+    <section style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+      <div style="height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 18px; border-bottom: 1px solid {{t.line}}"><span style="font-size: 17px; font-weight: 500">Rejoin LumaSession "Festival"</span><span class="mono" style="margin-right: 12px; font-size: 14px; color: {{t.dim}}">paused</span></div>
+      <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <p style="margin: 0; font-size: 16px; line-height: 1.45">This station changed the show while apart. 3 groups and 1 cue differ from the master.</p>
+        <div style="border-radius: 6px; border: 1px solid {{t.line}}; overflow: hidden">
+          <sc-for list="{{diffs}}" as="d" hint-placeholder-count="3"><div style="height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 14px; border-bottom: 1px solid {{t.line}}"><span>{{d.what}}</span><span style="color: {{d.c}}">{{d.how}}</span></div></sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+          <button type="button" style="height: 60px; border-radius: 6px; border: none; background: {{t.accent}}; color: {{t.onAccent}}; font: inherit; font-size: 15px; font-weight: 500">Merge</button>
+          <button type="button" style="height: 60px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 15px">Use master</button>
+          <button type="button" style="height: 60px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 15px">Use mine</button>
+          <button type="button" style="height: 60px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 15px">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+      <div style="height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 18px; border-bottom: 1px solid {{t.line}}"><span style="font-size: 17px; font-weight: 500">Label Group 4</span><button type="button" aria-label="Keyboard" style="width: 44px; height: 44px; border: none; background: none; color: {{t.text}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h18v12H3zM7 10h.01M11 10h.01M15 10h.01M7 14h10"></path></svg></button></div>
+      <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: {{t.dim}}">Name<span style="height: 52px; border-radius: 6px; border: 2px solid {{t.accent}}; background: {{t.bg}}; display: flex; align-items: center; padding: 0 14px; font-size: 17px; color: {{t.text}}">Front wash<span style="width: 2px; height: 22px; background: {{t.accent}}; margin-left: 1px"></span></span></label>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap">
+          <sc-for list="{{chips}}" as="c" hint-placeholder-count="4"><span style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid {{t.line}}; background: {{t.raised}}; display: flex; align-items: center; font-size: 14px">{{c}}</span></sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <button type="button" style="height: 60px; border-radius: 6px; border: none; background: {{t.ok}}; color: {{t.onAccent}}; font: inherit; font-size: 16px; font-weight: 500">Please</button>
+          <button type="button" style="height: 60px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 16px">Cancel</button>
+        </div>
+        <span style="font-size: 12px; color: {{t.dim}}">Recent names as chips. The keyboard button opens the built-in keyboard (or the OS one) per the screen's Keyboard setting.</span>
+      </div>
+    </section>
+
+    <section style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+      <div style="height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 18px; border-bottom: 1px solid {{t.line}}"><span style="font-size: 17px; font-weight: 500">Bob asks for Group 5</span><span class="mono" style="margin-right: 12px; font-size: 14px; color: {{t.warn}}">7 s</span></div>
+      <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px">
+        <p style="margin: 0; font-size: 16px; line-height: 1.45">You hold Group 5 "Back". Without an answer it is handed over.</p>
+        <button type="button" onClick="{{toggleKeep}}" style="height: 52px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 15px">Remember for this session<span style="width: 48px; height: 28px; border-radius: 6px; background: {{trackBg}}; position: relative; display: block"><span style="position: absolute; top: 3px; left: {{knobX}}px; width: 22px; height: 22px; border-radius: 50%; background: {{knobBg}}; display: block"></span></span></button>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+          <button type="button" style="height: 60px; border-radius: 6px; border: none; background: {{t.accent}}; color: {{t.onAccent}}; font: inherit; font-size: 16px; font-weight: 500">Hand over</button>
+          <button type="button" style="height: 60px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 16px">Keep</button>
+        </div>
+        <span class="mono" style="font-size: 12px; color: {{t.dim}}">Hand over → Unclaim Group 5 · Keep → Claim Group 5 /Keep</span>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { keep: false }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const k = this.state.keep;
+    const diffs = [{ what: 'Group 3 "Even"', how: 'changed on both', c: t.warn }, { what: 'Group 7 "Floor"', how: 'new here', c: t.ok }, { what: 'Sequence 1 Cue 4', how: 'deleted on master', c: t.alert }];
+    return { t, diffs, chips: ['Front wash', 'Front spot', 'Front L', 'Front R'],
+      trackBg: k ? t.ok : t.line, knobBg: k ? t.onAccent : t.dim, knobX: k ? 23 : 3, toggleKeep: () => this.setState({ keep: !k }) };
+  }
+}
+</script>
+</body>
+</html>

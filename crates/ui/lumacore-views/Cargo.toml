@@ -1,0 +1,25 @@
+[package]
+name = "lumacore-views"
+version.workspace = true
+edition.workspace = true
+description = "What every UI shows: menus and their rows, pools, the attribute board, encoder, detail, sequence and window state (decisions §34 20.7)"
+
+[dependencies]
+lumacore-protocols = { path = "../../model/lumacore-protocols" }
+lumacore-luma = { path = "../../formats/lumacore-luma" }
+lumacore-sysmon = { path = "../../foundation/lumacore-sysmon" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-objects = { path = "../../model/lumacore-objects" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-net = { path = "../../network/lumacore-net" }
+lumacore-render = { path = "../../engine/lumacore-render" }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,20 @@
+{
+  "_comment": "The docs-only fence for unattended documentation runs (docs/plans/active/md-upgrade.md §8). Use with: claude -p --settings .claude/md-upgrade.settings.json … . Normal sessions do not load it. A STOP file at docs/plans/active/STOP holds every tool.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash",
+        "hooks": [
+          { "type": "command", "command": "python3 -I \"$CLAUDE_PROJECT_DIR\"/scripts/unix/docs_check --fence" }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          { "type": "command", "command": "python3 -I \"$CLAUDE_PROJECT_DIR\"/scripts/unix/docs_check --quiet || true" }
+        ]
+      }
+    ]
+  }
+}

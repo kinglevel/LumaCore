@@ -1,0 +1,312 @@
+<title>Renumber</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: the patch grid, the context menu, and one small floating value dialog (Renumber, and
+   the same dialog for Address) that previews in the grid behind it. Console look, single dark. */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok-t: #7fdc85; --del: #e05a5a; --del-t: #f2a3a3; --sel: #2d3a52; --menu: #232323; --menu-hi: #33302a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+header h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 80ch; line-height: 1.5; }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 80ch; line-height: 1.5; margin: 0; }
+.icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button { font: inherit; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+
+.dlg { border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.title { min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 6px 4px 6px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.crumb .up { color: var(--dim); } .crumb .sep { color: var(--faint); font-size: 14px; } .crumb .here { font-weight: 500; }
+.chip { height: 30px; display: inline-flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; white-space: nowrap; }
+.chip .d { width: 8px; height: 8px; border-radius: 4px; background: var(--gold-hi); }
+.x { margin-left: auto; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 6px; color: var(--text); background: none; border: 0; cursor: pointer; }
+.selbar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--head); min-height: 48px; flex-wrap: wrap; }
+.selchip { height: 34px; display: inline-flex; align-items: center; gap: 8px; padding: 0 4px 0 12px; border-radius: 17px; background: var(--sel); border: 1px solid #4a6390; font-size: 13px; }
+.selchip button { width: 30px; height: 28px; border-radius: 14px; border: 0; background: color-mix(in srgb, #fff 10%, transparent); color: var(--text); cursor: pointer; font-size: 16px; }
+.hint { color: var(--dim); font-size: 13px; }
+.gwrap { overflow: auto; max-height: 520px; user-select: none; -webkit-user-select: none; }
+.grid { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.grid th { position: sticky; top: 0; background: var(--dlg); text-align: left; font-weight: 400; color: var(--dim); padding: 8px 10px; border-bottom: 1px solid var(--line); z-index: 1; }
+.grid td { padding: 8px 10px; border-bottom: 1px solid var(--cell-line); white-space: nowrap; }
+.grid tr.s td { background: var(--sel); }
+.grid tr.s td:first-child { box-shadow: inset 3px 0 0 var(--gold-hi); }
+.grid tr.way td { background: color-mix(in srgb, var(--del) 16%, var(--dlg)); }
+.old { color: var(--faint); text-decoration: line-through; margin-right: 6px; }
+.new { color: var(--gold-hi); }
+.bad { color: var(--del-t); }
+.foot { border-top: 1px solid var(--line); padding: 8px; }
+.line { font-family: var(--mono); font-size: 12.5px; color: var(--dim); background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+.line b { color: var(--text); font-weight: 400; }
+
+/* context menu (short form of context-menu.html) */
+.cm { position: fixed; z-index: 50; width: 240px; background: var(--menu); border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 12px 40px #000a; padding: 4px 0; }
+.cm[hidden] { display: none; }
+.cm .mh { padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--dim); }
+.cm button { width: 100%; min-height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: none; border: 0; color: var(--text); text-align: left; cursor: pointer; }
+.cm button:hover { background: var(--menu-hi); }
+.cm button.off { color: var(--faint); cursor: default; }
+.cm button.off:hover { background: none; }
+.cm hr { border: 0; border-top: 1px solid var(--line); margin: 4px 0; }
+
+/* the value dialog — one kit element for any value */
+.vd { position: fixed; z-index: 60; width: 340px; background: var(--dlg); border: 1px solid var(--gold-hi); border-radius: 8px; box-shadow: 0 16px 48px #000c; display: flex; flex-direction: column; }
+.vd[hidden] { display: none; }
+.vd .vh { display: flex; align-items: center; gap: 8px; padding: 4px 4px 4px 14px; border-bottom: 1px solid var(--line); cursor: move; touch-action: none; }
+.vd .vh b { font-weight: 500; }
+.vd .vh small { color: var(--dim); }
+.vd .vb { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.vin { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; gap: 6px; }
+.vin input { height: 52px; min-width: 0; border-radius: 6px; border: 1px solid var(--gold-hi); background: var(--cell); color: var(--text); font: inherit; font-size: 24px; text-align: center; font-variant-numeric: tabular-nums; }
+.vin button { height: 52px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--text); font-size: 20px; cursor: pointer; }
+.vhint { min-height: 20px; font-size: 13px; line-height: 1.4; }
+.vhint.ok { color: var(--ok-t); } .vhint.warn { color: var(--del-t); } .vhint.dim { color: var(--dim); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chips .lab { color: var(--dim); font-size: 12.5px; }
+.fc { height: 32px; padding: 0 10px; border-radius: 16px; border: 1px solid #2f4a2f; background: #1f2a1f; color: var(--ok-t); font-size: 13px; cursor: pointer; font-variant-numeric: tabular-nums; }
+.fc:hover, .fc.on { border-color: var(--gold-hi); color: var(--gold-hi); }
+.tg { display: flex; gap: 6px; flex-wrap: wrap; }
+.tg button { height: 34px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--dim); font-size: 12.5px; cursor: pointer; }
+.tg button b { color: var(--text); font-weight: 500; }
+.vf { display: flex; gap: 8px; padding: 10px 14px 12px; border-top: 1px solid var(--line); }
+.vf .go { flex: 1; height: 44px; border-radius: 6px; border: 1px solid var(--gold-hi); background: var(--gold); color: var(--gold-text); cursor: pointer; }
+.vf .go:disabled { opacity: .45; cursor: default; }
+.vf .cancel { height: 44px; padding: 0 16px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--text); cursor: pointer; }
+.keys { font-size: 11.5px; color: var(--faint); }
+@media (max-width: 640px) {
+  .vd { left: 0 !important; right: 0; top: auto !important; bottom: 0; width: auto; border-radius: 12px 12px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .grid .hide-s { display: none; }
+}
+dl.rules { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 13px; }
+dl.rules dt { color: var(--faint); } dl.rules dd { margin: 0; line-height: 1.45; }
+@media (max-width: 700px) { dl.rules { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M12 22v-5M9 8V2M15 8V2M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 22s7-6.1 7-12a7 7 0 0 0-14 0c0 5.9 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12 2H2v10l9.3 9.3a1 1 0 0 0 1.4 0l8.6-8.6a1 1 0 0 0 0-1.4Z"/><circle cx="7" cy="7" r="1.5"/></symbol>
+</svg>
+
+<main>
+<header>
+  <h1>Renumber · round 3 · v2</h1>
+  <p>Simpler, as asked: context menu › <b>Renumber…</b> opens one small floating dialog — the number, one hint line, a few free numbers to tap, two toggles, Apply. The grid behind it shows old → new while you type; nothing changes until Apply. The dialog is one kit element for <b>any value</b>: the same one opens for Address (try context menu › Address…), and later for any number a row has. Right-click (or hold, or ⋯) on the selected rows 104–106.</p>
+</header>
+
+<div class="dlg">
+  <div class="title">
+    <div class="crumb"><svg class="icon"><use href="#i-plug"/></svg><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></div>
+    <span class="chip"><i class="d"></i>Devices draft · Admin</span>
+    <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+  </div>
+  <div class="selbar" id="selbar"></div>
+  <div class="gwrap" id="gwrap"><table class="grid"><thead><tr><th>FID</th><th>Name</th><th class="hide-s">Type</th><th>Address</th></tr></thead><tbody id="body"></tbody></table></div>
+  <div class="foot"><div class="line" id="line">Right-click the selection</div></div>
+</div>
+
+<p class="decide">Decided: the dialog starts on <b>Skip taken</b>; Swap is one tap away. Approved (§34 round 3, 18).</p>
+
+<dl class="rules">
+  <dt>One value dialog</dt><dd>Small, floating beside the selection (never over it), draggable by its header; a bottom sheet on a phone. Big field, − / + steppers, one hint line, up to four free-value chips, the value's own toggles, Apply. Enter applies, Esc cancels, ↑ / ↓ step.</dd>
+  <dt>Preview behind</dt><dd>Every keystroke re-draws the list behind it (old → new, rows in the way red); nothing is sent until Apply — one line, one Oops step.</dd>
+  <dt>Free values</dt><dd>The chips come from one free-value index per object kind (the suggestion engine's, which also suggests them after <code>At</code> on the command line); they fit the selection's size.</dd>
+  <dt>Any value later</dt><dd>The dialog takes a value kind (number, address, …) with its parser, step, free index and toggles from the registry — Renumber and Address are the first two.</dd>
+</dl>
+</main>
+
+<div class="cm" id="cm" hidden></div>
+<div class="vd" id="vd" role="dialog" aria-labelledby="vdt" hidden>
+  <div class="vh" id="vh"><b id="vdt"></b><small id="vds"></small><button class="x" id="vx" aria-label="Cancel"><svg class="icon"><use href="#i-x"/></svg></button></div>
+  <div class="vb">
+    <div class="vin"><button id="dn" aria-label="Step down">−</button><input id="vin" inputmode="decimal" autocomplete="off"><button id="up" aria-label="Step up">+</button></div>
+    <div class="vhint dim" id="vhint"></div>
+    <div class="chips" id="chips"></div>
+    <div class="tg" id="tg"></div>
+    <div class="keys">Enter applies · Esc cancels · ↑ ↓ step</div>
+  </div>
+  <div class="vf"><button class="cancel" id="vc">Cancel</button><button class="go" id="vgo" disabled>Apply</button></div>
+</div>
+
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const a3 = n => String(n).padStart(3, '0');
+const ids = list => {
+  const n = [...list].sort((a, b) => a - b), out = [];
+  for (let i = 0; i < n.length;) { let j = i; while (j + 1 < n.length && n[j + 1] === n[j] + 1) j++; out.push(j > i ? `${n[i]} Thru ${n[j]}` : `${n[i]}`); i = j + 1; }
+  return out.join(' + ');
+};
+const inOrder = l => l.every((v, i) => !i || v > l[i - 1]) ? ids(l) : l.join(' + ');
+const FX = [];
+const add = (from, n, name, type, len, u, start) => { for (let i = 0; i < n; i++) FX.push({ id: from + i, name: `${name} ${i + 1}`, type, len, u, start: start + i * len }); };
+add(101, 6, 'Aura', 'MAC Aura XB', 14, 1, 1); add(110, 11, 'Aura', 'MAC Aura XB', 14, 1, 85);
+add(201, 12, 'Spot', 'MAC Encore Performance', 31, 3, 1); add(301, 3, 'BMFL', 'Robin BMFL WashBeam', 48, 2, 1);
+add(401, 1, 'Hazer', 'MDG theONE', 2, 4, 1); add(501, 8, 'Blinder', 'Molefay 4-Lite', 4, 4, 10);
+const st = { sel: [104, 105, 106], line: '' };
+const sel = () => FX.filter(f => st.sel.includes(f.id));
+
+// ---- value kinds: the dialog reads these (later from the registry) ----
+const KINDS = {
+  renumber: {
+    title: 'Renumber', toggles: { order: ['Selection order', 'Grid order'], taken: ['Skip taken', 'Swap'] },
+    start: () => '', parse: v => { const n = parseInt(v, 10); return n > 0 ? n : null; }, step: (v, d) => Math.max(1, (parseInt(v, 10) || Math.min(...st.sel)) + d),
+    plan(v, t) {
+      const order = t.order === 'Selection order' ? st.sel : FX.map(f => f.id).filter(id => st.sel.includes(id));
+      const outside = new Set(FX.map(f => f.id).filter(id => !st.sel.includes(id)));
+      const map = new Map(), hit = []; let n = v;
+      for (const id of order) { if (t.taken === 'Skip taken') while (outside.has(n)) n++; else if (outside.has(n)) hit.push(n); map.set(id, n++); }
+      const swaps = new Map(); const freed = order.filter(id => ![...map.values()].includes(id)); hit.forEach((x, i) => swaps.set(x, freed[i]));
+      const vals = [...map.values()].sort((a, b) => a - b);
+      let hint;
+      if ([...map].every(([a, b]) => a === b)) hint = ['dim', 'Same numbers — nothing to change'];
+      else if (swaps.size) hint = ['warn', `→ ${ids(vals)} · ${[...swaps].map(([a, b]) => `${a} → ${b}`).join(', ')} swapped out of the way`];
+      else if (vals[0] !== v) hint = ['warn', `${v}${vals[0] - 1 > v ? `–${vals[0] - 1}` : ''} taken → ${ids(vals)}`];
+      else if (vals[vals.length - 1] - vals[0] !== vals.length - 1) hint = ['warn', `→ ${ids(vals)} · split around taken numbers`];
+      else hint = ['ok', `→ ${ids(vals)} · all free`];
+      const cell = f => map.has(f.id) && map.get(f.id) !== f.id ? `<span class="old">${f.id}</span><span class="new">${map.get(f.id)}</span>` : swaps.has(f.id) ? `<span class="old">${f.id}</span><span class="bad">${swaps.get(f.id)}</span>` : null;
+      const apply = () => { const next = new Map([...map, ...swaps]); FX.forEach(f => { if (next.has(f.id)) f.id = next.get(f.id); }); FX.sort((a, b) => a.id - b.id); st.sel = [...map.values()]; };
+      return { hint, cell, col: 0, way: id => swaps.has(id), apply, change: !hint[1].startsWith('Same'), line: `Move Fixture ${inOrder(order)} At ${v}${t.taken === 'Swap' ? ' /Swap' : ''}${t.order === 'Grid order' ? ' /Sorted' : ''}` };
+    },
+    free() { // free blocks that fit, after the selection first, then an empty hundred
+      const n = st.sel.length, taken = new Set(FX.map(f => f.id)), out = [];
+      for (let s = Math.min(...st.sel); s < 1000 && out.length < 3; s++) { let ok = true; for (let i = 0; i < n; i++) if (taken.has(s + i)) { ok = false; break; } if (ok) { out.push(s); s += 99 - (s % 100); } }
+      for (let h = 100; h < 1000 && out.length < 4; h += 100) if (![...taken].some(x => x > h && x < h + 100) && !out.includes(h + 1)) out.push(h + 1);
+      return out.map(s => [String(s), n > 1 ? `${s}–${s + n - 1}` : `${s}`]);
+    },
+  },
+  address: {
+    title: 'Address', toggles: { layout: ['Keep spacing', 'Bunch up'] },
+    start: () => { const f = sel()[0]; return `${f.u}.${a3(f.start)}`; },
+    parse: v => { const m = String(v).trim().match(/^(\d+)[.:](\d+)$/); return m && +m[2] >= 1 && +m[2] <= 512 ? { u: +m[1], s: +m[2] } : null; },
+    step: (v, d) => { const p = KINDS.address.parse(v) || { u: 1, s: 1 }; return `${p.u}.${a3(Math.max(1, Math.min(512, p.s + d)))}`; },
+    plan(v, t) {
+      const S = sel().sort((a, b) => st.sel.indexOf(a.id) - st.sel.indexOf(b.id)), base = S[0];
+      const mv = new Map(); let at = v.s;
+      for (const f of S) { const s = t.layout === 'Keep spacing' ? v.s + (f.start - base.start) : at; mv.set(f.id, { u: v.u, start: s }); at += f.len; }
+      const bad = new Set();
+      for (const f of S) { const m = mv.get(f.id); if (m.start + f.len - 1 > 512) bad.add(f.id); for (const o of FX) if (!mv.has(o.id) && o.u === m.u && m.start <= o.start + o.len - 1 && o.start <= m.start + f.len - 1) { bad.add(f.id); bad.add(o.id); } }
+      const first = mv.get(S[0].id), last = S[S.length - 1], lm = mv.get(last.id);
+      const hint = bad.size ? ['warn', `overlaps ${ids([...bad].filter(id => !mv.has(id)))} — both stay red and parked until resolved`] : ['ok', `→ ${first.u}.${a3(first.start)}–${lm.u}.${a3(lm.start + last.len - 1)} · all free`];
+      const cell = f => mv.has(f.id) ? `<span class="old">${f.u}.${a3(f.start)}</span><span class="${bad.has(f.id) ? 'bad' : 'new'}">${mv.get(f.id).u}.${a3(mv.get(f.id).start)}</span>` : bad.has(f.id) ? `<span class="bad">${f.u}.${a3(f.start)}</span>` : null;
+      const apply = () => FX.forEach(f => { if (mv.has(f.id)) Object.assign(f, mv.get(f.id)); });
+      const same = S.every(f => mv.get(f.id).u === f.u && mv.get(f.id).start === f.start);
+      return { hint: same ? ['dim', 'Same addresses — nothing to change'] : hint, cell: f => same ? null : cell(f), col: 3, way: id => !same && bad.has(id) && !mv.has(id), apply, change: !same, line: `Patch Fixture ${inOrder(st.sel)} At ${v.u}.${a3(v.s)}${t.layout === 'Bunch up' ? ' /Bunch' : ''}` };
+    },
+    free() {
+      const need = sel().reduce((n, f) => n + f.len, 0), out = [];
+      for (let u = 1; u <= 6 && out.length < 4; u++) {
+        const used = FX.filter(f => u === f.u && !st.sel.includes(f.id)).map(f => [f.start, f.start + f.len - 1]);
+        for (let s = 1; s + need - 1 <= 512; s++) { const e = s + need - 1; const o = used.find(([a, b]) => s <= b && a <= e); if (!o) { out.push([`${u}.${a3(s)}`, `${u}.${a3(s)}`]); break; } s = o[1]; }
+      }
+      return out;
+    },
+  },
+};
+
+// ---- grid ----
+let V = null; // open value dialog: { kind, t, plan }
+function render() {
+  const p = V && V.plan;
+  document.getElementById('body').innerHTML = FX.map(f => {
+    const c = p && p.cell(f);
+    const cells = [`${f.id}`, esc(f.name), esc(f.type), `${f.u}.${a3(f.start)}`];
+    if (c) cells[p.col] = c;
+    return `<tr class="${st.sel.includes(f.id) ? 's' : ''} ${p && p.way(f.id) ? 'way' : ''}" data-id="${f.id}">${cells.map((x, i) => `<td class="${i === 2 ? 'hide-s' : ''}">${x}</td>`).join('')}</tr>`;
+  }).join('');
+  document.getElementById('selbar').innerHTML = st.sel.length ? `<span class="selchip">${st.sel.length} Fixture${st.sel.length > 1 ? 's' : ''} · ${inOrder(st.sel)}<button id="dots" aria-label="Menu">⋯</button></span><span class="hint">Right-click, hold, or ⋯</span>` : '<span class="hint">Tap a row, Shift adds, drag to lasso</span>';
+  document.getElementById('line').innerHTML = p && p.change ? `<b>${esc(p.line)}</b>   ← on Apply` : st.line ? `<b>${esc(st.line)}</b>` : 'Right-click the selection';
+}
+let d = null, holdT = null;
+const gw = document.getElementById('gwrap');
+gw.addEventListener('pointerdown', e => {
+  if (e.button === 2 || V) return;
+  const tr = e.target.closest('tr[data-id]'); d = { x: e.clientX, y: e.clientY, tr, add: e.shiftKey, moved: false };
+  if (e.pointerType !== 'mouse' && tr) holdT = setTimeout(() => { if (d && !d.moved) { pick(+tr.dataset.id); d = null; menu(e.clientX, e.clientY); } }, 500);
+});
+gw.addEventListener('pointermove', e => {
+  if (!d) return; if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 6) return; d.moved = true; clearTimeout(holdT);
+  const y0 = Math.min(d.y, e.clientY), y1 = Math.max(d.y, e.clientY);
+  let hit = [...gw.querySelectorAll('tr[data-id]')].filter(tr => { const b = tr.getBoundingClientRect(); return b.bottom > y0 && b.top < y1; }).map(tr => +tr.dataset.id);
+  if (e.clientY < d.y) hit.reverse();
+  st.sel = d.add ? [...st.sel.filter(i => !hit.includes(i)), ...hit] : hit; render();
+});
+gw.addEventListener('pointerup', () => { clearTimeout(holdT); if (d && !d.moved && d.tr) { const id = +d.tr.dataset.id; st.sel = d.add ? (st.sel.includes(id) ? st.sel.filter(i => i !== id) : [...st.sel, id]) : [id]; render(); } d = null; });
+gw.addEventListener('contextmenu', e => { e.preventDefault(); if (V) return; const tr = e.target.closest('tr[data-id]'); if (tr) { pick(+tr.dataset.id); menu(e.clientX, e.clientY); } });
+const pick = id => { if (!st.sel.includes(id)) { st.sel = [id]; render(); } };
+
+// ---- context menu ----
+const cm = document.getElementById('cm');
+function menu(x, y) {
+  cm.innerHTML = `<div class="mh">${st.sel.length} Fixture${st.sel.length > 1 ? 's' : ''} · ${inOrder(st.sel)}</div>
+    <button class="off"><svg class="icon"><use href="#i-edit"/></svg>Edit…</button>
+    <button data-open="renumber"><svg class="icon"><use href="#i-hash"/></svg>Renumber…</button>
+    <button class="off"><svg class="icon"><use href="#i-tag"/></svg>Label…</button><hr>
+    <button data-open="address"><svg class="icon"><use href="#i-pin"/></svg>Address…</button>
+    <button class="off" style="color:var(--faint)">… the rest of the menu</button>`;
+  cm.hidden = false;
+  cm.style.left = `${Math.min(x, innerWidth - 250)}px`; cm.style.top = `${Math.min(y, innerHeight - cm.offsetHeight - 8)}px`;
+}
+document.addEventListener('pointerdown', e => { if (!cm.hidden && !e.target.closest('.cm')) cm.hidden = true; });
+
+// ---- the value dialog ----
+const vd = document.getElementById('vd'), vin = document.getElementById('vin');
+function open(kind) {
+  cm.hidden = true;
+  const K = KINDS[kind], t = {};
+  for (const [k, opts] of Object.entries(K.toggles)) t[k] = opts[0];
+  V = { kind, K, t, plan: null };
+  document.getElementById('vdt').textContent = K.title;
+  document.getElementById('vds').textContent = `${st.sel.length} Fixture${st.sel.length > 1 ? 's' : ''} · ${inOrder(st.sel)}`;
+  vin.value = K.start(); vin.placeholder = kind === 'renumber' ? `first number (now ${Math.min(...st.sel)})` : 'u.aaa';
+  vd.hidden = false;
+  // beside the selection, never over it
+  const rows = [...gw.querySelectorAll('tr.s')], r = rows.length ? rows[0].getBoundingClientRect() : gw.getBoundingClientRect(), gr = gw.getBoundingClientRect();
+  const left = Math.min(innerWidth - 356, gr.right - 356), top = Math.max(8, Math.min(r.bottom + 8, innerHeight - vd.offsetHeight - 8));
+  vd.style.left = `${Math.max(8, left)}px`; vd.style.top = `${top}px`;
+  update(); vin.focus(); vin.select();
+}
+function close() { V = null; vd.hidden = true; render(); }
+function update() {
+  const v = V.K.parse(vin.value);
+  V.plan = v ? V.K.plan(v, V.t) : null;
+  const h = document.getElementById('vhint');
+  if (V.plan) { h.className = `vhint ${V.plan.hint[0]}`; h.textContent = V.plan.hint[1]; }
+  else { h.className = 'vhint dim'; h.textContent = vin.value ? (V.kind === 'renumber' ? 'Type a whole number' : 'Universe.address, e.g. 1.150') : (V.kind === 'renumber' ? `${st.sel.length} numbers needed — type the first, or tap a free one` : 'Type an address, or tap a free one'); }
+  document.getElementById('chips').innerHTML = `<span class="lab">Free:</span>` + V.K.free().map(([val, label]) => `<button class="fc ${vin.value === val ? 'on' : ''}" data-val="${val}">${label}</button>`).join('');
+  document.getElementById('tg').innerHTML = Object.entries(V.K.toggles).map(([k, opts]) => `<button data-tg="${k}">${opts.map(o => o === V.t[k] ? `<b>${o}</b>` : o).join(' · ')}</button>`).join('');
+  document.getElementById('vgo').disabled = !V.plan || !V.plan.change;
+  render();
+}
+vin.addEventListener('input', update);
+vin.addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('vgo').click();
+  else if (e.key === 'Escape') close();
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); vin.value = V.K.step(vin.value, e.key === 'ArrowUp' ? 1 : -1); update(); }
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.open) open(b.dataset.open);
+  else if (b.id === 'dots') { const r = b.getBoundingClientRect(); menu(r.left, r.bottom + 4); }
+  else if (b.dataset.val) { vin.value = b.dataset.val; update(); vin.focus(); }
+  else if (b.dataset.tg) { const o = V.K.toggles[b.dataset.tg]; V.t[b.dataset.tg] = o[(o.indexOf(V.t[b.dataset.tg]) + 1) % o.length]; update(); }
+  else if (b.id === 'up' || b.id === 'dn') { vin.value = V.K.step(vin.value, b.id === 'up' ? 1 : -1); update(); }
+  else if (b.id === 'vgo' && V.plan) { st.line = V.plan.line; V.plan.apply(); close(); }
+  else if (b.id === 'vc' || b.id === 'vx') close();
+});
+// drag the dialog by its header
+let mv = null;
+document.getElementById('vh').addEventListener('pointerdown', e => { if (e.target.closest('button')) return; mv = { x: e.clientX - vd.offsetLeft, y: e.clientY - vd.offsetTop }; e.currentTarget.setPointerCapture(e.pointerId); });
+document.getElementById('vh').addEventListener('pointermove', e => { if (mv) { vd.style.left = `${e.clientX - mv.x}px`; vd.style.top = `${e.clientY - mv.y}px`; } });
+document.getElementById('vh').addEventListener('pointerup', () => { mv = null; });
+render();
+</script>

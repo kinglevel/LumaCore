@@ -1,0 +1,72 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Asks.dc.html": {
+      "x": 0,
+      "y": 9820,
+      "w": 1440,
+      "h": 900,
+      "title": "12b · Every ask on the standard dialog",
+      "is_interactive": true
+    },
+    "Inputs.dc.html": {
+      "x": 1520,
+      "y": 9820,
+      "w": 1440,
+      "h": 900,
+      "title": "12b · Dialog inputs + keypad with unit swipe",
+      "is_interactive": true
+    },
+    "PickList.dc.html": {
+      "x": 3040,
+      "y": 9820,
+      "w": 1440,
+      "h": 900,
+      "title": "12b · Pick list: filter, None, missing link, Add New",
+      "is_interactive": true
+    },
+    "VK.dc.html": {
+      "x": 0,
+      "y": 10840,
+      "w": 1440,
+      "h": 900,
+      "title": "12b · VK button, Keyboard mode, keyboard on the command line",
+      "is_interactive": true
+    },
+    "Terminal.dc.html": {
+      "x": 1520,
+      "y": 10840,
+      "w": 1440,
+      "h": 900,
+      "title": "12b · The same dialog in a terminal",
+      "is_interactive": true
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-12T12:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "row7": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "12b — dialogs, keypad, pick list, keyboard (for approval)",
+      "x": 0,
+      "y": 9520
+    }
+  },
+  "order": [
+    "Asks.dc.html",
+    "Inputs.dc.html",
+    "PickList.dc.html",
+    "VK.dc.html",
+    "Terminal.dc.html"
+  ],
+  "pages": [],
+  "title": "LumaCore UI Kit Mockups — 12b"
+}

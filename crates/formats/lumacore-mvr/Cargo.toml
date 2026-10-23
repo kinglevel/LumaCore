@@ -1,0 +1,14 @@
+[package]
+name = "lumacore-mvr"
+version.workspace = true
+edition.workspace = true
+description = "The MVR file (GDTF's My Virtual Rig, 1.6): the scene read from the zip — layers, groups, fixtures, classes, positions, the GDTFs it names (decisions §34 \"34g4 patch hardened\" 10)"
+
+[dependencies]
+quick-xml = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+zip = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "id": 2,
+    "guid": "b0b0b0b0-dead-4bee-b0b0-b0b0b0b0b0b0",
+    "name": "Blackout Toggle"
+  },
+  "lines": [
+    {
+      "guid": "aa000001-0000-4000-8000-000000000001",
+      "command": "Fixture 1 Thru 999 At 0",
+      "wait": "Follow",
+      "enabled": true,
+      "execute": "Yes"
+    },
+    {
+      "guid": "aa000002-0000-4000-8000-000000000002",
+      "command": "echo \"BLACKOUT ON\"",
+      "wait": "Follow",
+      "enabled": true,
+      "execute": "Yes"
+    }
+  ]
+}

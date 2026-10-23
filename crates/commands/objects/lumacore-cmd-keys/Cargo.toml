@@ -1,0 +1,21 @@
+[package]
+name = "lumacore-cmd-keys"
+version.workspace = true
+edition.workspace = true
+description = "The keys: Bind, Unbind, Shortcuts, the UIKey and KeyBindings objects, the key lines' checks on save and load, the core keys (decisions §17, §34 25.4)"
+
+[dependencies]
+lumacore-registry = { path = "../../../foundation/lumacore-registry" }
+lumacore-base = { path = "../../../foundation/lumacore-base" }
+lumacore-syntax = { path = "../../../foundation/lumacore-syntax" }
+lumacore-sysmon = { path = "../../../foundation/lumacore-sysmon" }
+lumacore-wire = { path = "../../../foundation/lumacore-wire" }
+lumacore-tree = { path = "../../../model/lumacore-tree" }
+lumacore-objects = { path = "../../../model/lumacore-objects" }
+nu-ansi-term = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

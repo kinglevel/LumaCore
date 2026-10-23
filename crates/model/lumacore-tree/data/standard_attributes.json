@@ -1,0 +1,2648 @@
+{
+"source": "the GDTF standard attribute set; probed 2026-10-14",
+"feature_groups": [
+{
+"name": "Dimmer",
+"features": [
+"Dimmer"
+]
+},
+{
+"name": "Position",
+"features": [
+"PanTilt",
+"XYZ",
+"Rotation",
+"Scale"
+]
+},
+{
+"name": "Gobo",
+"features": [
+"Gobo",
+"Media",
+"Object"
+]
+},
+{
+"name": "Color",
+"features": [
+"RGB",
+"Color",
+"HSB",
+"CIE",
+"ColorCorrection",
+"HSBC_Shift",
+"ColorKey"
+]
+},
+{
+"name": "Beam",
+"features": [
+"Beam"
+]
+},
+{
+"name": "Focus",
+"features": [
+"Focus"
+]
+},
+{
+"name": "Control",
+"features": [
+"Control"
+]
+},
+{
+"name": "Shapers",
+"features": [
+"Shapers"
+]
+},
+{
+"name": "Video",
+"features": [
+"Video"
+]
+}
+],
+"activation_groups": [
+{
+"name": "PanTilt",
+"members": [
+"Pan",
+"Tilt",
+"PanTiltDistance"
+]
+},
+{
+"name": "XYZ",
+"members": [
+"XYZ_X",
+"XYZ_Y",
+"XYZ_Z",
+"XYZ_Flip"
+]
+},
+{
+"name": "RotXYZ",
+"members": [
+"Rot_X",
+"Rot_Y",
+"Rot_Z"
+]
+},
+{
+"name": "ScaleXYZ",
+"members": [
+"Scale_X",
+"Scale_Y",
+"Scale_Z",
+"Scale_XYZ"
+]
+},
+{
+"name": "ColorRGB",
+"members": [
+"ColorRGB_R",
+"ColorRGB_G",
+"ColorRGB_B",
+"ColorRGB_C",
+"ColorRGB_M",
+"ColorRGB_Y",
+"ColorRGB_RY",
+"ColorRGB_GY",
+"ColorRGB_GC",
+"ColorRGB_BC",
+"ColorRGB_BM",
+"ColorRGB_RM",
+"ColorRGB_W",
+"ColorRGB_WW",
+"ColorRGB_CW",
+"ColorRGB_UV"
+]
+},
+{
+"name": "ColorHSB",
+"members": [
+"HSB_Hue",
+"HSB_Saturation",
+"HSB_Brightness",
+"HSB_Quality"
+]
+},
+{
+"name": "ColorCIE",
+"members": [
+"CIE_X",
+"CIE_Y",
+"CIE_Brightness"
+]
+},
+{
+"name": "Gobo1",
+"members": [
+"Gobo1",
+"Gobo1SelectSpin",
+"Gobo1SelectShake",
+"Gobo1SelectEffects",
+"Gobo1WheelIndex",
+"Gobo1WheelSpin",
+"Gobo1WheelShake",
+"Gobo1WheelRandom",
+"Gobo1WheelAudio"
+]
+},
+{
+"name": "Gobo1Pos",
+"members": [
+"Gobo1Pos",
+"Gobo1PosRotate",
+"Gobo1PosShake"
+]
+},
+{
+"name": "Gobo2",
+"members": [
+"Gobo2",
+"Gobo2SelectSpin",
+"Gobo2SelectShake",
+"Gobo2SelectEffects",
+"Gobo2WheelIndex",
+"Gobo2WheelSpin",
+"Gobo2WheelShake",
+"Gobo2WheelRandom",
+"Gobo2WheelAudio"
+]
+},
+{
+"name": "Gobo2Pos",
+"members": [
+"Gobo2Pos",
+"Gobo2PosRotate",
+"Gobo2PosShake"
+]
+},
+{
+"name": "Gobo3",
+"members": [
+"Gobo3",
+"Gobo3SelectSpin",
+"Gobo3SelectShake",
+"Gobo3SelectEffects",
+"Gobo3WheelIndex",
+"Gobo3WheelSpin",
+"Gobo3WheelShake",
+"Gobo3WheelRandom",
+"Gobo3WheelAudio"
+]
+},
+{
+"name": "Gobo3Pos",
+"members": [
+"Gobo3Pos",
+"Gobo3PosRotate",
+"Gobo3PosShake"
+]
+},
+{
+"name": "AnimationWheel1",
+"members": [
+"AnimationWheel1",
+"AnimationWheel1Audio",
+"AnimationWheel1Macro",
+"AnimationWheel1Random",
+"AnimationWheel1SelectEffects",
+"AnimationWheel1SelectShake",
+"AnimationWheel1SelectSpin"
+]
+},
+{
+"name": "AnimationWheel1Pos",
+"members": [
+"AnimationWheel1Pos",
+"AnimationWheel1PosRotate",
+"AnimationWheel1PosShake"
+]
+},
+{
+"name": "AnimationSystem1",
+"members": [
+"AnimationSystem1",
+"AnimationSystem1Ramp",
+"AnimationSystem1Shake",
+"AnimationSystem1Audio",
+"AnimationSystem1Random"
+]
+},
+{
+"name": "AnimationSystem1Pos",
+"members": [
+"AnimationSystem1Pos",
+"AnimationSystem1PosRotate",
+"AnimationSystem1PosShake",
+"AnimationSystem1PosRandom",
+"AnimationSystem1PosAudio"
+]
+},
+{
+"name": "Prism",
+"members": [
+"Prism1",
+"Prism1SelectSpin",
+"Prism1Macro",
+"Prism1Pos",
+"Prism1PosRotate",
+"Prism2",
+"Prism2SelectSpin",
+"Prism2Macro",
+"Prism2Pos",
+"Prism2PosRotate"
+]
+},
+{
+"name": "BeamShaper",
+"members": [
+"BeamShaper",
+"BeamShaperMacro",
+"BeamShaperPos",
+"BeamShaperPosRotate"
+]
+},
+{
+"name": "Shaper",
+"members": [
+"Blade1A",
+"Blade1B",
+"Blade2A",
+"Blade2B",
+"Blade3A",
+"Blade3B",
+"Blade4A",
+"Blade4B",
+"Blade1Rot",
+"Blade2Rot",
+"Blade3Rot",
+"Blade4Rot",
+"ShaperRot"
+]
+}
+],
+"attributes": [
+{
+"name": "Dimmer",
+"pretty": "Dim",
+"feature": "Dimmer.Dimmer",
+"special": "Dimmer",
+"unit": "LuminousIntensity"
+},
+{
+"name": "Pan",
+"pretty": "P",
+"feature": "Position.PanTilt",
+"special": "PanTilt",
+"unit": "Angle",
+"activation": "PanTilt",
+"readout": "Physical"
+},
+{
+"name": "Tilt",
+"pretty": "T",
+"feature": "Position.PanTilt",
+"special": "PanTilt",
+"unit": "Angle",
+"activation": "PanTilt",
+"readout": "Physical"
+},
+{
+"name": "PanTiltDistance",
+"pretty": "Dist",
+"feature": "Position.PanTilt",
+"special": "PanTilt",
+"unit": "Length",
+"activation": "PanTilt",
+"readout": "Physical"
+},
+{
+"name": "PanRotate",
+"pretty": "P Rotate",
+"feature": "Position.PanTilt",
+"special": "PanTilt",
+"unit": "AngularSpeed",
+"readout": "Physical"
+},
+{
+"name": "TiltRotate",
+"pretty": "T Rotate",
+"feature": "Position.PanTilt",
+"special": "PanTilt",
+"unit": "AngularSpeed",
+"readout": "Physical"
+},
+{
+"name": "PositionEffect",
+"pretty": "Pos FX",
+"feature": "Position.PanTilt"
+},
+{
+"name": "PositionEffectRate",
+"pretty": "Pos FX Rate",
+"feature": "Position.PanTilt"
+},
+{
+"name": "PositionEffectFade",
+"pretty": "Pos FX Fade",
+"feature": "Position.PanTilt"
+},
+{
+"name": "XYZ_X",
+"pretty": "X",
+"feature": "Position.XYZ",
+"special": "XYZ_Pos",
+"activation": "XYZ",
+"readout": "Physical"
+},
+{
+"name": "XYZ_Y",
+"pretty": "Y",
+"feature": "Position.XYZ",
+"special": "XYZ_Pos",
+"activation": "XYZ",
+"readout": "Physical"
+},
+{
+"name": "XYZ_Z",
+"pretty": "Z",
+"feature": "Position.XYZ",
+"special": "XYZ_Pos",
+"activation": "XYZ",
+"readout": "Physical"
+},
+{
+"name": "XYZ_Flip",
+"pretty": "Flip",
+"feature": "Position.XYZ",
+"special": "XYZ_Pos",
+"activation": "XYZ",
+"readout": "Physical"
+},
+{
+"name": "Rot_X",
+"pretty": "Rot X",
+"feature": "Position.Rotation",
+"special": "XYZ_Rot",
+"unit": "Angle",
+"activation": "RotXYZ",
+"readout": "Physical"
+},
+{
+"name": "Rot_Y",
+"pretty": "Rot Y",
+"feature": "Position.Rotation",
+"special": "XYZ_Rot",
+"unit": "Angle",
+"activation": "RotXYZ",
+"readout": "Physical"
+},
+{
+"name": "Rot_Z",
+"pretty": "Rot Z",
+"feature": "Position.Rotation",
+"special": "XYZ_Rot",
+"unit": "Angle",
+"activation": "RotXYZ",
+"readout": "Physical"
+},
+{
+"name": "Scale_X",
+"pretty": "Scale X",
+"feature": "Position.Scale",
+"special": "XYZ_Scale",
+"activation": "ScaleXYZ"
+},
+{
+"name": "Scale_Y",
+"pretty": "Scale Y",
+"feature": "Position.Scale",
+"special": "XYZ_Scale",
+"activation": "ScaleXYZ"
+},
+{
+"name": "Scale_Z",
+"pretty": "Scale Z",
+"feature": "Position.Scale",
+"special": "XYZ_Scale",
+"activation": "ScaleXYZ"
+},
+{
+"name": "Scale_XYZ",
+"pretty": "Scale XYZ",
+"feature": "Position.Scale",
+"activation": "ScaleXYZ"
+},
+{
+"name": "Gobo1",
+"pretty": "G1",
+"feature": "Gobo.Gobo",
+"special": "Gobo",
+"activation": "Gobo1",
+"readout": "Physical"
+},
+{
+"name": "Gobo1SelectSpin",
+"pretty": "Select Spin",
+"feature": "Gobo.Gobo",
+"unit": "AngularSpeed",
+"main": "Gobo1",
+"activation": "Gobo1",
+"readout": "Physical"
+},
+{
+"name": "Gobo1SelectShake",
+"pretty": "Select Shake",
+"feature": "Gobo.Gobo",
+"special": "GoboSelectShake",
+"unit": "Frequency",
+"main": "Gobo1",
+"activation": "Gobo1",
+"readout": "Physical"
+},
+{
+"name": "Gobo1SelectEffects",
+"pretty": "Select Effects",
+"feature": "Gobo.Gobo",
+"main": "Gobo1",
+"activation": "Gobo1"
+},
+{
+"name": "Gobo1WheelIndex",
+"pretty": "Wheel Index",
+"feature": "Gobo.Gobo",
+"unit": "Angle",
+"main": "Gobo1",
+"activation": "Gobo1",
+"readout": "Physical"
+},
+{
+"name": "Gobo1WheelSpin",
+"pretty": "Wheel Spin",
+"feature": "Gobo.Gobo",
+"special": "GoboWheelSpin",
+"unit": "AngularSpeed",
+"main": "Gobo1",
+"activation": "Gobo1",
+"readout": "Physical"
+},
+{
+"name": "Gobo1WheelShake",
+"pretty": "Wheel Shake",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "Gobo1",
+"activation": "Gobo1",
+"readout": "Physical"
+},
+{
+"name": "Gobo1WheelRandom",
+"pretty": "Wheel Random",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "Gobo1",
+"activation": "Gobo1",
+"readout": "Physical"
+},
+{
+"name": "Gobo1WheelAudio",
+"pretty": "Wheel Audio",
+"feature": "Gobo.Gobo",
+"main": "Gobo1",
+"activation": "Gobo1"
+},
+{
+"name": "Gobo1Pos",
+"pretty": "G1 <>",
+"feature": "Gobo.Gobo",
+"special": "GoboPos",
+"unit": "Angle",
+"activation": "Gobo1Pos",
+"readout": "Physical"
+},
+{
+"name": "Gobo1PosRotate",
+"pretty": "Rotate",
+"feature": "Gobo.Gobo",
+"special": "GoboPosRotate",
+"unit": "AngularSpeed",
+"main": "Gobo1Pos",
+"activation": "Gobo1Pos",
+"readout": "Physical"
+},
+{
+"name": "Gobo1PosShake",
+"pretty": "Shake",
+"feature": "Gobo.Gobo",
+"special": "GoboPosShake",
+"unit": "Frequency",
+"main": "Gobo1Pos",
+"activation": "Gobo1Pos",
+"readout": "Physical"
+},
+{
+"name": "Gobo2",
+"pretty": "G2",
+"feature": "Gobo.Gobo",
+"special": "Gobo",
+"activation": "Gobo2",
+"readout": "Physical"
+},
+{
+"name": "Gobo2SelectSpin",
+"pretty": "Select Spin",
+"feature": "Gobo.Gobo",
+"unit": "AngularSpeed",
+"main": "Gobo2",
+"activation": "Gobo2",
+"readout": "Physical"
+},
+{
+"name": "Gobo2SelectShake",
+"pretty": "Select Shake",
+"feature": "Gobo.Gobo",
+"special": "GoboSelectShake",
+"unit": "Frequency",
+"main": "Gobo2",
+"activation": "Gobo2",
+"readout": "Physical"
+},
+{
+"name": "Gobo2SelectEffects",
+"pretty": "Select Effects",
+"feature": "Gobo.Gobo",
+"main": "Gobo2",
+"activation": "Gobo2"
+},
+{
+"name": "Gobo2WheelIndex",
+"pretty": "Wheel Index",
+"feature": "Gobo.Gobo",
+"unit": "Angle",
+"main": "Gobo2",
+"activation": "Gobo2",
+"readout": "Physical"
+},
+{
+"name": "Gobo2WheelSpin",
+"pretty": "Wheel Spin",
+"feature": "Gobo.Gobo",
+"special": "GoboWheelSpin",
+"unit": "AngularSpeed",
+"main": "Gobo2",
+"activation": "Gobo2",
+"readout": "Physical"
+},
+{
+"name": "Gobo2WheelShake",
+"pretty": "Wheel Shake",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "Gobo2",
+"activation": "Gobo2",
+"readout": "Physical"
+},
+{
+"name": "Gobo2WheelRandom",
+"pretty": "Wheel Random",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "Gobo2",
+"activation": "Gobo2",
+"readout": "Physical"
+},
+{
+"name": "Gobo2WheelAudio",
+"pretty": "Wheel Audio",
+"feature": "Gobo.Gobo",
+"main": "Gobo2",
+"activation": "Gobo2"
+},
+{
+"name": "Gobo2Pos",
+"pretty": "G2 <>",
+"feature": "Gobo.Gobo",
+"special": "GoboPos",
+"unit": "Angle",
+"activation": "Gobo2Pos",
+"readout": "Physical"
+},
+{
+"name": "Gobo2PosRotate",
+"pretty": "Rotate",
+"feature": "Gobo.Gobo",
+"special": "GoboPosRotate",
+"unit": "AngularSpeed",
+"main": "Gobo2Pos",
+"activation": "Gobo2Pos",
+"readout": "Physical"
+},
+{
+"name": "Gobo2PosShake",
+"pretty": "Shake",
+"feature": "Gobo.Gobo",
+"special": "GoboPosShake",
+"unit": "Frequency",
+"main": "Gobo2Pos",
+"activation": "Gobo2Pos",
+"readout": "Physical"
+},
+{
+"name": "Gobo3",
+"pretty": "G3",
+"feature": "Gobo.Gobo",
+"special": "Gobo",
+"activation": "Gobo3",
+"readout": "Physical"
+},
+{
+"name": "Gobo3SelectSpin",
+"pretty": "Select Spin",
+"feature": "Gobo.Gobo",
+"unit": "AngularSpeed",
+"main": "Gobo3",
+"activation": "Gobo3",
+"readout": "Physical"
+},
+{
+"name": "Gobo3SelectShake",
+"pretty": "Select Shake",
+"feature": "Gobo.Gobo",
+"special": "GoboSelectShake",
+"unit": "Frequency",
+"main": "Gobo3",
+"activation": "Gobo3",
+"readout": "Physical"
+},
+{
+"name": "Gobo3SelectEffects",
+"pretty": "Select Effects",
+"feature": "Gobo.Gobo",
+"main": "Gobo3",
+"activation": "Gobo3"
+},
+{
+"name": "Gobo3WheelIndex",
+"pretty": "Wheel Index",
+"feature": "Gobo.Gobo",
+"unit": "Angle",
+"main": "Gobo3",
+"activation": "Gobo3",
+"readout": "Physical"
+},
+{
+"name": "Gobo3WheelSpin",
+"pretty": "Wheel Spin",
+"feature": "Gobo.Gobo",
+"special": "GoboWheelSpin",
+"unit": "AngularSpeed",
+"main": "Gobo3",
+"activation": "Gobo3",
+"readout": "Physical"
+},
+{
+"name": "Gobo3WheelShake",
+"pretty": "Wheel Shake",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "Gobo3",
+"activation": "Gobo3",
+"readout": "Physical"
+},
+{
+"name": "Gobo3WheelRandom",
+"pretty": "Wheel Random",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "Gobo3",
+"activation": "Gobo3",
+"readout": "Physical"
+},
+{
+"name": "Gobo3WheelAudio",
+"pretty": "Wheel Audio",
+"feature": "Gobo.Gobo",
+"main": "Gobo3",
+"activation": "Gobo3"
+},
+{
+"name": "Gobo3Pos",
+"pretty": "G3 <>",
+"feature": "Gobo.Gobo",
+"special": "GoboPos",
+"unit": "Angle",
+"activation": "Gobo3Pos",
+"readout": "Physical"
+},
+{
+"name": "Gobo3PosRotate",
+"pretty": "Rotate",
+"feature": "Gobo.Gobo",
+"special": "GoboPosRotate",
+"unit": "AngularSpeed",
+"main": "Gobo3Pos",
+"activation": "Gobo3Pos",
+"readout": "Physical"
+},
+{
+"name": "Gobo3PosShake",
+"pretty": "Shake",
+"feature": "Gobo.Gobo",
+"special": "GoboPosShake",
+"unit": "Frequency",
+"main": "Gobo3Pos",
+"activation": "Gobo3Pos",
+"readout": "Physical"
+},
+{
+"name": "AnimationWheel1",
+"pretty": "Anim1",
+"feature": "Gobo.Gobo",
+"activation": "AnimationWheel1"
+},
+{
+"name": "AnimationWheel1Audio",
+"pretty": "Anim1 Audio",
+"feature": "Gobo.Gobo",
+"main": "AnimationWheel1",
+"activation": "AnimationWheel1"
+},
+{
+"name": "AnimationWheel1Macro",
+"pretty": "Anim1 FX",
+"feature": "Gobo.Gobo",
+"main": "AnimationWheel1",
+"activation": "AnimationWheel1"
+},
+{
+"name": "AnimationWheel1Random",
+"pretty": "Anim1 Random",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "AnimationWheel1",
+"activation": "AnimationWheel1",
+"readout": "Physical"
+},
+{
+"name": "AnimationWheel1SelectEffects",
+"pretty": "Anim1 Select FX",
+"feature": "Gobo.Gobo",
+"main": "AnimationWheel1",
+"activation": "AnimationWheel1"
+},
+{
+"name": "AnimationWheel1SelectShake",
+"pretty": "Anim1 Select Shake",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "AnimationWheel1",
+"activation": "AnimationWheel1",
+"readout": "Physical"
+},
+{
+"name": "AnimationWheel1SelectSpin",
+"pretty": "Anim1 Select Spin",
+"feature": "Gobo.Gobo",
+"unit": "AngularSpeed",
+"main": "AnimationWheel1",
+"activation": "AnimationWheel1",
+"readout": "Physical"
+},
+{
+"name": "AnimationWheel1Pos",
+"pretty": "Anim Pos",
+"feature": "Gobo.Gobo",
+"unit": "Angle",
+"activation": "AnimationWheel1Pos",
+"readout": "Physical"
+},
+{
+"name": "AnimationWheel1PosRotate",
+"pretty": "Anim1 Rotate",
+"feature": "Gobo.Gobo",
+"unit": "AngularSpeed",
+"main": "AnimationWheel1Pos",
+"activation": "AnimationWheel1Pos",
+"readout": "Physical"
+},
+{
+"name": "AnimationWheel1PosShake",
+"pretty": "Anim1 Shake",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "AnimationWheel1Pos",
+"activation": "AnimationWheel1Pos",
+"readout": "Physical"
+},
+{
+"name": "AnimationSystem1",
+"pretty": "Anim System1",
+"feature": "Gobo.Gobo",
+"unit": "Percent",
+"activation": "AnimationSystem1"
+},
+{
+"name": "AnimationSystem1Ramp",
+"pretty": "Anim System1 Ramp",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "AnimationSystem1",
+"activation": "AnimationSystem1",
+"readout": "Physical"
+},
+{
+"name": "AnimationSystem1Shake",
+"pretty": "Anim System1 Shake",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "AnimationSystem1",
+"activation": "AnimationSystem1",
+"readout": "Physical"
+},
+{
+"name": "AnimationSystem1Audio",
+"pretty": "Anim System1 Audio",
+"feature": "Gobo.Gobo",
+"main": "AnimationSystem1",
+"activation": "AnimationSystem1"
+},
+{
+"name": "AnimationSystem1Random",
+"pretty": "Anim System1 Random",
+"feature": "Gobo.Gobo",
+"main": "AnimationSystem1",
+"activation": "AnimationSystem1"
+},
+{
+"name": "AnimationSystem1Pos",
+"pretty": "Anim System1 Pos",
+"feature": "Gobo.Gobo",
+"unit": "Angle",
+"activation": "AnimationSystem1Pos",
+"readout": "Physical"
+},
+{
+"name": "AnimationSystem1PosRotate",
+"pretty": "Anim System1 Rotate",
+"feature": "Gobo.Gobo",
+"unit": "AngularSpeed",
+"main": "AnimationSystem1Pos",
+"activation": "AnimationSystem1Pos",
+"readout": "Physical"
+},
+{
+"name": "AnimationSystem1PosShake",
+"pretty": "Anim System1 Shake",
+"feature": "Gobo.Gobo",
+"unit": "Frequency",
+"main": "AnimationSystem1Pos",
+"activation": "AnimationSystem1Pos",
+"readout": "Physical"
+},
+{
+"name": "AnimationSystem1PosRandom",
+"pretty": "Anim System1 Rot Random",
+"feature": "Gobo.Gobo",
+"main": "AnimationSystem1Pos",
+"activation": "AnimationSystem1Pos"
+},
+{
+"name": "AnimationSystem1PosAudio",
+"pretty": "Anim System1 Rot Audio",
+"feature": "Gobo.Gobo",
+"main": "AnimationSystem1Pos",
+"activation": "AnimationSystem1Pos"
+},
+{
+"name": "AnimationSystem1Macro",
+"pretty": "Anim System1 Macro",
+"feature": "Gobo.Gobo"
+},
+{
+"name": "MediaFolder1",
+"pretty": "Media Folder1",
+"feature": "Gobo.Media",
+"special": "Video",
+"readout": "Decimal8"
+},
+{
+"name": "MediaContent1",
+"pretty": "Media Content1",
+"feature": "Gobo.Media",
+"special": "Video",
+"readout": "Decimal8"
+},
+{
+"name": "ModelFolder1",
+"pretty": "Model Folder1",
+"feature": "Gobo.Media"
+},
+{
+"name": "ModelContent1",
+"pretty": "Model Content1",
+"feature": "Gobo.Media"
+},
+{
+"name": "Playmode",
+"pretty": "Playmode",
+"feature": "Gobo.Media",
+"special": "Video"
+},
+{
+"name": "PlayBegin",
+"pretty": "Play Begin",
+"feature": "Gobo.Media",
+"unit": "Time",
+"readout": "Physical"
+},
+{
+"name": "PlayEnd",
+"pretty": "Play End",
+"feature": "Gobo.Media",
+"unit": "Time",
+"readout": "Physical"
+},
+{
+"name": "PlaySpeed",
+"pretty": "Play Speed",
+"feature": "Gobo.Media",
+"special": "Video",
+"unit": "Percent",
+"readout": "Physical"
+},
+{
+"name": "Object",
+"pretty": "Object",
+"feature": "Gobo.Object",
+"special": "Video"
+},
+{
+"name": "Configuration",
+"pretty": "Config",
+"feature": "Gobo.Object",
+"special": "Video",
+"readout": "Decimal8"
+},
+{
+"name": "ColorEffects1",
+"pretty": "Color FX1",
+"feature": "Color.Color"
+},
+{
+"name": "Color1",
+"pretty": "C1",
+"feature": "Color.Color",
+"special": "Color",
+"readout": "Physical"
+},
+{
+"name": "Color1WheelIndex",
+"pretty": "Wheel Index",
+"feature": "Color.Color",
+"unit": "Angle",
+"main": "Color1",
+"readout": "Physical"
+},
+{
+"name": "Color1WheelSpin",
+"pretty": "Wheel Spin",
+"feature": "Color.Color",
+"special": "ColorWheelSpin",
+"unit": "AngularSpeed",
+"main": "Color1",
+"readout": "Physical"
+},
+{
+"name": "Color1WheelRandom",
+"pretty": "Wheel Random",
+"feature": "Color.Color",
+"unit": "Frequency",
+"main": "Color1",
+"readout": "Physical"
+},
+{
+"name": "Color1WheelAudio",
+"pretty": "Wheel Audio",
+"feature": "Color.Color",
+"main": "Color1"
+},
+{
+"name": "Color2",
+"pretty": "C2",
+"feature": "Color.Color",
+"special": "Color",
+"readout": "Physical"
+},
+{
+"name": "Color2WheelIndex",
+"pretty": "Wheel Index",
+"feature": "Color.Color",
+"unit": "Angle",
+"main": "Color2",
+"readout": "Physical"
+},
+{
+"name": "Color2WheelSpin",
+"pretty": "Wheel Spin",
+"feature": "Color.Color",
+"special": "ColorWheelSpin",
+"unit": "AngularSpeed",
+"main": "Color2",
+"readout": "Physical"
+},
+{
+"name": "Color2WheelRandom",
+"pretty": "Wheel Random",
+"feature": "Color.Color",
+"unit": "Frequency",
+"main": "Color2",
+"readout": "Physical"
+},
+{
+"name": "Color2WheelAudio",
+"pretty": "Wheel Audio",
+"feature": "Color.Color",
+"main": "Color2"
+},
+{
+"name": "Color3",
+"pretty": "C3",
+"feature": "Color.Color",
+"special": "Color",
+"readout": "Physical"
+},
+{
+"name": "Color3WheelIndex",
+"pretty": "Wheel Index",
+"feature": "Color.Color",
+"unit": "Angle",
+"main": "Color3",
+"readout": "Physical"
+},
+{
+"name": "Color3WheelSpin",
+"pretty": "Wheel Spin",
+"feature": "Color.Color",
+"special": "ColorWheelSpin",
+"unit": "AngularSpeed",
+"main": "Color3",
+"readout": "Physical"
+},
+{
+"name": "Color3WheelRandom",
+"pretty": "Wheel Random",
+"feature": "Color.Color",
+"unit": "Frequency",
+"main": "Color3",
+"readout": "Physical"
+},
+{
+"name": "Color3WheelAudio",
+"pretty": "Wheel Audio",
+"feature": "Color.Color",
+"main": "Color3"
+},
+{
+"name": "Color4",
+"pretty": "C4",
+"feature": "Color.Color",
+"special": "Color",
+"readout": "Physical"
+},
+{
+"name": "Color4WheelIndex",
+"pretty": "Wheel Index",
+"feature": "Color.Color",
+"unit": "Angle",
+"main": "Color4",
+"readout": "Physical"
+},
+{
+"name": "Color4WheelSpin",
+"pretty": "Wheel Spin",
+"feature": "Color.Color",
+"special": "ColorWheelSpin",
+"unit": "AngularSpeed",
+"main": "Color4",
+"readout": "Physical"
+},
+{
+"name": "Color4WheelRandom",
+"pretty": "Wheel Random",
+"feature": "Color.Color",
+"unit": "Frequency",
+"main": "Color4",
+"readout": "Physical"
+},
+{
+"name": "Color4WheelAudio",
+"pretty": "Wheel Audio",
+"feature": "Color.Color",
+"main": "Color4"
+},
+{
+"name": "ColorRGB_R",
+"pretty": "R",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_G",
+"pretty": "G",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_B",
+"pretty": "B",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_C",
+"pretty": "C",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_M",
+"pretty": "M",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_Y",
+"pretty": "Y",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_RY",
+"pretty": "Amber",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_GY",
+"pretty": "Lime",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_GC",
+"pretty": "Blue-Green",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_BC",
+"pretty": "Light-Blue",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_BM",
+"pretty": "Purple",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_RM",
+"pretty": "Pink",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_W",
+"pretty": "W",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_WW",
+"pretty": "WW",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_CW",
+"pretty": "CW",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorRGB_UV",
+"pretty": "UV",
+"feature": "Color.RGB",
+"special": "ColorRGB",
+"unit": "ColorComponent",
+"activation": "ColorRGB"
+},
+{
+"name": "ColorMacro",
+"pretty": "Color Macro",
+"feature": "Color.RGB"
+},
+{
+"name": "ColorMacro2",
+"pretty": "Color Macro 2",
+"feature": "Color.RGB"
+},
+{
+"name": "CTO",
+"pretty": "CTO",
+"feature": "Color.Color",
+"special": "CTO",
+"unit": "Temperature",
+"readout": "Physical"
+},
+{
+"name": "CTC",
+"pretty": "CTC",
+"feature": "Color.Color",
+"special": "CTC",
+"unit": "Temperature",
+"readout": "Physical"
+},
+{
+"name": "CTB",
+"pretty": "CTB",
+"feature": "Color.Color",
+"special": "CTB",
+"unit": "Temperature",
+"readout": "Physical"
+},
+{
+"name": "Tint",
+"pretty": "Tint",
+"feature": "Color.Color"
+},
+{
+"name": "HSB_Hue",
+"pretty": "H",
+"feature": "Color.HSB",
+"special": "HSB",
+"unit": "Angle",
+"activation": "ColorHSB",
+"readout": "Physical"
+},
+{
+"name": "HSB_Saturation",
+"pretty": "S",
+"feature": "Color.HSB",
+"special": "HSB",
+"unit": "Percent",
+"activation": "ColorHSB",
+"readout": "Physical"
+},
+{
+"name": "HSB_Brightness",
+"pretty": "B",
+"feature": "Color.HSB",
+"special": "HSB",
+"unit": "Percent",
+"activation": "ColorHSB",
+"readout": "Physical"
+},
+{
+"name": "HSB_Quality",
+"pretty": "Q",
+"feature": "Color.HSB",
+"unit": "Percent",
+"activation": "ColorHSB",
+"readout": "Physical"
+},
+{
+"name": "CIE_X",
+"pretty": "X",
+"feature": "Color.CIE",
+"special": "CIE",
+"activation": "ColorCIE",
+"readout": "Physical"
+},
+{
+"name": "CIE_Y",
+"pretty": "Y",
+"feature": "Color.CIE",
+"special": "CIE",
+"activation": "ColorCIE",
+"readout": "Physical"
+},
+{
+"name": "CIE_Brightness",
+"pretty": "B",
+"feature": "Color.CIE",
+"special": "CIE",
+"unit": "Percent",
+"activation": "ColorCIE",
+"readout": "Physical"
+},
+{
+"name": "VideoBoost_R",
+"pretty": "Boost R",
+"feature": "Color.ColorCorrection"
+},
+{
+"name": "VideoBoost_G",
+"pretty": "Boost G",
+"feature": "Color.ColorCorrection"
+},
+{
+"name": "VideoBoost_B",
+"pretty": "Boost B",
+"feature": "Color.ColorCorrection"
+},
+{
+"name": "VideoHueShift",
+"pretty": "Hue Shift",
+"feature": "Color.HSBC_Shift",
+"unit": "Angle",
+"readout": "Physical"
+},
+{
+"name": "VideoSaturation",
+"pretty": "S",
+"feature": "Color.HSBC_Shift",
+"unit": "Percent",
+"readout": "Physical"
+},
+{
+"name": "VideoBrightness",
+"pretty": "B",
+"feature": "Color.HSBC_Shift",
+"unit": "Percent",
+"readout": "Physical"
+},
+{
+"name": "VideoContrast",
+"pretty": "C",
+"feature": "Color.HSBC_Shift",
+"unit": "Percent",
+"readout": "Physical"
+},
+{
+"name": "VideoKeyColor_R",
+"pretty": "R",
+"feature": "Color.ColorKey"
+},
+{
+"name": "VideoKeyColor_G",
+"pretty": "G",
+"feature": "Color.ColorKey"
+},
+{
+"name": "VideoKeyColor_B",
+"pretty": "B",
+"feature": "Color.ColorKey"
+},
+{
+"name": "VideoKeyIntensity",
+"pretty": "Intensity",
+"feature": "Color.ColorKey",
+"unit": "Percent",
+"readout": "Physical"
+},
+{
+"name": "VideoKeyTolerance",
+"pretty": "Tolerance",
+"feature": "Color.ColorKey"
+},
+{
+"name": "StrobeDuration",
+"pretty": "Strobe Duration",
+"feature": "Beam.Beam",
+"unit": "Time",
+"readout": "Physical"
+},
+{
+"name": "StrobeRate",
+"pretty": "Strobe Rate",
+"feature": "Beam.Beam",
+"readout": "Physical"
+},
+{
+"name": "Shutter1",
+"pretty": "Sh1",
+"feature": "Beam.Beam",
+"special": "Shutter"
+},
+{
+"name": "Shutter1Strobe",
+"pretty": "Strobe",
+"feature": "Beam.Beam",
+"special": "Shutter",
+"unit": "Frequency",
+"main": "Shutter1",
+"readout": "Physical"
+},
+{
+"name": "Shutter1StrobePulse",
+"pretty": "Pulse",
+"feature": "Beam.Beam",
+"special": "Shutter",
+"unit": "Frequency",
+"main": "Shutter1",
+"readout": "Physical"
+},
+{
+"name": "Shutter1StrobePulseClose",
+"pretty": "Pulse Close",
+"feature": "Beam.Beam",
+"special": "Shutter",
+"unit": "Frequency",
+"main": "Shutter1",
+"readout": "Physical"
+},
+{
+"name": "Shutter1StrobePulseOpen",
+"pretty": "Pulse Open",
+"feature": "Beam.Beam",
+"special": "Shutter",
+"unit": "Frequency",
+"main": "Shutter1",
+"readout": "Physical"
+},
+{
+"name": "Shutter1StrobeRandom",
+"pretty": "Random",
+"feature": "Beam.Beam",
+"special": "Shutter",
+"unit": "Frequency",
+"main": "Shutter1",
+"readout": "Physical"
+},
+{
+"name": "Shutter1StrobeRandomPulse",
+"pretty": "Random Pulse",
+"feature": "Beam.Beam",
+"special": "Shutter",
+"unit": "Frequency",
+"main": "Shutter1",
+"readout": "Physical"
+},
+{
+"name": "Shutter1StrobeRandomPulseClose",
+"pretty": "Random Pulse Close",
+"feature": "Beam.Beam",
+"special": "Shutter",
+"unit": "Frequency",
+"main": "Shutter1",
+"readout": "Physical"
+},
+{
+"name": "Shutter1StrobeRandomPulseOpen",
+"pretty": "Random Pulse Open",
+"feature": "Beam.Beam",
+"special": "Shutter",
+"unit": "Frequency",
+"main": "Shutter1",
+"readout": "Physical"
+},
+{
+"name": "Shutter1StrobeEffect",
+"pretty": "Effect1",
+"feature": "Beam.Beam",
+"special": "Shutter",
+"unit": "Frequency",
+"main": "Shutter1",
+"readout": "Physical"
+},
+{
+"name": "Iris",
+"pretty": "Iris",
+"feature": "Beam.Beam",
+"special": "Iris"
+},
+{
+"name": "IrisStrobe",
+"pretty": "Strobe",
+"feature": "Beam.Beam",
+"special": "Iris",
+"unit": "Frequency",
+"main": "Iris",
+"readout": "Physical"
+},
+{
+"name": "IrisStrobeRandom",
+"pretty": "Random Strobe",
+"feature": "Beam.Beam",
+"special": "Iris",
+"unit": "Frequency",
+"main": "Iris",
+"readout": "Physical"
+},
+{
+"name": "IrisPulseClose",
+"pretty": "Pulse Close",
+"feature": "Beam.Beam",
+"special": "Iris",
+"unit": "Frequency",
+"main": "Iris",
+"readout": "Physical"
+},
+{
+"name": "IrisPulseOpen",
+"pretty": "Pulse Open",
+"feature": "Beam.Beam",
+"special": "Iris",
+"unit": "Frequency",
+"main": "Iris",
+"readout": "Physical"
+},
+{
+"name": "IrisRandomPulseClose",
+"pretty": "Random Pulse Close",
+"feature": "Beam.Beam",
+"special": "Iris",
+"unit": "Frequency",
+"main": "Iris",
+"readout": "Physical"
+},
+{
+"name": "IrisRandomPulseOpen",
+"pretty": "Random Pulse Open",
+"feature": "Beam.Beam",
+"special": "Iris",
+"unit": "Frequency",
+"main": "Iris",
+"readout": "Physical"
+},
+{
+"name": "Frost1",
+"pretty": "Frost1",
+"feature": "Beam.Beam",
+"special": "Frost"
+},
+{
+"name": "Frost1PulseOpen",
+"pretty": "Pulse Open1",
+"feature": "Beam.Beam",
+"unit": "Frequency",
+"main": "Frost1",
+"readout": "Physical"
+},
+{
+"name": "Frost1PulseClose",
+"pretty": "Pulse Close1",
+"feature": "Beam.Beam",
+"unit": "Frequency",
+"main": "Frost1",
+"readout": "Physical"
+},
+{
+"name": "Frost1Ramp",
+"pretty": "Ramp1",
+"feature": "Beam.Beam",
+"unit": "Frequency",
+"main": "Frost1",
+"readout": "Physical"
+},
+{
+"name": "Frost2",
+"pretty": "Frost2",
+"feature": "Beam.Beam",
+"special": "Frost"
+},
+{
+"name": "Frost2PulseOpen",
+"pretty": "Pulse Open2",
+"feature": "Beam.Beam",
+"unit": "Frequency",
+"main": "Frost2",
+"readout": "Physical"
+},
+{
+"name": "Frost2PulseClose",
+"pretty": "Pulse Close2",
+"feature": "Beam.Beam",
+"unit": "Frequency",
+"main": "Frost2",
+"readout": "Physical"
+},
+{
+"name": "Frost2Ramp",
+"pretty": "Ramp2",
+"feature": "Beam.Beam",
+"unit": "Frequency",
+"main": "Frost2",
+"readout": "Physical"
+},
+{
+"name": "Prism1",
+"pretty": "Prism1",
+"feature": "Beam.Beam",
+"special": "Prism",
+"activation": "Prism"
+},
+{
+"name": "Prism1SelectSpin",
+"pretty": "Select Spin",
+"feature": "Beam.Beam",
+"unit": "AngularSpeed",
+"main": "Prism1",
+"activation": "Prism",
+"readout": "Physical"
+},
+{
+"name": "Prism1Macro",
+"pretty": "Prism1 Macro",
+"feature": "Beam.Beam",
+"main": "Prism1",
+"activation": "Prism"
+},
+{
+"name": "Prism1Pos",
+"pretty": "Prism1 Pos",
+"feature": "Beam.Beam",
+"special": "PrismPos",
+"unit": "Angle",
+"activation": "Prism",
+"readout": "Physical"
+},
+{
+"name": "Prism1PosRotate",
+"pretty": "Rotate1",
+"feature": "Beam.Beam",
+"special": "PrismPosRotate",
+"unit": "AngularSpeed",
+"main": "Prism1Pos",
+"activation": "Prism",
+"readout": "Physical"
+},
+{
+"name": "Prism2",
+"pretty": "Prism2",
+"feature": "Beam.Beam",
+"special": "Prism",
+"activation": "Prism"
+},
+{
+"name": "Prism2SelectSpin",
+"pretty": "Select Spin",
+"feature": "Beam.Beam",
+"unit": "AngularSpeed",
+"main": "Prism2",
+"activation": "Prism",
+"readout": "Physical"
+},
+{
+"name": "Prism2Macro",
+"pretty": "Prism2 Macro",
+"feature": "Beam.Beam",
+"main": "Prism2",
+"activation": "Prism"
+},
+{
+"name": "Prism2Pos",
+"pretty": "Prism2 Pos",
+"feature": "Beam.Beam",
+"special": "PrismPos",
+"unit": "Angle",
+"activation": "Prism",
+"readout": "Physical"
+},
+{
+"name": "Prism2PosRotate",
+"pretty": "Rotate",
+"feature": "Beam.Beam",
+"special": "PrismPosRotate",
+"unit": "AngularSpeed",
+"main": "Prism2Pos",
+"activation": "Prism",
+"readout": "Physical"
+},
+{
+"name": "Effects1",
+"pretty": "FX1",
+"feature": "Beam.Beam"
+},
+{
+"name": "Effects1Rate",
+"pretty": "FX1 Rate",
+"feature": "Beam.Beam",
+"unit": "Speed",
+"readout": "Physical"
+},
+{
+"name": "Effects1Fade",
+"pretty": "FX1 Fade",
+"feature": "Beam.Beam",
+"readout": "Physical"
+},
+{
+"name": "Effects1Adjust1",
+"pretty": "FX1 Adjust1",
+"feature": "Beam.Beam"
+},
+{
+"name": "Effects1Pos",
+"pretty": "FX1 Pos",
+"feature": "Beam.Beam",
+"unit": "Angle",
+"readout": "Physical"
+},
+{
+"name": "Effects1PosRotate",
+"pretty": "FX1 Rotate",
+"feature": "Beam.Beam",
+"unit": "AngularSpeed",
+"main": "Effects1Pos",
+"readout": "Physical"
+},
+{
+"name": "Effects2",
+"pretty": "FX2",
+"feature": "Beam.Beam"
+},
+{
+"name": "Effects2Rate",
+"pretty": "FX2 Rate",
+"feature": "Beam.Beam",
+"unit": "Speed",
+"readout": "Physical"
+},
+{
+"name": "Effects2Fade",
+"pretty": "FX2 Fade",
+"feature": "Beam.Beam",
+"readout": "Physical"
+},
+{
+"name": "Effects2Adjust1",
+"pretty": "FX2 Adjust1",
+"feature": "Beam.Beam"
+},
+{
+"name": "Effects2Pos",
+"pretty": "FX2 Pos",
+"feature": "Beam.Beam",
+"unit": "Angle",
+"readout": "Physical"
+},
+{
+"name": "Effects2PosRotate",
+"pretty": "FX2 Rotate",
+"feature": "Beam.Beam",
+"unit": "AngularSpeed",
+"main": "Effects2Pos",
+"readout": "Physical"
+},
+{
+"name": "EffectsSync",
+"pretty": "FX Sync",
+"feature": "Beam.Beam"
+},
+{
+"name": "BeamShaper",
+"pretty": "Beam Shaper",
+"feature": "Beam.Beam",
+"activation": "BeamShaper"
+},
+{
+"name": "BeamShaperMacro",
+"pretty": "Beam Shaper Macro",
+"feature": "Beam.Beam",
+"activation": "BeamShaper"
+},
+{
+"name": "BeamShaperPos",
+"pretty": "Beam Shaper <>",
+"feature": "Beam.Beam",
+"activation": "BeamShaper",
+"readout": "Physical"
+},
+{
+"name": "BeamShaperPosRotate",
+"pretty": "Beam Shaper Rotate",
+"feature": "Beam.Beam",
+"activation": "BeamShaper",
+"readout": "Physical"
+},
+{
+"name": "Focus1",
+"pretty": "Focus",
+"feature": "Focus.Focus",
+"special": "Focus"
+},
+{
+"name": "Focus1Adjust",
+"pretty": "Focus1 Adjust",
+"feature": "Focus.Focus"
+},
+{
+"name": "Focus1Distance",
+"pretty": "Focus1 Distance",
+"feature": "Focus.Focus",
+"unit": "Length",
+"readout": "Physical"
+},
+{
+"name": "Focus2",
+"pretty": "Focus2",
+"feature": "Focus.Focus",
+"special": "Focus"
+},
+{
+"name": "Focus2Adjust",
+"pretty": "Focus2 Adjust",
+"feature": "Focus.Focus"
+},
+{
+"name": "Focus2Distance",
+"pretty": "Focus2 Distance",
+"feature": "Focus.Focus",
+"unit": "Length",
+"readout": "Physical"
+},
+{
+"name": "Zoom",
+"pretty": "Zoom",
+"feature": "Focus.Focus",
+"special": "Zoom",
+"unit": "Angle",
+"readout": "Physical"
+},
+{
+"name": "ZoomModeSpot",
+"pretty": "Zoom Spot",
+"feature": "Focus.Focus",
+"unit": "Angle",
+"readout": "Physical"
+},
+{
+"name": "ZoomModeBeam",
+"pretty": "Zoom Beam",
+"feature": "Focus.Focus",
+"unit": "Angle",
+"readout": "Physical"
+},
+{
+"name": "Control1",
+"pretty": "Ctrl1",
+"feature": "Control.Control"
+},
+{
+"name": "DimmerMode",
+"pretty": "Dim Mode",
+"feature": "Control.Control"
+},
+{
+"name": "DimmerCurve",
+"pretty": "Dim Curve",
+"feature": "Control.Control"
+},
+{
+"name": "BlackoutMode",
+"pretty": "Blackout Mode",
+"feature": "Control.Control"
+},
+{
+"name": "LEDFrequency",
+"pretty": "LED Frequency",
+"feature": "Control.Control"
+},
+{
+"name": "LEDZoneMode",
+"pretty": "LED Zone Mode",
+"feature": "Control.Control"
+},
+{
+"name": "PixelMode",
+"pretty": "Pixel Mode",
+"feature": "Control.Control"
+},
+{
+"name": "PanMode",
+"pretty": "Pan Mode",
+"feature": "Control.Control"
+},
+{
+"name": "TiltMode",
+"pretty": "Tilt Mode",
+"feature": "Control.Control"
+},
+{
+"name": "PanTiltMode",
+"pretty": "PanTilt Mode",
+"feature": "Control.Control"
+},
+{
+"name": "PositionModes",
+"pretty": "Pos Modes",
+"feature": "Control.Control"
+},
+{
+"name": "Gobo1WheelMode",
+"pretty": "G1 Mode",
+"feature": "Control.Control"
+},
+{
+"name": "Gobo2WheelMode",
+"pretty": "G2 Mode",
+"feature": "Control.Control"
+},
+{
+"name": "Gobo3WheelMode",
+"pretty": "G3 Mode",
+"feature": "Control.Control"
+},
+{
+"name": "AnimationWheel1Mode",
+"pretty": "Anim1 Mode",
+"feature": "Control.Control"
+},
+{
+"name": "AnimationIndexRotateMode",
+"pretty": "Anim Index Rot Mode",
+"feature": "Control.Control"
+},
+{
+"name": "AnimationWheelShortcutMode",
+"pretty": "Anim Shortcut Mode",
+"feature": "Control.Control"
+},
+{
+"name": "Color1Mode",
+"pretty": "C1 Mode",
+"feature": "Control.Control"
+},
+{
+"name": "Color2Mode",
+"pretty": "C2 Mode",
+"feature": "Control.Control"
+},
+{
+"name": "Color3Mode",
+"pretty": "C3 Mode",
+"feature": "Control.Control"
+},
+{
+"name": "Color4Mode",
+"pretty": "C4 Mode",
+"feature": "Control.Control"
+},
+{
+"name": "ColorWheelShortcutMode",
+"pretty": "Color Wheel Shortcut Mode",
+"feature": "Control.Control"
+},
+{
+"name": "CyanMode",
+"pretty": "Cyan Mode",
+"feature": "Control.Control"
+},
+{
+"name": "MagentaMode",
+"pretty": "Magenta Mode",
+"feature": "Control.Control"
+},
+{
+"name": "YellowMode",
+"pretty": "Yellow Mode",
+"feature": "Control.Control"
+},
+{
+"name": "ColorMixMode",
+"pretty": "Color Mix Mode",
+"feature": "Control.Control"
+},
+{
+"name": "ChromaticMode",
+"pretty": "Chroma Mode",
+"feature": "Control.Control"
+},
+{
+"name": "ColorCalibrationMode",
+"pretty": "CCalib Mode",
+"feature": "Control.Control"
+},
+{
+"name": "ColorConsistency",
+"pretty": "Color consistency",
+"feature": "Control.Control"
+},
+{
+"name": "ColorControl",
+"pretty": "Color Ctrl",
+"feature": "Control.Control"
+},
+{
+"name": "ColorModelMode",
+"pretty": "ColorModel",
+"feature": "Control.Control"
+},
+{
+"name": "ColorSettingsReset",
+"pretty": "Color Ctrl Rst",
+"feature": "Control.Control"
+},
+{
+"name": "ColorUniformity",
+"pretty": "ColorUniform",
+"feature": "Control.Control"
+},
+{
+"name": "CRIMode",
+"pretty": "CRI Mode",
+"feature": "Control.Control"
+},
+{
+"name": "CustomColor",
+"pretty": "Custom Color",
+"feature": "Control.Control"
+},
+{
+"name": "UVStability",
+"pretty": "UV Stab",
+"feature": "Control.Control"
+},
+{
+"name": "WavelengthCorrection",
+"pretty": "WaveLength",
+"feature": "Control.Control"
+},
+{
+"name": "White Count",
+"pretty": "White Count",
+"feature": "Control.Control"
+},
+{
+"name": "StrobeMode",
+"pretty": "Strobe Mode",
+"feature": "Control.Control"
+},
+{
+"name": "ZoomMode",
+"pretty": "Zoom Mode",
+"feature": "Control.Control"
+},
+{
+"name": "FocusMode",
+"pretty": "Focus Mode",
+"feature": "Control.Control"
+},
+{
+"name": "IrisMode",
+"pretty": "Iris Mode",
+"feature": "Control.Control"
+},
+{
+"name": "FanMode",
+"pretty": "Fan Mode",
+"feature": "Control.Control"
+},
+{
+"name": "FollowSpotMode",
+"pretty": "FollowSpot Mode",
+"feature": "Control.Control"
+},
+{
+"name": "BeamEffectIndexRotateMode",
+"pretty": "Beam Effect Index Rotate Mode",
+"feature": "Control.Control"
+},
+{
+"name": "IntensityMSpeed",
+"pretty": "Intensity MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "PositionMSpeed",
+"pretty": "Pos MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "ColorMixMSpeed",
+"pretty": "Color Mix MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "ColorWheelSelectMSpeed",
+"pretty": "Color Wheel Select MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "GoboWheel1MSpeed",
+"pretty": "Gobo Wheel1 MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "GoboWheel2MSpeed",
+"pretty": "Gobo Wheel2 MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "GoboWheel3MSpeed",
+"pretty": "Gobo Wheel3 MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "GoboWheel4MSpeed",
+"pretty": "Gobo Wheel4 MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "IrisMSpeed",
+"pretty": "Iris MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "Prism1MSpeed",
+"pretty": "Prism1 MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "Prism2MSpeed",
+"pretty": "Prism2 MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "FocusMSpeed",
+"pretty": "Focus MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "Frost1MSpeed",
+"pretty": "Frost1 MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "Frost2MSpeed",
+"pretty": "Frost2 MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "FrameMSpeed",
+"pretty": "Frame MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "GlobalMSpeed",
+"pretty": "Global MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "ZoomMSpeed",
+"pretty": "Zoom MSpeed",
+"feature": "Control.Control"
+},
+{
+"name": "ReflectorAdjust",
+"pretty": "Reflector Adj",
+"feature": "Control.Control"
+},
+{
+"name": "FixtureGlobalReset",
+"pretty": "Fixture Global Reset",
+"feature": "Control.Control"
+},
+{
+"name": "ShutterReset",
+"pretty": "Shutter Reset",
+"feature": "Control.Control"
+},
+{
+"name": "BeamReset",
+"pretty": "Beam Reset",
+"feature": "Control.Control"
+},
+{
+"name": "ColorMixReset",
+"pretty": "Color Mix Reset",
+"feature": "Control.Control"
+},
+{
+"name": "ColorWheelReset",
+"pretty": "Color Wheel Reset",
+"feature": "Control.Control"
+},
+{
+"name": "FocusReset",
+"pretty": "Focus Reset",
+"feature": "Control.Control"
+},
+{
+"name": "FrameReset",
+"pretty": "Frame Reset",
+"feature": "Control.Control"
+},
+{
+"name": "GoboWheelReset",
+"pretty": "G Reset",
+"feature": "Control.Control"
+},
+{
+"name": "IntensityReset",
+"pretty": "Intensity Reset",
+"feature": "Control.Control"
+},
+{
+"name": "IrisReset",
+"pretty": "Iris Reset",
+"feature": "Control.Control"
+},
+{
+"name": "PositionReset",
+"pretty": "Pos Reset",
+"feature": "Control.Control"
+},
+{
+"name": "PanReset",
+"pretty": "Pan Reset",
+"feature": "Control.Control"
+},
+{
+"name": "TiltReset",
+"pretty": "Tilt Reset",
+"feature": "Control.Control"
+},
+{
+"name": "ZoomReset",
+"pretty": "Zoom Reset",
+"feature": "Control.Control"
+},
+{
+"name": "CTBReset",
+"pretty": "CTB Reset",
+"feature": "Control.Control"
+},
+{
+"name": "CTOReset",
+"pretty": "CTO Reset",
+"feature": "Control.Control"
+},
+{
+"name": "CTCReset",
+"pretty": "CTC Reset",
+"feature": "Control.Control"
+},
+{
+"name": "AnimationSystemReset",
+"pretty": "Anim System Reset",
+"feature": "Control.Control"
+},
+{
+"name": "FixtureCalibrationReset",
+"pretty": "Fixture Calibration Reset",
+"feature": "Control.Control"
+},
+{
+"name": "Function",
+"pretty": "Function",
+"feature": "Control.Control"
+},
+{
+"name": "LampControl",
+"pretty": "Lamp Ctrl",
+"feature": "Control.Control"
+},
+{
+"name": "DisplayIntensity",
+"pretty": "Display Int",
+"feature": "Control.Control"
+},
+{
+"name": "DMXInput",
+"pretty": "DMX Input",
+"feature": "Control.Control"
+},
+{
+"name": "NoFeature",
+"pretty": "NoFeature",
+"feature": "Control.Control",
+"special": "NoFeature"
+},
+{
+"name": "Dummy",
+"pretty": "Dummy",
+"feature": "Control.Control",
+"special": "Dummy"
+},
+{
+"name": "Blower1",
+"pretty": "Blower1",
+"feature": "Control.Control"
+},
+{
+"name": "Fan1",
+"pretty": "Fan1",
+"feature": "Control.Control"
+},
+{
+"name": "Fog1",
+"pretty": "Fog1",
+"feature": "Control.Control"
+},
+{
+"name": "Haze1",
+"pretty": "Haze1",
+"feature": "Control.Control"
+},
+{
+"name": "LampPowerMode",
+"pretty": "Lamp Power Mode",
+"feature": "Control.Control"
+},
+{
+"name": "Fans",
+"pretty": "Fans",
+"feature": "Control.Control"
+},
+{
+"name": "Blade1A",
+"pretty": "Blade 1A",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade1B",
+"pretty": "Blade 1B",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade2A",
+"pretty": "Blade 2A",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade2B",
+"pretty": "Blade 2B",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade3A",
+"pretty": "Blade 3A",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade3B",
+"pretty": "Blade 3B",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade4A",
+"pretty": "Blade 4A",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade4B",
+"pretty": "Blade 4B",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade1Rot",
+"pretty": "Blade1 Rot",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"unit": "Angle",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade2Rot",
+"pretty": "Blade2 Rot",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"unit": "Angle",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade3Rot",
+"pretty": "Blade3 Rot",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"unit": "Angle",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "Blade4Rot",
+"pretty": "Blade4 Rot",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"unit": "Angle",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "ShaperRot",
+"pretty": "Shaper Rot",
+"feature": "Shapers.Shapers",
+"special": "Blade",
+"unit": "Angle",
+"activation": "Shaper",
+"readout": "Physical"
+},
+{
+"name": "ShaperMacros",
+"pretty": "Shaper Macros",
+"feature": "Shapers.Shapers"
+},
+{
+"name": "ShaperMacrosSpeed",
+"pretty": "Shaper Macros Speed",
+"feature": "Shapers.Shapers"
+},
+{
+"name": "BladeSoft1A",
+"pretty": "BladeS 1A",
+"feature": "Shapers.Shapers",
+"readout": "Physical"
+},
+{
+"name": "BladeSoft1B",
+"pretty": "BladeS 1B",
+"feature": "Shapers.Shapers",
+"readout": "Physical"
+},
+{
+"name": "BladeSoft2A",
+"pretty": "BladeS 2A",
+"feature": "Shapers.Shapers",
+"readout": "Physical"
+},
+{
+"name": "BladeSoft2B",
+"pretty": "BladeS 2B",
+"feature": "Shapers.Shapers",
+"readout": "Physical"
+},
+{
+"name": "BladeSoft3A",
+"pretty": "BladeS 3A",
+"feature": "Shapers.Shapers",
+"readout": "Physical"
+},
+{
+"name": "BladeSoft3B",
+"pretty": "BladeS 3B",
+"feature": "Shapers.Shapers",
+"readout": "Physical"
+},
+{
+"name": "BladeSoft4A",
+"pretty": "BladeS 4A",
+"feature": "Shapers.Shapers",
+"readout": "Physical"
+},
+{
+"name": "BladeSoft4B",
+"pretty": "BladeS 4B",
+"feature": "Shapers.Shapers",
+"readout": "Physical"
+},
+{
+"name": "KeyStone1A",
+"pretty": "KS 1A",
+"feature": "Shapers.Shapers"
+},
+{
+"name": "KeyStone1B",
+"pretty": "KS 1B",
+"feature": "Shapers.Shapers"
+},
+{
+"name": "KeyStone2A",
+"pretty": "KS 2A",
+"feature": "Shapers.Shapers"
+},
+{
+"name": "KeyStone2B",
+"pretty": "KS 2B",
+"feature": "Shapers.Shapers"
+},
+{
+"name": "KeyStone3A",
+"pretty": "KS 3A",
+"feature": "Shapers.Shapers"
+},
+{
+"name": "KeyStone3B",
+"pretty": "KS 3B",
+"feature": "Shapers.Shapers"
+},
+{
+"name": "KeyStone4A",
+"pretty": "KS 4A",
+"feature": "Shapers.Shapers"
+},
+{
+"name": "KeyStone4B",
+"pretty": "KS 4B",
+"feature": "Shapers.Shapers"
+},
+{
+"name": "Video",
+"pretty": "Video",
+"feature": "Video.Video",
+"special": "Video"
+},
+{
+"name": "VideoEffect1Type",
+"pretty": "Video Effect1 Type",
+"feature": "Video.Video",
+"special": "Video"
+},
+{
+"name": "VideoEffect1Parameter1",
+"pretty": "Video Effect1 Parameter1",
+"feature": "Video.Video",
+"special": "Video"
+},
+{
+"name": "VideoCamera1",
+"pretty": "Video Camera1",
+"feature": "Video.Video",
+"special": "Video"
+},
+{
+"name": "FieldOfView",
+"pretty": "FOV",
+"feature": "Video.Video",
+"special": "Video",
+"unit": "Angle"
+},
+{
+"name": "InputSource",
+"pretty": "ISrc",
+"feature": "Video.Video",
+"special": "Video"
+},
+{
+"name": "VideoBlendMode",
+"pretty": "BlendMode",
+"feature": "Video.Video",
+"special": "Video"
+},
+{
+"name": "VideoSoundVolume1",
+"pretty": "Volume1",
+"feature": "Video.Video",
+"special": "Video",
+"unit": "Percent",
+"readout": "Physical"
+}
+]
+}

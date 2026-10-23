@@ -1,0 +1,424 @@
+<title>Tags Round Two</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+
+/* Layout: a mode switcher, then one fixed 1440×900 desk frame holding the Patch setup dialog (the 12d <luma-setup> frame: title row, left tabs = Luma layers, top strip, <luma-grid>, echo line, slab with power toggle); the Import MVR dialog opens over it; notes below. Palette: the 12d mockups + the user's concept (matte greys, one gold accent, status as small marks); the import tints follow a reference patcher, muted. */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --stripe: #2fa3b8; --stripe-off: #5a5a5a; --ok: #00a60a; --warn: #e08a00; --alert: #e10000; --del: #e05a5a;
+  --sel: #1d3550; --sel-line: #3f6fb0;
+  --t-new: #10320f; --t-new-edge: #1f6b1c; --t-diff: #3a2208; --t-diff-edge: #8a4c12;
+  --t-lost: #3a1010; --t-lost-edge: #8f2a2a; --t-guid: #0f2238; --t-guid-text: #b9c8d8;
+  --lane: #1e1c06; --lane-line: #383309; --lane-text: #ccc085;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 40px; }
+main { max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1 { margin: 0; font-size: 22px; font-weight: 400; text-wrap: balance; }
+.cap { margin: 0; color: var(--dim); max-width: 92ch; }
+.modes { display: flex; flex-wrap: wrap; gap: 6px; }
+.modes button { height: 40px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--dim); font: inherit; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.modes button[aria-pressed="true"] { background: #303030; color: var(--text); border-color: #5a5a5a; }
+.modes button .d { width: 8px; height: 8px; border-radius: 4px; }
+.well { overflow-x: auto; }
+.frame { width: 1440px; height: 900px; position: relative; overflow: hidden; background: var(--page); }
+.mono { font-family: var(--mono); }
+svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* setup dialog */
+.dlg { position: absolute; top: 20px; left: 40px; width: 1360px; height: 860px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+.title { height: 52px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 16px; border-bottom: 1px solid var(--line); }
+.title .name { font-size: 17px; font-weight: 500; }
+.chip { height: 30px; display: inline-flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; white-space: nowrap; }
+.chip .d { width: 8px; height: 8px; border-radius: 4px; }
+.chip.quiet { color: var(--dim); }
+.title .right { margin-left: auto; font-size: 12px; color: var(--faint); }
+.close { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: var(--text); }
+.mid { flex: 1; display: flex; min-height: 0; }
+.left { width: 176px; flex: none; border-right: 1px solid var(--cell-line); display: flex; flex-direction: column; overflow: hidden; }
+.lt { height: 62px; flex: none; border-bottom: 1px solid var(--cell); padding: 0 12px 0 18px; box-shadow: inset 5px 0 0 var(--stripe-off); display: flex; flex-direction: column; justify-content: center; gap: 3px; color: var(--dim); font-size: 15px; }
+.lt small { font-size: 12px; color: var(--dim); }
+.lt.on { background: var(--cell); color: var(--text); box-shadow: inset 5px 0 0 var(--stripe); }
+.lt.sub { padding-left: 34px; height: 52px; font-size: 14px; }
+.lt.add { color: var(--faint); height: 48px; box-shadow: none; }
+.lt .m { display: inline-flex; gap: 4px; margin-left: 4px; } .lt .m i { width: 7px; height: 7px; border-radius: 2px; display: inline-block; }
+.work { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.strip { height: 50px; flex: none; display: flex; gap: 6px; align-items: center; padding: 0 12px; border-bottom: 1px solid var(--cell-line); }
+.strip .tb { height: 44px; padding: 0 18px; border-radius: 6px; display: flex; align-items: center; font-size: 14px; color: var(--dim); }
+.strip .tb.on { background: #303030; color: var(--text); }
+.selbar { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.selbar .n { font-size: 13px; color: var(--dim); margin-right: 4px; }
+.sb { height: 44px; min-width: 52px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.sb.big { font-size: 15px; font-weight: 500; }
+.sb.lasso { border-style: dashed; color: var(--dim); gap: 6px; }
+.lane { height: 40px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 14px; background: var(--lane); border-bottom: 1px solid var(--lane-line); font-size: 13px; color: var(--dim); }
+.lane b { font-weight: 400; color: var(--lane-text); }
+.lane .k { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+.lane .k i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.lane .r { margin-left: auto; }
+.livebar { height: 40px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: #14241a; border-bottom: 1px solid #1f3b29; font-size: 13px; color: var(--dim); }
+.livebar b { font-weight: 400; color: #8fd19a; }
+.gridbox { flex: 1; overflow: hidden; }
+.grid { display: grid; grid-auto-rows: 48px; font-size: 14px; }
+.hd { background: var(--head); border-bottom: 1px solid var(--cell-line); border-right: 1px solid var(--cell); color: var(--dim); font-size: 12px; padding: 0 10px; display: flex; align-items: center; justify-content: space-between; white-space: nowrap; }
+.hd .k { color: var(--faint); }
+.hd.no { justify-content: center; border-right: 1px solid var(--cell-line); color: var(--faint); }
+.no { border-bottom: 1px solid var(--cell); border-right: 1px solid var(--cell-line); color: var(--dim); font-size: 13px; display: flex; align-items: center; justify-content: center; background: transparent; }
+.no.sel { background: var(--sel); color: var(--text); }
+.cl { margin: 3px 2px; border-radius: 4px; border: 1px solid var(--cell-line); background: var(--cell); color: var(--text); padding: 0 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; position: relative; font-size: 14px; }
+.cl.ro { border-color: transparent; background: transparent; color: var(--dim); }
+.cl.locked { border-color: transparent; background: transparent; color: var(--faint); }
+.cl.sel { background: var(--sel); border-color: var(--sel-line); }
+.cl .st2 { display: flex; flex-direction: column; line-height: 1.12; min-width: 0; }
+.cl .sub { font-size: 11.5px; color: var(--faint); }
+.cl.new { background: var(--t-new); border-color: var(--t-new-edge); }
+.cl.diff { background: var(--t-diff); border-color: var(--t-diff-edge); }
+.cl.offer { background: var(--cell); border: 1px dashed var(--t-diff-edge); }
+.cl.offer .sub { color: #c0874a; }
+.cl.lost { background: var(--t-lost); border-color: transparent; }
+.cl.clash { background: var(--t-lost); border-color: var(--t-lost-edge); }
+.cl.clash .sub { color: #d87a7a; }
+.cl.guid { background: var(--t-guid); border-color: transparent; color: var(--t-guid-text); font-family: var(--mono); font-size: 12px; }
+.cl .tk { margin-left: auto; width: 16px; height: 16px; border-radius: 2px; background: #3a3a3a; flex: none; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+.cl .tk.on::after { content: "✓"; color: var(--text); }
+.cl .dot { position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 4px; }
+.cl .lk { margin-left: auto; color: var(--faint); }
+.edit { position: absolute; right: 4px; top: 6px; height: 28px; padding: 0 10px; border-radius: 14px; background: var(--gold); color: var(--gold-text); font-size: 12px; display: flex; align-items: center; }
+.stc { margin: 3px 2px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text); }
+.stc.ok { color: var(--faint); border: 1px solid var(--cell-line); }
+.stc.diff { background: var(--t-diff-edge); } .stc.new { background: var(--t-new-edge); } .stc.lost { background: var(--t-lost-edge); }
+.stc.clash { background: var(--alert); color: #fff; }
+.addrow { border-right: 1px solid var(--cell-line); display: flex; align-items: center; justify-content: center; color: var(--faint); }
+.addline { border-bottom: 1px dashed var(--cell-line); color: var(--dim); display: flex; align-items: center; padding: 0 10px; font-size: 14px; }
+.echo { height: 34px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; border-top: 1px solid var(--cell-line); font-size: 12px; color: var(--dim); }
+.echo .r { margin-left: auto; font-family: var(--font); }
+/* slab */
+.slab { height: 136px; flex: none; border-top: 1px solid var(--line); padding: 8px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 12px repeat(4, minmax(0, 1fr)) 210px; grid-template-rows: 60px 60px; gap: 6px; }
+.a { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; }
+.a.dis { color: #5a5a5a; border-style: dashed; background: transparent; }
+.a.del { color: var(--del); }
+.a.new svg { color: var(--ok); }
+.a.val { flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; }
+.a.val small { font-size: 12px; color: var(--dim); }
+.a.fn { color: var(--text); }
+.sep { grid-row: 1 / span 2; }
+.power { grid-row: 1 / span 2; grid-column: 11; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; position: relative; overflow: hidden; }
+.power svg { width: 34px; height: 34px; }
+.power b { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+.power small { font-size: 12px; color: var(--dim); }
+.power::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--pw, var(--ok)); }
+/* import dialog over the setup */
+.veil { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+.idlg { position: absolute; top: 70px; left: 130px; width: 1180px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+.idlg .title { border-bottom: 1px solid var(--line); }
+.cols { display: grid; grid-template-columns: 1fr 450px; }
+.pane { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pane + .pane { border-left: 1px solid var(--cell-line); }
+.pane .h { font-size: 13px; color: var(--dim); }
+.files { display: grid; grid-template-columns: 1.4fr 1.3fr 80px 140px 80px; grid-auto-rows: 44px; font-size: 14px; }
+.files .hd { border-right: none; }
+.files .fc { margin: 3px 0; padding: 0 10px; display: flex; align-items: center; background: var(--cell); border-top: 1px solid var(--cell-line); border-bottom: 1px solid var(--cell-line); white-space: nowrap; overflow: hidden; color: var(--dim); }
+.files .fc.first { border-left: 1px solid var(--cell-line); border-radius: 4px 0 0 4px; color: var(--text); }
+.files .fc.last { border-right: 1px solid var(--cell-line); border-radius: 0 4px 4px 0; justify-content: flex-end; }
+.files .fc.r { justify-content: flex-end; }
+.files .sel { background: var(--sel); border-color: var(--sel-line); color: var(--text); }
+.path { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--dim); }
+.cells { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sc { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); padding: 7px 10px; display: flex; flex-direction: column; gap: 2px; position: relative; min-width: 0; }
+.sc small { font-size: 12px; color: var(--dim); } .sc span { font-size: 15px; }
+.sc .badge { position: absolute; top: 7px; right: 9px; font-size: 11px; color: var(--faint); }
+.sc.wide { grid-column: 1 / -1; }
+.tr { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); padding: 0 6px 0 12px; height: 46px; font-size: 14px; }
+.seg { display: inline-flex; gap: 4px; } .seg i { font-style: normal; height: 34px; padding: 0 12px; border-radius: 5px; display: inline-flex; align-items: center; font-size: 13px; color: var(--dim); border: 1px solid var(--cell-line); }
+.seg i.on { background: #3a3a3a; color: var(--text); border-color: #5a5a5a; }
+.cbx { width: 18px; height: 18px; border-radius: 3px; border: 1px solid var(--line); background: #303030; }
+.ibtns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.ibtns div { height: 56px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.ibtns .go { background: var(--gold); border-color: transparent; color: var(--gold-text); font-weight: 600; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 10px; }
+.notes > div { min-width: 0; border: 1px solid var(--cell-line); border-radius: 6px; background: var(--dlg); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.notes .h { color: var(--text); font-size: 15px; }
+.notes ul { margin: 0; padding-left: 18px; color: var(--dim); display: flex; flex-direction: column; gap: 3px; }
+.notes code { font-family: var(--mono); font-size: 12px; color: var(--text); }
+/* Devices › DMX › Patch: the crumb in the title row and the device-kind rail */
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.crumb .up { color: var(--dim); font-weight: 400; }
+.crumb .sep { color: var(--faint); font-size: 14px; }
+.crumb .here { font-weight: 500; }
+.kinds { height: 44px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 10px; border-bottom: 1px solid var(--line); background: var(--head); }
+.kinds .lbl { font-size: 12px; color: var(--faint); margin-right: 6px; }
+.kind { height: 34px; padding: 0 14px; border-radius: 5px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--dim); }
+.kind .gd { width: 11px; height: 11px; border-radius: 50%; background: #312600; }
+.kind.on { background: #303030; color: var(--text); } .kind.on .gd { background: #7c6200; }
+.kind.later { border: 1px dashed var(--cell-line); color: var(--faint); }
+.kinds .claimnote { margin-left: auto; font-size: 12px; color: var(--faint); }
+/* Luma layer tree */
+.tree { flex: 1; overflow: hidden; display: flex; flex-direction: column; padding: 6px 0; }
+.tn { position: relative; height: 48px; flex: none; display: flex; align-items: center; gap: 6px; padding-right: 6px; color: var(--dim); font-size: 14px; }
+.tn .chev { width: 18px; text-align: center; color: var(--faint); font-size: 11px; flex: none; }
+.tn .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; overflow: hidden; }
+.tn .nm small { font-size: 11.5px; color: var(--faint); white-space: nowrap; }
+.tn .nm span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tn .guide { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--cell-line); }
+.tn.on { background: var(--cell); color: var(--text); box-shadow: inset 4px 0 0 var(--stripe); }
+.tn .addsub { width: 30px; height: 30px; border-radius: 5px; border: 1px solid var(--line); background: #303030; color: var(--text); display: none; align-items: center; justify-content: center; font-size: 16px; flex: none; }
+.tn.on .addsub, .tn.hov .addsub { display: flex; }
+.tn.ghost { color: var(--gold-hi); }
+.tn.ghost .nm span { border: 1px dashed var(--gold); border-radius: 4px; padding: 2px 6px; background: #221d05; }
+.tn .mk { display: inline-flex; gap: 3px; margin-left: 5px; vertical-align: middle; } .tn .mk i { width: 7px; height: 7px; border-radius: 2px; display: inline-block; }
+.treebar { flex: none; border-top: 1px solid var(--cell-line); padding: 6px; display: grid; grid-template-columns: 1fr 1fr 44px; gap: 4px; }
+.treebar span { height: 40px; border-radius: 5px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 12.5px; color: var(--text); }
+.treebar span.more { font-size: 16px; }
+/* Exit + import-apply buttons in the power slot */
+.exitbtn { grid-row: 1 / span 2; grid-column: 11; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; position: relative; overflow: hidden; }
+.exitbtn b { font-size: 16px; font-weight: 500; } .exitbtn small { font-size: 12px; color: var(--dim); text-align: center; padding: 0 8px; }
+.exitbtn::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--eb, var(--gold-hi)); }
+.exitbtn.go { background: var(--gold); border-color: transparent; color: var(--gold-text); }
+.exitbtn.go small { color: #e6d9a8; } .exitbtn.go::after { background: var(--gold-hi); }
+/* exit prompt */
+.ask { position: absolute; top: 290px; left: 470px; width: 500px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; }
+.ask .title { border-bottom: 1px solid var(--line); }
+.ask .q { padding: 16px 18px 6px; font-size: 17px; }
+.ask .s { padding: 0 18px 16px; color: var(--dim); font-size: 14px; display: flex; flex-direction: column; gap: 4px; }
+.ask .btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.ask .btns div { height: 56px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.ask .btns .save { background: var(--gold); border-color: transparent; color: var(--gold-text); font-weight: 600; }
+.ask .btns .disc { color: var(--del); }
+.toast { position: absolute; top: 132px; left: 50%; transform: translateX(-50%); height: 40px; padding: 0 16px; border-radius: 20px; background: #303030; border: 1px solid #5a5a5a; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.toast .d { width: 8px; height: 8px; border-radius: 4px; background: var(--ok); }
+.cl.came { box-shadow: inset 3px 0 0 var(--t-diff-edge); }
+.cl.camenew { box-shadow: inset 3px 0 0 var(--t-new-edge); }
+
+.stc.outside { background: var(--gold); color: var(--gold-text); }
+.tn .addsub { font-size: 17px; }
+.lmenu { position: absolute; width: 270px; border-radius: 6px; background: #262626; border: 1px solid var(--line); padding: 4px; display: flex; flex-direction: column; gap: 2px; z-index: 5; }
+.lmenu div { height: 42px; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; font-size: 14px; cursor: pointer; }
+.lmenu div:hover { background: #303030; } .lmenu div.del { color: var(--del); }
+.lmenu div small { margin-left: auto; color: var(--faint); font-size: 12px; }
+.lmenu hr { border: none; border-top: 1px solid var(--cell-line); margin: 3px 0; }
+.opts2 { display: flex; flex-direction: column; gap: 6px; padding: 0 12px 12px; }
+.opts2 div { height: 48px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 15px; }
+.opts2 div.sug { border-color: #7c6200; } .opts2 div small { margin-left: auto; color: var(--faint); font-size: 12px; }
+.foot3 { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); color: var(--dim); font-size: 13px; }
+.b2 { height: 44px; padding: 0 18px; border-radius: 6px; border: 1px solid transparent; background: var(--gold); color: var(--gold-text); display: inline-flex; align-items: center; font-weight: 600; cursor: pointer; }
+.dupb { padding: 4px 14px 14px; display: flex; flex-direction: column; gap: 6px; }
+.kinds2 { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 4px 4px 6px 12px; font-size: 14px; }
+.cb2 { display: inline-flex; align-items: center; gap: 8px; }
+.cbx.on { background: #5a5a5a; position: relative; } .cbx.on::after { content: "✓"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text); }
+.cbx { display: inline-block; flex: none; }
+.ask .btns .save, .b2, [data-go] { cursor: pointer; }
+
+.chips { display:flex; gap:4px; flex-wrap:nowrap; overflow:hidden; }
+.tg { height:24px; padding:0 8px; border-radius:12px; background:#2c2a18; border:1px solid #4a4420; color:var(--lane-text); font-size:12px; display:inline-flex; align-items:center; white-space:nowrap; }
+.tg.dim { background:transparent; border-style:dashed; color:var(--faint); }
+.pl { position:absolute; width:330px; border-radius:6px; background:#262626; border:1px solid var(--line); padding:6px; display:flex; flex-direction:column; gap:2px; z-index:5; }
+.pl .row { height:38px; display:flex; align-items:center; gap:8px; padding:0 8px; border-radius:4px; font-size:14px; }
+.pl .row small { margin-left:auto; color:var(--faint); font-size:12px; }
+.pl .row.part .cbx { background:#5a5a5a; } .pl .row.part .cbx::after { content:"–"; display:flex; align-items:center; justify-content:center; height:100%; font-size:12px; }
+.pl hr { border:none; border-top:1px solid var(--cell-line); margin:3px 0; }
+.pl .act { color:var(--text); }
+.ptree { padding:10px 14px; display:flex; flex-direction:column; gap:6px; }
+.prow { display:flex; gap:6px; align-items:stretch; position:relative; }
+.tile { width:150px; height:84px; border-radius:8px; background:#353535; display:flex; flex-direction:column; justify-content:space-between; padding:7px 9px; position:relative; flex:none; }
+.tile .no2 { font-size:11px; color:var(--faint); }
+.tile .nm2 { font-size:15px; color:var(--text); }
+.tile .ct { font-size:12px; color:var(--dim); display:flex; justify-content:space-between; align-items:center; }
+.tile .chev2 { position:absolute; top:6px; right:8px; color:var(--dim); font-size:12px; }
+.tile .act2 { position:absolute; bottom:7px; right:8px; font-size:11px; color:var(--lane-text); }
+.tile.sel { box-shadow:inset 0 0 0 2px #7c6200; }
+.tile.empty { background:transparent; border:1px dashed #303030; }
+.indent { width:28px; flex:none; position:relative; } .indent::before { content:""; position:absolute; left:13px; top:-6px; bottom:42px; width:1px; background:var(--cell-line); } .indent::after { content:""; position:absolute; left:13px; width:15px; top:42px; height:1px; background:var(--cell-line); }
+.win { position:absolute; inset:20px 40px; border-radius:0; background:#121212; display:flex; flex-direction:column; }
+.wtabs { display:flex; align-items:flex-end; gap:2px; height:40px; padding:0 6px; background:#121212; }
+.wtab { display:flex; align-items:center; gap:9px; height:36px; padding:0 14px; color:var(--faint); font-size:18px; border-radius:6px 6px 0 0; }
+.wtab.on { background:#353535; color:var(--text); }
+.wtab .gd { width:13px; height:13px; border-radius:50%; background:#7c6200; } .wtab .gd.off { background:#312600; }
+.wbar2 { display:flex; align-items:center; gap:22px; height:38px; padding:0 12px; background:#242424; font-size:15px; color:var(--dim); }
+.wbar2 .cb3 { display:inline-flex; align-items:center; gap:8px; } .wbar2 .cb3 i { width:16px; height:16px; border-radius:2px; background:#313131; display:inline-flex; align-items:center; justify-content:center; font-style:normal; font-size:12px; color:var(--text); }
+.wbar2 .cb3 i.on::after { content:"✓"; }
+.wbar2 .dd2 b { font-weight:400; color:var(--text); } .wbar2 .dd2::after { content:" ▾"; color:var(--faint); }
+.mgrid { display:grid; grid-template-columns:56px 110px 1.3fr 1fr 1.4fr; grid-auto-rows:48px; font-size:14px; }
+.kindb { height:24px; padding:0 8px; border-radius:4px; background:#303030; font-size:12px; display:inline-flex; align-items:center; color:var(--dim); }
+.split2 { display:grid; grid-template-columns:1fr 1fr; }
+.split2 > div { padding:12px 14px; display:flex; flex-direction:column; gap:6px; min-width:0; }
+.split2 > div + div { border-left:1px solid var(--cell-line); }
+.trow { height:40px; display:flex; align-items:center; gap:8px; padding:0 8px; border-radius:4px; font-size:14px; color:var(--text); }
+.trow small { margin-left:auto; color:var(--faint); font-size:12px; }
+.trow.on { background:#2c2a18; }
+.trow .cbx { flex:none; }
+.trow.part .cbx { background:#5a5a5a; position:relative; } .trow.part .cbx::after { content:"–"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; }
+.preview { font-family:var(--mono); font-size:12.5px; color:var(--dim); padding:8px 14px; border-top:1px solid var(--cell-line); display:flex; flex-direction:column; gap:3px; }
+.preview b { color:var(--gold-hi); font-weight:500; }
+.pane2 { display:grid; grid-template-columns: 420px 1fr; flex:1; min-height:0; gap:4px; background:#090909; }
+.pane2 > div { background:#1c1c1c; display:flex; flex-direction:column; min-height:0; }
+.trl { height:44px; display:flex; align-items:center; gap:8px; padding-right:10px; font-size:15px; color:var(--dim); border-bottom:1px solid #222; position:relative; }
+.trl .pm { width:22px; height:22px; border-radius:3px; border:1px solid var(--line); display:inline-flex; align-items:center; justify-content:center; font-size:14px; color:var(--text); flex:none; }
+.trl .pm.leaf { border-color:transparent; }
+.trl .nn { font-family:var(--mono); font-size:11px; color:var(--faint); }
+.trl .sw { width:10px; height:10px; border-radius:2px; flex:none; }
+.trl .cnt2 { margin-left:auto; font-size:12px; color:var(--faint); white-space:nowrap; }
+.trl.on { background:#262626; color:var(--text); box-shadow: inset 4px 0 0 var(--stripe); }
+.trl .ab { font-size:11px; color:var(--lane-text); border:1px solid #4a4420; border-radius:10px; padding:1px 7px; }
+.trl .cbx { flex:none; }
+.trl.part .cbx { background:#5a5a5a; position:relative; } .trl.part .cbx::after { content:"–"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:12px; }
+.set2 { position:absolute; top:40px; left:250px; width:940px; height:800px; border-radius:6px; background:var(--dlg); border:1px solid var(--line); display:flex; flex-direction:column; overflow:hidden; }
+.stabs { display:flex; gap:4px; padding:8px 12px; border-bottom:1px solid var(--cell-line); }
+.stabs span { height:42px; padding:0 16px; border-radius:6px; display:flex; align-items:center; font-size:14px; color:var(--dim); }
+.stabs span.on { background:#303030; color:var(--text); }
+.stabs span.meta { border:1px solid var(--cell-line); }
+.sbody { flex:1; display:flex; flex-direction:column; min-height:0; }
+.cells3 { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:12px; }
+.cells3 .sc { min-height:62px; }
+.sc .kb { position:absolute; top:7px; right:9px; font-size:10.5px; color:var(--faint); border:1px solid var(--cell-line); border-radius:3px; padding:0 4px; }
+.picker { flex:1; display:grid; grid-template-columns:1fr 300px; min-height:0; }
+.picker > div { display:flex; flex-direction:column; min-height:0; overflow:hidden; }
+.picker > div + div { border-left:1px solid var(--cell-line); padding:12px; gap:6px; }
+.pkhead { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--cell-line); }
+.search { flex:1; height:40px; border-radius:6px; border:1px solid var(--line); background:#202020; display:flex; align-items:center; padding:0 12px; color:var(--faint); font-size:14px; }
+.groupby { display:flex; gap:3px; padding:8px; border-bottom:1px solid var(--cell-line); flex-wrap:wrap; }
+.groupby i { font-style:normal; height:32px; padding:0 9px; border-radius:5px; display:inline-flex; align-items:center; font-size:12.5px; color:var(--dim); border:1px solid var(--cell-line); }
+.groupby i.on { background:#3a3a3a; color:var(--text); border-color:#5a5a5a; }
+.groupby .gap { width:8px; }
+.sbt { flex:1; overflow:hidden; }
+
+</style>
+<main>
+  <h1>Tags, round 2</h1>
+  <p class="cap">There is no Tags section under Show. Tags are given in the one <b>EditSetting</b> overlay of any show object, which has the object's own tabs plus <b>Meta</b> and <b>Tags</b> (a picker tree). The <b>Tags pool window</b> is the overview: two panes, the tree with + / − and the picked tag's members. The patch sidebar can group by tag, with a <b>Direct | Deep</b> switch. The ≡ menu and the Tags cell work everywhere. Pick a state below. The command lines are sketches for the lum.md discussion.</p>
+  <div class="modes" role="group" aria-label="State">
+    <button type="button" data-mode="pool"><span class="d" style="background:var(--gold-hi)"></span>Tags pool window</button>
+    <button type="button" data-mode="es1"><span class="d" style="background:var(--gold-hi)"></span>EditSetting Fixture 103 · Tags</button>
+    <button type="button" data-mode="esmeta"><span class="d" style="background:var(--gold-hi)"></span>EditSetting · Meta</button>
+    <button type="button" data-mode="esmany"><span class="d" style="background:var(--gold-hi)"></span>EditSetting Fixture 101 Thru 112</button>
+    <button type="button" data-mode="esseq"><span class="d" style="background:var(--gold-hi)"></span>EditSetting Sequence 31</button>
+    <button type="button" data-mode="side"><span class="d" style="background:var(--gold-hi)"></span>Patch sidebar by tag</button>
+    <button type="button" data-mode="cell"><span class="d" style="background:var(--gold-hi)"></span>Tags cell</button>
+    <button type="button" data-mode="delete"><span class="d" style="background:var(--del)"></span>Delete a tag</button>
+  </div>
+  <div class="well"><div class="frame" id="frame"></div></div>
+  <div class="notes">
+    <div><span class="h">EditSetting, one for every object</span><ul>
+      <li>Tabs: the object's declared sections first (a fixture: Patch, Position, Behaviour), then <b>Meta</b> (Name, Note, Colour, Icon, Locked, Hidden, plus read-only GUID, path, used by) and <b>Tags</b>.</li>
+      <li>The Tags tab is a picker tree with + / −, a search box, and tri-state boxes over several objects. Each tag has its ≡ menu, and "New tag here" makes one in place. Every change is one Assign / Unassign line.</li>
+      <li>The same overlay for a sequence, a group, a preset, an MVR group: only the object's own tabs differ.</li>
+    </ul></div>
+    <div><span class="h">Pool window = overview</span><ul>
+      <li>Left: the tree with + / −, colour, counts and the Action badge. Right: the picked tag's members by kind, Direct or Deep.</li>
+      <li>A tap on a tag selects it here. "Run action" runs its Action, or the window's default (Select fixtures today; Go+ / Off planned).</li>
+      <li>Hold for the ≡ menu, drag to re-parent. The window bar holds the default Action and Direct | Deep.</li>
+    </ul></div>
+    <div><span class="h">Patch sidebar by tag</span><ul>
+      <li>Group by: MVR tree · MVR class · Tags. Members: Direct | Deep.</li>
+      <li>Deep: Lx1 shows its own fixtures plus Right's and Left's, marked "from Right". A fixture with two tags shows under both.</li>
+      <li>"Untagged" lists fixtures with no tag. Dropping fixtures on a tag runs Assign.</li>
+    </ul></div>
+  </div>
+</main>
+<script>
+const I = {
+  tag: '<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="8" cy="8" r="1.5"/>',
+  del: '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>', close: '<path d="M18 6 6 18M6 6l12 12"/>',
+  settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+};
+const ic = (n, s) => `<svg class="i" viewBox="0 0 24 24"${s ? ` style="${s}"` : ""}>${I[n]}</svg>`;
+// [no, name, depth, open, colour, counts, action, hasKids]
+const T = [
+  ["1", "All", 0, true, "#7c6200", "412 fixtures · 6 seq", "", true], ["1.1", "Lx1", 1, true, "#2f7a3a", "20 fixtures · 1 seq · 1 macro", "", true],
+  ["1.1.1", "Right", 2, null, "#2f7a3a", "4 fixtures", "", false], ["1.1.2", "Left", 2, null, "#2f7a3a", "4 fixtures", "", false],
+  ["1.2", "Lx2", 1, false, "#2c5a8a", "16 fixtures", "", true], ["1.3", "Floor", 1, null, "#6a4a8a", "24 fixtures", "", false],
+  ["2", "Busking", 0, true, "#8a3a3a", "12 fixtures · 4 seq", "", true], ["2.1", "Encore", 1, null, "#8a3a3a", "3 seq", "Go+ · planned", false],
+  ["2.2", "Blinders", 1, null, "#8a3a3a", "9 fixtures · 1 seq", "", false], ["3", "Specials", 0, null, "#5a5a5a", "8 fixtures · 2 MVR groups", "", false],
+];
+function treeRows(sel, check) {
+  return T.map(([no, n, d, open, col, cnt, act, kids]) => {
+    const st = check ? check[no] : "";
+    return `<div class="trl${no === sel ? " on" : ""}${st === "part" ? " part" : ""}" style="padding-left:${10 + d * 20}px">${check ? `<span class="cbx${st === "on" ? " on" : ""}"></span>` : ""}<span class="pm${kids ? "" : " leaf"}">${kids ? (open ? "−" : "+") : ""}</span><span class="sw" style="background:${col}"></span><span class="nn">${no}</span><span>${n}</span>${act ? `<span class="ab">${act}</span>` : ""}<span class="cnt2">${check ? (st === "part" ? "7 of 12" : st === "on" ? "all" : "") : cnt}</span>${no === sel ? '<span class="addsub" style="display:flex">≡</span>' : ""}</div>`;
+  }).join("");
+}
+function pool() {
+  const M = [["Fixture", "101", "MegaPointe SL 1", "direct"], ["Fixture", "102", "MegaPointe SL 2", "direct"], ["Fixture", "117", "MegaPointe SL 17", "from Right"], ["Fixture", "118", "MegaPointe SL 18", "from Right"], ["Fixture", "121", "MegaPointe SL 21", "from Left"], ["Sequence", "31", "Lx1 chase", "direct"], ["Macro", "8", "Lx1 home", "direct"], ["MVR group", "—", "Truss 1", "direct"]];
+  let g = `<div class="mgrid" style="grid-template-columns:56px 120px 1.4fr 1fr"><span class="hd no">No</span><span class="hd">Kind</span><span class="hd">Name</span><span class="hd">Tagged</span>`;
+  for (const [k, no, n, via] of M) g += `<span class="no">${no}</span><div class="cl ro"><span class="kindb">${k}</span></div><div class="cl">${n}</div><div class="cl ro" style="${via === "direct" ? "" : "color:var(--lane-text)"}">${via}</div>`;
+  g += `</div>`;
+  return `<div class="win">
+    <div class="wtabs"><div class="wtab on"><span class="gd"></span>Tags</div><div class="wtab"><span class="gd off"></span>Groups</div><div class="wtab"><span class="gd off"></span>Sequences</div></div>
+    <div class="wbar2"><span class="dd2">Default action: <b>Select fixtures</b></span><span class="dd2">Members: <b>Deep</b></span><span class="cb3"><i class="on"></i>Counts</span><span class="cb3"><i></i>Expand all</span><span style="margin-left:auto;font-size:13px;color:var(--faint)">+ / − folds · hold = ≡ menu · drag = move under</span></div>
+    <div class="pane2">
+      <div>${treeRows("1.1")}</div>
+      <div>
+        <div class="strip"><span class="tb on">Lx1 · 1.1</span><div class="selbar"><span class="sb">Direct</span><span class="sb" style="background:#3a3a3a;border-color:#5a5a5a">Deep</span><span class="sb">All kinds ▾</span><span class="sb" style="background:var(--gold);color:var(--gold-text);border-color:transparent">Run action</span></div></div>
+        <div class="gridbox">${g}</div>
+        <div class="echo"><span class="mono">Run action → Tag 1.1 (Select fixtures, deep: 20)</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+function es(kind) {
+  const many = kind === "many", seq = kind === "seq";
+  const title = seq ? "Sequence 31 · Lx1 chase" : many ? "12 fixtures · Fixture 101 Thru 112" : "Fixture 103 · MegaPointe SR 3";
+  const tabs = (seq ? ["Playback", "Timing", "Cue zero"] : ["Patch", "Position", "Behaviour"]).map(t => `<span>${t}</span>`).join("") + `<span class="meta${kind === "meta" ? " on" : ""}">Meta</span><span class="meta${kind !== "meta" ? " on" : ""}">Tags</span>`;
+  let body;
+  if (kind === "meta") {
+    const C = [["Name", "MegaPointe SR 3", "text"], ["Note", "hung inverted, check pan", "text"], ["Colour", "● Gold", "colour"], ["Icon", "spot", "icon"], ["Locked", "Off", "switch"], ["Hidden", "Off", "switch"], ["GUID", "BE45BAEC-22F6-…", "read only"], ["Path", "Root.ShowData.Devices.Dmx.Patch.Fixtures.103", "read only"], ["Used by", "Group 12 · Sequence 31 · 3 presets", "read only"]];
+    body = `<div class="cells3">${C.map(([l, v, k]) => `<div class="sc${k === "read only" ? "" : ""}"><small>${l}</small><span style="${k === "read only" ? "color:var(--dim);font-size:14px" : ""}">${v}</span><span class="kb">${k}</span></div>`).join("")}</div>`;
+  } else {
+    const check = many ? { "1": "", "1.1": "part", "1.1.1": "on" } : seq ? { "1.1": "on", "2": "" } : { "1.1": "on", "3": "on" };
+    const chg = many
+      ? `<div class="trow on">Right (1.1.1) <small>all 12</small></div><div class="trow" style="background:#2a1414">Lx1 (1.1) <small>7 of 12 · tick = all, untick = none</small></div>`
+      : seq ? `<div class="trow on">Lx1 (1.1) <small>direct</small></div><span style="color:var(--faint);font-size:12px">Through the tree it is also in All (1).</span>`
+      : `<div class="trow on">Lx1 (1.1) <small>direct</small></div><div class="trow on">Specials (3) <small>direct</small></div><span style="color:var(--faint);font-size:12px">Through the tree it is also in All (1). Tags is a live column: no Devices claim needed.</span>`;
+    const line = many ? "Assign Tag 1.1 At Fixture 101 Thru 112" : seq ? "Assign Tag 2.1 At Sequence 31" : "Unassign Tag 3 At Fixture 103";
+    body = `<div class="picker"><div><div class="pkhead"><span class="search">Search tags…</span><span class="sb">+ New tag here</span></div><div class="sbt">${treeRows(seq ? "1.1" : "1.1", check)}</div></div>
+      <div><span style="color:var(--dim);font-size:13px">${many ? "On the 12" : "On this object"}</span>${chg}<div class="preview" style="margin-top:auto;border:none;padding:0"><span>a tick or untick runs one line:</span><span><b>${line.split(" ")[0]}</b> ${line.split(" ").slice(1).join(" ")}</span></div></div></div>`;
+  }
+  return `<div class="veil"></div><div class="set2">
+    <div class="title">${ic("settings")}<span class="name">EditSetting</span><span class="chip quiet">${title}</span><span class="close" style="margin-left:auto">${ic("close", "width:20px;height:20px")}</span></div>
+    <div class="stabs">${tabs}</div><div class="sbody">${body}</div></div>`;
+}
+function side() {
+  const S = [["1", "All", 0, "−", "412", ""], ["1.1", "Lx1", 1, "−", "20", "on"], ["1.1.1", "Right", 2, "", "4", ""], ["1.1.2", "Left", 2, "", "4", ""], ["1.2", "Lx2", 1, "+", "16", ""], ["1.3", "Floor", 1, "", "24", ""], ["2", "Busking", 0, "+", "9", ""], ["3", "Specials", 0, "", "8", ""], ["—", "Untagged", 0, "", "1 016", "u"]];
+  const rows = S.map(([no, n, d, pm, c, st]) => `<div class="trl${st === "on" ? " on" : ""}" style="padding-left:${8 + d * 16}px;height:46px;font-size:14px"><span class="pm${pm ? "" : " leaf"}">${pm}</span><span class="nn">${no}</span><span style="${st === "u" ? "color:var(--faint)" : ""}">${n}</span><span class="cnt2">${c}</span>${st === "on" ? '<span class="addsub" style="display:flex">≡</span>' : ""}</div>`).join("");
+  const R = [["101", "MegaPointe SL 1", "1.001", "Lx1", ""], ["102", "MegaPointe SL 2", "1.035", "Lx1", ""], ["104", "MP SR 4 (spare)", "1.103", "Lx1 · Specials", ""], ["117", "MegaPointe SL 17", "1.205", "Right", "from Right"], ["118", "MegaPointe SL 18", "1.239", "Right", "from Right"], ["121", "MegaPointe SL 21", "1.307", "Left", "from Left"]];
+  let g = `<div class="grid" style="grid-template-columns:56px 1.2fr 0.6fr 1.2fr 1fr"><span class="hd no">FID</span><span class="hd">Name</span><span class="hd">Address</span><span class="hd">Tags</span><span class="hd">In Lx1</span>`;
+  for (const [f, n, a, t, via] of R) g += `<span class="no">${f}</span><div class="cl">${n}</div><div class="cl">${a}</div><div class="cl"><span class="chips">${t.split(" · ").map(x => `<span class="tg">${x}</span>`).join("")}</span></div><div class="cl ro" style="${via ? "color:var(--lane-text)" : ""}">${via || "direct"}</div>`;
+  g += `</div>`;
+  return `<div class="dlg">
+    <div class="title"><span class="crumb"><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></span><span class="chip"><span class="d" style="background:var(--gold-hi)"></span>Devices draft · Bob</span><span class="right">sidebar grouped by tag · deep</span></div>
+    <div class="mid">
+      <div class="left" style="width:250px"><div class="groupby"><i>MVR tree</i><i>Class</i><i class="on">Tags</i><span class="gap"></span><i>Direct</i><i class="on">Deep</i></div><div class="sbt">${rows}</div><div class="treebar"><span>+ Tag</span><span>+ Child tag</span><span class="more">⋯</span></div></div>
+      <div class="work"><div class="strip"><span class="tb on">Patch</span><span class="tb">Fixture types</span><span class="tb">Universes</span><div class="selbar"><span class="n">Lx1 · 20 fixtures (12 direct, 8 from its children)</span></div></div>
+        <div class="gridbox">${g}</div>
+        <div class="echo"><span class="mono">drop fixtures on a tag → Assign Tag 1.1.2 At Fixture 130 Thru 133</span><span class="r">104 also shows under Specials</span></div></div>
+    </div>
+  </div>`;
+}
+function cell() {
+  const R = [["101", "MegaPointe SL 1", ["Right", "Blinders"]], ["103", "MegaPointe SR 3", ["Lx1", "Specials"]], ["104", "MP SR 4 (spare)", ["Specials", "Lx1", "Encore"]], ["201", "X5 Wash 1", []]];
+  let g = `<div class="grid" style="grid-template-columns:56px 1.2fr 1.6fr 0.7fr"><span class="hd no">FID</span><span class="hd">Name</span><span class="hd">Tags</span><span class="hd">Master react</span>`;
+  R.forEach(([f, n, t], i) => { const sel = i === 1; g += `<span class="no${sel ? " sel" : ""}">${f}</span><div class="cl">${n}</div><div class="cl${sel ? " sel" : ""}"><span class="chips">${t.length ? t.map(x => `<span class="tg">${x}</span>`).join("") : '<span class="tg dim">no tags</span>'}</span>${sel ? '<span class="edit">Tags</span>' : ""}</div><div class="cl">Grand</div>`; });
+  g += `</div>`;
+  return `<div class="dlg"><div class="title"><span class="crumb"><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></span><span class="chip"><span class="d" style="background:var(--ok)"></span>live · Alice</span></div>
+    <div class="mid"><div class="work"><div class="gridbox" style="position:relative">${g}
+      <div class="pl" style="top:100px;left:560px">${[["1 All", 0, ""], ["1.1 Lx1", 1, "on"], ["1.1.1 Right", 2, ""], ["2.2 Blinders", 1, ""], ["3 Specials", 0, "on"]].map(([t, d, s]) => `<div class="row" style="padding-left:${8 + d * 16}px"><span class="cbx${s ? " on" : ""}"></span>${t}</div>`).join("")}<hr><div class="row act">+ New tag here…</div><div class="row act" data-go="es1">Open EditSetting · Tags</div></div></div>
+      <div class="echo"><span class="mono">Unassign Tag 3 At Fixture 103</span></div></div></div></div>`;
+}
+function del() {
+  return pool() + `<div class="veil"></div><div class="ask"><div class="title">${ic("del")}<span class="name">Delete tag</span></div><div class="q">Delete tag Lx1 (1.1)?</div><div class="s" style="display:flex;flex-direction:column;gap:3px"><span>2 child tags: Right (1.1.1), Left (1.1.2)</span><span>12 objects lose Lx1; 8 more are tagged by its children</span><span>No object is deleted, only links.</span></div><div class="btns"><div class="disc" data-go="pool">With children</div><div class="save" data-go="pool">Keep children</div><div data-go="pool">Cancel</div></div></div>`;
+}
+function show(m) {
+  const base = { es1: () => side() + es("one"), esmeta: () => side() + es("meta"), esmany: () => side() + es("many"), esseq: () => pool() + es("seq") };
+  const f = document.getElementById("frame");
+  f.innerHTML = (base[m] || { pool, side, cell, delete: del }[m])();
+  document.querySelectorAll(".modes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === m)));
+  try { localStorage.setItem("tags2-mode", m); } catch (e) {}
+}
+document.querySelectorAll(".modes button").forEach(b => b.addEventListener("click", () => show(b.dataset.mode)));
+document.getElementById("frame").addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) show(g.dataset.go); });
+let st = "pool"; try { st = localStorage.getItem("tags2-mode") || "pool"; } catch (e) {}
+show(st);
+</script>

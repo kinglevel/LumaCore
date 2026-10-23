@@ -1,0 +1,34 @@
+[package]
+name = "lumacore-cmd-station"
+version.workspace = true
+edition.workspace = true
+description = "The station's own words: Server, Shell, Client, Clock, Journal, Health, UIEngine, Watch; Restart, Shutdown, Shutoff, Disconnect, Connect, Watch / Unwatch, Echo, Debug, HissMe, Banner; the splash (decisions §34 25.7)"
+
+[dependencies]
+lumacore-luma = { path = "../../../formats/lumacore-luma" }
+lumacore-sysmon = { path = "../../../foundation/lumacore-sysmon" }
+chrono = { workspace = true }
+lumacore-registry = { path = "../../../foundation/lumacore-registry" }
+lumacore-wire = { path = "../../../foundation/lumacore-wire" }
+lumacore-tree = { path = "../../../model/lumacore-tree" }
+lumacore-protocols = { path = "../../../model/lumacore-protocols" }
+lumacore-syntax = { path = "../../../foundation/lumacore-syntax" }
+lumacore-syntax-derive = { path = "../../../foundation/lumacore-syntax-derive" }
+lumacore-net = { path = "../../../network/lumacore-net" }
+lumacore-base = { path = "../../../foundation/lumacore-base" }
+uuid = { workspace = true }
+crossbeam-channel = { workspace = true }
+lumacore-objects = { path = "../../../model/lumacore-objects" }
+lumacore-cmd-showfile = { path = "../lumacore-cmd-showfile" }
+nu-ansi-term = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+lumacore-luma = { path = "../../../formats/lumacore-luma" }
+ctor = { workspace = true }
+uuid = { workspace = true }
+lumacore-fixtures = { path = "../../../model/lumacore-fixtures" }
+lumacore-patch = { path = "../../../model/lumacore-patch" }
+
+[lints]
+workspace = true

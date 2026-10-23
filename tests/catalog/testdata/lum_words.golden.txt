@@ -1,0 +1,631 @@
+/Addresses — option (value)
+/All — option
+/Amount — option (value)
+/Apply — option
+/As — option (value)
+/Broken — option
+/By — option (value)
+/Cancel — option
+/Cleanup — option
+/Clear — option
+/Colour — option (value)
+/CopyOf — option (value)
+/CreateSecondCue — option
+/DataPool — option (value)
+/Debug — option
+/Default — option
+/Discard — option
+/DiscardChanges — option
+/Drive — option (value)
+/Edit — option
+/Every — option (value)
+/FidOffset — option (value)
+/FixtureType — option (value)
+/Force — option
+/Gone — option (value)
+/GridMerge — option (value)
+/Group — option (value)
+/Hash — option (value)
+/Hint — option
+/Ids — option (value)
+/IdType — option (value)
+/IgnoreRotation — option
+/Input — option
+/Keep — option
+/KeepChildren — option
+/KeepSpacing — option
+/Keys — option
+/Keyword — option
+/Learned — option
+/LocalUniverse — option (value)
+/Lost — option (value)
+/Match — option (value)
+/Merge — option
+/Mine — option (value)
+/Missing — option
+/Mode — option (value)
+/Names — option (value)
+/Network — option (value)
+/New — option
+/NewFixtures — option (value)
+/NoAutoClose — option
+/NoConfirmation — option
+/None — option
+/NoOops — option
+/NoSave — option
+/Note — option (value)
+/Offer — option (value)
+/Only — option
+/Open — option (value)
+/Overwrite — option
+/Pane — option (value)
+/Password — option (value)
+/Patch — option
+/Path — option (value)
+/Port — option (value)
+/PortAddress — option (value)
+/Position — option (value)
+/Profile — option (value)
+/Programmer — option
+/R — option
+/Recovery — option (value)
+/Remember — option
+/Remove — option
+/Revision — option (value)
+/Revisions — option (value)
+/Rights — option (value)
+/Rotate — option (value)
+/SacnUniverse — option (value)
+/Save — option
+/Scope — option (value)
+/Screen — option (value)
+/Selection — option
+/Settings — option
+/Show — option
+/Size — option (value)
+/Skip — option
+/Station — option
+/Swap — option
+/Tab — option (value)
+/Take — option (value)
+/ThisStation — option
+/Type — option (value)
+/UI — option
+/Universe — option (value)
+/UniverseOffset — option (value)
+/Unused — option
+/User — option (value)
+/Users — option
+/Verbose — option
+/Verify — option
+/Version — option (value)
+/Watch — option (value)
+/Window — option (value)
+/WithChildren — option
+/WithProfile — option
+/WithSubs — option
+/X — option (value)
+/Y — option (value)
+/Z — option (value)
+absolute — value
+Accent — property
+AccentHue — property
+Action — property
+add — verb
+Additive — value
+Address — property
+AddressMode — property
+Admin — value
+Alert — property
+All — value
+AllUsedAttributes — value
+Alt — value
+Alternative — value
+Always — value
+AlwaysOn — value
+Amount — property
+AppendX — value
+ArtNet — object ids:1
+Ask — value
+Asset — object ids:1
+AssetRoot — object ids:1
+Assign — verb
+At — verb · helper
+Attribute — object ids:1
+AttributeRule — object ids:1
+Attributes — value
+AttributeTemplate — object ids:1
+Auto — value
+AutoLock — property
+Autosave — property
+AutoScroll — property
+background — value
+BackgroundHue — property
+BackgroundSaturation — property
+banner — verb
+bar — value
+Base — property
+Bind — verb
+Blind — object
+Brightness — property
+Build — property
+Call — verb
+Cancel — value
+cat — fence
+cd — fence
+Changes — value
+Channel — value
+CID — property
+Claim — verb
+Claims — object
+CleanStart — verb
+Clear — verb
+ClearBuffer — property
+Client — object ids:1
+ClientProtocol — property
+Clock — object
+Coarse — value
+Columns — property
+ColumnSet — property
+Compact — verb
+Condensed — value
+Connect — verb
+Consent — verb
+Contrast — property
+Copy — verb
+Counts — property
+cp — fence flags:merge,overwrite,keep
+CreateOops — property
+Ctrl — value
+Cue — object ids:2 children:FeatureGroup
+CueTimingHorizontal — value
+CueTimingVertical — value
+CueZeroMode — property
+CursorBlink — property
+CurvePreset — object ids:1
+Cut — verb
+Dark — value
+DataPool — object ids:1 children:Group,Sequence,Preset,TimingPreset,CurvePreset
+Daylight — value
+debug — verb · value
+decimal — value
+Deep — value
+Default — verb · value
+Delay — helper · value
+Delete — verb · value
+DeleteShow — verb
+Description — property
+Deselect — verb
+DeskLock — object
+Device — object ids:1
+diff — fence flags:all
+Direct — value
+Disable — verb
+Disabled — value
+Disconnect — verb
+Dismiss — verb
+DMX — object ids:2 · value
+DoublePress — property
+Drive — object ids:1
+du — fence
+Dump — verb
+EaseIn — value
+EaseOut — value
+Echo — verb
+EchoMax — property
+Edit — verb · value
+EditSetting — verb
+Effect — object ids:1 · value
+EffectEngine — object ids:1
+Effects — value
+Eject — verb
+Empty — value
+EmptyPaint — property
+Enable — verb
+Enabled — property
+EncoderBar — object ids:1
+EncoderGroup — property
+EncoderLayer — property
+EncoderLayout — property
+EncoderMode — property
+EncoderPage — property
+Enter — verb
+Error — object ids:1 · value
+Errors — value
+Executor — object ids:1
+Exit — verb
+Export — verb
+Extended — value
+Fade — helper · value
+Family — value
+FeatureGroup — object ids:1
+FID — value
+find — fence flags:type=
+Fine — value
+FirstIndex — property
+Fit — value
+Fixed — value
+Fixture — object ids:1 children:DMX,Multipatch kinds:Channel,Generic,Houselights,NonDim,Media,Fog,Effect,Pyro,Marker · value
+FixtureID — property
+FixtureName — value
+FixtureType — object ids:1
+Flash — verb (hold)
+Fog — value
+Folder — value
+Folders — property
+Follow — value
+FontSize — property
+ForAllPaint — property
+ForNonePaint — property
+ForSomePaint — property
+Free — property
+Freeze — object
+Full — verb · value
+FullScreen — object
+Function — property
+Generic — value
+GlobalVar — object ids:1
+Go — verb
+Go- — verb
+Goto — verb
+Grand — value
+Graph — property
+grep — fence
+Grid — verb
+GridColumns — object ids:1
+GridCursor — property
+Group — object ids:1 children:Fixture · value
+Groups — value
+Grow — value
+Guest — value
+HDD — value
+head — fence flags:n=
+Health — object
+Help — verb
+hex — value
+Hidden — property
+High — value
+Highest — value
+Highlight — object
+HissMe — verb
+HoldAction — property
+HoldFollows — property
+HoldOutput — property
+HoldTime — property
+Houselights — value
+HTP — value
+HTTP — property
+Icon — object ids:1
+Identify — object children:Fixture,DMX
+IDType — property
+IfStomp — verb
+Ignore — value
+Image — object ids:1
+Import — verb
+Info — verb · value
+input — value
+InputPriority — property
+Insert — verb
+Interface — object ids:1
+Invite — verb
+Join — verb
+Journal — object
+KeyBindings — object
+Kind — property
+Label — verb
+Large — value
+Last — value
+Layer — property
+Layout — property
+Leave — verb
+Level — property
+LevelBar — property
+Library — object
+Line — property
+Linear — value
+Linked — value
+List — verb
+LoadShow — verb
+LocalUniverse — property
+Location — property
+Locked — property
+LockScreen — object
+Login — verb
+Logout — verb
+Low — value
+Lowest — value
+LowTP — value
+ls — fence flags:r
+LTP — value
+LumaSession — object ids:1
+Macro — object ids:1
+Macros — value
+Main — value
+MainFirst — value
+Mark — value
+Marker — value
+Master — object ids:2 children:Group
+MasterReact — property
+Masters — value
+MaxEchoes — property
+Maximized — property
+Media — value
+Medium — value
+Members — property
+Menu — object ids:1
+Meow — verb
+MeowKey — property
+Merge — value
+MergeCells — property
+MergeDefault — property
+MergeMode — property
+MergeTimeout — property
+Minus — verb
+MirrorX — property
+MirrorY — property
+Mode — property
+Move — verb · value
+MoveGridCursor — property
+MulticastBase — property
+Multipatch — object ids:1
+mv — fence flags:overwrite,keep
+Mvr — object ids:1
+MvrAddresses — property
+MvrClass — object ids:1
+MvrFidOffset — property
+MvrGroup — object ids:1
+MvrIds — property
+MvrIdType — property
+MvrLayer — object ids:1
+MvrLost — property
+MvrMatch — property
+MvrMissing — property
+MvrNames — property
+MvrNewFixtures — property
+MvrPosition — object ids:1
+MvrRevisions — property
+MvrRotate — property
+MvrRotation — property
+MvrUniverseOffset — property
+MvrX — property
+MvrY — property
+MvrZ — property
+Name — property
+Negative — value
+Network — object ids:1
+Never — value
+New — value
+NewLine — value
+NewShow — verb
+Next — verb · value
+Night — value
+No — value
+NonDim — value
+None — value
+Normal — value
+NormalTheme — object
+Note — property
+NotificationMode — property
+Now — value
+Number — value
+Off — verb · value
+Offer — value
+Offset — property
+Ok — property
+On — verb · value
+Online — property
+OnlySelection — property
+OnlyUsedDimmers — value
+Oops — verb
+OopsConfirmation — property
+OopsProgrammer — property
+OopsSelection — property
+OopsViews — property
+Order — property
+Osc — object ids:1
+OutDelay — property
+OutFade — property
+output — value
+OutputWhenAlone — property
+Packed — value
+PacketGap — property
+Paint — object
+Parent — value
+Park — verb
+Password — property
+Paste — verb
+Path — property
+Pause — verb
+Percent — value
+permanent — value
+Physical — value
+Pinned — property
+Playback — value
+Plus — verb
+PoolDrag — property
+PoolXml — object ids:1
+PopupDim — property
+Port — property
+PortAddress — property
+Positive — value
+PosX — property
+PosY — property
+PosZ — property
+PreserveGrid — property
+Preset — object ids:1
+Presets — value
+Previous — verb · value
+Prio — value
+Priority — property
+Profile — property
+Prog — value
+Program — value
+Programmer — object
+ProgrammerOnly — property
+pwd — fence
+Pyro — value
+quicksheet — verb
+Raised — property
+Rate — property
+Readout — property
+Realtime — value
+Recovery — object ids:1
+RecoveryCap — property
+RecoveryKeepDays — property
+Recreate — value
+Redo — verb
+Reference — object ids:1
+ReloadUI — verb
+RemoteLogin — property
+remove — verb
+Reset — verb
+ResetActive — verb
+ResetAll — verb
+ResetSelection — verb
+Resolution — property
+Restart — verb
+Rights — property
+rm — fence flags:n
+Root — object ids:255
+Rotation — property
+RotX — property
+RotY — property
+RotZ — property
+Rows — property
+Sacn — object ids:1
+SacnUniverse — property
+Saturation — property
+SaveShow — verb
+Scaling — value
+Screen — object ids:1
+ScreenConfig — object ids:1
+Screenshot — verb
+SCurve — value
+Search — property
+Select — verb · value
+Selected — value
+SelectedOnly — property
+SelectFixtures — verb
+Selection — object
+SelectionFirst — property
+SelFix — value
+Send — property
+Sequence — object ids:1 children:Cue · value
+Sequences — value
+Server — object
+session — value
+SessionProtocol — property
+Set — verb
+Settings — object
+Setup — value
+Sheet — value
+Shell — object ids:1
+Shift — value
+Shortcuts — verb
+Show — object ids:1
+ShowAttribute — property
+ShowClock — property
+ShowData — object
+ShowDescriptions — property
+ShowEmpty — property
+ShowFolder — property
+ShowFormat — property
+ShowId — property
+Showroom — value
+ShowTitle — property
+ShowValue — property
+Shuffle — verb
+Shutdown — verb
+Sidebars — object
+Since — property
+Size — property
+Slots — property
+Small — value
+Snap — value
+Solo — object
+Sort — verb
+Split — verb
+SSD — value
+StartupShow — property
+stat — fence
+State — property
+Station — object ids:1 children:Network,Interface
+StationFolder — property
+Stomp — verb
+Stop — verb
+Store — verb
+SubAttributesFollow — property
+Subsystems — property
+Suggestions — property
+Summary — value
+Super — value
+Surface — property
+Sync — property
+TabOnly — value
+Tag — object ids:255 children:Tag
+Tags — value
+tail — fence flags:n=
+Take — value
+Target — property
+Terminal — value
+Text — property
+TextDim — property
+Theme — object children:Paint
+ThemeOverride — property
+Time — property
+Timecode — object ids:1
+timed — value
+Timeline — value
+TimingPreset — object ids:1
+Toggle — verb · value
+Top — verb (hold)
+Total — property
+Tracking — property
+tree — fence flags:d=
+UIEngine — object
+UIKey — object ids:1
+Ultra — value
+Unassign — verb
+Unbind — verb
+Unclaim — verb
+Undo — object
+UnitNumber — property
+Universe — object ids:1 · value
+Unlimited — value
+Unpark — verb
+Unstomp — verb
+Unwatch — verb
+Update — verb
+Uptime — property
+USB — value
+UseMaster — value
+UseMine — value
+User — object ids:1 children:Programmer
+UserProfile — object ids:1 children:Icon,Image,Theme,LockScreen,WindowPreset,Attribute,FeatureGroup
+UUID — value
+Value — value
+Verbose — value
+Verbosity — property
+Version — object ids:1
+VeryLow — value
+View — object ids:1
+ViewBar — object
+ViewButton — object ids:2
+Views — value
+wall — value
+warn — value
+Watch — object ids:1
+wc — fence
+Widths — property
+Window — object ids:2
+WindowBar — property
+WindowBarItems — property
+WindowPreset — object ids:1
+WindowType — object ids:1
+Wrap — property
+X — property
+Y — property
+Yes — value
+Z — property
+Zero — verb · value
+Zoom — property

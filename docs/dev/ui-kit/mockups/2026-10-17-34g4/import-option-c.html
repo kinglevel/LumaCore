@@ -1,0 +1,281 @@
+<title>MVR Import Defaults</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: two fixed 1440-wide desk frames (the Import MVR dialog, then the patch window after the import), each in its own sideways-scrolling well; notes between them. Palette sampled from the user's concept (inspiration-style.md): matte neutral greys, one olive-gold accent, status as small marks; the import tints follow a reference patcher's grid, muted. */
+:root {
+  --gap: #090909; --win: #121212; --sheet: #1c1c1c; --strip: #242424; --cell: #303030; --cell-hi: #353535;
+  --line: #424242; --pressed: #606060; --text-dim: #787878; --text: #9c9c9c; --text-hi: #d1d1d1;
+  --gold: #7c6200; --gold-off: #312600; --gold-lane: #1e1c06; --gold-light: #ccc085;
+  --ok: #009b09; --alert: #e10000;
+  --t-new: #10320f; --t-new-edge: #1f6b1c;      /* the patcher green, muted */
+  --t-diff: #3a2208; --t-diff-edge: #8a4c12;    /* the patcher orange, muted */
+  --t-lost: #3a1010; --t-lost-edge: #8f2a2a;
+  --t-guid: #0f2238; --t-guid-edge: #2c5a8a;    /* the patcher blue: the match key */
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--gap); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.45; font-weight: 400;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 22px 40px; }
+main { max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+h1 { font-size: 24px; font-weight: 400; color: var(--text-hi); margin: 0; text-wrap: balance; }
+p { margin: 0; max-width: 78ch; }
+.lead { color: var(--text); }
+.step { display: flex; align-items: center; gap: 10px; font-size: 19px; color: var(--text-hi); }
+.dot { width: 13px; height: 13px; border-radius: 50%; background: var(--gold); flex: none; }
+.dot.off { background: var(--gold-off); }
+.well { overflow-x: auto; border-radius: 4px; }
+.frame { width: 1440px; background: var(--gap); padding: 4px; display: flex; flex-direction: column; gap: 4px; }
+.mono { font-family: var(--mono); font-size: 13px; }
+.num { font-variant-numeric: tabular-nums; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 4px; }
+.notes > div { min-width: 0; background: var(--win); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.notes .h { color: var(--text-hi); display: flex; align-items: center; gap: 8px; }
+.notes ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+
+/* ── Window parts (kit) ─────────────────────────────────────────────── */
+.tabs { display: flex; align-items: flex-end; gap: 2px; background: var(--win); height: 40px; padding: 0 6px; }
+.tab { display: flex; align-items: center; gap: 9px; height: 36px; padding: 0 14px; color: var(--text-dim); font-size: 18px; border-radius: 6px 6px 0 0; }
+.tab.on { background: var(--cell-hi); color: var(--text-hi); }
+.tab-add { width: 22px; height: 22px; margin: 0 0 7px 6px; border: 1px solid var(--line); border-radius: 3px; color: var(--text-dim); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.wbar { display: flex; align-items: center; gap: 22px; height: 38px; padding: 0 12px; background: var(--strip); font-size: 15px; color: var(--text); }
+.wbar .sp { margin-left: auto; color: var(--text-dim); font-size: 13px; }
+.cb { display: inline-flex; align-items: center; gap: 8px; }
+.cb i { width: 16px; height: 16px; border-radius: 2px; background: #313131; display: inline-flex; align-items: center; justify-content: center; font-style: normal; font-size: 12px; color: var(--text-hi); }
+.cb i.on::after { content: "✓"; }
+.dd { color: var(--text); } .dd b { font-weight: 400; color: var(--text-hi); } .dd::after { content: " ▾"; color: var(--text-dim); }
+.claim { display: inline-flex; align-items: center; gap: 7px; color: var(--text-hi); } .claim::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+
+/* luma-grid */
+.grid { width: 100%; border-collapse: separate; border-spacing: 0 3px; font-variant-numeric: tabular-nums; }
+.grid th { text-align: left; font-weight: 400; font-size: 13px; color: var(--text-dim); padding: 6px 8px; white-space: nowrap; }
+.grid td { padding: 0 3px 0 0; height: 44px; white-space: nowrap; font-size: 15px; }
+.grid td.no { width: 52px; text-align: center; color: var(--text-dim); font-size: 13px; padding: 0; }
+.c { height: 42px; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: var(--strip); color: var(--text); border-radius: 3px; position: relative; overflow: hidden; }
+.c.ro { background: transparent; }
+.c .sub { font-size: 12px; color: var(--text-dim); }
+.c .stack { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.c.new { background: var(--t-new); color: var(--text-hi); }
+.c.diff { background: var(--t-diff); color: var(--text-hi); }
+.c.offer { background: var(--strip); box-shadow: inset 0 0 0 1px var(--t-diff-edge); }
+.c.offer .sub { color: #c0874a; }
+.c.lost { background: var(--t-lost); }
+.c.guid { background: var(--t-guid); color: #b9c8d8; font-family: var(--mono); font-size: 12.5px; }
+.c.clash { background: var(--t-lost); box-shadow: inset 0 0 0 1px var(--t-lost-edge); }
+.c.clash .sub { color: #d87a7a; }
+.c.live::after, .c.mine::after { content: ""; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; }
+.c.live::after { background: #8e74c0; } .c.mine::after { background: var(--gold-light); }
+.tk { margin-left: auto; width: 16px; height: 16px; border-radius: 2px; background: #313131; flex: none; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text-hi); }
+.tk.on::after { content: "✓"; }
+.st { height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 3px; font-size: 14px; color: var(--text-hi); }
+.st.ok { background: var(--strip); color: var(--text-dim); }
+.st.diff { background: var(--t-diff-edge); } .st.new { background: var(--t-new-edge); } .st.lost { background: var(--t-lost-edge); }
+.st.clash { background: var(--alert); color: #fff; }
+
+/* slab */
+.slab { display: flex; gap: 4px; background: var(--win); padding: 6px; }
+.slab .grp { display: grid; grid-template-columns: repeat(5, 116px); grid-auto-rows: 58px; gap: 4px; }
+.slab .fn { display: grid; grid-template-columns: repeat(4, 116px); grid-auto-rows: 58px; gap: 4px; padding-left: 6px; border-left: 1px solid var(--line); }
+.b { background: var(--strip); border-radius: 3px; display: flex; align-items: center; gap: 9px; padding: 0 12px; color: var(--text-hi); font-size: 15px; }
+.b svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.b.dis { color: #4a4a4a; }
+.b.del { color: #e05a5a; } .b.add { } .b.add svg { color: var(--ok); }
+.b.val { flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; }
+.b.val small { color: var(--text-dim); font-size: 12px; }
+.keep { margin-left: auto; width: 240px; background: var(--strip); border-radius: 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-bottom: 3px solid var(--gold); }
+.keep b { font-weight: 400; color: var(--text-hi); font-size: 17px; } .keep small { color: var(--text-dim); font-size: 12px; }
+
+/* split (left tabs) */
+.body { display: flex; gap: 4px; }
+.left { width: 230px; background: var(--win); display: flex; flex-direction: column; flex: none; }
+.lt { padding: 9px 14px; display: flex; flex-direction: column; gap: 1px; border-left: 3px solid transparent; }
+.lt b { font-weight: 400; color: var(--text); font-size: 15px; } .lt small { color: var(--text-dim); font-size: 12px; }
+.lt.on { background: var(--cell); border-left-color: var(--gold); } .lt.on b { color: var(--text-hi); }
+.lt.sub { padding-left: 30px; } .lt.sub2 { padding-left: 46px; }
+.lgroup { color: var(--text-dim); font-size: 13px; padding: 12px 14px 4px; }
+.main { flex: 1; min-width: 0; background: var(--sheet); display: flex; flex-direction: column; }
+.importstrip { display: flex; align-items: center; gap: 18px; padding: 0 12px; height: 42px; background: var(--gold-lane); color: var(--text); font-size: 14px; border-bottom: 1px solid #383309; }
+.importstrip b { font-weight: 400; color: var(--gold-light); }
+.cnt { display: inline-flex; align-items: center; gap: 6px; } .cnt i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.foot { margin-top: auto; padding: 8px 12px; color: var(--text-dim); font-size: 13px; display: flex; gap: 18px; border-top: 1px solid var(--strip); }
+.foot .line { font-family: var(--mono); font-size: 12.5px; color: var(--text); }
+
+/* dialog */
+.dlg { width: 1180px; margin: 30px auto; background: var(--win); border: 1px solid var(--line); border-radius: 6px; display: flex; flex-direction: column; overflow: hidden; }
+.dlg .title { height: 50px; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 16px; background: var(--strip); color: var(--text-hi); font-size: 19px; }
+.dlg .x { margin-left: auto; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: var(--text); font-size: 22px; }
+.dlg .cols { display: grid; grid-template-columns: 1fr 460px; gap: 4px; background: var(--gap); }
+.pane { background: var(--sheet); padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.pane .h { color: var(--text-hi); font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.files { width: 100%; border-collapse: separate; border-spacing: 0 3px; }
+.files th { text-align: left; font-weight: 400; color: var(--text-dim); font-size: 13px; padding: 4px 10px; }
+.files td { height: 42px; padding: 0 10px; background: var(--strip); color: var(--text); white-space: nowrap; }
+.files td:first-child { border-radius: 3px 0 0 3px; } .files td:last-child { border-radius: 0 3px 3px 0; text-align: right; }
+.files tr.sel td { background: #2e3a12; color: var(--text-hi); }
+.files .r { text-align: right; }
+.set { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; }
+.sc { background: var(--strip); border-radius: 3px; padding: 7px 10px; display: flex; flex-direction: column; gap: 2px; position: relative; }
+.sc small { color: var(--text-dim); font-size: 12px; } .sc span { color: var(--text-hi); font-size: 16px; }
+.sc.wide { grid-column: 1 / -1; }
+.sc .badge { position: absolute; top: 7px; right: 8px; font-size: 11px; color: var(--text-dim); }
+.take { display: grid; grid-template-columns: 1fr auto; gap: 4px; }
+.take .sc { flex-direction: row; justify-content: space-between; align-items: center; grid-column: 1 / -1; }
+.seg { display: inline-flex; gap: 3px; } .seg i { font-style: normal; padding: 4px 10px; border-radius: 3px; background: var(--cell); color: var(--text-dim); font-size: 13px; }
+.seg i.on { background: var(--pressed); color: var(--text-hi); }
+.dlg .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--gap); padding-top: 4px; }
+.dlg .btns div { height: 60px; display: flex; align-items: center; justify-content: center; background: var(--strip); color: var(--text-hi); font-size: 17px; }
+.dlg .btns div.go { background: var(--gold); color: #fff; }
+.dlg .path { color: var(--text-dim); font-size: 13px; display: flex; justify-content: space-between; gap: 12px; }
+</style>
+
+<main>
+  <h1>MVR import, option C: choose what to take first</h1>
+  <p class="lead">This is the festival example from before, drawn in the kit's style. Bob has claimed Devices. In the patch window he taps Import, then MVR. The dialog's switches decide what is written into his Devices draft; anything switched off is offered per cell instead. The command lines shown are sketches, not decided syntax.</p>
+
+  <div class="step"><span class="dot"></span>1 · Import MVR</div>
+  <div class="well"><div class="frame">
+    <div class="dlg">
+      <div class="title">Import MVR<span class="x">×</span></div>
+      <div class="cols">
+        <div class="pane">
+          <div class="h"><span class="dot"></span>File</div>
+          <table class="files num">
+            <thead><tr><th>Name</th><th>Provider</th><th class="r">Fixtures</th><th class="r">Date</th><th class="r">Size</th></tr></thead>
+            <tbody>
+              <tr class="sel"><td>Festival_R12.mvr</td><td>Vectorworks 2026 · MVR 1.6</td><td class="r">1 340</td><td class="r">2026-10-17 11:55</td><td>4.2 MB</td></tr>
+              <tr><td>Festival_R11.mvr</td><td>Vectorworks 2026 · MVR 1.6</td><td class="r">1 332</td><td class="r">2026-10-14 09:12</td><td>4.1 MB</td></tr>
+              <tr><td>House rig 2026.mvr</td><td>Console 2.5 · MVR 1.6</td><td class="r">409</td><td class="r">2026-09-30 00:44</td><td>51.9 MB</td></tr>
+              <tr><td>Touring floor.mvr</td><td>LumaCore · MVR 1.6</td><td class="r">96</td><td class="r">2026-09-29 19:14</td><td>3.3 MB</td></tr>
+              <tr><td>Festival_R12.mvr</td><td>MVR-xchange · from "CAD office"</td><td class="r">1 340</td><td class="r">2026-10-17 11:58</td><td>4.2 MB</td></tr>
+            </tbody>
+          </table>
+          <div class="path"><span class="mono">library/mvr/Festival_R12.mvr · sha256 9f3c…e1a0</span><span>Drive: Library ▾</span></div>
+          <div class="h" style="margin-top:6px"><span class="dot"></span>What it covers</div>
+          <div class="set">
+            <div class="sc"><small>Scope</small><span>MVR layer "House"</span><span class="badge">412 in scope</span></div>
+            <div class="sc"><small>New fixtures go into</small><span>Luma layer House</span></div>
+            <div class="sc"><small>Match</small><span>Auto · GUID → FID → Name</span></div>
+            <div class="sc"><small>Offsets</small><span>FID +0 · universe +0</span></div>
+            <div class="sc wide"><small>Rig offset</small><span>X 0.00 · Y 0.00 · Z 0.00 m · rotation 0°</span></div>
+          </div>
+        </div>
+        <div class="pane">
+          <div class="h"><span class="dot"></span>What goes into the draft</div>
+          <div class="take">
+            <div class="sc"><span>Addresses</span><span class="seg"><i class="on">Take</i><i>Offer</i></span></div>
+            <div class="sc"><span>IDs (FID, CID)</span><span class="seg"><i class="on">Take</i><i>Offer</i></span></div>
+            <div class="sc"><span>Names</span><span class="seg"><i>Take</i><i class="on">Offer</i></span></div>
+            <div class="sc"><span>Position and rotation</span><span class="seg"><i class="on">Take</i><i>Offer</i></span></div>
+            <div class="sc"><span>Type revisions</span><span class="seg"><i>Take</i><i class="on">Offer</i></span></div>
+            <div class="sc"><span>New fixtures</span><span class="seg"><i class="on">Take</i><i>Offer</i></span></div>
+            <div class="sc"><span>LOST (in scope, not in the file)</span><span class="seg"><i class="on">Mark</i><i>Delete</i></span></div>
+            <div class="sc"><span>Ignore rotation differences</span><span class="cb"><i></i></span></div>
+          </div>
+          <div class="set">
+            <div class="sc wide"><small>Settings</small><span>Preset "CAD update" ▾</span><span class="badge">yours · saved</span></div>
+          </div>
+          <p style="color:var(--text-dim);font-size:13px">A clash with a fixture outside the scope is never taken. It stays red until it is resolved.</p>
+        </div>
+      </div>
+      <div class="btns"><div>Cancel</div><div class="go">Import into draft</div></div>
+    </div>
+  </div></div>
+
+  <div class="step"><span class="dot"></span>2 · The patch window after the import</div>
+  <div class="well"><div class="frame">
+    <div class="tabs">
+      <div class="tab on"><span class="dot"></span>Patch</div>
+      <div class="tab"><span class="dot off"></span>DMX Sheet</div>
+      <div class="tab"><span class="dot off"></span>3D</div>
+      <div class="tab-add">+</div>
+    </div>
+    <div class="wbar">
+      <span class="claim">Devices draft · Bob</span>
+      <span class="dd">View: <b>Fixtures</b></span>
+      <span class="dd">Columns: <b>Condensed</b></span>
+      <span class="cb"><i class="on"></i>Import marks</span>
+      <span class="cb"><i></i>Only changes</span>
+      <span class="cb"><i></i>Show 3D positions</span>
+      <span class="sp">live: Alice running · lines live</span>
+    </div>
+    <div class="body">
+      <div class="left">
+        <div class="lgroup">Luma layers</div>
+        <div class="lt"><b>All fixtures</b><small>1 436</small></div>
+        <div class="lt on"><b>House</b><small>412 · 8 new · 4 lost</small></div>
+        <div class="lt sub"><b>Truss 1</b><small>96</small></div>
+        <div class="lt sub"><b>Truss 2</b><small>88</small></div>
+        <div class="lt sub"><b>Truss 3</b><small>64 · 8 new</small></div>
+        <div class="lt sub"><b>Floor</b><small>164 · 4 lost</small></div>
+        <div class="lt"><b>Touring</b><small>96</small></div>
+        <div class="lgroup">MVR layers</div>
+        <div class="lt"><b>House</b><small>Festival_R12</small></div>
+        <div class="lt"><b>groupings</b><small>House rig 2026</small></div>
+        <div class="lgroup">MVR classes</div>
+        <div class="lt"><b>Moving lights</b><small>212</small></div>
+        <div class="lt"><b>LED</b><small>180</small></div>
+      </div>
+      <div class="main">
+        <div class="importstrip">
+          <span><b>Festival_R12.mvr</b> → draft · preset "CAD update"</span>
+          <span class="cnt"><i style="background:var(--strip)"></i>380 OK</span>
+          <span class="cnt"><i style="background:var(--t-diff-edge)"></i>20 DIFF</span>
+          <span class="cnt"><i style="background:var(--t-new-edge)"></i>8 NEW</span>
+          <span class="cnt"><i style="background:var(--t-lost-edge)"></i>4 LOST</span>
+          <span class="cnt"><i style="background:var(--alert)"></i>1 clash</span>
+          <span style="margin-left:auto;color:var(--text-dim)">22 taken · 4 offered</span>
+        </div>
+        <div style="padding:0 6px">
+        <table class="grid">
+          <thead><tr><th style="text-align:center">FID</th><th>Status</th><th>Name</th><th>GUID</th><th>Fixture type · mode</th><th>Address</th><th>Position X / Y / Z</th><th>Invert pan</th><th>Delete</th></tr></thead>
+          <tbody>
+            <tr><td class="no">101</td><td><div class="st ok">OK</div></td><td><div class="c">MegaPointe SL 1</div></td><td><div class="c guid">3FF944C6-6CD0…</div></td><td><div class="c">Robe MegaPointe · Mode 1</div></td><td><div class="c num">1.001</div></td><td><div class="c num">-6.00 / 2.10 / 7.20</div></td><td><div class="c ro">Off</div></td><td></td></tr>
+            <tr><td class="no">102</td><td><div class="st diff">DIFF</div></td><td><div class="c">MegaPointe SL 2</div></td><td><div class="c guid">BCFF38D7-29E0…</div></td><td><div class="c">Robe MegaPointe · Mode 1</div></td><td><div class="c diff num"><span class="stack"><span>1.039</span><span class="sub">live 1.035</span></span><i class="tk on"></i></div></td><td><div class="c num">-4.00 / 2.10 / 7.20</div></td><td><div class="c ro">Off</div></td><td></td></tr>
+            <tr><td class="no">103</td><td><div class="st diff">DIFF</div></td><td><div class="c offer"><span class="stack"><span>MegaPointe SR 3</span><span class="sub">file: MP SR 3</span></span><i class="tk"></i></div></td><td><div class="c guid">BE45BAEC-22F6…</div></td><td><div class="c">Robe MegaPointe · Mode 1</div></td><td><div class="c num">1.069</div></td><td><div class="c diff num"><span class="stack"><span>4.00 / 2.10 / 7.45</span><span class="sub">live 7.20</span></span><i class="tk on"></i></div></td><td><div class="c ro">Off</div></td><td></td></tr>
+            <tr><td class="no">104</td><td><div class="st diff">DIFF</div></td><td><div class="c mine"><span class="stack"><span>MP SR 4 (spare)</span><span class="sub">Bob's edit</span></span></div></td><td><div class="c guid">7FC837DE-0104…</div></td><td><div class="c">Robe MegaPointe · Mode 1</div></td><td><div class="c num">1.103</div></td><td><div class="c diff num"><span class="stack"><span>6.00 / 2.10 / 7.45</span><span class="sub">live 7.20</span></span><i class="tk on"></i></div></td><td><div class="c live"><span class="stack"><span>On</span><span class="sub">Alice, live</span></span></div></td><td></td></tr>
+            <tr><td class="no">201</td><td><div class="st diff">DIFF</div></td><td><div class="c">X5 Wash 1</div></td><td><div class="c guid">684E7A79-8E7D…</div></td><td><div class="c offer"><span class="stack"><span>GLP impression X5 · Mode 2 · rev 2</span><span class="sub">file: rev 3</span></span><i class="tk"></i></div></td><td><div class="c num">2.001</div></td><td><div class="c num">-8.00 / 0.00 / 6.50</div></td><td><div class="c ro">Off</div></td><td></td></tr>
+            <tr><td class="no">202</td><td><div class="st clash">CLASH</div></td><td><div class="c">X5 Wash 2</div></td><td><div class="c guid">F0073515-0833…</div></td><td><div class="c">GLP impression X5 · Mode 2</div></td><td><div class="c clash num"><span class="stack"><span>2.031</span><span class="sub">file 7.001 = Fixture 901 · Touring</span></span><i class="tk"></i></div></td><td><div class="c num">-6.00 / 0.00 / 6.50</div></td><td><div class="c ro">Off</div></td><td></td></tr>
+            <tr><td class="no">305</td><td><div class="st new">NEW</div></td><td><div class="c new">Diablo 5<i class="tk on"></i></div></td><td><div class="c guid">E8AF5278-B873…</div></td><td><div class="c new">Ayrton Diablo · Standard</div></td><td><div class="c new num">3.001</div></td><td><div class="c new num">0.00 / -1.50 / 8.00</div></td><td><div class="c ro">Off</div></td><td></td></tr>
+            <tr><td class="no">306</td><td><div class="st new">NEW</div></td><td><div class="c new">Diablo 6<i class="tk on"></i></div></td><td><div class="c guid">423836B2-C3C1…</div></td><td><div class="c new">Ayrton Diablo · Standard</div></td><td><div class="c new num">3.041</div></td><td><div class="c new num">2.00 / -1.50 / 8.00</div></td><td><div class="c ro">Off</div></td><td></td></tr>
+            <tr><td class="no">410</td><td><div class="st lost">LOST</div></td><td><div class="c lost">Sunstrip 10</div></td><td><div class="c guid">9D1E0C44-71B2…</div></td><td><div class="c lost">Showtec Sunstrip · 10ch</div></td><td><div class="c lost num">4.091</div></td><td><div class="c lost num">0.00 / 6.00 / 0.40</div></td><td><div class="c ro">Off</div></td><td><div class="c lost">Keep<i class="tk"></i></div></td></tr>
+            <tr><td class="no">411</td><td><div class="st lost">LOST</div></td><td><div class="c lost">Sunstrip 11</div></td><td><div class="c guid">0AC5F2E9-5D13…</div></td><td><div class="c lost">Showtec Sunstrip · 10ch</div></td><td><div class="c lost num">4.101</div></td><td><div class="c lost num">1.00 / 6.00 / 0.40</div></td><td><div class="c ro">Off</div></td><td><div class="c lost">Keep<i class="tk"></i></div></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="foot"><span>Matched 404: 401 GUID · 2 FID · 1 name · 8 new</span><span class="line">Import MVR "Festival_R12.mvr" /Scope MvrLayer "House" /Preset "CAD update"</span></div>
+      </div>
+    </div>
+    <div class="slab">
+      <div class="grp">
+        <div class="b"><svg viewBox="0 0 24 24"><path d="m4 4 7 17 2.5-7.5L21 11z"/></svg>Select</div>
+        <div class="b add"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>New</div>
+        <div class="b"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg>Copy</div>
+        <div class="b"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></svg>Cut</div>
+        <div class="b dis"><svg viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>Paste</div>
+        <div class="b del"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>Delete</div>
+        <div class="b"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>Oops</div>
+        <div class="b"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Import</div>
+        <div class="b"><svg viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M5 3h14"/></svg>Export</div>
+        <div class="b"><svg viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>Edit</div>
+      </div>
+      <div class="fn">
+        <div class="b">Tick new</div>
+        <div class="b">Tick diff</div>
+        <div class="b">Untick all</div>
+        <div class="b">Re-read file</div>
+        <div class="b del">Mark lost for delete</div>
+        <div class="b val"><small>Match</small>Auto</div>
+        <div class="b val"><small>Scope</small>MVR "House"</div>
+        <div class="b val"><small>Preset</small>CAD update</div>
+      </div>
+      <div class="keep"><b>Leave patch…</b><small>Keep · Discard · Cancel</small></div>
+    </div>
+  </div></div>
+
+  <div class="notes">
+    <div><span class="h"><span class="dot"></span>What C wrote</span><ul><li>Addresses, IDs and positions were switched on, so they are in the draft, with a tick and the live value under them.</li><li>Names and type revisions were switched off, so they are offered: an outlined cell with the file's value under it, unticked.</li><li>New fixtures are in the draft and in Luma layer House.</li><li>LOST fixtures are only marked; Delete is a tick.</li></ul></div>
+    <div><span class="h"><span class="dot"></span>Small marks</span><ul><li>The GUID column is blue when the GUID was the match (the usual patcher mark).</li><li>A gold-light dot: Bob's own edit in the draft (104's name).</li><li>A violet dot: a live edit by someone else that reached the draft (Alice's invert pan).</li><li>A red cell: the clash, never taken; Keep waits until it's resolved.</li></ul></div>
+    <div><span class="h"><span class="dot"></span>Leaving the patch</span><ul><li>Keep asks: "8 new, 19 changed, 4 LOST kept, 4 offers not taken, 1 clash." The clash blocks Keep.</li><li>Keep is one Oops step. Discard drops the import and Bob's edits; Alice's live fix stays on the live show.</li></ul></div>
+  </div>
+</main>

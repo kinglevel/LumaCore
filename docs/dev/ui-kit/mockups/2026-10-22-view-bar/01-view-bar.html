@@ -1,0 +1,309 @@
+<title>View Bar and View Pool</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* A proposal page: notes in one column; the working mock (pool window + view bar) full width in the kit's dark theme, the page around it follows the viewer. */
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#9a7a08;--code:#ecebe4;
+  --font:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+  --k-bg:#121212;--k-surface:#1c1c1c;--k-raised:#303030;--k-line:#424242;--k-gap:#0a0a0a;--k-text:#d1d1d1;--k-dim:#8a8a8a;--k-strong:#ececec;--k-accent:#d4a634;--k-sel:#3a3320;
+  /* the type colours a button's bar shows (proposed tokens) */
+  --t-view:#d4a634;--t-macro:#4d8fd6;--t-seq:#3fbf4a;--t-group:#c9a227;--t-preset:#b48ad0;--t-wp:#3fb0a6;--t-user:#d86a7c;--t-sc:#8a8a8a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--font);margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1180px;margin:0 auto;display:grid;gap:28px}
+.narrow{max-width:900px}
+h1{font-size:1.75rem;margin:0;text-wrap:balance;line-height:1.2}h2{font-size:1.18rem;margin:0 0 8px;text-wrap:balance}h3{font-size:1rem;margin:2px 0 4px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:600}
+p{max-width:74ch;margin:.4em 0}.mute{color:var(--mute)}
+code{font:.86em var(--mono);background:var(--code);padding:1px 5px;border-radius:4px}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 var(--mono);overflow-x:auto;margin:.4em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.two{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}@media (max-width:760px){.two{grid-template-columns:1fr}}
+.q{display:grid;gap:4px;padding-top:12px;border-top:1px solid var(--line)}
+.opts{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:4px}
+.opt{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--card);min-width:0;font-size:.92rem}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+figure{margin:0}figure img{border:1px solid var(--line);border-radius:6px;display:block;max-width:100%}
+/* ---- the desk mock ---- */
+.desk{display:grid;grid-template-columns:minmax(0,1fr) 92px;background:var(--k-gap);border-radius:8px;overflow:hidden;height:660px;font:13px/1.3 var(--font);color:var(--k-text)}
+.area{display:grid;grid-template-rows:auto 1fr;gap:3px;padding:3px;min-width:0;min-height:0}
+.win{background:var(--k-bg);display:grid;grid-template-rows:auto auto 1fr;min-width:0;min-height:0}
+.wtabs{display:flex;gap:2px;background:var(--k-surface);padding:4px 6px}
+.wtabs span{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:4px;color:var(--k-dim);font-size:12.5px}
+.wtabs span.on{background:var(--k-raised);color:var(--k-text)}
+.wtabs i{width:8px;height:8px;border-radius:50%;background:#4a3e12}.wtabs span.on i{background:var(--k-accent)}
+.wbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:5px 8px;background:var(--k-surface);border-top:1px solid var(--k-gap);font-size:12px;color:var(--k-dim)}
+.wbar select,.wbar button{font:12px var(--font);background:var(--k-raised);color:var(--k-text);border:1px solid var(--k-line);border-radius:4px;padding:4px 8px;cursor:pointer}
+.wbar button.on{background:var(--k-sel);border-color:var(--k-accent);color:#f3ecd3}
+.pool{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px;padding:6px;align-content:start;overflow:auto}
+.cell{position:relative;background:var(--k-surface);border:1px solid var(--k-line);border-radius:4px;padding:6px;display:grid;gap:5px;cursor:grab;min-height:118px;user-select:none}
+.cell.empty{background:#161616;border-style:dashed;cursor:default;color:#555}
+.cell .no{font:600 11px var(--mono);color:var(--k-dim);display:flex;justify-content:space-between}
+.cell .nm{font-weight:600;color:var(--k-strong);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cell .on{position:absolute;right:6px;top:5px;font:600 10px var(--mono);color:var(--k-accent)}
+.cell.cur{box-shadow:inset 0 0 0 2px var(--k-accent)}
+.cell.picked{box-shadow:inset 0 0 0 2px #4d8fd6}
+.thumb{position:relative;height:62px;background:var(--k-gap);border-radius:3px;overflow:hidden}
+.thumb b{position:absolute;background:#2a2a2a;border:1px solid #3a3a3a;border-radius:2px;font:500 9px var(--font);color:#9a9a9a;display:grid;place-items:center;overflow:hidden;white-space:nowrap}
+.thumb .scr{position:absolute;left:4px;bottom:3px;font:600 9px var(--mono);color:#777}
+/* the view bar */
+.bar{background:var(--k-surface);border-left:1px solid var(--k-gap);display:flex;flex-direction:column;align-items:stretch;gap:2px;padding:3px}
+.nav{height:30px;display:grid;place-items:center;color:var(--k-dim);font-size:12px;border-radius:3px;background:#202020;cursor:pointer;user-select:none}
+.range{font:600 10px var(--mono);color:var(--k-dim);text-align:center}
+.vb{position:relative;height:58px;border-radius:4px;background:#232323;border:1px solid #2e2e2e;padding:12px 6px 5px;display:grid;align-content:space-between;cursor:pointer;user-select:none;overflow:hidden}
+.vb .bt{position:absolute;left:0;right:0;top:0;height:4px;background:var(--c,transparent)}
+.vb .n{font:600 10px var(--mono);color:var(--k-dim);display:flex;justify-content:space-between}
+.vb .ico{font:700 9px var(--font);color:var(--c);letter-spacing:.04em}
+.vb .nm{font-size:11.5px;font-weight:600;color:var(--k-strong);line-height:1.15;max-height:2.3em;overflow:hidden}
+.vb.empty{background:#181818;border-style:dashed}
+.vb.empty .nm{color:#555;font-weight:400}
+.vb.cur{box-shadow:inset 0 0 0 2px var(--k-accent)}
+.vb.drop{box-shadow:inset 0 0 0 2px #4d8fd6;background:#1c2633}
+.vb.wait{box-shadow:inset 0 0 0 2px #4d8fd6}
+.line{display:flex;gap:8px;align-items:center;background:#0d0d0d;color:#e8e2cf;font:12.5px var(--mono);padding:8px 10px;border-radius:0 0 8px 8px;min-height:20px}
+.line .p{color:var(--k-accent)}
+.menu{position:fixed;z-index:20;background:var(--k-surface);border:1px solid var(--k-line);border-radius:6px;padding:4px;min-width:200px;box-shadow:0 8px 24px #000a;font:13px var(--font);color:var(--k-text)}
+.menu div{padding:8px 10px;border-radius:4px;cursor:pointer}.menu div:hover{background:var(--k-raised)}
+.menu .h{color:var(--k-dim);font-size:11.5px;cursor:default}.menu .h:hover{background:none}
+.menu .sep{height:1px;background:var(--k-line);padding:0;margin:4px 0}
+.area.quad{grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);grid-template-rows:repeat(3,minmax(0,1fr))}
+.area.quad .win[data-kind="view"]{grid-row:1/4}
+.pool[data-pool]:not([data-pool="view"]){grid-template-columns:repeat(auto-fill,minmax(92px,1fr))}
+.pool[data-pool]:not([data-pool="view"]) .cell{min-height:52px}
+@media (max-width:760px){.desk{height:auto}.area.quad{grid-template-columns:1fr;grid-template-rows:auto}.area.quad .win[data-kind="view"]{grid-row:auto}.pool{max-height:260px}}
+.legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:12.5px;color:var(--mute)}.legend span{display:inline-flex;gap:6px;align-items:center}.legend i{width:16px;height:5px;border-radius:2px}
+</style>
+
+<main>
+<header class="narrow" style="display:grid;gap:8px">
+  <div class="kicker">View bar · round 1 · 2026-10-22</div>
+  <h1>The right sidebar: a view bar for any object, and a View pool</h1>
+  <p>Three asks: a stored view button should show; a View pool window to see a profile's views; and assigning views to view buttons, later macros, sequences and any object. This page is the analysis (LumaCore's code and the established view bar) and a working mock of the bar and the pool.</p>
+</header>
+
+<section class="card narrow" style="display:grid;gap:8px">
+  <h2>Why a stored view button doesn't show</h2>
+  <figure style="float:right;margin:0 0 8px 14px;width:110px"><img src="data:image/jpeg;base64,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F/36X/Cj7TJ/di/79L/hQBz1FFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAXdH/4/h/1zf8A9ANathave3tvaxEB5nWNSegJOM1laP8A8fw/65v/AOgGtCGR4ZUliYpIhDKynBBHQigDV162twI7nTpI3sdxt02qVYMoHLZ6k5zn8O1ZFW77Ubm+CLcMmxCWCxxqi5PU4UAZPrVSgAooooAKKKKACiiigAooooAKKKKAMSiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKALuj/wDH8P8Arm//AKAau1S0f/j+H/XN/wD0A1doAWiiigAooooAKKKKACiiigAooooAKKKKAMSiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKALuj/8AH8P+ub/+gGrtU9Fx/aC7gSNj5A/3TWnut/8AnlL/AN/B/hQBDRU263/55S/9/B/hRut/+eUv/fwf4UAQ0VNut/8AnlL/AN/B/hRut/8AnlL/AN/B/hQBDRU263/55S/9/B/hRut/+eUv/fwf4UAQ0VNut/8AnlL/AN/B/hRut/8AnlL/AN/B/hQBDRU263/55S/9/B/hRut/+eUv/fwf4UAQ0VNut/8AnlL/AN/B/hRut/8AnlL/AN/B/hQBz1FFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAXdH/wCP4f8AXN//AEA1p2gha6hF0zpblwJGQZYLnkgetZmj/wDH8P8Arm//AKAau9qANTU7ayi0+0uLUXKPOz4SZlb5F43cAdTkfgazKtald/bJ0ZY/KijiSKOPOdqqPX3OT+NVaACiiigAooooAKKKKACiiigAooooAxKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAu6P/x/D/rm/wD6Aau1S0f/AI/h/wBc3/8AQDV2gBaKKKACiiigAooooAKKKKACiiigAooooAxKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAu6P8A8fw/65v/AOgGrtU9FGdQUEgAo/J7fKa0/JT/AJ+Yvyb/AAoAhoqbyU/5+Yvyb/CjyU/5+Yvyb/CgCGipvJT/AJ+Yvyb/AAo8lP8An5i/Jv8ACgCGipvJT/n5i/Jv8KPJT/n5i/Jv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" alt="Today's right sidebar: numbered empty slots 1 to 8 with up and down arrows"></figure>
+  <p>The station stores it fine; the sidebar can never match it. A profile keeps its buttons as <code>view_buttons: BTreeMap&lt;slot, view GUID&gt;</code> (step 6d's strict identity made them GUID links), but the page still looks the view up by number:</p>
+  <pre>const no = viewData.buttons?.[n];                         // a GUID string
+return no ? viewData.views.find(v =&gt; v.no === no) : null; // compares it to a number</pre>
+  <p>So every slot draws empty (<code>index.html:4150</code>). A second fault: <code>/api/views</code> finds the profile by a name equal to your login (<code>console_bridge.rs:595</code>), not through your user's profile link, so anyone on a shared or differently named profile gets nothing. The bar is also an old <code>fetch</code>; the house rule puts it on a feed built by <code>lumacore-views</code>. All three go away with the build below.</p>
+</section>
+
+<section style="display:grid;gap:8px">
+  <h2>The mock: dedicated pool windows and the view bar</h2>
+  <p>Each pool is its own window type, spawned on its own: <b>Views</b> (new), <b>Groups</b> and <b>Sequences</b> (as today), <b>Macros</b> (new). A screen holds as many as you like, side by side; every pool window's cells can go onto a view button.</p>
+  <p class="mute">Drag a cell from any pool window onto a button, or use <b>Assign</b> (tap a cell in any window, then a button), or hold / right-click a button. Tap a button or a cell to run it. Every gesture shows its line below.</p>
+  <div>
+    <div class="desk" id="desk">
+      <div class="area quad">
+        <div class="win" data-kind="view">
+          <div class="wtabs"><span class="on"><i></i>Views</span></div>
+          <div class="wbar">
+            <span>Profile</span><select id="prof" aria-label="Profile"><option>Your profile (Default)</option><option>LD</option><option>Busking</option></select>
+            <button type="button" id="assign">Assign</button>
+          </div>
+          <div class="pool" data-pool="view"></div>
+        </div>
+        <div class="win" data-kind="group">
+          <div class="wtabs"><span class="on"><i></i>Groups</span></div>
+          <div class="wbar"><span>DataPool 1</span></div>
+          <div class="pool" data-pool="group"></div>
+        </div>
+        <div class="win" data-kind="macro">
+          <div class="wtabs"><span class="on"><i></i>Macros</span></div>
+          <div class="wbar"><span>DataPool 1</span></div>
+          <div class="pool" data-pool="macro"></div>
+        </div>
+        <div class="win" data-kind="seq">
+          <div class="wtabs"><span class="on"><i></i>Sequences</span></div>
+          <div class="wbar"><span>DataPool 1</span></div>
+          <div class="pool" data-pool="seq"></div>
+        </div>
+      </div>
+      <div class="bar" id="bar"></div>
+    </div>
+    <div class="line"><span class="p">Admin[Fixture]&gt;</span><span id="line">—</span></div>
+  </div>
+  <div class="legend" id="legend"></div>
+</section>
+
+<section class="card narrow" style="display:grid;gap:4px">
+  <h2>To decide</h2>
+
+  <div class="q"><b>1. Whose buttons.</b> Today one set per profile for every screen.
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>Per screen of the profile: <code>ViewButton 1.4</code>; a bare <code>ViewButton 4</code> is this screen's. A two-screen desk gets two bars.</div><div class="opt"><span class="tag">B</span><br>One set per profile, the same on every screen (today).</div></div></div>
+
+  <div class="q"><b>2. What a button can hold.</b>
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>Any object with a default action: View, Macro, Sequence, Group, Preset, WindowPreset, ScreenConfig, User. A tap runs it as its pool tap does (Sequence: its pool action); the bar's colour and icon say the kind.</div><div class="opt"><span class="tag">B</span><br>The established list only (views, macros, users, screen configs …), sequences and presets on executors.</div></div></div>
+
+  <div class="q"><b>3. How to assign.</b> All three are the same line, <code>Assign View 3 At ViewButton 1.5</code>.
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>Drag a pool cell onto a button (the pointer core's one lift), Assign then tap-tap, and hold a button → Assign… (a pick list by kind).</div><div class="opt"><span class="tag">B</span><br>Assign and the command line only.</div></div></div>
+
+  <div class="q"><b>4. Store on an empty button.</b>
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>Store, then tap an empty button (or hold it): a new view of this screen in the first free number, assigned in one line, the name asked by the station's dialog.</div><div class="opt"><span class="tag">B</span><br>Store View first, then assign.</div></div></div>
+
+  <div class="q"><b>5. A tap on an empty button.</b>
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>Nothing changes; a hint says “Empty — hold to store this view here”.</div><div class="opt"><span class="tag">B</span><br>Clear the screen.</div></div></div>
+
+  <div class="q"><b>6. The pool windows.</b> Your ask: one dedicated window type per pool, never one window that switches kind.
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>Window types <b>Views</b> and <b>Macros</b> join <b>Groups</b> and <b>Sequences</b>, all on the one pool window (one element, one <code>pools</code> feed, a <code>PoolDef</code> per kind). Later Presets and others the same way.</div><div class="opt"><span class="tag">B</span><br>Views now, Macros when Macro Store / Go are built (today only List is).</div></div></div>
+
+  <div class="q"><b>7. The View pool cell.</b>
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>A drawn picture of the view's windows (we have their places, no screenshot needed), the screens it covers, the buttons it sits on, gold when it is this screen's view now. A window setting picks the profile: yours or any other.</div><div class="opt"><span class="tag">B</span><br>Number and name only.</div></div></div>
+
+  <div class="q"><b>8. More buttons than fit.</b> Your desk shows as many as fit (11 of 12).
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>As many as fit, ▲ ▼ step a set, the range shown (“1–8 of 20”); one lane now, a second lane later as a setting.</div><div class="opt"><span class="tag">B</span><br>A fixed 8 with pages (today).</div></div></div>
+</section>
+</main>
+
+<script>
+const KIND = {
+  view: ['VIEW', 'var(--t-view)', 'View', 'Call View'],
+  macro: ['MACRO', 'var(--t-macro)', 'Macro', 'Go Macro'],
+  seq: ['SEQ', 'var(--t-seq)', 'Sequence', 'Select Sequence'],
+  group: ['GRP', 'var(--t-group)', 'Group', 'Group'],
+  wp: ['WIN', 'var(--t-wp)', 'WindowPreset', 'Call WindowPreset'],
+  user: ['USER', 'var(--t-user)', 'User', 'Login'],
+};
+// Pools: (no, name, extra). A view's windows as rectangles (x, y, w, h in %, label) and its screens.
+const POOLS = {
+  view: [
+    [1, 'Programming', { win: [[0, 0, 50, 60, 'Groups'], [50, 0, 50, 60, 'Presets'], [0, 60, 100, 40, 'Device Sheet']], scr: '1' }],
+    [2, 'Patch', { win: [[0, 0, 100, 100, 'Patch']], scr: '1' }],
+    [3, 'Busking', { win: [[0, 0, 34, 100, 'Groups'], [34, 0, 33, 100, 'Colours'], [67, 0, 33, 100, 'Sequences']], scr: '1+2' }],
+    [4, 'Playback', { win: [[0, 0, 100, 55, 'Sequence'], [0, 55, 50, 45, 'Sequences'], [50, 55, 50, 45, 'Faders']], scr: '1' }],
+    [5, 'DMX check', { win: [[0, 0, 60, 100, 'DMX'], [60, 0, 40, 100, 'System Monitor']], scr: '1' }],
+    [6, 'Theme', { win: [[0, 0, 100, 100, 'Showroom']], scr: '2' }],
+    [8, 'Timing', { win: [[0, 0, 100, 50, 'Sequence · timeline'], [0, 50, 100, 50, 'Realtime']], scr: '1' }],
+  ],
+  macro: [[1, 'Clear all', {}], [2, 'House to half', {}], [3, 'Blackout safe', {}], [5, 'Fog on', {}]],
+  seq: [[1, 'Main', {}], [2, 'Walk-in', {}], [7, 'Tornado FX', {}]],
+  group: [[1, 'All', {}], [2, 'Odd', {}], [3, 'Even', {}], [12, 'Icarus', {}]],
+};
+const st = {
+  assign: false, picked: null, page: 0, per: 8,
+  buttons: { 1: ['view', 1], 2: ['view', 3], 3: ['view', 4], 5: ['macro', 1], 6: ['seq', 1], 9: ['view', 5] },
+  current: 1,
+};
+const line = s => { document.getElementById('line').textContent = s; };
+const named = (kind, no) => (POOLS[kind] || []).find(p => p[0] === no)?.[1] || `${KIND[kind][2]} ${no}`;
+const onButtons = (kind, no) => Object.entries(st.buttons).filter(([, v]) => v[0] === kind && v[1] === no).map(([s]) => s);
+function thumb(extra) {
+  if (!extra.win) return '';
+  return `<div class="thumb">${extra.win.map(([x, y, w, h, l]) => `<b style="left:${x}%;top:${y}%;width:calc(${w}% - 2px);height:calc(${h}% - 2px)">${l}</b>`).join('')}<span class="scr">▣ ${extra.scr}</span></div>`;
+}
+// Every pool window draws its own kind (a dedicated window type each).
+function drawPool() {
+  for (const pool of document.querySelectorAll('[data-pool]')) {
+    const kind = pool.dataset.pool;
+    const items = POOLS[kind];
+    const max = Math.max(...items.map(i => i[0])) + (kind === 'view' ? 2 : 1);
+    const html = [];
+    for (let n = 1; n <= max; n++) {
+      const it = items.find(i => i[0] === n);
+      if (!it) { html.push(`<div class="cell empty"><div class="no"><span>${n}</span></div></div>`); continue; }
+      const btn = onButtons(kind, n);
+      const cur = kind === 'view' && st.current === n;
+      const picked = st.picked?.kind === kind && st.picked.no === n;
+      html.push(`<div class="cell${cur ? ' cur' : ''}${picked ? ' picked' : ''}" draggable="true" data-no="${n}" title="${KIND[kind][3]} ${n}">
+        <div class="no"><span>${n}</span></div>${btn.length ? `<span class="on">◧ ${btn.map(b => `1.${b}`).join(', ')}</span>` : ''}
+        <div class="nm">${it[1]}</div>${thumb(it[2])}</div>`);
+    }
+    pool.innerHTML = html.join('');
+  }
+}
+function drawBar() {
+  const bar = document.getElementById('bar');
+  const from = st.page * st.per + 1, to = from + st.per - 1;
+  const html = [`<div class="nav" data-nav="up">▲</div><div class="range">${from}–${to} of 20</div>`];
+  for (let s = from; s <= to; s++) {
+    const v = st.buttons[s];
+    if (!v) { html.push(`<div class="vb empty${st.picked ? ' wait' : ''}" data-slot="${s}"><div class="n"><span>1.${s}</span></div><div class="nm">empty</div></div>`); continue; }
+    const [kind, no] = v, [ico, c] = KIND[kind];
+    const cur = kind === 'view' && no === st.current;
+    html.push(`<div class="vb${cur ? ' cur' : ''}${st.picked ? ' wait' : ''}" data-slot="${s}" style="--c:${c}"><span class="bt"></span><div class="n"><span>1.${s}</span><span class="ico">${ico}</span></div><div class="nm">${named(kind, no)}</div></div>`);
+  }
+  html.push('<div class="nav" data-nav="down">▼</div>');
+  bar.innerHTML = html.join('');
+}
+function draw() { drawPool(); drawBar(); }
+const word = kind => KIND[kind][2];
+function assignTo(slot, kind, no) {
+  st.buttons[slot] = [kind, no];
+  line(`Assign ${word(kind)} ${no} At ViewButton 1.${slot}`);
+  st.picked = null; st.assign = false; document.getElementById('assign').classList.remove('on');
+  draw();
+}
+// the pool windows: each its own kind
+const area = document.querySelector('.area.quad');
+const at = e => { const c = e.target.closest('.cell[data-no]'); return c ? { kind: c.closest('[data-pool]').dataset.pool, no: +c.dataset.no } : null; };
+area.addEventListener('click', e => {
+  const h = at(e); if (!h) return;
+  if (st.assign) { st.picked = h; line(`Assign ${word(h.kind)} ${h.no} At …  ← now tap a view button`); draw(); return; }
+  if (h.kind === 'view') st.current = h.no;
+  line(`${KIND[h.kind][3]} ${h.no}`);
+  draw();
+});
+area.addEventListener('dragstart', e => { const h = at(e); if (h) e.dataTransfer.setData('text/plain', `${h.kind}:${h.no}`); });
+area.addEventListener('contextmenu', e => {
+  const h = at(e); if (!h) return; e.preventDefault();
+  const { kind, no } = h, w = word(kind);
+  menu(e, [[`${w} ${no} · ${named(kind, no)}`], [`${KIND[kind][3]} ${no}`, () => line(`${KIND[kind][3]} ${no}`)], ['Assign to a view button…', () => { st.assign = true; st.picked = h; document.getElementById('assign').classList.add('on'); line(`Assign ${w} ${no} At …  ← now tap a view button`); draw(); }], ['Label…', () => line(`Label ${w} ${no}`)], ['Store here', () => line(`Store ${w} ${no}`)], [], ['Delete', () => line(`Delete ${w} ${no}`)]]);
+});
+// bar
+const bar = document.getElementById('bar');
+bar.addEventListener('click', e => {
+  const n = e.target.closest('[data-nav]');
+  if (n) { st.page = Math.max(0, Math.min(1, st.page + (n.dataset.nav === 'down' ? 1 : -1))); line(n.dataset.nav === 'down' ? 'the next set of view buttons' : 'back to the first set'); return drawBar(); }
+  const b = e.target.closest('[data-slot]'); if (!b) return;
+  const slot = +b.dataset.slot;
+  if (st.picked) return assignTo(slot, st.picked.kind, st.picked.no);
+  const v = st.buttons[slot];
+  if (!v) { line(`Empty — hold to store this view here (Store ViewButton 1.${slot})`); return; }
+  if (v[0] === 'view') st.current = v[1];
+  line(`ViewButton 1.${slot}   (= ${KIND[v[0]][3]} ${v[1]})`);
+  draw();
+});
+bar.addEventListener('dragover', e => { const b = e.target.closest('[data-slot]'); if (b) { e.preventDefault(); bar.querySelectorAll('.drop').forEach(x => x.classList.remove('drop')); b.classList.add('drop'); } });
+bar.addEventListener('dragleave', e => { e.target.closest?.('[data-slot]')?.classList.remove('drop'); });
+bar.addEventListener('drop', e => {
+  const b = e.target.closest('[data-slot]'); if (!b) return; e.preventDefault();
+  const [kind, no] = e.dataTransfer.getData('text/plain').split(':');
+  assignTo(+b.dataset.slot, kind, +no);
+});
+bar.addEventListener('contextmenu', e => {
+  const b = e.target.closest('[data-slot]'); if (!b) return; e.preventDefault();
+  const slot = +b.dataset.slot, v = st.buttons[slot];
+  const pickFrom = kind => (POOLS[kind] || []).map(([no, nm]) => [`${word(kind)} ${no} · ${nm}`, () => assignTo(slot, kind, no)]);
+  const items = v
+    ? [[`ViewButton 1.${slot} · ${word(v[0])} ${v[1]} ${named(v[0], v[1])}`], [`Run (${KIND[v[0]][3]} ${v[1]})`, () => line(`ViewButton 1.${slot}`)], ...(v[0] === 'view' ? [['Store this screen into it', () => line(`Store ViewButton 1.${slot}`)]] : []), ['Label…', () => line(`Label ViewButton 1.${slot}`)], ['Assign…', () => menu(e, [['Assign to ViewButton 1.' + slot], ...['view', 'macro', 'seq', 'group'].flatMap(k => [[word(k) + 's'], ...pickFrom(k)])])], [], ['Clear the button (keeps the object)', () => { delete st.buttons[slot]; line(`Delete ViewButton 1.${slot}`); draw(); }]]
+    : [[`ViewButton 1.${slot} · empty`], ['Store this screen here', () => { st.buttons[slot] = ['view', 9]; POOLS.view.push([9, 'View 9', { win: [[0, 0, 100, 100, 'Terminal']], scr: '1' }]); line(`Store ViewButton 1.${slot}   (a new View 9 of this screen, assigned)`); draw(); }], ['Assign…', () => menu(e, [['Assign to ViewButton 1.' + slot], ...['view', 'macro', 'seq', 'group'].flatMap(k => [[word(k) + 's'], ...pickFrom(k)])])]];
+  menu(e, items);
+});
+// assign mode + pool kind
+document.getElementById('assign').addEventListener('click', e => { e.stopPropagation(); st.assign = !st.assign; st.picked = null; e.currentTarget.classList.toggle('on', st.assign); line(st.assign ? 'Assign  ← tap an object in any pool window, then a view button' : '—'); draw(); });
+document.getElementById('prof').addEventListener('change', e => line(`Set Self "Profile" ${e.target.selectedIndex ? `"${e.target.value}"` : 'Own'}   (this window shows that profile's views)`));
+// a small menu
+let open = null;
+function menu(e, items) {
+  open?.remove();
+  const m = document.createElement('div'); m.className = 'menu';
+  for (const [label, fn] of items) {
+    const d = document.createElement('div');
+    if (label === undefined) d.className = 'sep';
+    else { d.textContent = label; if (!fn) d.className = 'h'; else d.onclick = ev => { ev.stopPropagation(); m.remove(); open = null; fn(); }; }
+    m.append(d);
+  }
+  m.style.left = Math.min(e.clientX, innerWidth - 230) + 'px'; m.style.top = Math.min(e.clientY, innerHeight - 40 - items.length * 34) + 'px';
+  document.body.append(m); open = m;
+}
+document.addEventListener('click', () => { open?.remove(); open = null; });
+document.getElementById('legend').innerHTML = Object.entries(KIND).map(([, [ico, c, w]]) => `<span><i style="background:${c}"></i>${w}</span>`).join('') + '<span>gold frame = this screen\'s view now · ◧ 1.n = on view button n</span>';
+draw();
+</script>

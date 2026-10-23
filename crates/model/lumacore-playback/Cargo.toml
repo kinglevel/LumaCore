@@ -1,0 +1,13 @@
+[package]
+name = "lumacore-playback"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+lumacore-base = { path = "../../foundation/lumacore-base" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+
+[lints]
+workspace = true

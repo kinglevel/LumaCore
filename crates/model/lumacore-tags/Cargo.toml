@@ -1,0 +1,18 @@
+[package]
+name = "lumacore-tags"
+version.workspace = true
+edition.workspace = true
+description = "The tag tree: tags with child tags, paths, moves and the member index (decisions §12 \"Tags hardened\")"
+
+[dependencies]
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

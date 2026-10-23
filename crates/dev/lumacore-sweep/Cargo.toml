@@ -1,0 +1,43 @@
+[package]
+name = "lumacore-sweep"
+version.workspace = true
+edition.workspace = true
+description = "The command sweep (every command × keyword × flag × property, then random lines from completion) and the fuzz entry points (decisions §25 \"Step 10 hardening\", §34 20.10)"
+
+[dependencies]
+lumacore-luma = { path = "../../formats/lumacore-luma" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-objects = { path = "../../model/lumacore-objects" }
+lumacore-cmd-showfile = { path = "../../commands/objects/lumacore-cmd-showfile" }
+lumacore-cmd-devices = { path = "../../commands/objects/lumacore-cmd-devices" }
+lumacore-cmd-protocols = { path = "../../commands/objects/lumacore-cmd-protocols" }
+lumacore-cmd-station = { path = "../../commands/objects/lumacore-cmd-station" }
+lumacore-suggest = { path = "../../commands/lumacore-suggest" }
+lumacore-cmd-treeshell = { path = "../../commands/objects/lumacore-cmd-treeshell" }
+lumacore-cmd-keys = { path = "../../commands/objects/lumacore-cmd-keys" }
+lumacore-cmd-tags = { path = "../../commands/objects/lumacore-cmd-tags" }
+lumacore-lumasession = { path = "../../server/lumacore-lumasession" }
+lumacore-cmd-osc = { path = "../../commands/objects/protocols/data/lumacore-cmd-osc" }
+lumacore-osc = { path = "../../network/protocols/data/lumacore-osc" }
+lumacore-cmd-sacn = { path = "../../commands/objects/protocols/dmx/lumacore-cmd-sacn" }
+lumacore-cmd-artnet = { path = "../../commands/objects/protocols/dmx/lumacore-cmd-artnet" }
+lumacore-sysmon = { path = "../../foundation/lumacore-sysmon" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+zip = { workspace = true }
+
+# A stop signal ends the run cleanly between lines (decisions §25 "Step 10 hardening").
+[target.'cfg(unix)'.dependencies]
+signal-hook = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+proptest = { workspace = true }
+uuid = { workspace = true }
+lumacore-clocksync = { path = "../../network/lumacore-clocksync" }
+
+[lints]
+workspace = true

@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Self and export</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 40px; background: color-mix(in srgb, {{t.bg}} 70%, #000); color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; gap: 24px">
+
+  <section style="width: 700px; display: flex; flex-direction: column; gap: 14px">
+    <span style="font-size: 18px; font-weight: 500">Self = the line’s owner</span>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+      <sc-for list="{{sources}}" as="sc" hint-placeholder-count="6">
+        <button type="button" onClick="{{sc.pick}}" style="height: 64px; border-radius: 6px; border: 2px solid {{sc.border}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; text-align: left; padding: 0 12px; display: flex; flex-direction: column; justify-content: center; gap: 3px"><span style="font-size: 15px">{{sc.name}}</span><span style="font-size: 12px; color: {{t.dim}}">{{sc.sub}}</span></button>
+      </sc-for>
+    </div>
+    <div style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; gap: 10px; align-items: baseline"><span style="width: 120px; font-size: 13px; color: {{t.dim}}">Line</span><span class="mono" style="font-size: 15px">{{cur.line}}</span></div>
+      <div style="display: flex; gap: 10px; align-items: baseline"><span style="width: 120px; font-size: 13px; color: {{t.dim}}">Self is</span><span style="font-size: 15px; color: {{cur.selfC}}">{{cur.self}}</span></div>
+      <div style="display: flex; gap: 10px; align-items: baseline"><span style="width: 120px; font-size: 13px; color: {{t.dim}}">Runs / journal</span><span class="mono" style="font-size: 15px; color: {{cur.runC}}">{{cur.run}}</span></div>
+      <div style="display: flex; gap: 10px; align-items: baseline"><span style="width: 120px; font-size: 13px; color: {{t.dim}}">Where</span><span style="font-size: 14px; color: {{t.dim}}">{{cur.where}}</span></div>
+    </div>
+    <div style="flex: 1; border-radius: 6px; background: {{t.bg}}; border: 1px solid {{t.line}}; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px" class="mono">
+      <span style="font-size: 12px; color: {{t.dim}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, sans-serif">Terminal (lumacore-cli), no window in focus</span>
+      <span style="font-size: 14px"><span style="color: {{t.dim}}">[Admin@desk1] Root&gt; </span>EditSetting Self</span>
+      <span style="font-size: 14px; color: {{t.alert}}">Error: Self has no owner here — type a window (EditSetting Window 1.3) [E-CMD-016]</span>
+      <span style="font-size: 14px; margin-top: 8px"><span style="color: {{t.dim}}">[Admin@desk1] Root&gt; </span>Label Self "Busk"</span>
+      <span style="font-size: 14px; color: {{t.alert}}">Error: Self has no owner here — type a window (EditSetting Window 1.3) [E-CMD-016]</span>
+    </div>
+  </section>
+
+  <section style="flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 0">
+    <span style="font-size: 18px; font-weight: 500">Export / import as JSON</span>
+    <div style="display: flex; gap: 8px">
+      <sc-for list="{{kinds}}" as="k" hint-placeholder-count="3">
+        <button type="button" onClick="{{k.pick}}" style="flex: 1; height: 48px; border-radius: 5px; border: 2px solid {{k.border}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 14px">{{k.name}}</button>
+      </sc-for>
+    </div>
+    <div style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+      <span class="mono" style="font-size: 14px">{{ex.cmd}}</span>
+      <span style="font-size: 13px; color: {{t.ok}}">Exported → <span class="mono">{{ex.file}}</span></span>
+    </div>
+    <pre class="mono" style="flex: 1; margin: 0; border-radius: 6px; background: {{t.bg}}; border: 1px solid {{t.line}}; padding: 12px 14px; font-size: 12px; line-height: 18px; color: {{t.text}}; overflow: hidden; white-space: pre">{{ex.json}}</pre>
+    <div style="border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+      <div style="height: 44px; display: flex; align-items: center; padding: 0 14px; border-bottom: 1px solid {{t.line}}; font-size: 15px; font-weight: 500">Import {{ex.kind}} — library/ui/{{ex.dir}}/</div>
+      <div style="display: flex; flex-direction: column; padding: 8px; gap: 6px">
+        <sc-for list="{{ex.files}}" as="f" hint-placeholder-count="2">
+          <div style="height: 48px; border-radius: 5px; background: {{t.raised}}; display: flex; align-items: center; gap: 12px; padding: 0 12px; font-size: 15px"><span style="flex: 1">{{f.name}}</span><span style="font-size: 12px; color: {{t.dim}}">{{f.note}}</span></div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { src: 0, kind: 0 }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',alert:'#e10000'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',alert:'#c00000'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',alert:'#ff4a3a'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const S = [
+      { name: 'Typed on the command line', sub: 'the focused window', line: 'EditSetting Self', self: 'Window 1.3 · System Monitor (focused)', run: 'EditSetting Window 1.3', where: 'Resolved on this station when you press Please.' },
+      { name: 'Window bar action', sub: 'its own window', line: 'Set Self Universe + 1', self: 'Window 1.4 · DMX (the bar it sits in)', run: 'Set Window 1.4 Universe + 1', where: 'Focus doesn’t matter: the bar knows its window.' },
+      { name: 'Window menu (tab dot)', sub: 'its own window', line: 'Set Self WindowBar Off', self: 'Window 1.6 · Realtime', run: 'Set Window 1.6 WindowBar Off', where: 'Same for Settings…, Reset window…, Label…' },
+      { name: 'Key (F5) from the keyboard', sub: 'the focused window, never the key', line: 'Set Self FontSize + 2', self: 'Window 1.3 · System Monitor (focused)', run: 'Set Window 1.3 FontSize + 2', where: 'A key placed in a window bar uses that window. LED: state "Self.AutoScroll".' },
+      { name: 'Member → master', sub: 'resolved before forwarding', line: 'Set Self Columns 12', self: 'Window 2.1 · Groups on station B', run: 'Set Window 2.1 Columns 12  (forwarded)', where: 'The master can’t see B’s focus: B sends the resolved line. Macros, keys and Usage keep “Self”.' },
+      { name: 'Macro / plugin', sub: 'later, when they run', line: 'Label Self "Act 2"', self: 'the macro / plugin (owner wired, runtime not built yet)', run: 'Label Macro 4 "Act 2"', where: 'Until the runtimes exist a line without an owner gets E-CMD-016.' }
+    ];
+    const sources = S.map((x, i) => ({ name: x.name, sub: x.sub, border: i === s.src ? t.accent : 'transparent', pick: () => this.setState({ src: i }) }));
+    const c = S[s.src];
+    const cur = { ...c, selfC: s.src === 5 ? t.dim : t.info, runC: t.text };
+    const K = [
+      { name: 'View', kind: 'View', dir: 'views', cmd: 'Export View 3', file: 'library/ui/views/Busk.json',
+        json: '{\n  "kind": "View", "format": 10, "name": "Busk", "guid": "4f1c…",\n  "screens": [1],\n  "root": { "split": "row", "ratio": 0.6, "children": [\n    { "tabs": [3], "active": 3 },\n    { "split": "col", "ratio": 0.6, "children": [\n      { "tabs": [4], "active": 4 }, { "tabs": [6], "active": 6 } ] } ] },\n  "windows": {\n    "3": { "type": "sysmon", "label": "System Monitor", "colour": null,\n           "settings": { "level": "info", "auto_scroll": true },\n           "window_bar": true, "window_bar_items": ["pause","wrap","level","time","clear"] },\n    "4": { "type": "dmx", "settings": { "universe": 1, "readout": "decimal" }, … },\n    "6": { "type": "realtime", … }\n  }\n}\n// the floor plan only: which window, where, its settings — never its buttons',
+        files: [{ name: 'Busk.json', note: 'View · 3 windows' }, { name: 'Festival FOH.json', note: 'View · 5 windows' }] },
+      { name: 'ScreenConfig', kind: 'ScreenConfig', dir: 'screenconfigs', cmd: 'Export ScreenConfig 1', file: 'library/ui/screenconfigs/Desk.json',
+        json: '{\n  "kind": "ScreenConfig", "format": 10, "name": "Desk", "guid": "9a02…",\n  "screens": {\n    "1": { "root": { "split": "row", … }, "windows": { … } },\n    "2": { "root": { "tabs": [1], "active": 1 }, "windows": { … } }\n  }\n}',
+        files: [{ name: 'Desk.json', note: '2 screens' }, { name: 'Laptop.json', note: '1 screen' }] },
+      { name: 'WindowPreset', kind: 'WindowPreset', dir: 'windowpresets', cmd: 'Export WindowPreset 2', file: 'library/ui/windowpresets/Big DMX.json',
+        json: '{\n  "kind": "WindowPreset", "format": 10, "type": "dmx", "name": "Big DMX", "guid": "e771…",\n  "label": "DMX", "colour": null, "scroll": { "y": 0 },\n  "settings": { "universe": 1, "view": "list", "readout": "decimal", "columns": "fit" },\n  "window_bar": true, "window_bar_items": ["universe","prev","next","readout"]\n}',
+        files: [{ name: 'Big DMX.json', note: 'DMX' }, { name: 'Errors only.json', note: 'System Monitor' }] }
+    ];
+    const kinds = K.map((k, i) => ({ name: k.name, border: i === s.kind ? t.accent : 'transparent', pick: () => this.setState({ kind: i }) }));
+    return { t, sources, cur, kinds, ex: K[s.kind] };
+  }
+}
+</script>
+</body>
+</html>

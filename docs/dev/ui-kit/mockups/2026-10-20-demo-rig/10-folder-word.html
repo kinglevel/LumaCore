@@ -1,0 +1,64 @@
+<title>Folder Id Type</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 10 · 2026-10-20 · discussion only</div>
+<h1>"Media" is the wrong word for a folder</h1>
+<p>Decided on 9: the preset types an untyped CustomId, default Media, <code>/IdType</code> overrides. Your objection: Media is a bad word for a generic folder. It is the exporting console's word — it has no folder id type, so you picked the least wrong one. The list is the file's, but what LumaCore calls a folder's id is ours to decide.</p>
+</header>
+
+<section class="card">
+<h2>Facts</h2>
+<table>
+<tr><th>MVR's list (the file's numbering)</th><td><code>0 None · 1 Fixture · 2 Channel · 3 Houselights · 4 NonDim · 5 Media · 6 Fog · 7 Effect · 8 Pyro · 9 Marker</code> — <code>CustomIdType</code> is that number; a value outside the list is out of spec and the desk would drop it.</td></tr>
+<tr><th>What marks a folder in the file</th><td>Its type: <code>Generic@Grouping.gdtf</code> (1 mode, 0 channels, 0 attributes). That is the fact, independent of the id type; The console only lets you file it under Media, Fog, Pyro … because it needs <em>some</em> type for a numberless fixture.</td></tr>
+<tr><th>This rig</th><td>23 Grouping fixtures, all Media on the desk: Media 99 ALL, Media 1 … 9 the stages and utilities, Media 7001 … 7009 the type folders under Stage 1.</td></tr>
+<tr><th>Elsewhere in the list</th><td>Houselights, NonDim, Fog, Pyro, Marker are real kinds a rig has; Media is "a media server"; Effect is an effect device. A folder is none of them.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>What a folder's id type is called in LumaCore</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3><code>Folder</code>: LumaCore's own word, written to the file as Media</h3><p>The id-type list gains <code>Folder</code> (after Marker; no MVR number of its own). Import: a fixture whose type has no channels (Grouping) and whose id is Media becomes <code>Folder n</code>; export writes it back as Media so the desk round-trips. The preset's default for an untyped id stays Media; the Grouping rule turns it into Folder. The line reads <code>Fixture Folder 7003 At 50</code>, the grid's IDType cell says Folder.</p><ul><li>+ the right word in every list and line; the file is unchanged</li><li>− one convention to know: "a channel-less fixture's Media id is a Folder"; a Grouping fixture filed under Fog on the desk stays Fog</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>Keep Media</h3><p>The file's word is the word: <code>Fixture Media 7003</code>.</p><ul><li>+ no convention, nothing to explain to a desk user</li><li>− the wrong word in every grid and line, forever</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>No id on a folder: by name</h3><p>A folder keeps its Media id only as data for the round trip; lines reach it by name, <code>Fixture "ACME Icarus"</code>, names unique among siblings.</p><ul><li>+ nothing to type but the name you gave it</li><li>− a long line for a deep folder; two folders named alike need the path; the desk's handle (<code>Media 7003</code>) has no counterpart here</li></ul></div>
+</div>
+</section>
+
+<section class="card" style="border-color:var(--gold)">
+<h2>Answered · Generic, the id type the spec left a gap for</h2>
+<p>Your answer: Media was not a choice, it was the least wrong default the console offered; what you want is <b>Generic as the default id type for CIDs</b>, usable for folders among other things. The MVR spec (fetched: mvrdevelopment/spec, Fixture table) numbers its CustomID types <code>0 Undefined · 1 Fixture · 2 Channel · 4 Houselights · 5 NonDim · 6 Media · 7 Fog · 8 Effect · 9 Pyro · 10 Marker</code> and <b>skips 3</b> — the slot of the console's own Universal / Generic type (the desk shows <code>IDTYPE Generic</code> on the Univ fixture). LumaCore's list already numbers with the gap (<code>CustomIdType::number</code>). So:</p>
+<ul>
+<li>The id-type list gains <code>Generic</code> = MVR number 3; it is the default id type (the preset's <code>MvrIdType</code> default, what an untyped CustomId gets, what a new CID gets).</li>
+<li>No LumaCore-only word: a folder in this rig imports as <code>Fixture Media 7003</code> because the file and the desk say Media; the next rig built on the desk can use Generic and arrive as <code>Fixture Generic 7003</code>. <code>Set Fixture Media 7003 "IDType" Generic</code> moves one.</li>
+<li>Probed: <code>Media 99</code> resolves to the folder itself, <code>Media 1 Thru 9</code> visits only the numbers that exist (as our range rule), <code>Fixture 849.1</code> is a sub-fixture.</li>
+</ul>
+</section>
+
+<section class="card">
+<h2>Then</h2>
+<ul>
+<li>A folder on a line: <code>Fixture Folder 1 At 50</code> programs the subtree; the sidebar shows nested fixtures; Move / Delete carry the children.</li>
+<li>Groups from the Default pool, the show split for the tests, what is committed, the names.</li>
+</ul>
+</section>
+</main>

@@ -1,0 +1,60 @@
+[package]
+name = "lumacore-server"
+version.workspace = true
+edition.workspace = true
+description = "The station's server: startup and shutdown, ServerContext, the state thread, the command port, discovery and the HTTP bridge (decisions §23, §26, §34 24.2)"
+
+[dependencies]
+lumacore-drives = { path = "../../formats/lumacore-drives" }
+lumacore-luma = { path = "../../formats/lumacore-luma" }
+lumacore-sysmon = { path = "../../foundation/lumacore-sysmon" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+lumacore-lanes = { path = "../../foundation/lumacore-lanes" }
+lumacore-trace = { path = "../../foundation/lumacore-trace" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-objects = { path = "../../model/lumacore-objects" }
+lumacore-cmd-showfile = { path = "../../commands/objects/lumacore-cmd-showfile" }
+lumacore-cmd-devices = { path = "../../commands/objects/lumacore-cmd-devices" }
+lumacore-cmd-protocols = { path = "../../commands/objects/lumacore-cmd-protocols" }
+lumacore-render = { path = "../../engine/lumacore-render" }
+lumacore-engines = { path = "../../engine/lumacore-engines" }
+lumacore-net = { path = "../../network/lumacore-net" }
+lumacore-clocksync = { path = "../../network/lumacore-clocksync" }
+lumacore-lines = { path = "../../network/protocols/lumacore-lines" }
+lumacore-views = { path = "../../ui/lumacore-views" }
+lumacore-terminal = { path = "../../ui/lumacore-terminal" }
+lumacore-shell = { path = "../../ui/lumacore-shell" }
+lumacore-http = { path = "../../ui/lumacore-http", optional = true }
+lumacore-lumasession = { path = "../lumacore-lumasession" }
+crossbeam-channel = { workspace = true }
+arc-swap = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+log = { workspace = true }
+env_logger = { workspace = true }
+clap = { workspace = true }
+hostname = { workspace = true }
+socket2 = { workspace = true }
+base64 = { workspace = true }
+tokio = { workspace = true, optional = true }
+
+# SIGTERM / SIGINT / SIGHUP stop the server cleanly (decisions §23 "App ↔ local server").
+[target.'cfg(unix)'.dependencies]
+signal-hook = { workspace = true }
+
+[features]
+tracy = ["lumacore-trace/tracy"]
+http = ["dep:lumacore-http", "dep:tokio", "lumacore-engines/http"]
+perfetto = ["dep:lumacore-http", "dep:tokio", "lumacore-trace/perfetto", "lumacore-engines/perfetto"]
+
+[dev-dependencies]
+lumacore-cmd-station = { path = "../../commands/objects/lumacore-cmd-station" }
+ctor = { workspace = true }
+lumacore-artnet = { path = "../../network/protocols/dmx/lumacore-artnet" }
+lumacore-sacn = { path = "../../network/protocols/dmx/lumacore-sacn" }
+lumacore-osc = { path = "../../network/protocols/data/lumacore-osc" }
+
+[lints]
+workspace = true

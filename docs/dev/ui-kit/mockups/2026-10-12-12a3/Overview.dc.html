@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Screens overview and tiled mode</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 28px 40px; background: #121212; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 18px">
+  <div style="display: flex; align-items: center; gap: 12px">
+    <h1 style="margin: 0; font-size: 26px; font-weight: 500; flex: 1">Screens — overview and tiled mode</h1>
+    <button type="button" onClick="{{showOverview}}" style="height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid {{b1}}; background: #1c1c1c; color: #d1d1d1; font: inherit; font-size: 14px">Overview (app: Window › Screens)</button>
+    <button type="button" onClick="{{showTiled}}" style="height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid {{b2}}; background: #1c1c1c; color: #d1d1d1; font: inherit; font-size: 14px">Tiled mode (one window / tab)</button>
+  </div>
+
+  <sc-if value="{{isOverview}}" hint-placeholder-val="{{ true }}">
+    <div style="flex: 1; display: flex; gap: 20px; min-height: 0">
+      <section style="flex: 1; border-radius: 6px; background: #1c1c1c; border: 1px solid #303030; padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <span style="font-size: 15px; color: #9c9c9c">Displays of this computer — drag a screen to another display, or use Send to</span>
+        <div style="flex: 1; position: relative">
+          <sc-for list="{{displays}}" as="d" hint-placeholder-count="2">
+            <div style="position: absolute; left: {{d.x}}px; top: {{d.y}}px; width: {{d.w}}px; height: {{d.h}}px; border-radius: 6px; border: 1px solid #424242; background: #181818">
+              <span style="position: absolute; left: 10px; bottom: -24px; font-size: 12px; color: #787878">{{d.name}}</span>
+              <sc-for list="{{d.wins}}" as="w" hint-placeholder-count="1">
+                <button type="button" onClick="{{w.pick}}" style="position: absolute; left: {{w.x}}px; top: {{w.y}}px; width: {{w.w}}px; height: {{w.h}}px; border-radius: 4px; border: 2px solid {{w.ring}}; background: #262626; padding: 0; color: #d1d1d1; font: inherit; overflow: hidden; display: flex; flex-direction: column">
+                  <span style="height: 18px; display: flex; align-items: center; gap: 6px; padding: 0 6px; font-size: 10px; background: #1c1c1c; width: 100%; box-sizing: border-box"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9a7a08"></span>Screen {{w.no}} {{w.fs}}</span>
+                  <span style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 4px; width: 100%; box-sizing: border-box">
+                    <span style="background: #303030; border-radius: 2px"></span><span style="background: #303030; border-radius: 2px"></span><span style="background: #303030; border-radius: 2px; grid-column: span 2"></span>
+                  </span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+      <section style="width: 380px; border-radius: 6px; background: #1c1c1c; border: 1px solid #303030; padding: 14px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 15px">desk1 · LD · Screen config 1</span>
+        <sc-for list="{{list}}" as="r" hint-placeholder-count="3">
+          <div style="border-radius: 5px; border: 1px solid {{r.ring}}; background: #262626; padding: 8px 10px; display: flex; flex-direction: column; gap: 8px">
+            <span style="display: flex; align-items: center; gap: 8px; font-size: 15px">Screen {{r.no}}<span style="font-size: 12px; color: #787878; flex: 1">{{r.where}}</span></span>
+            <span style="display: flex; gap: 6px">
+              <button type="button" onClick="{{r.pick}}" style="height: 40px; padding: 0 10px; border-radius: 5px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 13px">Bring forward</button>
+              <button type="button" onClick="{{r.toggle}}" style="height: 40px; padding: 0 10px; border-radius: 5px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 13px">{{r.openLabel}}</button>
+              <button type="button" onClick="{{r.send}}" style="height: 40px; padding: 0 10px; border-radius: 5px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 13px">Send to {{r.other}} ▸</button>
+            </span>
+          </div>
+        </sc-for>
+        <span style="font-size: 12px; color: #787878">Each screen remembers its display and place (per server and user). A missing display → the main one, scaled; it moves back when the display returns. Meow+F12 in a screen = native full screen there.</span>
+      </section>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isTiled}}" hint-placeholder-val="{{ false }}">
+    <div style="flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; background: #0a0a0a; padding: 6px; border-radius: 6px; min-height: 0">
+      <sc-for list="{{tiles}}" as="t" hint-placeholder-count="2">
+        <section style="border-radius: 4px; background: #121212; border: 1px solid {{t.ring}}; display: flex; flex-direction: column; overflow: hidden">
+          <div style="height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 6px 0 12px; background: #1c1c1c; border-bottom: 1px solid #303030">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #9a7a08"></span>
+            <span style="font-size: 14px; flex: 1">Screen {{t.no}}</span>
+            <button type="button" style="height: 36px; padding: 0 10px; border-radius: 5px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 12px">Pop out to its own window</button>
+          </div>
+          <div style="flex: 1; display: grid; grid-template-columns: {{t.cols}}; grid-template-rows: 1fr 1fr; gap: 4px; padding: 6px">
+            <sc-for list="{{t.panels}}" as="p" hint-placeholder-count="3">
+              <span style="border-radius: 3px; background: #1c1c1c; border: 1px solid #262626; display: flex; flex-direction: column; overflow: hidden; grid-row: {{p.row}}">
+                <span style="height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 10px; font-size: 13px; background: #262626"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9a7a08"></span>{{p.t}}</span>
+                <span style="flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px">
+                  <sc-for list="{{p.cells}}" as="c" hint-placeholder-count="10"><span style="height: 34px; border-radius: 3px; background: #303030"></span></sc-for>
+                </span>
+              </span>
+            </sc-for>
+          </div>
+        </section>
+      </sc-for>
+    </div>
+    <span style="font-size: 12px; color: #787878">Tiled: several screens live and usable in one window or browser tab (one display, a laptop, a browser). Each tile is the same screen as its own window would be; Pop out opens it as an OS window (app only).</span>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { mode: 'overview', sel: 1, at: { 1: 'ext', 2: 'mac', 3: 'ext' }, open: { 1: true, 2: true, 3: false } }; }
+  renderVals() {
+    const s = this.state;
+    const D = { mac: { name: 'Built-in Retina · 1512×982 (main)', x: 0, y: 140, w: 300, h: 196 }, ext: { name: 'DELL U2720Q · 2560×1440', x: 330, y: 40, w: 520, h: 292 } };
+    const slot = { 1: [12, 28, 240, 150], 2: [18, 30, 260, 150], 3: [262, 28, 240, 150] };
+    const displays = Object.entries(D).map(([k, d]) => ({ ...d, wins: [1, 2, 3].filter(n => s.at[n] === k && s.open[n]).map(n => {
+      const [x, y, w, h] = k === 'mac' ? [18, 22, 264, 160] : (n === 1 ? slot[1] : slot[3]);
+      return { no: n, x, y, w, h, fs: n === 2 ? '· full screen' : '', ring: s.sel === n ? '#9a7a08' : '#424242', pick: () => this.setState({ sel: n }) };
+    }) }));
+    const list = [1, 2, 3].map(n => ({
+      no: n,
+      where: s.open[n] ? (s.at[n] === 'mac' ? 'Built-in Retina' : 'DELL U2720Q') + (n === 2 ? ' · native full screen' : '') : 'hidden',
+      ring: s.sel === n ? '#9a7a08' : '#303030',
+      openLabel: s.open[n] ? 'Hide' : 'Open',
+      other: s.at[n] === 'mac' ? 'DELL' : 'Built-in',
+      pick: () => this.setState({ sel: n }),
+      toggle: () => this.setState({ open: { ...s.open, [n]: !s.open[n] } }),
+      send: () => this.setState({ at: { ...s.at, [n]: s.at[n] === 'mac' ? 'ext' : 'mac' }, sel: n })
+    }));
+    const cells = Array.from({ length: 10 }, (_, i) => i);
+    const tiles = [
+      { no: 1, ring: '#9a7a08', cols: '1fr 1fr', panels: [{ t: 'Groups', row: 'span 1', cells }, { t: 'Presets', row: 'span 1', cells }, { t: 'Sequences', row: 'span 1', cells }, { t: 'Macros', row: 'span 1', cells }] },
+      { no: 2, ring: '#303030', cols: '1fr', panels: [{ t: 'System Monitor', row: 'span 1', cells: [] }, { t: 'DMX', row: 'span 1', cells }] }
+    ];
+    return {
+      displays, list, tiles,
+      isOverview: s.mode === 'overview', isTiled: s.mode === 'tiled',
+      b1: s.mode === 'overview' ? '#9a7a08' : '#424242', b2: s.mode === 'tiled' ? '#9a7a08' : '#424242',
+      showOverview: () => this.setState({ mode: 'overview' }),
+      showTiled: () => this.setState({ mode: 'tiled' })
+    };
+  }
+}
+</script>
+</body>
+</html>

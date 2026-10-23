@@ -1,0 +1,14 @@
+[package]
+name = "lumacore-registry"
+version.workspace = true
+edition.workspace = true
+description = "The catalog every crate adds its declarations to: pure-data rows, freeze(), the one process-wide catalog (decisions §34 21)"
+
+[dependencies]
+lumacore-base = { path = "../lumacore-base" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+
+[lints]
+workspace = true

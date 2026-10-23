@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Desktop view on a phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1920px; height: 1200px; background: #0b0b0b; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; position: relative; overflow: hidden">
+
+  <div style="position: absolute; left: 32px; top: 24px; font-size: 14px; color: #9c9c9c">Source · a view made on a 1920×1080 desk (shown at 45 %)</div>
+  <div style="position: absolute; left: 32px; top: 48px; width: {{desk.fw}}px; height: {{desk.fh}}px; background: #121212; border: 1px solid #303030; border-radius: 6px; overflow: hidden">
+    <sc-for list="{{desk.chrome}}" as="c" hint-placeholder-count="4">
+      <div style="position: absolute; left: {{c.l}}px; top: {{c.t}}px; width: {{c.w}}px; height: {{c.h}}px; background: {{c.bg}}; font-size: {{c.fs}}px; color: #9c9c9c; display: flex; align-items: center; justify-content: center; overflow: hidden; white-space: nowrap">{{c.label}}</div>
+    </sc-for>
+    <sc-for list="{{desk.panes}}" as="p" hint-placeholder-count="6">
+      <div style="position: absolute; left: {{p.l}}px; top: {{p.t}}px; width: {{p.w}}px; height: {{p.h}}px; background: #121212; outline: 1px solid #303030; overflow: hidden">
+        <div style="height: {{p.tabH}}px; display: flex; align-items: center; gap: 6px; padding: 0 6px; background: #1c1c1c; font-size: {{p.fs}}px; white-space: nowrap; overflow: hidden"><span style="width: {{p.dot}}px; height: {{p.dot}}px; border-radius: 50%; background: #9a7a08; flex-shrink: 0"></span><span style="color: #d1d1d1">{{p.active}}</span><span style="color: #787878">{{p.rest}}</span></div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; top: {{p.tabH}}px; background-color: {{p.tint}}; background-image: {{p.pat}}; background-size: {{p.ps}}"></div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="position: absolute; left: 950px; top: 24px; right: 32px; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap">
+      <sc-for list="{{opts}}" as="o" hint-placeholder-count="6">
+        <button type="button" onClick="{{o.pick}}" style="height: 48px; padding: 0 16px; border-radius: 24px; border: 1px solid {{o.b}}; background: {{o.bg}}; color: #d1d1d1; font: inherit; font-size: 15px">{{o.label}}</button>
+      </sc-for>
+    </div>
+    <div style="border-radius: 6px; background: #1c1c1c; border: 1px solid #303030; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 20px; font-weight: 500">{{o.title}}</span>
+      <span style="font-size: 15px; line-height: 1.45">{{o.how}}</span>
+      <div style="display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-size: 14px; line-height: 1.4">
+        <span style="color: #9c9c9c">Stored in show</span><span>{{o.stored}}</span>
+        <span style="color: #9c9c9c">You edit</span><span>{{o.edit}}</span>
+        <span style="color: #9c9c9c">Good</span><span style="color: #7fc48a">{{o.pros}}</span>
+        <span style="color: #9c9c9c">Bad</span><span style="color: #e38a6a">{{o.cons}}</span>
+        <span style="color: #9c9c9c">Who does it</span><span style="color: #9c9c9c">{{o.who}}</span>
+      </div>
+    </div>
+    <div style="border-radius: 6px; background: #1a1710; border: 1px solid #4a3f12; padding: 10px 14px; font-size: 13px; color: #c9b56a; line-height: 1.45">Every option: folding is local to the device. Screens are shared live today (a phone and the desk on Screen 1 mirror each other), so a tab switch on a folded phone must not change the desk or the show.</div>
+  </div>
+
+  <div style="position: absolute; left: 32px; top: 600px; font-size: 14px; color: #9c9c9c">Tablet 1024×768 (shown at 70 %)</div>
+  <div style="position: absolute; left: 32px; top: 624px; width: {{tab.fw}}px; height: {{tab.fh}}px; background: #121212; border: 1px solid #303030; border-radius: 10px; overflow: hidden">
+    <sc-for list="{{tab.chrome}}" as="c" hint-placeholder-count="3">
+      <div style="position: absolute; left: {{c.l}}px; top: {{c.t}}px; width: {{c.w}}px; height: {{c.h}}px; background: {{c.bg}}; font-size: {{c.fs}}px; color: {{c.fg}}; display: flex; align-items: center; justify-content: {{c.jc}}; padding: 0 6px; box-sizing: border-box; overflow: hidden; white-space: nowrap">{{c.label}}</div>
+    </sc-for>
+    <sc-for list="{{tab.panes}}" as="p" hint-placeholder-count="3">
+      <div style="position: absolute; left: {{p.l}}px; top: {{p.t}}px; width: {{p.w}}px; height: {{p.h}}px; background: #121212; outline: 1px solid #303030; overflow: hidden">
+        <div style="height: {{p.tabH}}px; display: flex; align-items: center; gap: 6px; padding: 0 6px; background: #1c1c1c; font-size: {{p.fs}}px; white-space: nowrap; overflow: hidden"><span style="width: {{p.dot}}px; height: {{p.dot}}px; border-radius: 50%; background: #9a7a08; flex-shrink: 0"></span><span style="color: #d1d1d1">{{p.active}}</span><span style="color: #c9a227">{{p.rest}}</span></div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; top: {{p.tabH}}px; background-color: {{p.tint}}; background-image: {{p.pat}}; background-size: {{p.ps}}"></div>
+      </div>
+    </sc-for>
+    <sc-if value="{{tab.bad}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; left: 12px; bottom: 50px; padding: 6px 10px; border-radius: 4px; background: #5a1010; color: #ffb0a0; font-size: 13px">{{tab.badText}}</div>
+    </sc-if>
+  </div>
+
+  <div style="position: absolute; left: 790px; top: 600px; font-size: 14px; color: #9c9c9c">Phone 390×844 (shown at 66 %)</div>
+  <div style="position: absolute; left: 790px; top: 624px; width: {{ph.fw}}px; height: {{ph.fh}}px; background: #121212; border: 1px solid #303030; border-radius: 16px; overflow: hidden">
+    <sc-for list="{{ph.chrome}}" as="c" hint-placeholder-count="3">
+      <div style="position: absolute; left: {{c.l}}px; top: {{c.t}}px; width: {{c.w}}px; height: {{c.h}}px; background: {{c.bg}}; font-size: {{c.fs}}px; color: {{c.fg}}; display: flex; align-items: center; justify-content: {{c.jc}}; padding: 0 6px; box-sizing: border-box; overflow: hidden; white-space: nowrap">{{c.label}}</div>
+    </sc-for>
+    <sc-for list="{{ph.panes}}" as="p" hint-placeholder-count="2">
+      <div style="position: absolute; left: {{p.l}}px; top: {{p.t}}px; width: {{p.w}}px; height: {{p.h}}px; background: #121212; outline: 1px solid #303030; overflow: hidden">
+        <div style="height: {{p.tabH}}px; display: flex; align-items: center; gap: 6px; padding: 0 6px; background: #1c1c1c; font-size: {{p.fs}}px; white-space: nowrap; overflow: hidden"><span style="width: {{p.dot}}px; height: {{p.dot}}px; border-radius: 50%; background: #9a7a08; flex-shrink: 0"></span><span style="color: #d1d1d1">{{p.active}}</span><span style="color: #c9a227">{{p.rest}}</span></div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; top: {{p.tabH}}px; background-color: {{p.tint}}; background-image: {{p.pat}}; background-size: {{p.ps}}"></div>
+      </div>
+    </sc-for>
+    <sc-if value="{{ph.bad}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; left: 10px; right: 10px; bottom: 50px; padding: 6px 10px; border-radius: 4px; background: #5a1010; color: #ffb0a0; font-size: 12px">{{ph.badText}}</div>
+    </sc-if>
+  </div>
+
+  <div style="position: absolute; left: 1080px; top: 600px; right: 32px; display: flex; flex-direction: column; gap: 10px">
+    <span style="font-size: 14px; color: #9c9c9c">What happens here</span>
+    <sc-for list="{{o.notes}}" as="n" hint-placeholder-count="5">
+      <div style="border-radius: 6px; background: #1c1c1c; border: 1px solid #303030; padding: 10px 14px; font-size: 14px; line-height: 1.45">{{n}}</div>
+    </sc-for>
+    <span style="font-size: 13px; color: #787878; line-height: 1.45">Window minimum sizes used for folding (a new registry value, next to 12c’s bar minimum): Groups / Presets 200×140 · Fixture sheet / DMX 360×200 · System Monitor 320×120 · Realtime 300×160 · Executors 360×120. Gold “+Name” tabs are windows folded into that stack.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1200}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { o: 'C' }; }
+  renderVals() {
+    const s = this.state;
+    const K = {
+      groups: { tint: '#141a20', pat: 'linear-gradient(90deg,#121212 3px,transparent 3px),linear-gradient(#121212 3px,transparent 3px)', ps: '25% 33%' },
+      presets: { tint: '#1a1420', pat: 'linear-gradient(90deg,#121212 3px,transparent 3px),linear-gradient(#121212 3px,transparent 3px)', ps: '25% 33%' },
+      dmx: { tint: '#10180f', pat: 'linear-gradient(90deg,#121212 1px,transparent 1px),linear-gradient(#121212 1px,transparent 1px)', ps: '5% 8%' },
+      sheet: { tint: '#141414', pat: 'linear-gradient(#262626 1px,transparent 1px)', ps: '100% 14px' },
+      sysmon: { tint: '#121212', pat: 'linear-gradient(#202020 1px,transparent 1px)', ps: '100% 10px' },
+      realtime: { tint: '#0f1416', pat: 'linear-gradient(170deg,transparent 48%,#2d5a6a 49%,#2d5a6a 51%,transparent 52%)', ps: '100% 50%' },
+      exec: { tint: '#181510', pat: 'linear-gradient(90deg,#121212 6px,transparent 6px)', ps: '12.5% 100%' }
+    };
+    const N = { groups: 'Groups', presets: 'Presets', dmx: 'DMX', sheet: 'Fixture sheet', sysmon: 'System Monitor', realtime: 'Realtime', exec: 'Executors' };
+    // pane(x,y,w,h, activeKind, otherTabs[], foldedTabs[]) in device px
+    const P = (x, y, w, h, a, other = [], folded = []) => ({ x, y, w, h, a, other, folded });
+    const draw = (panes, sc, tabPx) => panes.map(p => {
+      const k = K[p.a];
+      const rest = [...p.other.map(o => '· ' + N[o]), ...p.folded.map(f => '+' + N[f])].join('  ');
+      return { l: Math.round(p.x * sc), t: Math.round(p.y * sc), w: Math.round(p.w * sc), h: Math.round(p.h * sc),
+        tabH: Math.max(6, Math.round(tabPx * sc)), fs: Math.max(4, Math.round(13 * sc * (tabPx / 30))), dot: Math.max(3, Math.round(9 * sc)),
+        active: N[p.a], rest, tint: k.tint, pat: k.pat, ps: k.ps };
+    });
+    const ch = (l, t, w, h, label, sc, extra) => ({ l: Math.round(l * sc), t: Math.round(t * sc), w: Math.round(w * sc), h: Math.round(h * sc), label, bg: '#1c1c1c', fg: '#9c9c9c', fs: Math.max(5, Math.round(13 * sc)), jc: 'center', ...extra });
+
+    // Desktop source, 1920×1080: left bar 50, right view bar 100, top 28, bottom bar 50.
+    const DX = 50, DY = 28, DW = 1770, DH = 1002, ex = 220, top = DH - ex;
+    const lw = Math.round(DW * 0.22), cw = Math.round(DW * 0.52), rw = DW - lw - cw;
+    const deskPanes = [P(DX, DY, lw, top / 2, 'groups'), P(DX, DY + top / 2, lw, top / 2, 'presets'), P(DX + lw, DY, cw, top, 'dmx', ['sheet']),
+      P(DX + lw + cw, DY, rw, top * 0.6, 'sysmon'), P(DX + lw + cw, DY + top * 0.6, rw, top * 0.4, 'realtime'), P(DX, DY + top, DW, ex, 'exec')];
+    const deskChrome = sc => [ch(0, 0, 1920, 28, 'LumaCore · Admin · Screen 1', sc), ch(0, 28, 50, 1002, 'modes', sc), ch(1820, 28, 100, 1002, 'views', sc), ch(0, 1030, 1920, 50, 'PURR · command line · status', sc)];
+    const DS = 0.45;
+    const desk = { fw: Math.round(1920 * DS), fh: Math.round(1080 * DS), chrome: deskChrome(DS), panes: draw(deskPanes, DS, 30) };
+
+    // Tablet 1024×768: mode bar 44, top 24, bottom 50.
+    const TS = 0.7, TX = 44, TY = 24, TW = 980, TH = 694;
+    const tabChrome = [ch(0, 0, 1024, 24, 'desk1 · LumaSession Festival', TS), ch(0, 24, 44, 694, 'modes', TS), ch(0, 718, 1024, 50, 'PURR · command line · VK · status', TS)];
+    // Phone 390×844: top 44, bottom 58.
+    const PS = 0.66, PX = 0, PY = 44, PW = 390, PH = 742;
+    const phChrome = (extra) => [ch(0, 0, 390, 44, '☰   desk1 · Festival   ●', PS, { jc: 'space-between' }), ch(0, 786, 390, 58, 'PURR · line · VK · ⋯', PS), ...(extra || [])];
+    const all = ['groups', 'presets', 'sheet', 'dmx', 'sysmon', 'realtime', 'exec'];
+    const O = {
+      A: { label: 'A · Collapse to one stack', title: 'A — below a size, everything becomes one stack',
+        how: 'On a small screen the whole split tree turns into one tab stack in tree order; one window full screen, swipe or tap tabs to move.',
+        stored: 'nothing new', edit: 'nothing', pros: 'simple, robust, works on any phone', cons: 'a tablet loses side-by-side; one hard breakpoint', who: 'Grafana mobile, Gridstack 1-column, Node-RED Dashboard 2',
+        tab: P(TX, TY, TW, TH, 'groups', all.slice(1)), ph: [P(PX, PY, PW, PH, 'groups', all.slice(1))],
+        notes: ['Tablet and phone look the same: one window at a time.', 'Swipe left/right moves between windows; ☰ lists them.', 'The desk is not touched: the stack is the phone’s own view of Screen 1.'] },
+      B: { label: 'B · Per-size layouts', title: 'B — the view stores a desktop, tablet and phone layout',
+        how: 'You design the view once per size (“Edit layout for: Desktop / Tablet / Phone”). A size without its own layout falls back to automatic folding.',
+        stored: 'up to 3 layouts per view (same windows)', edit: 'each size you care about', pros: 'exact control per size', cons: '3 layouts to keep in sync; Store / recall get harder; in-between sizes still need a fallback', who: 'react-grid-layout, Figma / Framer breakpoints',
+        tabPanes: [P(TX, TY, TW * 0.4, TH, 'groups'), P(TX + TW * 0.4, TY, TW * 0.6, TH * 0.65, 'dmx'), P(TX + TW * 0.4, TY + TH * 0.65, TW * 0.6, TH * 0.35, 'exec')],
+        ph: [P(PX, PY, PW, PH * 0.6, 'groups'), P(PX, PY + PH * 0.6, PW, PH * 0.4, 'exec')],
+        notes: ['Tablet: an authored layout (Groups | DMX over Executors).', 'Phone: an authored layout (Groups over Executors); the other windows are in ☰.', 'Edited on a phone or with a size switch in the view editor.'] },
+      C: { label: 'C · Fold to fit (recommended)', title: 'C — each split folds what doesn’t fit into a neighbour’s tabs',
+        how: 'Every window type has a minimum size. When a split can’t give a child its minimum, that child folds into the nearest stack as a tab (+Name). Works at every size: phone, tablet, a small OS window, a tiled overview.',
+        stored: 'nothing new (minimums live in the registry)', edit: 'nothing', pros: 'any size works; tablets keep side-by-side; no extra layouts', cons: 'folding is computed, so less hand-placed; minimums need tuning', who: 'VS Code / JetBrains tool windows, Home Assistant sections, CSS container queries',
+        tabPanes: [P(TX, TY, 245, TH - 150, 'groups', [], ['presets']), P(TX + 245, TY, TW - 245, TH - 150, 'dmx', ['sheet'], ['sysmon', 'realtime']), P(TX, TY + TH - 150, TW, 150, 'exec')],
+        ph: [P(PX, PY, PW, PH - 140, 'groups', [], ['presets', 'dmx', 'sheet', 'sysmon', 'realtime']), P(PX, PY + PH - 140, PW, 140, 'exec')],
+        notes: ['Tablet: the right column (255 px) is under System Monitor’s 320 → it folds into DMX’s tabs; Presets folds under Groups (height).', 'Phone: everything above folds into one stack; Executors keep a strip because their minimum height fits.', 'Turn the phone sideways and splits unfold again.'] },
+      D: { label: 'D · Own config per device', title: 'D — a device can choose its own screen config',
+        how: 'Each device picks a ScreenConfig (“Follow user” or e.g. “Phone”). A phone config is just a config with one small screen that you build on the phone. Combined with C for everything else.',
+        stored: 'ordinary ScreenConfigs / views (already exist)', edit: 'the phone config, on the phone', pros: 'hand-made phone desks; fits today’s model (a console's remote user)', cons: 'phone layouts are authored and can drift from the desk', who: 'console remote user configs, TouchOSC, Companion, Eos iRFR tabs',
+        tabPanes: [P(TX, TY, 245, TH - 150, 'groups', [], ['presets']), P(TX + 245, TY, TW - 245, TH - 150, 'dmx', ['sheet'], ['sysmon', 'realtime']), P(TX, TY + TH - 150, TW, 150, 'exec')],
+        ph: [P(PX, PY + 30, PW, (PH - 30) * 0.55, 'groups'), P(PX, PY + 30 + (PH - 30) * 0.55, PW, (PH - 30) * 0.45, 'exec')],
+        phExtra: [ch(0, 44, 390, 30, 'This device: Screen config “Phone”', PS, { bg: '#2a2410', fg: '#c9b56a' })],
+        notes: ['Tablet follows the user’s config → shown folded (C).', 'Phone: device setting “Screen config: Phone” with its own one-screen view (Groups + Executors).', 'A desktop view called on the phone still folds (C).'] },
+      E: { label: 'E · Scale down', title: 'E — draw the desk view smaller (a console web remote)',
+        how: 'The 1920×1080 view is drawn scaled to fit, with pinch and pan.',
+        stored: 'a design size per screen', edit: 'nothing', pros: 'everything visible, exactly as on the desk', cons: 'tiny: 44 px buttons become ~9 px on a phone; fails the touch and 12 px text guards', who: 'console web remotes, TouchOSC scaling, QLC+ web',
+        scaled: true,
+        notes: ['Tablet: 0.53× — usable with a mouse, hard by finger.', 'Phone: 0.2× — read-only at best; pinch to zoom into one pane.', 'Kept only as a “Desktop preview” peek, if at all.'] }
+    };
+    const o = O[s.o];
+    let tab, ph;
+    if (o.scaled) {
+      const tf = TW / 1920, pf = PW / 1920;
+      const sp = (f, ox, oy) => deskPanes.map(p => P(ox + p.x * f, oy + p.y * f, p.w * f, p.h * f, p.a, p.a === 'dmx' ? ['sheet'] : []));
+      tab = { fw: Math.round(1024 * TS), fh: Math.round(768 * TS), chrome: tabChrome, panes: draw(sp(tf, TX - 50 * tf, TY + 60), TS, 30 * tf), bad: true, badText: 'targets ~23 px — under the 44 px floor' };
+      ph = { fw: Math.round(390 * PS), fh: Math.round(844 * PS), chrome: phChrome(), panes: draw(sp(pf, PX - 50 * pf, PY + 200), PS, 30 * pf), bad: true, badText: '44 px targets → ~9 px · text ~3 px' };
+    } else {
+      const tp = o.tabPanes || [o.tab];
+      tab = { fw: Math.round(1024 * TS), fh: Math.round(768 * TS), chrome: tabChrome, panes: draw(tp, TS, 30), bad: false, badText: '' };
+      ph = { fw: Math.round(390 * PS), fh: Math.round(844 * PS), chrome: phChrome(o.phExtra), panes: draw(o.ph, PS, 36), bad: false, badText: '' };
+    }
+    const opts = Object.keys(O).map(k => ({ label: O[k].label, b: s.o === k ? '#9a7a08' : '#424242', bg: s.o === k ? '#2a2410' : '#1c1c1c', pick: () => this.setState({ o: k }) }));
+    return { desk, tab, ph, opts, o };
+  }
+}
+</script>
+</body>
+</html>

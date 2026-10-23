@@ -1,0 +1,52 @@
+{
+  "meta": {
+    "id": 1,
+    "guid": "d000d000-d000-4000-8000-d000d000d000",
+    "name": "Default"
+  },
+  "groups": {
+    "1": {
+      "meta": {
+        "id": 1,
+        "guid": "61000001-0000-4000-8000-000000000001",
+        "name": "Front Wash"
+      },
+      "fixture_ids": [1, 2, 3, 4]
+    },
+    "2": {
+      "meta": {
+        "id": 2,
+        "guid": "61000002-0000-4000-8000-000000000002",
+        "name": "Back Light"
+      },
+      "fixture_ids": [5, 6]
+    }
+  },
+  "preset_pools": {},
+  "layouts": {},
+  "filters": {},
+  "worlds": {},
+  "macros": {
+    "1": {
+      "meta": {
+        "id": 1,
+        "guid": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+        "name": "Hello World"
+      },
+      "lines": [
+        {
+          "guid": "11111111-1111-4111-8111-111111111111",
+          "command": "Fixture 1 Thru 10 At Full",
+          "wait": "Follow",
+          "enabled": true,
+          "execute": "Yes"
+        }
+      ]
+    }
+  },
+  "distribute_presets": {},
+  "dynamic_states": {},
+  "plugins": {},
+  "timecodes": {},
+  "priorities": {}
+}

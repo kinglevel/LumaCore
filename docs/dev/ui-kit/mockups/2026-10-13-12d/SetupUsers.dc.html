@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Users and Profiles grid</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0b0b0b">
+  <p style="position: absolute; top: 12px; left: 28px; right: 28px; margin: 0; font-size: 14px; color: #9c9c9c">Users &amp; Profiles on &lt;luma-grid&gt; + the slab — desktop and phone share one selection. New = the station ask, Delete = the safe delete ask (12c2). Tap rows, use + / Thru, then the slab.</p>
+
+  <section style="position: absolute; top: 46px; left: 28px; width: 960px; height: 830px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden; display: flex; flex-direction: column">
+    <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 16px; border-bottom: 1px solid #424242">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"></path></svg>
+      <span style="font-size: 17px; font-weight: 500">Users &amp; Profiles</span>
+      <span style="height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid #303030; background: #262626; font-size: 13px"><span style="width: 8px; height: 8px; border-radius: 4px; background: #00a60a"></span>{{loggedChip}}</span>
+      <span style="margin-left: auto; font-size: 12px; color: #787878">In the show · every station</span>
+      <button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+    </div>
+    <div style="flex: 1; display: flex; min-height: 0">
+      <div style="width: 130px; flex-shrink: 0; border-right: 1px solid #303030; display: flex; flex-direction: column">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2"><button type="button" onClick="{{t.go}}" style="height: 76px; border: none; border-bottom: 1px solid #262626; background: {{t.bg}}; color: {{t.fg}}; font: inherit; font-size: 15px; text-align: left; padding: 0 14px; box-shadow: {{t.mark}}; display: flex; flex-direction: column; justify-content: center; gap: 4px"><span>{{t.label}}</span><span style="font-size: 12px; color: #9c9c9c">{{t.sub}}</span></button></sc-for>
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+        <div style="height: 50px; flex-shrink: 0; display: flex; gap: 6px; align-items: center; padding: 0 12px; border-bottom: 1px solid #303030">
+          <span style="font-size: 13px; color: #9c9c9c">{{count}}</span>
+          <div style="margin-left: auto; display: flex; gap: 6px">
+            <sc-for list="{{modes}}" as="m" hint-placeholder-count="3"><button type="button" onClick="{{m.go}}" style="width: 52px; height: 44px; border-radius: 6px; border: 1px solid {{m.b}}; background: {{m.bg}}; color: {{m.fg}}; font: inherit; font-size: 15px; font-weight: 500">{{m.t}}</button></sc-for>
+            <button type="button" onClick="{{all}}" style="height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid #424242; background: #262626; color: #d1d1d1; font: inherit; font-size: 13px">All</button>
+            <button type="button" onClick="{{none}}" style="height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid #424242; background: #262626; color: #d1d1d1; font: inherit; font-size: 13px">None</button>
+          </div>
+        </div>
+        <div style="flex: 1; overflow: hidden">
+          <div style="display: grid; grid-template-columns: {{cols}}; grid-auto-rows: 48px; font-size: 14px">
+            <span style="background: #181818; border-bottom: 1px solid #303030; border-right: 1px solid #303030; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #787878">No</span>
+            <sc-for list="{{heads}}" as="h" hint-placeholder-count="6"><span style="background: #181818; border-bottom: 1px solid #303030; border-right: 1px solid #262626; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 12px; color: #9c9c9c">{{h}}<span style="color: #5a5a5a">⋮</span></span></sc-for>
+            <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+              <button type="button" onClick="{{r.pick}}" style="background: {{r.noBg}}; border: none; border-bottom: 1px solid #262626; border-right: 1px solid #303030; color: #9c9c9c; font: inherit; font-size: 13px; box-shadow: {{r.mark}}">{{r.no}}</button>
+              <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="6"><button type="button" onClick="{{r.pick}}" style="margin: 3px 2px; border-radius: 4px; border: {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; font: inherit; font-size: 14px; text-align: left; padding: 0 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden"><span style="width: {{c.dw}}px; height: 10px; border-radius: 5px; background: {{c.dot}}; flex-shrink: 0"></span>{{c.t}}</button></sc-for>
+            </sc-for>
+            <span style="border-right: 1px solid #303030; display: flex; align-items: center; justify-content: center; color: #787878">+</span>
+            <button type="button" onClick="{{newRow}}" style="grid-column: 2 / -1; border: none; border-bottom: 1px dashed #303030; background: transparent; color: #9c9c9c; font: inherit; font-size: 14px; text-align: left; padding: 0 10px">{{newLabel}}</button>
+          </div>
+        </div>
+        <div style="height: 34px; flex-shrink: 0; display: flex; align-items: center; padding: 0 16px; border-top: 1px solid #303030; font-size: 12px; color: #9c9c9c" class="mono">{{echo}}</div>
+      </div>
+    </div>
+    <div style="height: 136px; flex-shrink: 0; border-top: 1px solid #424242; padding: 8px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 10px repeat(3, minmax(0, 1fr)); grid-template-rows: 60px 60px; gap: 6px; box-sizing: border-box">
+      <sc-for list="{{left}}" as="a" hint-placeholder-count="10"><button type="button" onClick="{{a.run}}" title="{{a.why}}" style="border-radius: 6px; border: 1px solid #424242; background: {{a.bg}}; color: {{a.fg}}; font: inherit; font-size: 14px; padding: 0 10px; text-align: left; display: flex; align-items: center; gap: 9px; grid-column: {{a.col}}; grid-row: {{a.row}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{a.ic}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{a.d}}"></path></svg>{{a.t}}</button></sc-for>
+      <span style="grid-column: 6; grid-row: 1 / span 2; border-left: 1px solid #303030; margin-left: 4px"></span>
+      <sc-for list="{{right}}" as="a" hint-placeholder-count="6"><button type="button" onClick="{{a.run}}" title="{{a.why}}" style="border-radius: 6px; border: 1px solid #424242; background: {{a.bg}}; color: {{a.fg}}; font: inherit; font-size: 14px; padding: 0 10px; text-align: left; grid-column: {{a.col}}; grid-row: {{a.row}}">{{a.t}}</button></sc-for>
+    </div>
+  </section>
+
+  <div style="position: absolute; top: 46px; left: 1020px; width: 390px; height: 830px; border-radius: 16px; border: 1px solid #303030; background: #121212; overflow: hidden; display: flex; flex-direction: column">
+    <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 2px 0 14px; background: #1c1c1c; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500; margin-right: auto">Users &amp; Profiles</span><button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div>
+    <div style="height: 50px; flex-shrink: 0; display: flex; gap: 6px; padding: 3px 8px; background: #1c1c1c; border-bottom: 1px solid #303030; box-sizing: border-box">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2"><button type="button" onClick="{{t.go}}" style="flex: 1; height: 44px; border-radius: 22px; border: 1px solid {{t.pb}}; background: #262626; color: {{t.fg}}; font: inherit; font-size: 14px">{{t.label}}</button></sc-for>
+    </div>
+    <div style="height: 46px; flex-shrink: 0; display: flex; gap: 6px; align-items: center; padding: 0 8px; background: #1c1c1c; border-bottom: 1px solid #303030">
+      <span style="font-size: 12px; color: #9c9c9c; margin-right: auto">{{countShort}}</span>
+      <sc-for list="{{modes}}" as="m" hint-placeholder-count="3"><button type="button" onClick="{{m.go}}" style="width: 48px; height: 40px; border-radius: 6px; border: 1px solid {{m.b}}; background: {{m.bg}}; color: {{m.fg}}; font: inherit; font-size: 14px; font-weight: 500">{{m.t}}</button></sc-for>
+    </div>
+    <div style="flex: 1; overflow: hidden; background: #1c1c1c">
+      <div style="display: grid; grid-template-columns: 44px 1.2fr 1fr; grid-auto-rows: 52px">
+        <span style="background: #181818; border-bottom: 1px solid #303030; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #787878">No</span>
+        <sc-for list="{{phoneHeads}}" as="h" hint-placeholder-count="2"><span style="background: #181818; border-bottom: 1px solid #303030; display: flex; align-items: center; padding: 0 8px; font-size: 12px; color: #9c9c9c">{{h}}</span></sc-for>
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+          <button type="button" onClick="{{r.pick}}" style="background: {{r.noBg}}; border: none; border-bottom: 1px solid #262626; color: #9c9c9c; font: inherit; font-size: 13px; box-shadow: {{r.mark}}">{{r.no}}</button>
+          <sc-for list="{{r.phone}}" as="c" hint-placeholder-count="2"><button type="button" onClick="{{r.pick}}" style="margin: 3px 2px; border-radius: 4px; border: {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; font: inherit; font-size: 14px; text-align: left; padding: 0 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden"><span style="width: {{c.dw}}px; height: 10px; border-radius: 5px; background: {{c.dot}}; flex-shrink: 0"></span>{{c.t}}</button></sc-for>
+        </sc-for>
+      </div>
+      <p style="margin: 8px 10px; font-size: 12px; color: #787878; line-height: 1.4">Other columns fold into the row (tap ▸) or scroll sideways; Name stays frozen.</p>
+    </div>
+    <div style="flex-shrink: 0; border-top: 1px solid #424242; background: #1c1c1c; padding: 6px; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 50px; gap: 6px; padding-bottom: 14px">
+      <sc-for list="{{phoneSlab}}" as="a" hint-placeholder-count="6"><button type="button" onClick="{{a.run}}" style="border-radius: 6px; border: 1px solid #424242; background: {{a.bg}}; color: {{a.fg}}; font: inherit; font-size: 14px; padding: 0 10px; text-align: left; display: flex; align-items: center; gap: 9px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{a.ic}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{a.d}}"></path></svg>{{a.t}}</button></sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{asking}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.55)"></div>
+    <section style="position: absolute; top: 240px; left: 380px; width: 620px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden">
+      <div style="height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500">{{askTitle}}</span><span class="mono" style="font-size: 13px; color: #c27a12">one Oops step</span></div>
+      <div style="padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <p style="margin: 0; font-size: 15px; line-height: 1.45">{{askText}}</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <button type="button" onClick="{{doDelete}}" style="height: 60px; border-radius: 6px; border: 1px solid color-mix(in srgb, #e10000 55%, transparent); background: color-mix(in srgb, #e10000 14%, #303030); color: #ff6a5a; font: inherit; font-size: 15px; font-weight: 500">{{askBtn}}</button>
+          <button type="button" onClick="{{cancel}}" style="height: 60px; border-radius: 6px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 15px">Cancel</button>
+        </div>
+        <span class="mono" style="font-size: 12px; color: #9c9c9c">{{askLine}}</span>
+      </div>
+    </section>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    this.state = {
+      tab: 'users', sel: [3], mode: 'replace', asking: false, echo: '',
+      users: [
+        { no: 1, name: 'Admin', rights: 'Admin', profile: '2 Admin', colour: '#9a7a08', pw: 'set', remote: 'Yes', on: 'FOH · now' },
+        { no: 2, name: 'Debug', rights: 'Admin', profile: '3 Debug', colour: '#3f9a90', pw: '—', remote: 'No', on: '' },
+        { no: 3, name: 'LD', rights: 'Program', profile: '4 LD', colour: '#8a8fb0', pw: 'set', remote: 'Yes', on: 'Backstage' },
+        { no: 4, name: 'Anna', rights: 'Playback', profile: '5 Anna', colour: '#c27a12', pw: '—', remote: 'Yes', on: 'Phone' },
+        { no: 5, name: 'Bob', rights: 'Presets', profile: '6 Bob', colour: '#4d8fd6', pw: '—', remote: 'No', on: '' }
+      ],
+      profiles: [
+        { no: 1, name: 'Default', used: 'template — nobody', screens: '1', views: '4', locked: 'locked' },
+        { no: 2, name: 'Admin', used: 'Admin', screens: '2', views: '6', locked: '' },
+        { no: 3, name: 'Debug', used: 'Debug', screens: '1', views: '3', locked: '' },
+        { no: 4, name: 'LD', used: 'LD', screens: '2', views: '9', locked: '' },
+        { no: 5, name: 'Anna', used: 'Anna', screens: '1', views: '2', locked: '' },
+        { no: 6, name: 'Bob', used: 'Bob', screens: '1', views: '2', locked: '' },
+        { no: 7, name: 'Spare', used: '—', screens: '1', views: '1', locked: '' }
+      ]
+    };
+  }
+  renderVals() {
+    const s = this.state;
+    const users = s.tab === 'users';
+    const list = users ? s.users : s.profiles;
+    const tabs = [['users', 'Users', s.users.length + ' users'], ['profiles', 'Profiles', s.profiles.length + ' profiles']].map(([k, label, sub]) => ({ label, sub,
+      go: () => this.setState({ tab: k, sel: [], echo: '' }), bg: s.tab === k ? '#262626' : 'transparent', fg: s.tab === k ? '#d1d1d1' : '#9c9c9c', mark: s.tab === k ? 'inset 3px 0 0 #9a7a08' : 'none', pb: s.tab === k ? '#9a7a08' : '#424242' }));
+    const pick = i => () => {
+      let sel = s.sel.slice();
+      if (s.mode === 'add') { if (!sel.includes(i)) sel.push(i); }
+      else if (s.mode === 'remove') { sel = sel.filter(k => k !== i); }
+      else if (s.mode === 'thru' && sel.length) { const a = sel[sel.length - 1]; for (let k = Math.min(a, i); k <= Math.max(a, i); k++) if (!sel.includes(k)) sel.push(k); }
+      else sel = [i];
+      this.setState({ sel, mode: s.mode === 'thru' ? 'replace' : s.mode, echo: '' });
+    };
+    const C = (t, sel, ro, dot) => ({ t, dot: dot || 'transparent', dw: dot ? 10 : 0, bg: sel ? '#1d3a5a' : (ro ? 'transparent' : '#262626'), border: sel ? '1px solid #4d8fd6' : (ro ? '1px solid transparent' : '1px solid #303030'), fg: ro && !sel ? '#9c9c9c' : '#d1d1d1' });
+    const rows = list.map((d, i) => {
+      const on = s.sel.includes(i);
+      const cells = users
+        ? [C(d.name, on, false, d.colour), C(d.rights, on), C(d.profile, on), C(d.pw, on), C(d.remote, on), C(d.on || '—', on, true, d.on ? '#00a60a' : null)]
+        : [C(d.name, on, d.locked), C(d.used, on, true), C(d.screens, on, true), C(d.views, on, true), C(d.locked || '—', on, true)];
+      const phone = users ? [C(d.name, on, false, d.colour), C(d.rights, on)] : [C(d.name, on, d.locked), C(d.used, on, true)];
+      return { no: d.no, cells, phone, pick: pick(i), noBg: on ? '#2b2716' : '#181818', mark: on ? 'inset 0 0 0 1px #9a7a08' : 'none' };
+    });
+    const heads = users ? ['Name', 'Rights', 'Profile', 'Password', 'Remote login', 'Logged in'] : ['Name', 'Used by', 'Screens', 'Views', 'Locked'];
+    const cols = users ? '52px 1fr 0.8fr 0.9fr 0.8fr 0.9fr 1fr' : '52px 1fr 1.3fr 0.6fr 0.6fr 0.7fr';
+    const mk = (m, t) => { const on = s.mode === m, latched = on && m !== 'thru'; return { t, b: on ? '#9a7a08' : '#424242', bg: latched ? '#9a7a08' : on ? '#3a3214' : '#262626', fg: latched ? '#f3ecd3' : '#d1d1d1', go: () => this.setState({ mode: on ? 'replace' : m }) }; };
+    const modes = [mk('add', '+'), mk('remove', '−'), mk('thru', 'Thru')];
+    const n = s.sel.length;
+    const latchWord = s.mode === 'add' ? ' · + latched: taps add' : s.mode === 'remove' ? ' · − latched: taps remove' : s.mode === 'thru' ? ' · Thru: tap the end' : '';
+    const names = s.sel.map(i => list[i].name);
+    const word = users ? 'User' : 'UserProfile';
+    const target = n ? `${word} ` + names.map(x => `"${x}"`).join(' + ') : '';
+    const IC = {
+      Select: ['M4 3l7 17 2.5-7.5L21 10z', '#c9a227'], New: ['M5 12h14M12 5v14', '#3fbf4a'],
+      Copy: ['M9 9h11v11H9zM5 15H4V4h11v1', '#4d8fd6'], Cut: ['M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12', '#e08a2c'],
+      Paste: ['M9 3h6v4H9zM16 5h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2', '#4d8fd6'], Delete: ['M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6', '#ff5a4a'],
+      Oops: ['M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3', '#e6b422'], Import: ['M12 3v12M7 10l5 5 5-5M5 21h14', '#3fb0a6'],
+      Export: ['M12 21V9M7 14l5-5 5 5M5 3h14', '#3fb0a6'], Edit: ['M17 3l4 4L8 20H4v-4z', '#c9a227']
+    };
+    const say = line => () => this.setState({ echo: '› ' + line });
+    const blocked = users ? (names.includes('Admin') ? 'Admin always exists' : '') : (s.sel.some(i => list[i].locked) ? 'Default is locked' : (s.sel.some(i => list[i].used !== '—' && !list[i].locked) ? 'In use — move its users first' : ''));
+    const L = (t, col, row, run, dis) => { const [d, ic] = IC[t.split(' ')[0]]; return { t, col, row, d, ic: dis ? '#5a5a5a' : ic, why: dis || '', run: dis ? say(`(greyed: ${dis})`) : run, bg: dis ? '#232323' : '#2c2c2c', fg: dis ? '#5a5a5a' : (t.startsWith('Delete') ? '#ff8a7a' : '#d1d1d1') }; };
+    const none = n ? '' : 'Select first';
+    const delWhy = none || blocked;
+    const left = [
+      L('Select', 1, 1, () => this.setState({ mode: 'add' })),
+      L('New', 2, 1, say(users ? 'Store User   → the New user ask (own copy of Default or a shared profile)' : 'Store UserProfile   → the New profile ask (Default · Copy of · Import)')),
+      L(n ? `Copy ${n}` : 'Copy', 3, 1, say(`Copy ${target} At …`), none || (users ? 'Users are copied as new users from the ask' : '')),
+      L('Cut', 4, 1, () => {}, users ? 'Users are not moved' : 'Profiles keep their number'),
+      L('Paste', 5, 1, () => {}, 'Nothing copied'),
+      L(n ? `Delete ${n}` : 'Delete', 1, 2, () => this.setState({ asking: true }), delWhy),
+      L('Oops', 2, 2, say('Oops')),
+      L('Import', 3, 2, say(users ? 'Import User …' : 'Import UserProfile "Stage.json"')),
+      L('Export', 4, 2, say(`Export ${target || word + ' *'}`), none),
+      L(n ? `Edit ${n}` : 'Edit', 5, 2, say(`EditSetting ${target}   (the selection's cells; Rights on several users = one Set line)`), none)
+    ];
+    const R = (t, col, row, run, why) => ({ t, col, row, why: why || '', run: why ? say(`(greyed: ${why})`) : run, bg: why ? '#232323' : '#303030', fg: why ? '#5a5a5a' : '#d1d1d1' });
+    const right = users
+      ? [R('Password…', 7, 1, say(`Set ${target} Password …`), n === 1 ? '' : 'One user'), R('Rename…', 8, 1, say(`Set ${target} Name …`), n === 1 && !names.includes('Admin') ? '' : 'One user, not Admin'), R('Log out', 9, 1, say(`Logout ${target}`), none), R('Rights…', 7, 2, say(`Set ${target} Rights …   (Admin only)`), none), R('Profile…', 8, 2, say(`Set ${target} Profile …`), none), R('Settings tab', 9, 2, say(`EditSetting ${target}`), none)]
+      : [R('Rename…', 7, 1, say(`Label ${target} …`), n === 1 ? '' : 'One profile'), R('Look…', 8, 1, say(`EditSetting ${target} /Tab Look`), none), R('Reset…', 9, 1, say(`Reset ${target}`), none), R('Used by…', 7, 2, say(`List User /Profile ${target}`), none), R('Settings tab', 8, 2, say(`EditSetting ${target}`), none)];
+    const phoneSlab = [left[1], left[5], left[9], left[2], left[6], left[7]].map(a => ({ ...a }));
+    const askTitle = n === 1 ? `Delete ${word} “${names[0]}”` : `Delete ${n} ${users ? 'users' : 'profiles'}`;
+    const askText = users ? `${names.join(', ')}: logged out everywhere, programmer and selection go, claims released. Their own profiles go too (box ticked).` : `${names.join(', ')}: screens, views, keys, presets and look go.`;
+    const askLine = `${askTitle.startsWith('Delete ' + n) ? 'Delete' : 'Delete'} ${target}${users ? ' /WithProfile' : ''} /NoConfirmation`;
+    const logged = s.users.filter(u => u.on).length;
+    return { tabs, rows, heads, cols, modes, left, right, phoneSlab, phoneHeads: users ? ['Name', 'Rights'] : ['Name', 'Used by'],
+      count: (n ? `${n} selected: ${names.join(', ')}` : 'nothing selected') + latchWord, countShort: n ? `${n} selected` : 'none',
+      loggedChip: `${s.users.length} users · ${logged} logged in`, newLabel: users ? 'New user…' : 'New profile…', newRow: left[1].run,
+      all: () => this.setState({ sel: list.map((_, i) => i) }), none: () => this.setState({ sel: [] }),
+      asking: s.asking, askTitle, askText, askLine, askBtn: n > 1 ? `Delete ${n}` : 'Delete',
+      doDelete: () => { const keep = list.filter((_, i) => !s.sel.includes(i)); this.setState(users ? { users: keep, sel: [], asking: false, echo: '› ' + askLine + '   → ok · one Oops step' } : { profiles: keep, sel: [], asking: false, echo: '› ' + askLine + '   → ok' }); },
+      cancel: () => this.setState({ asking: false }), echo: s.echo || 'tap rows, then the slab' };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+[workspace]
+# A vendored third-party crate (vendor/README.md) is built as a path dependency, never as a member.
+exclude = ["vendor/gdtf"]
+resolver = "2"
+members = [
+    "crates/foundation/lumacore-base",
+    "crates/foundation/lumacore-registry",
+    "crates/foundation/lumacore-sysmon",
+    "crates/foundation/lumacore-syntax",
+    "crates/foundation/lumacore-syntax-derive",
+    "crates/foundation/lumacore-trace",
+    "crates/foundation/lumacore-wire",
+    "crates/foundation/lumacore-lanes",
+    "crates/model/lumacore-effects",
+    "crates/model/lumacore-objects",
+    "crates/model/lumacore-patch",
+    "crates/model/lumacore-tags",
+    "crates/model/lumacore-playback",
+    "crates/model/lumacore-runtime",
+    "crates/model/lumacore-protocols",
+    "crates/model/lumacore-fixtures",
+    "crates/model/lumacore-state",
+    "crates/model/lumacore-timecode",
+    "crates/model/lumacore-tree",
+    "crates/formats/lumacore-gdtf",
+    "crates/formats/lumacore-luma",
+    "crates/formats/lumacore-drives",
+    "crates/formats/lumacore-mvr",
+    "crates/formats/lumacore-poolxml",
+    "crates/engine/lumacore-render",
+    "crates/engine/lumacore-engines",
+    "crates/network/lumacore-net",
+    "crates/network/lumacore-clocksync",
+    "crates/network/protocols/lumacore-lines",
+    "crates/network/protocols/dmx/lumacore-artnet",
+    "crates/network/protocols/dmx/lumacore-sacn",
+    "crates/network/protocols/data/lumacore-osc",
+    "crates/commands/lumacore-suggest",
+    "crates/commands/objects/lumacore-cmd-treeshell",
+    "crates/commands/objects/lumacore-cmd-keys",
+    "crates/commands/objects/lumacore-cmd-tags",
+    "crates/commands/objects/lumacore-cmd-showfile",
+    "crates/commands/objects/lumacore-cmd-lumasession",
+    "crates/commands/objects/lumacore-cmd-station",
+    "crates/commands/objects/lumacore-cmd-devices",
+    "crates/commands/objects/lumacore-cmd-protocols",
+    "crates/commands/objects/protocols/dmx/lumacore-cmd-sacn",
+    "crates/commands/objects/protocols/dmx/lumacore-cmd-artnet",
+    "crates/commands/objects/protocols/data/lumacore-cmd-osc",
+    "crates/ui/lumacore-http",
+    "crates/server/lumacore-lumasession",
+    "crates/server/lumacore-server",
+    "crates/ui/lumacore-terminal",
+    "crates/ui/lumacore-shell",
+    "crates/ui/lumacore-views",
+    "crates/ui/lumacore-webui",
+    "crates/dev/lumacore-headers",
+    "crates/dev/lumacore-tidy",
+    "crates/dev/lumacore-sweep",
+    "apps/lumacore-station",
+    "apps/lumacore-app",
+    "apps/lumacore-cli",
+    "apps/lumacore-scripts",
+    "tests/systemtest",
+    "tests/catalog",
+]
+# What a plain `cargo build` / `cargo test` covers (decisions §36 5): everything but the desktop
+# app, whose web view pulls GTK / WebKitGTK on Linux. `--workspace`, `-p lumacore-app`, the full
+# `./scripts/unix/test` and `./scripts/unix/build app|all` build it.
+default-members = [
+    "crates/foundation/lumacore-base",
+    "crates/foundation/lumacore-registry",
+    "crates/foundation/lumacore-sysmon",
+    "crates/foundation/lumacore-syntax",
+    "crates/foundation/lumacore-syntax-derive",
+    "crates/foundation/lumacore-trace",
+    "crates/foundation/lumacore-wire",
+    "crates/foundation/lumacore-lanes",
+    "crates/model/lumacore-effects",
+    "crates/model/lumacore-objects",
+    "crates/model/lumacore-patch",
+    "crates/model/lumacore-tags",
+    "crates/model/lumacore-playback",
+    "crates/model/lumacore-runtime",
+    "crates/model/lumacore-protocols",
+    "crates/model/lumacore-fixtures",
+    "crates/model/lumacore-state",
+    "crates/model/lumacore-timecode",
+    "crates/model/lumacore-tree",
+    "crates/formats/lumacore-gdtf",
+    "crates/formats/lumacore-luma",
+    "crates/formats/lumacore-drives",
+    "crates/formats/lumacore-mvr",
+    "crates/formats/lumacore-poolxml",
+    "crates/engine/lumacore-render",
+    "crates/engine/lumacore-engines",
+    "crates/network/lumacore-net",
+    "crates/network/lumacore-clocksync",
+    "crates/network/protocols/lumacore-lines",
+    "crates/network/protocols/dmx/lumacore-artnet",
+    "crates/network/protocols/dmx/lumacore-sacn",
+    "crates/network/protocols/data/lumacore-osc",
+    "crates/commands/lumacore-suggest",
+    "crates/commands/objects/lumacore-cmd-treeshell",
+    "crates/commands/objects/lumacore-cmd-keys",
+    "crates/commands/objects/lumacore-cmd-tags",
+    "crates/commands/objects/lumacore-cmd-showfile",
+    "crates/commands/objects/lumacore-cmd-lumasession",
+    "crates/commands/objects/lumacore-cmd-station",
+    "crates/commands/objects/lumacore-cmd-devices",
+    "crates/commands/objects/lumacore-cmd-protocols",
+    "crates/commands/objects/protocols/dmx/lumacore-cmd-sacn",
+    "crates/commands/objects/protocols/dmx/lumacore-cmd-artnet",
+    "crates/commands/objects/protocols/data/lumacore-cmd-osc",
+    "crates/ui/lumacore-http",
+    "crates/server/lumacore-lumasession",
+    "crates/server/lumacore-server",
+    "crates/ui/lumacore-terminal",
+    "crates/ui/lumacore-shell",
+    "crates/ui/lumacore-views",
+    "crates/ui/lumacore-webui",
+    "crates/dev/lumacore-headers",
+    "crates/dev/lumacore-tidy",
+    "crates/dev/lumacore-sweep",
+    "apps/lumacore-station",
+    "apps/lumacore-cli",
+    "apps/lumacore-scripts",
+    "tests/systemtest",
+    "tests/catalog",
+]
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+authors = ["LumaCore Contributors"]
+license = "MIT OR Apache-2.0"
+
+# Lints for every crate (decisions §31); each crate opts in with `[lints] workspace = true`.
+[workspace.lints.rust]
+# deny, not forbid: ctor's test-only hook allows it inside its expansion; tidy `no_unsafe_code`
+# refuses any `unsafe` or `allow(unsafe_code)` written in the source (decisions §34 21.8).
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+
+[workspace.dependencies]
+# Serialization
+# `rc`: shared show parts (`Arc<T>`) serialize as `T` (decisions §31 "Arc parts").
+serde = { version = "1.0", features = ["derive", "rc"] }
+# `raw_value`: JSON carried inside JSON without being escaped or parsed twice (decisions §31).
+serde_json = { version = "1.0", features = ["float_roundtrip", "raw_value"] }
+if-addrs = "0.13"
+
+# Error handling
+thiserror = "2.0"
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# UUID support
+uuid = { version = "1.11", features = ["serde", "v4", "v5"] }
+
+# DMX / timing
+spin_sleep = "1.3.3"
+crossbeam-channel = "0.5.15"
+thread-priority = "3.0.0"
+socket2 = { version = "0.6.1", features = ["all"] }
+zstd = "0.13"
+base64 = "0.22"
+signal-hook = "0.3"
+proptest = { version = "1.5", default-features = false, features = ["std"] }
+arrayvec = "0.7.6"
+criterion = "0.5"
+assert_no_alloc = { version = "1.1.2", features = ["warn_debug"] }
+arc-swap = "1.7"
+# Test binaries only: installs a crate's catalog before its first test (decisions §34 21.8).
+ctor = "0.4"
+regex = "1.12"
+
+# GDTF parsing
+gdtf = "0.2.0"
+
+# Terminal / CLI
+clap = { version = "4.5", features = ["derive"] }
+nu-ansi-term = "0.50"
+tabled = "0.17"
+
+# TUI
+ratatui = "0.29"
+crossterm = "0.28"
+tui-textarea = "0.7"
+ansi-to-tui = "7"
+
+# HTTP / async (isolated to HTTP engine — NOT used for DMX timing)
+axum = "0.8"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "sync"] }
+tower-http = { version = "0.6", features = ["cors", "fs", "compression-gzip"] }
+tower = { version = "0.5", features = ["util"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+futures-util = "0.3"
+tokio-tungstenite = "0.28"
+http-body-util = "0.1"
+
+# Networking / discovery
+hostname = "0.4"
+mdns-sd = "0.13"
+
+# Time, auth, parsing
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+pbkdf2 = { version = "0.12", default-features = false, features = ["hmac"] }
+sha2 = "0.10"
+zip = "2.4"
+# MVR's scene XML (lumacore-mvr; the gdtf crate uses the same version)
+quick-xml = "0.36"
+hmac = "0.12"
+strsim = "0.11"
+nucleo-matcher = "0.3.1"
+
+# Desktop app
+wry = "0.46"
+tao = "0.31"
+muda = "0.15"
+
+# Testing / benches
+tempfile = "3"
+
+# Profiling (compile-time gated)
+tracy-client = { version = "0.17" }
+
+# Dev builds (decisions §31): line tables are enough for panics and backtraces; full debug
+# info made target/debug 60 GB. Dependencies are built once, lightly optimised, without
+# debug info. Set `debug = 2` locally when a debugger needs variables.
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+opt-level = 1
+debug = false
+
+# The show's types and the change path (decisions §40 "40f built"): every line fingerprints the
+# rig's thousand fixtures and their types twice, serde-derived walks these crates hold and
+# lumacore-state instantiates — unoptimized, that walk is most of a line's cost in every debug
+# test and e2e run (155 ms → 82 ms a line with this).
+[profile.dev.package.lumacore-base]
+opt-level = 1
+[profile.dev.package.lumacore-fixtures]
+opt-level = 1
+[profile.dev.package.lumacore-tree]
+opt-level = 1
+[profile.dev.package.lumacore-state]
+opt-level = 1
+
+# Local builds (decisions §34 "Build times hardened" 2): release speed for the render thread, but
+# incremental and many codegen units, so changing one crate recompiles mostly what changed. The
+# scripts build it; `--ship` builds full release.
+[profile.local]
+inherits = "release"
+incremental = true
+codegen-units = 256
+
+# The overnight command sweep (decisions §25 "Step 10 hardening"): release
+# speed with debug assertions and overflow checks on.
+[profile.sweep]
+inherits = "release"
+debug-assertions = true
+overflow-checks = true
+
+# The GDTF reader is the gdtf crate 0.2.0 with the spec's defaults and lenient value readers
+# (vendor/README.md, decisions §40): the planning tools' stripped exports read without a refusal.
+[patch.crates-io]
+gdtf = { path = "vendor/gdtf" }

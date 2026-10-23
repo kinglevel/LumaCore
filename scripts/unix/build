@@ -1,0 +1,165 @@
+#!/usr/bin/env bash
+# Build only — nothing is started.
+#
+# Usage:
+#   ./scripts/unix/build [server|cli|app|all] [--debug | --ship] [--tracy]
+#   ./scripts/unix/build bench [local|release|dev] [--yes] [--remote]
+#
+#   server   lumacore-server (perfetto,http — the one feature set, lib.sh)
+#   cli      lumacore-cli
+#   app      lumacore-app alone (it connects to any station; starting a
+#            local one from it needs the server built too)
+#   all      everything above (default)
+#   bench    a fresh, timed build of server + CLI + app — every crate, dependencies
+#            too — after wiping that profile's target dir (asked first; --yes
+#            answers); one row per run in docs/dev/build-times.md (server, CLI and
+#            app apart, and the total), to compare machines (decisions §34
+#            "Build times hardened" 5)
+#   --remote the bench on every build server in buildservers.local.env instead
+#            (LC_BUILD_HOSTS, LC_BUILD_DIR): each pulls main (--ff-only), runs
+#            the bench and sends its row back; the rows land here, to commit
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+
+WHAT="all"
+DEBUG=0
+EXTRA=""
+BENCH_PROFILE="local"
+YES=0
+REMOTE=0
+PRINT_ROW=0
+for arg in "$@"; do
+    case "$arg" in
+        server|cli|app|all|bench) WHAT="$arg" ;;
+        local) BENCH_PROFILE=local ;;
+        release) BENCH_PROFILE=release ;;
+        dev) BENCH_PROFILE=dev ;;
+        --yes) YES=1 ;;
+        --remote) REMOTE=1 ;;
+        --print-row) PRINT_ROW=1 ;;   # a remote bench: the row on stdout, the file untouched
+        --debug) DEBUG=1 ;;
+        --ship) SHIP=1 ;;
+        --tracy) EXTRA="tracy" ;;
+        -h|--help) sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        *) die "Unknown argument: $arg" ;;
+    esac
+done
+if [ "$WHAT" = bench ]; then
+    case "$BENCH_PROFILE" in
+        dev) DEBUG=1 ;;
+        release) SHIP=1 ;;
+    esac
+fi
+lc_profile "$DEBUG"
+
+# logical_cores — what cargo's `jobs = -2` counts from.
+logical_cores() {
+    if [ "$(uname -s)" = Darwin ]; then sysctl -n hw.logicalcpu 2>/dev/null || echo 4; else nproc 2>/dev/null || echo 4; fi
+}
+
+# machine_line — CPU · logical cores · RAM · OS, for the benchmark row.
+machine_line() {
+    local cpu cores ram os
+    if [ "$(uname -s)" = Darwin ]; then
+        cpu="$(sysctl -n machdep.cpu.brand_string 2>/dev/null || echo '?')"
+        cores="$(sysctl -n hw.logicalcpu 2>/dev/null || echo '?')"
+        ram="$(( $(sysctl -n hw.memsize 2>/dev/null || echo 0) / 1073741824 )) GB"
+        os="macOS $(sw_vers -productVersion 2>/dev/null || echo '?')"
+    else
+        cpu="$(grep -m1 'model name' /proc/cpuinfo 2>/dev/null | sed 's/.*: //' || echo '?')"
+        cores="$(nproc 2>/dev/null || echo '?')"
+        ram="$(( $(grep -m1 MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}' || echo 0) / 1048576 )) GB"
+        os="$(uname -sr)"
+    fi
+    echo "$(hostname -s 2>/dev/null || echo '?') · $cpu · $cores threads · $ram · $os"
+}
+
+# append_row <row> — one line in build-times.md (the header first on a new file).
+append_row() {
+    local rows="$REPO_ROOT/docs/dev/build-times.md"
+    if [ ! -f "$rows" ]; then
+        printf '%s\n' "# Build times" "" \
+            "Fresh builds of server + CLI + app, every crate and dependency (\`./scripts/unix/build bench [profile]\`," \
+            "decisions §34 \"Build times hardened\" 5). One row per run, appended by the script." "" \
+            "| Date | Machine | rustc | Profile | Jobs | Crates | Server | CLI | App | Time | Commit |" \
+            "|---|---|---|---|---|---|---|---|---|---|---|" > "$rows"
+    fi
+    printf '%s\n' "$1" >> "$rows"
+}
+
+# bench — clean the profile's target dir, then a timed full build; one row in build-times.md.
+bench() {
+    local dir machine rustc jobs start total crates=0 row t_server t_cli t_app
+    dir="${TARGET_DIR#"$REPO_ROOT"/}"
+    if [ "$YES" -ne 1 ]; then
+        [ -t 0 ] || die "build bench wipes $dir: run it in a terminal, or add --yes"
+        read -r -p "build bench wipes $dir (every crate and dependency is rebuilt) — continue? [y/N] " answer
+        case "$answer" in y|Y|yes) ;; *) log "Nothing wiped."; exit 0 ;; esac
+    fi
+    machine="$(machine_line)"
+    rustc="$(rustc --version | awk '{print $2}')"
+    jobs=$(( $(logical_cores) - 2 )); [ "$jobs" -ge 1 ] || jobs=1
+    log "Fresh build ($PROFILE) on $machine — rustc $rustc, $jobs jobs"
+    step "cargo clean --profile ${PROFILE}" cargo clean --profile "$PROFILE" || die "cargo clean failed"
+    start=$SECONDS
+    build_server "$EXTRA" || die "Build failed!"; crates=$((crates + BUILT_CRATES)); t_server=$RUN_SECONDS
+    build_cli || die "Build failed!"; crates=$((crates + BUILT_CRATES)); t_cli=$RUN_SECONDS
+    build_app || die "Build failed!"; crates=$((crates + BUILT_CRATES)); t_app=$RUN_SECONDS
+    total=$((SECONDS - start))
+    log_ok "Fresh build · finished $(date '+%Y-%m-%d %H:%M:%S') · $(fmt_secs "$total") · $crates crates · $PROFILE · $jobs jobs"
+    row="$(printf '| %s | %s | %s | %s | %s | %s | %s | %s | %s | %s | %s |' "$(date '+%Y-%m-%d %H:%M')" "$machine" "$rustc" "$PROFILE" "$jobs" \
+        "$crates" "$(fmt_secs "$t_server")" "$(fmt_secs "$t_cli")" "$(fmt_secs "$t_app")" "$(fmt_secs "$total")" "$(git -C "$REPO_ROOT" rev-parse --short=12 HEAD 2>/dev/null || echo '?')")"
+    if [ "$PRINT_ROW" -eq 1 ]; then
+        echo "BENCH_ROW $row"
+    else
+        append_row "$row"
+        log "Row added to docs/dev/build-times.md"
+    fi
+}
+
+# bench_remote — the bench on every build server; their rows appended here.
+bench_remote() {
+    local env="$REPO_ROOT/buildservers.local.env" host out row head added=0
+    [ -f "$env" ] || die "No build servers: $env is missing (LC_BUILD_HOSTS, LC_BUILD_DIR)"
+    # shellcheck source=/dev/null
+    source "$env"
+    [ -n "${LC_BUILD_HOSTS:-}" ] && [ -n "${LC_BUILD_DIR:-}" ] || die "$env needs LC_BUILD_HOSTS and LC_BUILD_DIR"
+    head="$(git rev-parse --short=12 HEAD)"
+    git fetch -q origin 2>/dev/null || true
+    [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main 2>/dev/null)" ] \
+        || log "Note: HEAD ($head) isn't origin/main — the servers bench origin/main"
+    out="$(mktemp)"
+    for host in $LC_BUILD_HOSTS; do
+        log "${C_STEP}▶ bench on $host${C_OFF} ($BENCH_PROFILE)"
+        # Remote login shells may be fish: the command runs in bash.
+        if ssh -o BatchMode=yes "$host" "bash -lc 'cd ~/$LC_BUILD_DIR && git checkout -q main && git pull -q --ff-only && ./scripts/unix/build bench $BENCH_PROFILE --yes --print-row'" \
+            | tee "$out"; then
+            row="$(grep '^BENCH_ROW ' "$out" | tail -1 | sed 's/^BENCH_ROW //')"
+            if [ -n "$row" ]; then
+                append_row "$row"; added=$((added + 1))
+                log_ok "$host: row added"
+            else
+                log_err "$host: no row came back"
+            fi
+        else
+            log_err "$host: bench failed (see above)"
+        fi
+    done
+    rm -f "$out"
+    log "$added row(s) added to docs/dev/build-times.md — commit them"
+    [ "$added" -gt 0 ] || exit 1
+}
+
+case "$WHAT" in
+    bench) if [ "$REMOTE" -eq 1 ]; then bench_remote; else bench; fi; exit 0 ;;
+    server) build_server "$EXTRA" ;;
+    cli) build_cli ;;
+    app) build_app ;;
+    all) build_server "$EXTRA" && build_cli && build_app ;;
+esac || die "Build failed!"
+log_ok "Built $WHAT ($PROFILE): $TARGET_DIR"
+# Stale .o files rustc leaves in deps/ (rust#161824) — only past 40,000 entries.
+"$(dirname "$0")/prune_objects" --quiet || true
+if [ "$WHAT" != "cli" ] && [ -n "$(server_pids)" ]; then
+    log "Note: a lumacore-server is running ($(echo $(server_pids))) — it still runs the old binary: ./scripts/unix/server restart"
+fi

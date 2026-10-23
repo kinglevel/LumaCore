@@ -1,0 +1,14 @@
+[package]
+name = "lumacore-lanes"
+version.workspace = true
+edition.workspace = true
+description = "A state thread's two job lanes: StateHandle (call, call_within, send), the shell and machine lanes, the busy watchdog (decisions §26, §31, §34 24.2)"
+
+[dependencies]
+lumacore-sysmon = { path = "../lumacore-sysmon" }
+lumacore-base = { path = "../lumacore-base" }
+crossbeam-channel = { workspace = true }
+log = { workspace = true }
+
+[lints]
+workspace = true

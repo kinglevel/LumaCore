@@ -1,0 +1,19 @@
+[package]
+name = "lumacore-scripts"
+version.workspace = true
+edition.workspace = true
+
+# Developer launcher for the scripts/ folder (a TUI menu: a build / run plan,
+# the local station's status, every script); needs no LumaCore crate.
+[[bin]]
+name = "lumacore-scripts"
+path = "src/main.rs"
+
+[dependencies]
+crossterm = { workspace = true }
+ratatui = { workspace = true }
+signal-hook = { workspace = true }
+serde_json = { workspace = true }
+
+[lints]
+workspace = true

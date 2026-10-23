@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Standard dialog on the connect page</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+.lock-bg{background-image:url(./lockbg.jpg);background-size:cover;background-position:center}
+</style>
+</helmet>
+<div class="lock-bg" style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #121212">
+  <div style="position: absolute; inset: 0; background: rgba(10,10,10,.62)"></div>
+
+  <div style="position: absolute; top: 24px; left: 32px; right: 32px; display: flex; align-items: center; gap: 8px">
+    <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+      <button type="button" onClick="{{t.go}}" style="height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid {{t.b}}; background: rgba(28,28,28,.85); color: #d1d1d1; font: inherit; font-size: 13px">{{t.label}}</button>
+    </sc-for>
+    <span style="flex: 1; text-align: right; font-size: 13px; color: #9c9c9c">The standard dialog (Dialogs board), pulled into 12a3 for the connect page and the surface.</span>
+  </div>
+
+  <section style="position: absolute; top: 50%; left: 50%; width: 640px; margin-left: -320px; transform: translateY(-50%); border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden">
+    <div style="height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500">{{d.title}}</span><span class="mono" style="font-size: 13px; color: {{d.metaC}}">{{d.meta}}</span></div>
+    <div style="padding: 18px; display: flex; flex-direction: column; gap: 14px">
+      <p style="margin: 0; font-size: 16px; line-height: 1.45">{{d.text}}</p>
+      <sc-if value="{{d.hasRows}}" hint-placeholder-val="{{ true }}">
+        <div style="border-radius: 6px; border: 1px solid #424242; overflow: hidden">
+          <sc-for list="{{d.rows}}" as="r" hint-placeholder-count="2"><div style="height: 40px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 14px; border-bottom: 1px solid #303030"><span style="color: #9c9c9c">{{r.k}}</span><span class="mono" style="font-size: 13px">{{r.v}}</span></div></sc-for>
+        </div>
+      </sc-if>
+      <div style="display: grid; grid-template-columns: repeat({{d.cols}}, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{d.buttons}}" as="b" hint-placeholder-count="3">
+          <button type="button" style="height: 60px; border-radius: 6px; border: {{b.border}}; background: {{b.bg}}; color: {{b.fg}}; font: inherit; font-size: 15px; font-weight: {{b.w}}; opacity: {{b.op}}">{{b.t}}</button>
+        </sc-for>
+      </div>
+      <span class="mono" style="font-size: 12px; color: #787878">{{d.note}}</span>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { k: 'clean' }; }
+  renderVals() {
+    const primary = t => ({ t, bg: '#9a7a08', fg: '#f3ecd3', border: 'none', w: 500, op: 1 });
+    const danger = t => ({ t, bg: 'color-mix(in srgb, #e10000 14%, #303030)', fg: '#ff6a5a', border: '1px solid color-mix(in srgb, #e10000 55%, transparent)', w: 400, op: 1 });
+    const plain = (t, op) => ({ t, bg: '#303030', fg: '#d1d1d1', border: '1px solid #424242', w: 400, op: op ?? 1 });
+    const D = {
+      clean: {
+        title: 'Clean start', meta: 'local server only', metaC: '#9c9c9c',
+        text: 'desk1 starts with an empty show and its station settings reset. The show "Gala" has unsaved changes.',
+        hasRows: false, rows: [], cols: 3,
+        buttons: [primary('Save, then clean start'), danger("Don't save"), plain('Cancel')],
+        note: 'Save → CleanStart /Save · Don\'t save → CleanStart /NoSave · this computer forgets its screens for the local server'
+      },
+      other: {
+        title: 'Another LumaCore is running here', meta: 'E-WIRE-001', metaC: '#c27a12',
+        text: 'The local server is another version than this app. Use it, or shut it down and start this app\'s server?',
+        hasRows: true, rows: [{ k: 'Running', v: 'v0.11 · build 58a0f06 · pid 4120' }, { k: 'This app', v: 'v0.12 · build 7c84db2' }], cols: 3,
+        buttons: [primary('Shut it down, start mine'), plain('Use it', 0.45), plain('Cancel')],
+        note: 'Use it only when the client protocol matches (here it doesn\'t) · shutting down asks Save / Don\'t save first'
+      },
+      hung: {
+        title: 'The server doesn\'t stop', meta: 'waited 10 s', metaC: '#c27a12',
+        text: 'desk1 was asked to shut down 10 s ago and is still running.',
+        hasRows: true, rows: [{ k: 'Process', v: 'lumacore-server · pid 4120' }], cols: 3,
+        buttons: [danger('Force stop'), plain('Keep waiting'), plain('Cancel')],
+        note: 'Force stop → SIGTERM, then SIGKILL after 5 s — only on this click'
+      }
+    };
+    const d = D[this.state.k];
+    const tabs = [['clean', 'Clean start'], ['other', 'Another version'], ['hung', 'Hung stop']]
+      .map(([k, label]) => ({ label, go: () => this.setState({ k }), b: this.state.k === k ? '#9a7a08' : '#424242' }));
+    return { d, tabs };
+  }
+}
+</script>
+</body>
+</html>

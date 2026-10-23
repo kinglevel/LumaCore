@@ -1,0 +1,31 @@
+[package]
+name = "lumacore-lumasession"
+version.workspace = true
+edition.workspace = true
+description = "LumaSession, the station ⇄ station side: link, election, merge, stream, replication, on a narrow SessionHost (decisions §10, §21, §34 19.3)"
+
+[dependencies]
+lumacore-luma = { path = "../../formats/lumacore-luma" }
+lumacore-sysmon = { path = "../../foundation/lumacore-sysmon" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-wire = { path = "../../foundation/lumacore-wire" }
+lumacore-lanes = { path = "../../foundation/lumacore-lanes" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-objects = { path = "../../model/lumacore-objects" }
+lumacore-cmd-lumasession = { path = "../../commands/objects/lumacore-cmd-lumasession" }
+lumacore-net = { path = "../../network/lumacore-net" }
+crossbeam-channel = { workspace = true }
+arc-swap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+log = { workspace = true }
+zstd = { workspace = true }
+base64 = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,54 @@
+<title>Untyped Custom Id</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 9 · 2026-10-20 · discussion only</div>
+<h1>A CustomId the file never typed</h1>
+<p>The export writes <code>CustomId</code> on all 1 371 fixtures and no <code>CustomIdType</code> on any of them. So the folders arrive as "id 7003 of no type"; on the desk they are Media. Something has to say Media.</p>
+</header>
+
+<section class="card">
+<h2>Facts</h2>
+<pre>In the file:  &lt;FixtureID&gt;&lt;/FixtureID&gt; &lt;CustomId&gt;7003&lt;/CustomId&gt;           ← a folder: no number, an untyped id
+              &lt;FixtureID&gt;849&lt;/FixtureID&gt; &lt;CustomId&gt;0&lt;/CustomId&gt;           ← a fixture: 0 = none
+On the desk:  ACME Icarus  FID None · IDTYPE Media · CID 7003
+Untyped ids in this file: 19 (the folders: 1 … 9, 99, 7001 … 7009); numbered fixtures all carry 0.
+lumacore-mvr: CustomIdType missing → None; the import keeps (None, 7003) today.</pre>
+<p>MVR's own rule gives the default type as the first entry of its list; a file written by a tool that fills the tag in says what it means. The question is only what to do when the tag is missing and the id is not 0.</p>
+</section>
+
+<section>
+<h2>Who says the type</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>The preset: <code>MvrIdType</code>, default Media; <code>/IdType</code> overrides</h3><p>A 17th "MVR import" property on the profile, <code>MvrIdType</code> (the id-type list, default Media): an untyped non-zero CustomId gets it, numberless or not. The review shows the id as it will be (<code>Media 7003</code> in the No cell, grey like a given number); <code>Import Mvr "x" /IdType Fog</code> overrides for one import; a typed CustomId is taken as typed. A fixture with neither a number nor a CustomId keeps today's rule (<code>/FidOffset</code> numbers it).</p><ul><li>+ the demo's line is one word longer at most; the operator's desk convention is a profile setting</li><li>+ nothing asks on a 1 371-row import</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>Ask once per import</h3><p>"19 ids come without a type — which?" with the list as buttons, before the review.</p><ul><li>− one more ask in a flow that already has the two-step dialog and the group asks</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>Keep them untyped</h3><p>(None, 7003) as the file says; reachable by name only until the operator sets <code>"IDType"</code>.</p><ul><li>− 23 fixtures no line can name after a clean import; the desk's intent is lost</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>Then</h2>
+<ul>
+<li>A folder on a line: <code>Fixture Media 1 At 50</code> programs the subtree; the sidebar shows nested fixtures; Move / Delete carry the children.</li>
+<li>Groups from the Default pool, the show split for the tests, what is committed, the names.</li>
+</ul>
+</section>
+</main>

@@ -1,0 +1,455 @@
+<title>Patch Live Draft</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a state switcher, then one fixed 1440×900 desk frame (scrolls sideways on a small screen)
+   holding Devices › DMX › Patch as round 2 locked it — title row, kind rail, MVR tree, strip, grid,
+   echo line, slab — with round 3's claim button, Live / Draft columns, function block and context
+   menu; notes below. Palette: the round 2 mockups (matte greys, one gold accent). */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --stripe: #2fa3b8; --stripe-off: #5a5a5a; --ok: #00a60a; --alert: #e10000; --del: #e05a5a; --del-t: #f2a3a3;
+  --sel: #1d3550; --sel-line: #3f6fb0; --mine: #ccc085; --theirs: #8e74c0; --menu: #262626; --menu-hi: #303030;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 40px; }
+main { max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1 { margin: 0; font-size: 22px; font-weight: 400; text-wrap: balance; }
+.cap { margin: 0; color: var(--dim); max-width: 92ch; }
+.modes { display: flex; flex-wrap: wrap; gap: 6px; }
+.modes button { height: 40px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--dim); font: inherit; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.modes button[aria-pressed="true"] { background: #303030; color: var(--text); border-color: #5a5a5a; }
+.modes button .d { width: 8px; height: 8px; border-radius: 4px; }
+.well { overflow-x: auto; }
+.frame { width: 1440px; height: 900px; position: relative; overflow: hidden; background: var(--page); user-select: none; -webkit-user-select: none; }
+.mono { font-family: var(--mono); }
+svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+button { font: inherit; color: inherit; }
+button:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+
+.dlg { position: absolute; top: 20px; left: 40px; width: 1360px; height: 860px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+.title { height: 52px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 16px; border-bottom: 1px solid var(--line); }
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.crumb .up { color: var(--dim); } .crumb .sep { color: var(--faint); font-size: 14px; } .crumb .here { font-weight: 500; }
+.chip { height: 30px; display: inline-flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; white-space: nowrap; }
+.chip .d { width: 8px; height: 8px; border-radius: 4px; }
+.chip.quiet { color: var(--dim); }
+.title .path { margin-left: auto; font-size: 12px; color: var(--faint); font-family: var(--mono); }
+.close { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: none; border: 0; cursor: pointer; }
+.kinds { height: 44px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 10px; border-bottom: 1px solid var(--line); background: var(--head); }
+.kinds .lbl { font-size: 12px; color: var(--faint); margin-right: 6px; }
+.kind { height: 34px; padding: 0 14px; border-radius: 5px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--dim); }
+.kind .gd { width: 11px; height: 11px; border-radius: 50%; background: #312600; }
+.kind.on { background: #303030; color: var(--text); } .kind.on .gd { background: #7c6200; }
+.kind.later { border: 1px dashed var(--cell-line); color: var(--faint); }
+.mid { flex: 1; display: flex; min-height: 0; }
+.left { width: 196px; flex: none; border-right: 1px solid var(--cell-line); display: flex; flex-direction: column; overflow: hidden; }
+.gby { display: flex; margin: 8px 8px 4px; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; flex: none; }
+.gby i { flex: 1; font-style: normal; text-align: center; height: 38px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; color: var(--dim); background: var(--cell); }
+.gby i + i { border-left: 1px solid var(--line); } .gby i.on { background: #3a3a3a; color: var(--text); }
+.tree { flex: 1; overflow: hidden; display: flex; flex-direction: column; padding: 6px 0; }
+.tn { position: relative; height: 48px; flex: none; display: flex; align-items: center; gap: 6px; padding-right: 6px; color: var(--dim); font-size: 14px; }
+.tn .chev { width: 18px; text-align: center; color: var(--faint); font-size: 11px; flex: none; }
+.tn .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; overflow: hidden; }
+.tn .nm small { font-size: 11.5px; color: var(--faint); white-space: nowrap; }
+.tn .nm span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tn .guide { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+.tn .elbow { position: absolute; top: 24px; height: 1px; width: 8px; background: var(--line); }
+.tn.on { background: var(--cell); color: var(--text); box-shadow: inset 4px 0 0 var(--stripe); }
+.tn .menu3 { width: 30px; height: 30px; border-radius: 5px; border: 1px solid var(--line); background: #303030; display: flex; align-items: center; justify-content: center; font-size: 16px; flex: none; }
+.tn.dimrow .nm > span { color: var(--faint); font-style: italic; }
+.bdg { font-weight: 500; font-size: 10.5px; letter-spacing: .03em; text-transform: uppercase; color: var(--faint); border: 1px solid var(--cell-line); border-radius: 4px; padding: 0 4px; margin-left: 6px; }
+.treebar { flex: none; border-top: 1px solid var(--cell-line); padding: 6px; display: grid; grid-template-columns: 1fr 1fr 40px; gap: 4px; }
+.treebar span { height: 40px; border-radius: 5px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 12.5px; }
+.treebar span.off { color: #5a5a5a; border-style: dashed; background: transparent; }
+.work { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.strip { height: 50px; flex: none; display: flex; gap: 6px; align-items: center; padding: 0 12px; border-bottom: 1px solid var(--cell-line); }
+.strip .tb { height: 44px; padding: 0 18px; border-radius: 6px; display: flex; align-items: center; font-size: 14px; color: var(--dim); }
+.strip .tb.on { background: #303030; color: var(--text); }
+.selbar { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.selbar .n { font-size: 13px; color: var(--dim); margin-right: 4px; }
+.sb { height: 44px; min-width: 52px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.sb.big { font-size: 15px; font-weight: 500; } .sb.lasso { border-style: dashed; color: var(--dim); }
+.bar { height: 40px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 13px; color: var(--dim); border-bottom: 1px solid; }
+.bar b { font-weight: 400; }
+.bar.live { background: #14241a; border-color: #1f3b29; } .bar.live b { color: #8fd19a; }
+.bar.mine { background: #221d05; border-color: #3a3209; } .bar.mine b { color: var(--gold-hi); }
+.bar.theirs { background: #1f1a2a; border-color: #352c48; } .bar.theirs b { color: #b9a6e0; }
+.gridbox { flex: 1; overflow: hidden; position: relative; }
+.grid { display: grid; grid-auto-rows: 46px; font-size: 13.5px; }
+.hd { background: var(--head); border-bottom: 1px solid var(--cell-line); border-right: 1px solid var(--cell); color: var(--dim); font-size: 12px; padding: 0 8px; display: flex; align-items: center; justify-content: space-between; gap: 4px; white-space: nowrap; overflow: hidden; }
+.hd.lk { color: var(--faint); }
+.hd .k { color: var(--faint); display: inline-flex; }
+.hd.no { justify-content: center; border-right: 1px solid var(--cell-line); }
+.no { border-bottom: 1px solid var(--cell); border-right: 1px solid var(--cell-line); color: var(--dim); font-size: 13px; display: flex; align-items: center; justify-content: center; position: relative; }
+.no.sel { background: var(--sel); color: var(--text); box-shadow: inset 3px 0 0 var(--gold-hi); }
+.cl { margin: 3px 2px; border-radius: 4px; border: 1px solid var(--cell-line); background: var(--cell); padding: 0 7px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; position: relative; cursor: default; }
+.cl.locked { border-color: transparent; background: transparent; color: var(--faint); }
+.cl.locked .lk { margin-left: auto; color: var(--faint); display: inline-flex; }
+.cl.sel { background: var(--sel); border-color: var(--sel-line); }
+.cl.locked.sel { background: color-mix(in srgb, var(--sel) 45%, transparent); border-color: transparent; }
+.cl.red { background: #3a1010; border-color: #8f2a2a; color: var(--del-t); }
+.cl.red::after { content: "⚠"; margin-left: auto; font-size: 12px; }
+.cl.nouni { color: var(--faint); font-style: italic; }
+.cl .dot { position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 4px; }
+.cl .ed { margin-left: auto; color: var(--faint); font-size: 11px; }
+.tagpills { display: inline-flex; gap: 4px; }
+.tagpills i { font-style: normal; font-size: 12px; padding: 0 7px; border-radius: 9px; background: #343434; border: 1px solid var(--cell-line); }
+.addrow { border-right: 1px solid var(--cell-line); display: flex; align-items: center; justify-content: center; color: var(--faint); }
+.addline { border-bottom: 1px dashed var(--cell-line); color: var(--dim); display: flex; align-items: center; padding: 0 10px; font-size: 14px; cursor: pointer; }
+.addline:hover { color: var(--gold-hi); }
+.echo { height: 34px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; border-top: 1px solid var(--cell-line); font-size: 12px; color: var(--dim); }
+.echo .r { margin-left: auto; }
+.echo b { color: var(--text); font-weight: 400; }
+
+/* slab: 5 + 5 actions | 4 + 4 functions | the claim button */
+.slab { height: 136px; flex: none; border-top: 1px solid var(--line); padding: 8px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 10px repeat(4, minmax(0, 1fr)) 210px; grid-template-rows: 56px 56px; gap: 6px; }
+.a { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; gap: 9px; padding: 0 11px; font-size: 14px; white-space: nowrap; overflow: hidden; cursor: pointer; text-align: left; }
+.a.dis { color: #5a5a5a; border-style: dashed; background: transparent; }
+.a.del { color: var(--del); } .a.new svg { color: var(--ok); }
+.a.val { flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; }
+.a.val small { font-size: 12px; color: var(--dim); }
+.a.fn.dis { color: #5a5a5a; }
+.a.fn { font-size: 13px; padding: 0 9px; }
+.claim { grid-row: 1 / span 2; grid-column: 11; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; position: relative; overflow: hidden; cursor: pointer; touch-action: none; padding: 0 8px; }
+.claim svg { width: 30px; height: 30px; position: relative; }
+.claim b { font-size: 16px; font-weight: 500; position: relative; }
+.claim small { font-size: 12px; color: var(--dim); text-align: center; position: relative; }
+.claim::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--lk, var(--ok)); }
+.claim .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--gold); pointer-events: none; }
+.claim.mine { background: var(--gold); border-color: transparent; color: var(--gold-text); --lk: var(--gold-hi); }
+.claim.mine small { color: #e6d9a8; }
+.claim.theirs { color: var(--faint); cursor: not-allowed; --lk: #3a3a3a; border-style: dashed; }
+.claim.theirs small { color: var(--faint); }
+.hint { position: absolute; right: 18px; bottom: 150px; max-width: 330px; padding: 8px 12px; border-radius: 6px; background: #303030; border: 1px solid #5a5a5a; font-size: 13px; z-index: 6; }
+.hint[hidden] { display: none; }
+.toast { position: absolute; left: 50%; top: 150px; transform: translateX(-50%); height: 38px; padding: 0 16px; border-radius: 19px; background: #303030; border: 1px solid #5a5a5a; display: flex; align-items: center; gap: 8px; font-size: 13.5px; z-index: 7; white-space: nowrap; }
+.toast[hidden] { display: none; }
+
+/* pick list, context menu, ask */
+.pop { position: absolute; z-index: 8; min-width: 220px; background: var(--menu); border: 1px solid var(--line); border-radius: 6px; box-shadow: 0 12px 40px #000a; padding: 4px; display: flex; flex-direction: column; gap: 2px; }
+.pop[hidden] { display: none; }
+.pop .ph { padding: 6px 10px 8px; font-size: 12px; color: var(--dim); border-bottom: 1px solid var(--cell-line); margin-bottom: 2px; }
+.pop button { min-height: 38px; border: 0; background: none; border-radius: 4px; display: flex; align-items: center; gap: 10px; padding: 0 10px; text-align: left; cursor: pointer; font-size: 14px; }
+.pop button:hover { background: var(--menu-hi); }
+.pop button small { margin-left: auto; color: var(--faint); font-size: 12px; }
+.pop button.off { color: #6a6a6a; cursor: default; flex-wrap: wrap; }
+.pop button.off:hover { background: none; }
+.pop button.cur::before { content: "●"; color: var(--gold-hi); font-size: 9px; }
+.pop button.dl { color: var(--del); }
+.pop .sec { padding: 6px 10px 2px; font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: .07em; }
+.pop hr { border: 0; border-top: 1px solid var(--cell-line); margin: 3px 0; }
+.veil { position: absolute; inset: 0; background: rgba(0,0,0,.55); z-index: 9; }
+.ask { position: absolute; top: 290px; left: 470px; width: 500px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; z-index: 10; }
+.ask .title { border-bottom: 1px solid var(--line); gap: 10px; }
+.ask .q { padding: 16px 18px 6px; font-size: 17px; }
+.ask .s { padding: 0 18px 16px; color: var(--dim); display: flex; flex-direction: column; gap: 4px; }
+.ask .btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.ask .btns button { height: 56px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); font-size: 15px; cursor: pointer; }
+.ask .btns .save { background: var(--gold); border-color: transparent; color: var(--gold-text); font-weight: 600; }
+.ask .btns .disc { color: var(--del); }
+
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 10px; }
+.notes > div { min-width: 0; border: 1px solid var(--cell-line); border-radius: 6px; background: var(--dlg); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.notes .h { font-size: 15px; }
+.notes ul { margin: 0; padding-left: 18px; color: var(--dim); display: flex; flex-direction: column; gap: 3px; }
+.notes code { font-family: var(--mono); font-size: 12px; color: var(--text); }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 92ch; line-height: 1.5; margin: 0; }
+@media (prefers-reduced-motion: reduce) { .claim .fill { transition: none !important; } }
+</style>
+
+<main>
+  <h1>Patch · Live and Draft</h1>
+  <p class="cap"><b>Round 3</b> (2026-10-18, decisions §34 round 3, items 9–11 and 18). The patch window as one piece: the claim button bottom-right — <b>hold</b> it (the gold fill runs left → right; let go early and it drains back) to claim the Devices draft, <b>press</b> the gold Claimed button to leave (Save / Discard / Cancel when the draft changed). <b>Live</b> edits only the live columns — every other cell and its header carries the lock. <b>Draft</b> edits every column, each cell its one line. Try: hold the button; then tap a Mode cell and give 102 "Mode 2"; right-click a row; tap greyed slab cells to read why.</p>
+  <div class="modes" role="group" aria-label="State">
+    <button type="button" data-st="live"><span class="d" style="background:var(--ok)"></span>Live · nobody claimed it</button>
+    <button type="button" data-st="mine"><span class="d" style="background:var(--gold-hi)"></span>Claimed · yours (Draft)</button>
+    <button type="button" data-st="theirs"><span class="d" style="background:var(--theirs)"></span>Claimed · Bob</button>
+  </div>
+  <div class="well"><div class="frame" id="frame"></div></div>
+  <p class="decide">Approved (§34 round 3, 18): Copy / Cut stay greyed in the Live patch — a copied fixture is a new fixture, so it needs the claim.</p>
+  <div class="notes">
+    <div><span class="h">The claim button</span><ul>
+      <li>The slab's last cell, bottom-right, on a phone too. <b>Live</b> (open lock, green edge): a hold of 0.6 s runs <code>Claim Root.ShowData.Devices</code>; the gold fill runs left → right over the hold and drains back if you let go early (reduced motion: no fill, it just switches). A press only shows the hint "Hold to claim and edit".</li>
+      <li><b>Claimed</b> (gold, closed lock): a press runs <code>Unclaim Root.ShowData.Devices</code> — Save / Discard / Cancel when the draft changed, straight back to Live when not. The ✕ asks the same.</li>
+      <li><b>Claimed · Bob</b> (dashed, grey): a hold does nothing; the hint names Bob. Kit-wide, the hold ring is drawn above dialogs.</li>
+    </ul></div>
+    <div><span class="h">Live vs Draft columns</span><ul>
+      <li>Live columns: Name, Address, X / Y / Z, Master react, Note — they change at once, your own Oops step, and the holder's draft follows (a cell the holder changed is refused, naming them).</li>
+      <li>Every other cell, and its header, shows the lock: "Claim the draft to change it" (Bob's: "Bob holds the draft").</li>
+      <li>Draft: every cell is its one line — FID = <code>Move Fixture</code>, Type / Revision / Mode = the picker (then the attribute map when it asks), MVR group = pick list, Tags. Gold dot = your draft edits; violet = someone's live edit that reached your draft.</li>
+      <li>A footprint that now overlaps, or a deleted universe, shows in the Address cell: red with ⚠ until resolved, or "no universe".</li>
+    </ul></div>
+    <div><span class="h">Slab states</span><ul>
+      <li>Greyed cells stay in place (dashed, grey icon); a tap tells why in a toast.</li>
+      <li>Live / Bob's: New, Copy, Cut, Delete, Import… need the claim; Select, Oops, Export…, Edit (live columns) work.</li>
+      <li>Paste is greyed with an empty clipboard and counts what it holds ("Paste 2"); Copy / Cut / Delete / Edit count the selection.</li>
+      <li>New = Insert fixtures… (the same dialog as the function block's and the grid's new line).</li>
+    </ul></div>
+    <div><span class="h">Function block</span><ul>
+      <li>Insert fixtures… · Patch to… · Next free address · Multipatch… · Info · Sort · Clone… · Offset.</li>
+      <li>Patch to… and Next free change an address, a live column, so they work in Live; Insert fixtures… and Multipatch… need the claim.</li>
+      <li>The context menu on the rows (right-click / hold / ⋯) carries the same, plus Set for every column (<code>context-menu.html</code>) and Renumber… (<code>renumber.html</code>).</li>
+    </ul></div>
+    <div><span class="h">From the audit, fixed here</span><ul>
+      <li>The title shows the path (<code>Root.ShowData.Devices.Dmx.Patch</code>) and the sidebar's node; the column says FID; X / Y / Z are three columns; Note is back.</li>
+      <li>The tree has guide lines, "fixtures" on its counts and the "+ Layer / + Group" bar (greyed in Live).</li>
+      <li>The echo line counts what it names; the claim hint shows only on a press and goes away.</li>
+    </ul></div>
+  </div>
+</main>
+
+<script>
+const I = {
+  close: '<path d="M18 6 6 18M6 6l12 12"/>', select: '<path d="m4 4 7 17 2.5-7.5L21 11z"/>', plus: '<path d="M12 5v14M5 12h14"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/>',
+  cut: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/>',
+  paste: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+  del: '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>', oops: '<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
+  imp: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>', exp: '<path d="M12 21V9M7 14l5-5 5 5M5 3h14"/>',
+  edit: '<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>',
+  lock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  unlock: '<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>',
+  devices: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+};
+const ic = (n, s) => `<svg class="i" viewBox="0 0 24 24"${s ? ` style="${s}"` : ""}>${I[n]}</svg>`;
+const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+const ids = list => { const n = [...list].sort((a, b) => a - b), out = []; for (let i = 0; i < n.length;) { let j = i; while (j + 1 < n.length && n[j + 1] === n[j] + 1) j++; out.push(j > i ? `${n[i]} Thru ${n[j]}` : `${n[i]}`); i = j + 1; } return out.join(" + "); };
+const a3 = n => String(n).padStart(3, "0");
+
+const MODES = { "Robe MegaPointe": [["Mode 1", 34], ["Mode 2", 39]], "GLP impression X5": [["Mode 2", 30], ["Mode 4", 44]], "Ayrton Diablo": [["Standard", 40], ["Extended", 52]], "Showtec Sunstrip": [["10ch", 10], ["3ch", 3]] };
+const fresh = () => [
+  { fid: 101, name: "MegaPointe SL 1", type: "Robe MegaPointe", mode: "Mode 1", rev: "rev 4", u: 1, s: 1, x: "-6.00", y: "2.10", z: "7.20", mr: "Grand", tags: "FOH", grp: "Truss 1", note: "" },
+  { fid: 102, name: "MegaPointe SL 2", type: "Robe MegaPointe", mode: "Mode 1", rev: "rev 4", u: 1, s: 35, x: "-4.00", y: "2.10", z: "7.20", mr: "Grand", tags: "FOH", grp: "Truss 1", note: "" },
+  { fid: 103, name: "MegaPointe SR 3", type: "Robe MegaPointe", mode: "Mode 1", rev: "rev 4", u: 1, s: 69, x: "4.00", y: "2.10", z: "7.20", mr: "Grand", tags: "FOH · Song 3", grp: "Truss 1", note: "", theirs: "s" },
+  { fid: 104, name: "MP SR 4 (spare)", type: "Robe MegaPointe", mode: "Mode 1", rev: "rev 4", u: 1, s: 103, x: "6.00", y: "2.10", z: "7.20", mr: "Grand", tags: "Spare", grp: "Truss 1", note: "lamp hours 1 900", mine: "name" },
+  { fid: 201, name: "X5 Wash 1", type: "GLP impression X5", mode: "Mode 2", rev: "rev 2", u: 2, s: 1, x: "-8.00", y: "0.00", z: "6.50", mr: "Grand", tags: "Song 3", grp: "Truss 2", note: "" },
+  { fid: 202, name: "X5 Wash 2", type: "GLP impression X5", mode: "Mode 2", rev: "rev 2", u: 2, s: 31, x: "-6.00", y: "0.00", z: "6.50", mr: "Grand", tags: "", grp: "Truss 2", note: "" },
+  { fid: 305, name: "Diablo 5", type: "Ayrton Diablo", mode: "Standard", rev: "rev 1", u: 3, s: 1, x: "0.00", y: "-1.50", z: "8.00", mr: "Grand", tags: "", grp: "Truss 3", note: "" },
+  { fid: 306, name: "Diablo 6", type: "Ayrton Diablo", mode: "Standard", rev: "rev 1", u: 3, s: 41, x: "2.00", y: "-1.50", z: "8.00", mr: "Grand", tags: "", grp: "Truss 3", note: "" },
+  { fid: 410, name: "Sunstrip 10", type: "Showtec Sunstrip", mode: "10ch", rev: "rev 1", u: 4, s: 91, x: "0.00", y: "6.00", z: "0.40", mr: "Group", tags: "Floor", grp: "Floor", note: "" },
+  { fid: 411, name: "Sunstrip 11", type: "Showtec Sunstrip", mode: "10ch", rev: "rev 1", u: null, s: null, x: "1.00", y: "6.00", z: "0.40", mr: "Group", tags: "Floor", grp: "Floor", note: "universe 9 deleted" },
+];
+let ROWS = fresh();
+const COLS = [
+  { k: "name", t: "Name", w: "1.15fr", live: true, kind: "text" },
+  { k: "type", t: "Fixture type", w: "1fr", kind: "type" },
+  { k: "mode", t: "Mode", w: "0.62fr", kind: "mode" },
+  { k: "rev", t: "Revision", w: "0.5fr", kind: "rev" },
+  { k: "addr", t: "Address", w: "0.62fr", live: true, kind: "addr" },
+  { k: "x", t: "X", w: "0.42fr", live: true, kind: "num" },
+  { k: "y", t: "Y", w: "0.42fr", live: true, kind: "num" },
+  { k: "z", t: "Z", w: "0.42fr", live: true, kind: "num" },
+  { k: "mr", t: "Master react", w: "0.58fr", live: true, kind: "pick", items: ["Grand", "Group", "None"] },
+  { k: "tags", t: "Tags", w: "0.78fr", kind: "tags" },
+  { k: "grp", t: "MVR group", w: "0.6fr", kind: "pick", items: ["Truss 1", "Truss 2", "Truss 3", "Floor", "Specials"] },
+  { k: "note", t: "Note", w: "0.85fr", live: true, kind: "text" },
+];
+const st = { claim: "live", sel: [103], clip: 0, dirty: 0, line: "", pop: null, hint: "", toast: "", ask: false, pressT: null };
+const len = r => (MODES[r.type].find(m => m[0] === r.mode) || [0, 1])[1];
+function clashes() {
+  const bad = new Set();
+  for (let i = 0; i < ROWS.length; i++) for (let j = i + 1; j < ROWS.length; j++) {
+    const p = ROWS[i], q = ROWS[j];
+    if (p.u && p.u === q.u && p.s <= q.s + len(q) - 1 && q.s <= p.s + len(p) - 1) { bad.add(p.fid); bad.add(q.fid); }
+  }
+  return bad;
+}
+const why = () => st.claim === "theirs" ? "Bob holds the draft" : "Claim the draft to change it";
+const editable = c => st.claim === "mine" || c.live;
+
+function cell(r, c, bad) {
+  const v = c.k === "addr" ? (r.u ? `${r.u}.${a3(r.s)}` : "no universe") : r[c.k];
+  const sel = st.sel.includes(r.fid);
+  const dot = (st.claim === "mine" && r.mine === c.k ? `<span class="dot" style="background:var(--mine)" title="your draft edit"></span>` : "") + (st.claim === "mine" && r.theirs === "s" && c.k === "addr" ? `<span class="dot" style="background:var(--theirs)" title="Alice's live edit reached your draft"></span>` : "");
+  const body = c.k === "tags" && v ? `<span class="tagpills">${v.split(" · ").map(t => `<i>${esc(t)}</i>`).join("")}</span>` : esc(v);
+  if (!editable(c)) return `<div class="cl locked${sel ? " sel" : ""}" data-fid="${r.fid}" data-k="${c.k}" title="${why()}">${body}<span class="lk">${ic("lock", "width:13px;height:13px")}</span></div>`;
+  const red = c.k === "addr" && bad.has(r.fid), nouni = c.k === "addr" && !r.u;
+  return `<div class="cl${sel ? " sel" : ""}${red ? " red" : ""}${nouni ? " nouni" : ""}" data-fid="${r.fid}" data-k="${c.k}">${body}${dot}</div>`;
+}
+function grid() {
+  const bad = clashes();
+  const tpl = "58px " + COLS.map(c => c.w).join(" ");
+  let h = `<div class="grid" style="grid-template-columns:${tpl}"><span class="hd no">FID</span>`;
+  h += COLS.map(c => `<span class="hd${editable(c) ? "" : " lk"}" title="${editable(c) ? "" : why()}">${esc(c.t)}<span class="k">${editable(c) ? "⋮" : ic("lock", "width:12px;height:12px")}</span></span>`).join("");
+  for (const r of ROWS) {
+    h += `<span class="no${st.sel.includes(r.fid) ? " sel" : ""}" data-fid="${r.fid}" data-k="fid">${r.fid}</span>`;
+    h += COLS.map(c => cell(r, c, bad)).join("");
+  }
+  if (st.claim === "mine") h += `<span class="addrow">+</span><span class="addline" data-act="insert" style="grid-column:2 / span ${COLS.length}">New fixtures in Truss 1…   (Insert fixtures)</span>`;
+  return h + "</div>";
+}
+function tree() {
+  const T = [["Patch · all", "1 436", 0, "▾"], ["House", "412", 1, "▾", "on", "layer"], ["Truss 1", "96", 2, "▾"], ["Downstage", "48", 3, ""], ["Upstage", "48", 3, ""], ["Truss 2", "88", 2, "▸"], ["Truss 3", "64", 2, "▸"], ["Floor", "164", 2, "▸"], ["Touring", "96", 1, "▾", null, "layer"], ["Specials", "28", 2, ""], ["No MVR group", "12", 1, "", "dimrow"]];
+  const IND = 16;
+  let h = `<div class="gby"><i class="on">MVR tree</i><i>Class</i><i>Tag</i></div><div class="tree">`;
+  for (const [n, c, d, chev, state, badge] of T) {
+    let g = ""; for (let i = 1; i <= d; i++) g += `<span class="guide" style="left:${8 + (i - 1) * IND + 9}px"></span>`;
+    if (d) g += `<span class="elbow" style="left:${8 + (d - 1) * IND + 9}px"></span>`;
+    const menu = st.claim === "mine" && state === "on";
+    h += `<div class="tn${state ? " " + state : ""}" style="padding-left:${8 + d * IND}px">${g}<span class="chev">${chev}</span><span class="nm"><span>${esc(n)}${badge ? `<b class="bdg">${badge}</b>` : ""}</span><small>${c} fixtures</small></span>${menu ? '<span class="menu3">≡</span>' : ""}</div>`;
+  }
+  const off = st.claim === "mine" ? "" : " off";
+  return h + `</div><div class="treebar"><span class="${off}" title="${off ? why() : ""}">+ Layer</span><span class="${off}">+ Group</span><span class="${off}">⋯</span></div>`;
+}
+function slab() {
+  const n = st.sel.length, live = st.claim !== "mine";
+  const A = [
+    ["select", "Select", ""], ["plus", "New", "new", live && why()], ["copy", `Copy ${n || ""}`, "", live && why() || !n && "Nothing selected"], ["cut", `Cut ${n || ""}`, "", live && why() || !n && "Nothing selected"], ["paste", st.clip ? `Paste ${st.clip}` : "Paste", "", !st.clip ? "The clipboard is empty" : live && why()],
+    ["del", `Delete ${n || ""}`, "del", live && why() || !n && "Nothing selected"], ["oops", "Oops", ""], ["imp", "Import…", "", live && why()], ["exp", "Export…", ""], ["edit", `Edit ${n || ""}`, "", !n && "Nothing selected"],
+  ];
+  let h = A.map(([i, t, cls, off], k) => `<button class="a${off ? " dis" : cls ? " " + cls : ""}" style="grid-row:${k < 5 ? 1 : 2};grid-column:${(k % 5) + 1}" data-slab="${esc(t.trim())}" data-why="${esc(off || "")}">${ic(i)}${esc(t.trim())}</button>`).join("");
+  h += `<span style="grid-row:1 / span 2;grid-column:6"></span>`;
+  const F = [["Insert fixtures…", null, live && why()], ["Patch to…"], ["Next free address"], ["Multipatch…", null, live && why()], ["Info"], ["Sort", "FID"], ["Clone…"], ["Offset", "0"]];
+  h += F.map(([t, v, off], k) => {
+    const pos = `grid-row:${k < 4 ? 1 : 2};grid-column:${7 + (k % 4)}`;
+    return v != null ? `<button class="a val" style="${pos}" data-fn="${esc(t)}"><small>${esc(t)}</small>${esc(v)}</button>` : `<button class="a fn${off ? " dis" : ""}" style="${pos}" data-fn="${esc(t)}" data-why="${esc(off || "")}">${esc(t)}</button>`;
+  }).join("");
+  const S = { live: ["", "unlock", "Live", "Hold to claim and edit"], mine: ["mine", "lock", "Claimed", st.dirty ? `Draft · you · ${st.dirty} change${st.dirty > 1 ? "s" : ""}` : "Draft · you"], theirs: ["theirs", "lock", "Claimed · Bob", "Bob’s draft"] }[st.claim];
+  h += `<button class="claim ${S[0]}" id="claim" aria-label="${S[2]}: ${S[3]}"><span class="fill" id="fill"></span>${ic(S[1])}<b>${S[2]}</b><small>${S[3]}</small></button>`;
+  return h;
+}
+function render() {
+  const chip = { live: `<span class="d" style="background:var(--ok)"></span>Live patch · nobody has claimed it`, mine: `<span class="d" style="background:var(--gold-hi)"></span>Devices draft · you`, theirs: `<span class="d" style="background:var(--theirs)"></span>Live patch · Bob has claimed it` }[st.claim];
+  const bar = { live: `<div class="bar live"><b>Live patch</b><span>Name, address, X / Y / Z, master react and note change at once, as your own Oops step. Hold Claim to change the rest.</span></div>`,
+    mine: `<div class="bar mine"><b>Your draft</b><span>Every column edits the draft; the rig keeps the live patch until you leave with Save. Gold dot = your edit · violet = a live edit that reached your draft.</span></div>`,
+    theirs: `<div class="bar theirs"><b>Bob holds the draft</b><span>Live columns still change at once, and Bob's draft follows — a cell Bob changed is refused, naming him.</span></div>` }[st.claim];
+  const n = st.sel.length;
+  document.getElementById("frame").innerHTML = `
+  <div class="dlg">
+    <div class="title">
+      <span class="crumb">${ic("devices")}<span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></span>
+      <span class="chip">${chip}</span>
+      <span class="chip quiet">Columns: Full</span>
+      <span class="path">Root.ShowData.Devices.Dmx.Patch · MVR layer House</span>
+      <button class="close" id="x" aria-label="Close">${ic("close")}</button>
+    </div>
+    <div class="kinds"><span class="lbl">Devices</span><span class="kind on"><span class="gd"></span>DMX</span><span class="kind"><span class="gd"></span>Metadata</span><span class="kind later">+ more device kinds later</span></div>
+    <div class="mid">
+      <div class="left">${tree()}</div>
+      <div class="work">
+        <div class="strip"><span class="tb on">Patch</span><span class="tb">Fixture types</span><span class="tb">Universes</span>
+          <div class="selbar"><span class="n">${n} row${n === 1 ? "" : "s"}</span><span class="sb big">+</span><span class="sb big">−</span><span class="sb big">Thru</span><span class="sb">All</span><span class="sb">None</span><span class="sb lasso">Lasso: Auto</span></div></div>
+        ${bar}
+        <div class="gridbox" id="gridbox">${grid()}</div>
+        <div class="echo"><span class="mono">${st.line ? `<b>${esc(st.line)}</b>` : "lines name their rows"}</span><span class="r">${n} row${n === 1 ? "" : "s"} · ${ids(st.sel) || "none"} selected${clashes().size ? ` · <span style="color:var(--del-t)">${clashes().size} addresses red</span>` : ""}</span></div>
+      </div>
+    </div>
+    <div class="slab">${slab()}</div>
+  </div>
+  <div class="hint" id="hint" ${st.hint ? "" : "hidden"}>${esc(st.hint)}</div>
+  <div class="toast" id="toast" ${st.toast ? "" : "hidden"}>${esc(st.toast)}</div>
+  <div class="pop" id="pop" hidden></div>
+  ${st.ask ? `<div class="veil"></div><div class="ask" role="dialog" aria-label="Leave the draft"><div class="title">${ic("lock")}<span style="font-size:17px">Unclaim Devices</span></div><div class="q">You have claimed the patch: ${st.dirty} change${st.dirty === 1 ? "" : "s"} in your draft.</div><div class="s"><span>Save puts them on the rig as one Oops step; Discard throws them away. Live edits made meanwhile stay either way.</span></div><div class="btns"><button class="save" data-ask="save">Save</button><button class="disc" data-ask="discard">Discard</button><button data-ask="cancel">Cancel</button></div></div>` : ""}`;
+  document.querySelectorAll("[data-st]").forEach(b => b.setAttribute("aria-pressed", b.dataset.st === st.claim));
+  bindClaim();
+}
+let toastT, hintT;
+const toast = t => { st.toast = t; render(); clearTimeout(toastT); toastT = setTimeout(() => { st.toast = ""; render(); }, 2200); };
+const hint = t => { st.hint = t; render(); clearTimeout(hintT); hintT = setTimeout(() => { st.hint = ""; render(); }, 2600); };
+const line = (t, change) => { st.line = t; if (change && st.claim === "mine") st.dirty++; render(); };
+
+// ---- the claim button: hold fills gold left → right; early release drains back ----
+const HOLD = 600;
+function bindClaim() {
+  const b = document.getElementById("claim"), fill = document.getElementById("fill");
+  let t0 = 0, raf = 0, holding = false, done = false;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const drain = () => { fill.style.transition = reduce ? "none" : "width .25s ease-out"; fill.style.width = "0"; };
+  b.addEventListener("pointerdown", e => {
+    if (st.claim !== "live") return;
+    holding = true; done = false; t0 = performance.now(); fill.style.transition = "none";
+    const step = now => { if (!holding) return; const p = Math.min(1, (now - t0) / HOLD); if (!reduce) fill.style.width = `${p * 100}%`; if (p >= 1) { done = true; holding = false; st.claim = "mine"; st.dirty = 0; st.hint = ""; st.line = "Claim Root.ShowData.Devices"; render(); return; } raf = requestAnimationFrame(step); };
+    raf = requestAnimationFrame(step);
+  });
+  const up = () => { if (!holding) return; holding = false; cancelAnimationFrame(raf); drain(); };
+  b.addEventListener("pointerup", up); b.addEventListener("pointerleave", up);
+  b.addEventListener("click", () => {
+    if (done) return;
+    if (st.claim === "live") hint("Hold to claim and edit.");
+    else if (st.claim === "theirs") hint("Bob has claimed the patch. Only Bob ends his draft (an Admin can use /Force on the command line).");
+    else if (st.dirty) { st.ask = true; render(); }
+    else { st.claim = "live"; st.line = "Unclaim Root.ShowData.Devices"; render(); }
+  });
+}
+
+// ---- grid: select, edit a cell, the context menu ----
+const frame = document.getElementById("frame");
+const pop = () => document.getElementById("pop");
+function openPop(html, x, y) {
+  const p = pop(), fr = frame.getBoundingClientRect();
+  p.innerHTML = html; p.hidden = false;
+  p.style.left = `${Math.min(x - fr.left, 1440 - p.offsetWidth - 10)}px`; p.style.top = `${Math.min(y - fr.top, 900 - p.offsetHeight - 10)}px`;
+}
+const closePop = () => { const p = pop(); if (p) p.hidden = true; st.pop = null; };
+frame.addEventListener("click", e => {
+  const t = e.target;
+  if (t.closest("#pop")) return popClick(e);
+  if (!t.closest("#pop")) closePop();
+  const sl = t.closest("[data-slab]"), fn = t.closest("[data-fn]"), ask = t.closest("[data-ask]");
+  if (ask) {
+    const a = ask.dataset.ask; st.ask = false;
+    if (a === "save") { st.claim = "live"; st.line = "Unclaim Root.ShowData.Devices /Keep"; st.dirty = 0; }
+    else if (a === "discard") { st.claim = "live"; st.line = "Unclaim Root.ShowData.Devices /Discard"; st.dirty = 0; ROWS = fresh(); }
+    render(); return;
+  }
+  if (t.closest("#x")) { if (st.claim === "mine" && st.dirty) { st.ask = true; render(); } else toast("Closed (mockup: stays open)"); return; }
+  if (sl) { if (sl.dataset.why) return toast(sl.dataset.why); const w = sl.dataset.slab;
+    if (w.startsWith("Copy")) { st.clip = st.sel.length; return line(`Copy Fixture ${ids(st.sel)}`); }
+    if (w.startsWith("Paste")) return line(`Paste   ← the next tap is the target`);
+    if (w.startsWith("New")) return line(`Store Fixture …   ← Insert fixtures… opens`);
+    if (w.startsWith("Delete")) return line(`Delete Fixture ${ids(st.sel)}   ← the station asks once`, true);
+    if (w.startsWith("Edit")) return line(`Edit Fixture ${ids(st.sel)}   ← the edit card${st.claim !== "mine" ? ", live fields only" : ""}`);
+    return line(w); }
+  if (fn) { if (fn.dataset.why) return toast(fn.dataset.why); const f = fn.dataset.fn;
+    const L = { "Insert fixtures…": "Store Fixture …   ← Insert fixtures… opens", "Patch to…": `Patch Fixture ${ids(st.sel)} At …   ← Edit Patch opens`, "Next free address": `Patch Fixture ${ids(st.sel)} At Next`, "Multipatch…": `Patch Fixture ${ids(st.sel)} At … /Multi`, "Info": `Info Fixture ${ids(st.sel)}`, "Clone…": `Clone Fixture ${ids(st.sel)} At …   ← the clone window` };
+    return line(L[f] || `${f} …`, /Patch|Store/.test(L[f] || "")); }
+  if (t.closest("[data-act=insert]")) return line("Store Fixture …   ← Insert fixtures… opens");
+  const c = t.closest("[data-fid]");
+  if (!c) return;
+  const fid = +c.dataset.fid, k = c.dataset.k;
+  if (e.shiftKey) st.sel = st.sel.includes(fid) ? st.sel.filter(x => x !== fid) : [...st.sel, fid];
+  else if (!st.sel.includes(fid) || st.sel.length > 1 && !c.classList.contains("sel")) st.sel = [fid];
+  else if (k && k !== "fid") return editCell(fid, k, e.clientX, e.clientY);
+  render();
+});
+function editCell(fid, k, x, y) {
+  const c = COLS.find(c => c.k === k), r = ROWS.find(r => r.fid === fid);
+  if (!editable(c)) return toast(`${c.t}: ${why()}`);
+  const rows = ids(st.sel);
+  let items = [];
+  if (c.kind === "mode") items = MODES[r.type].map(([m, ch]) => [m, `${ch} ch`]);
+  else if (c.kind === "pick") items = c.items.map(v => [v, ""]);
+  else if (c.kind === "type") return line(`Set Fixture ${rows} "FixtureType" …   ← the GDTF picker, then the attribute map`);
+  else if (c.kind === "rev") items = [["rev 4", "newest"], ["rev 3", ""]];
+  else if (c.kind === "addr") return line(`Patch Fixture ${rows} At …   ← the value dialog (Address)`);
+  else return line(`Set Fixture ${rows} "${c.t}" …   ← ${c.kind === "num" ? "keypad" : "text"} editor`);
+  st.pop = { k };
+  openPop(`<div class="ph">${esc(c.t)} · Fixture ${rows}</div>` + items.map(([v, s]) => `<button class="${v === r[k] ? "cur" : ""}" data-pick="${esc(v)}">${esc(v)}<small>${esc(s)}</small></button>`).join(""), x, y);
+}
+function popClick(e) {
+  const b = e.target.closest("button"); if (!b || b.classList.contains("off")) return;
+  if (b.dataset.pick && st.pop) {
+    const k = st.pop.k, c = COLS.find(c => c.k === k), rows = ids(st.sel);
+    for (const r of ROWS) if (st.sel.includes(r.fid)) { r[k] = b.dataset.pick; r.mine = k; }
+    closePop(); return line(`Set Fixture ${rows} "${c.t.replace(/ /g, "")}" "${b.dataset.pick}"`, true);
+  }
+  if (b.dataset.cm) { closePop(); const rows = ids(st.sel); const L = { renum: `Move Fixture ${rows} At …   ← the value dialog (renumber.html)`, label: `Label Fixture ${rows} "…"`, set: `Set Fixture ${rows} …   ← Set ▸ (context-menu.html)`, patch: `Patch Fixture ${rows} At …`, next: `Patch Fixture ${rows} At Next`, unpatch: `Unpatch Fixture ${rows}`, info: `Info Fixture ${rows}`, clone: `Clone Fixture ${rows} At …` }; return line(L[b.dataset.cm], /Patch|Move/.test(L[b.dataset.cm])); }
+}
+frame.addEventListener("contextmenu", e => {
+  const c = e.target.closest("[data-fid]"); if (!c) return;
+  e.preventDefault(); const fid = +c.dataset.fid; if (!st.sel.includes(fid)) { st.sel = [fid]; render(); }
+  const live = st.claim !== "mine", w = live ? `<span style="flex-basis:100%;font-size:11.5px;color:var(--faint);margin:-6px 0 4px">${why()}</span>` : "";
+  const it = (id, t, off) => `<button class="${off ? "off" : ""}" ${off ? "" : `data-cm="${id}"`}>${t}${off ? w : ""}</button>`;
+  openPop(`<div class="ph">${st.sel.length} Fixture${st.sel.length > 1 ? "s" : ""} · ${ids(st.sel)}</div>` +
+    it("edit", "Edit…") + it("renum", "Renumber…", live) + it("label", "Label…") + `<hr><div class="sec">Set</div>` + it("set", "Name · Address · X Y Z · Note ›") + it("set", "Fixture type · Mode · Revision ›", live) + `<hr><div class="sec">Fixture</div>` +
+    it("patch", "Patch to…") + it("next", "Next free address") + it("clone", "Clone…") + it("unpatch", "Unpatch", live) + it("info", "Info"), e.clientX, e.clientY);
+});
+document.querySelectorAll("[data-st]").forEach(b => b.addEventListener("click", () => { st.claim = b.dataset.st; st.dirty = 0; st.line = ""; st.hint = ""; st.toast = ""; st.ask = false; ROWS = fresh(); render(); }));
+document.addEventListener("keydown", e => { if (e.key === "Escape") { closePop(); if (st.ask) { st.ask = false; render(); } } });
+render();
+</script>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pick list for every link</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background-color: #121212">
+  <p style="position: absolute; top: 28px; left: 40px; right: 40px; margin: 0; font-size: 13px; color: #9c9c9c">One pick list for every link: filter always shown (Enter picks the first match), None only for optional links, a missing link stays visible as the top row, Add New = Store at the next free number and picks it. A tap runs the setting's Set line at once.</p>
+
+  <section style="position: absolute; top: 80px; left: 40px; width: 420px; height: 760px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden; display: flex; flex-direction: column">
+    <div style="height: 50px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 18px; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500">Profile of Bob</span><button type="button" aria-label="Close" style="width: 44px; height: 44px; border: none; background: transparent; color: #9c9c9c; font-size: 22px">×</button></div>
+    <label style="margin: 12px; height: 50px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 6px; background: #121212; border: 2px solid #9a7a08">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#787878" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input value="{{filter}}" onInput="{{onFilter}}" placeholder="Filter" aria-label="Filter" style="flex: 1; border: none; background: transparent; color: #d1d1d1; font: inherit; font-size: 16px; outline: none">
+    </label>
+    <div style="flex: 1; overflow: auto">
+      <div style="height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 16px; background: color-mix(in srgb, #e10000 10%, #1c1c1c); border-bottom: 1px solid #303030">
+        <span style="width: 8px; height: 8px; border-radius: 4px; background: #e10000"></span>
+        <span style="font-size: 15px">missing · was "Programmer 2"</span>
+        <span class="mono" style="margin-left: auto; font-size: 12px; color: #787878">7c2e…f41a</span>
+      </div>
+      <sc-for list="{{profiles}}" as="p" hint-placeholder-count="4">
+        <button type="button" onClick="{{p.pick}}" style="width: 100%; height: 52px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border: none; border-bottom: 1px solid #303030; background: {{p.bg}}; color: #d1d1d1; font: inherit; font-size: 16px; text-align: left"><span class="mono" style="width: 28px; font-size: 13px; color: #787878">{{p.no}}</span>{{p.name}}<span style="margin-left: auto; font-size: 12px; color: #787878">{{p.note}}</span></button>
+      </sc-for>
+      <button type="button" style="width: 100%; height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 16px; border: none; background: transparent; color: #9a7a08; font: inherit; font-size: 16px; text-align: left">＋ Add New…</button>
+    </div>
+    <div class="mono" style="flex: none; padding: 10px 16px; font-size: 12px; color: #787878; border-top: 1px solid #303030; line-height: 1.5">required link: no None · {{picked}}</div>
+  </section>
+
+  <section style="position: absolute; top: 80px; left: 510px; width: 420px; height: 760px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden; display: flex; flex-direction: column">
+    <div style="height: 50px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 18px; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500">LockScreen image · LD</span><button type="button" aria-label="Close" style="width: 44px; height: 44px; border: none; background: transparent; color: #9c9c9c; font-size: 22px">×</button></div>
+    <label style="margin: 12px; height: 50px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-radius: 6px; background: #121212; border: 1px solid #424242">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#787878" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input placeholder="Filter" aria-label="Filter" style="flex: 1; border: none; background: transparent; color: #d1d1d1; font: inherit; font-size: 16px; outline: none">
+    </label>
+    <div style="flex: 1; overflow: auto">
+      <button type="button" style="width: 100%; height: 52px; display: flex; align-items: center; padding: 0 16px; border: none; border-bottom: 1px solid #303030; background: transparent; color: #9c9c9c; font: inherit; font-size: 16px; text-align: left">None <span style="margin-left: 8px; font-size: 12px; color: #787878">built-in background</span></button>
+      <sc-for list="{{images}}" as="i" hint-placeholder-count="4">
+        <button type="button" style="width: 100%; height: 64px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border: none; border-bottom: 1px solid #303030; background: {{i.bg}}; color: #d1d1d1; font: inherit; font-size: 16px; text-align: left"><span style="width: 64px; height: 40px; border-radius: 4px; background: {{i.thumb}}"></span><span class="mono" style="width: 22px; font-size: 13px; color: #787878">{{i.no}}</span>{{i.name}}<span style="margin-left: auto; font-size: 12px; color: #787878">{{i.size}}</span></button>
+      </sc-for>
+      <button type="button" style="width: 100%; height: 52px; display: flex; align-items: center; padding: 0 16px; border: none; background: transparent; color: #9a7a08; font: inherit; font-size: 16px; text-align: left">＋ Add New…</button>
+    </div>
+    <div class="mono" style="flex: none; padding: 10px 16px; font-size: 12px; color: #787878; border-top: 1px solid #303030; line-height: 1.5">optional link: None shown · items only from the profile's own Images pool · Add New = Import UserProfile Image (upload)</div>
+  </section>
+
+  <section style="position: absolute; top: 80px; left: 980px; width: 420px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden">
+    <div style="height: 50px; display: flex; align-items: center; padding: 0 18px; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500">Links that get the pick list</span></div>
+    <div style="padding: 6px 0">
+      <sc-for list="{{links}}" as="l" hint-placeholder-count="7">
+        <div style="min-height: 48px; display: flex; align-items: center; gap: 12px; padding: 6px 18px; border-bottom: 1px solid #262626"><span style="font-size: 15px; flex: 1">{{l.what}}</span><span class="mono" style="font-size: 12px; color: #3f9a90; text-align: right">{{l.pool}}</span></div>
+      </sc-for>
+    </div>
+    <p style="margin: 0; padding: 14px 18px; font-size: 13px; color: #9c9c9c; line-height: 1.5">Add New is hidden when you lack the right or the kind can't be stored (Network: yes, User: Admin only, Image: upload). No editor opens after Add New.</p>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { filter: '', pick: null }; }
+  renderVals() {
+    const s = this.state;
+    const all = [{ no: 1, name: 'Admin', note: '2 users' }, { no: 2, name: 'LD', note: '3 users' }, { no: 3, name: 'Programmer', note: '1 user' }, { no: 4, name: 'Guest', note: '' }, { no: 5, name: 'Video', note: '' }];
+    const f = s.filter.toLowerCase();
+    const shown = all.filter(p => !f || p.name.toLowerCase().includes(f) || String(p.no) === f);
+    const profiles = shown.map((p, i) => ({ ...p, pick: () => this.setState({ pick: p.name }), bg: s.pick === p.name || (!s.pick && f && i === 0) ? 'color-mix(in srgb, #9a7a08 22%, #1c1c1c)' : 'transparent' }));
+    const target = s.pick ?? (f && shown[0] ? shown[0].name : null);
+    const images = [
+      { no: 1, name: 'Stage left', size: '1920×1080', thumb: 'linear-gradient(135deg,#2b2a24,#4a3f12)', bg: 'color-mix(in srgb, #9a7a08 22%, #1c1c1c)' },
+      { no: 2, name: 'Truss night', size: '2560×1440', thumb: 'linear-gradient(135deg,#1b2430,#2e3d52)', bg: 'transparent' },
+      { no: 3, name: 'Logo dark', size: '1200×800', thumb: 'linear-gradient(135deg,#262626,#3a3a3a)', bg: 'transparent' }
+    ];
+    const links = [
+      { what: 'Output / Input line → Network', pool: 'ShowData.Networks' },
+      { what: 'OSC input line → User', pool: 'ShowData.Users' },
+      { what: 'User → Profile', pool: 'ShowData.UserProfiles' },
+      { what: 'Profile LockScreen → Image', pool: 'its own Images' },
+      { what: 'Icon of an object', pool: 'standard set + profile Icons' },
+      { what: 'Selected DataPool', pool: 'ShowData.DataPools' },
+      { what: 'Selected Sequence', pool: 'DataPool Sequences' }
+    ];
+    return {
+      filter: s.filter, onFilter: e => this.setState({ filter: e.target.value, pick: null }),
+      profiles, images, links,
+      picked: target ? 'tap / Enter → Set User "Bob" Profile "' + target + '"' : 'type to filter · Enter picks the first match'
+    };
+  }
+}
+</script>
+</body>
+</html>

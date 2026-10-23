@@ -1,0 +1,20 @@
+[package]
+name = "lumacore-cmd-artnet"
+version.workspace = true
+edition.workspace = true
+description = "The ArtNet object: Art-Net lines, one DMX Protocols row each (decisions §34 \"34f7c hardened\")"
+
+[dependencies]
+lumacore-registry = { path = "../../../../../foundation/lumacore-registry" }
+lumacore-syntax = { path = "../../../../../foundation/lumacore-syntax" }
+lumacore-syntax-derive = { path = "../../../../../foundation/lumacore-syntax-derive" }
+lumacore-protocols = { path = "../../../../../model/lumacore-protocols" }
+lumacore-objects = { path = "../../../../../model/lumacore-objects" }
+lumacore-cmd-protocols = { path = "../../../lumacore-cmd-protocols" }
+lumacore-artnet = { path = "../../../../../network/protocols/dmx/lumacore-artnet" }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

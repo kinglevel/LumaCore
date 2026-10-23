@@ -1,0 +1,1199 @@
+{
+  "devices": {
+    "patch": {
+      "fixture_types": {
+        "1": {
+          "meta": {
+            "id": 1,
+            "guid": "f92b216b-8abb-475d-8a83-354e1a12ee91",
+            "name": "MAC Aura XB",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "manufacturer": "Martin Professional",
+          "category": {
+            "Other": "Unknown"
+          },
+          "revisions": [
+            {
+              "meta": {
+                "id": 2,
+                "guid": "0f24f13d-5ba8-4756-9be2-2d354f50903f",
+                "name": "MAC Aura XB",
+                "note": null,
+                "color": null,
+                "icon": null,
+                "locked": false,
+                "hidden": false
+              },
+              "gdtf_version": "1.2",
+              "file_hash": "",
+              "modes": [
+                {
+                  "meta": {
+                    "id": 3,
+                    "guid": "ae0441f0-c337-4838-9fbe-a30f32c6f835",
+                    "name": "Standard",
+                    "note": null,
+                    "color": null,
+                    "icon": null,
+                    "locked": false,
+                    "hidden": false
+                  },
+                  "channel_functions": [
+                    {
+                      "attribute_name": "Shutter1",
+                      "attribute_type": {
+                        "Unknown": "Shutter1"
+                      },
+                      "dmx_offset": 0,
+                      "byte_count": 1,
+                      "default_value": 22,
+                      "default_fraction": 0.08627450980392157,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Dimmer",
+                      "attribute_type": "Dimmer",
+                      "dmx_offset": 1,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Zoom",
+                      "attribute_type": "Zoom",
+                      "dmx_offset": 2,
+                      "byte_count": 1,
+                      "default_value": 128,
+                      "default_fraction": 0.5019607843137255,
+                      "physical_range": [
+                        41.7,
+                        9.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Pan",
+                      "attribute_type": "Pan",
+                      "dmx_offset": 3,
+                      "byte_count": 2,
+                      "default_value": 255,
+                      "default_fraction": 0.5000076295109483,
+                      "physical_range": [
+                        270.0,
+                        -270.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Tilt",
+                      "attribute_type": "Tilt",
+                      "dmx_offset": 5,
+                      "byte_count": 2,
+                      "default_value": 255,
+                      "default_fraction": 0.5000076295109483,
+                      "physical_range": [
+                        116.0,
+                        -116.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Control1",
+                      "attribute_type": "Control",
+                      "dmx_offset": 7,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Color1",
+                      "attribute_type": "Color",
+                      "dmx_offset": 8,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_R",
+                      "attribute_type": "ColorRed",
+                      "dmx_offset": 9,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_G",
+                      "attribute_type": "ColorGreen",
+                      "dmx_offset": 10,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_B",
+                      "attribute_type": "ColorBlue",
+                      "dmx_offset": 11,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_W",
+                      "attribute_type": "ColorWhite",
+                      "dmx_offset": 12,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "CTC",
+                      "attribute_type": {
+                        "Unknown": "CTC"
+                      },
+                      "dmx_offset": 13,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "is_virtual": false,
+                      "resolved": true
+                    }
+                  ],
+                  "dmx_footprint": 14
+                },
+                {
+                  "meta": {
+                    "id": 4,
+                    "guid": "83ab1007-2dd1-4270-8173-83fdf1d573f6",
+                    "name": "Extended",
+                    "note": null,
+                    "color": null,
+                    "icon": null,
+                    "locked": false,
+                    "hidden": false
+                  },
+                  "channel_functions": [
+                    {
+                      "attribute_name": "Shutter1",
+                      "attribute_type": {
+                        "Unknown": "Shutter1"
+                      },
+                      "dmx_offset": 0,
+                      "byte_count": 1,
+                      "default_value": 22,
+                      "default_fraction": 0.08627450980392157,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Dimmer",
+                      "attribute_type": "Dimmer",
+                      "dmx_offset": 1,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Zoom",
+                      "attribute_type": "Zoom",
+                      "dmx_offset": 2,
+                      "byte_count": 1,
+                      "default_value": 128,
+                      "default_fraction": 0.5019607843137255,
+                      "physical_range": [
+                        41.7,
+                        9.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Pan",
+                      "attribute_type": "Pan",
+                      "dmx_offset": 3,
+                      "byte_count": 2,
+                      "default_value": 255,
+                      "default_fraction": 0.5000076295109483,
+                      "physical_range": [
+                        270.0,
+                        -270.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Tilt",
+                      "attribute_type": "Tilt",
+                      "dmx_offset": 5,
+                      "byte_count": 2,
+                      "default_value": 255,
+                      "default_fraction": 0.5000076295109483,
+                      "physical_range": [
+                        116.0,
+                        -116.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Control1",
+                      "attribute_type": "Control",
+                      "dmx_offset": 7,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Color1",
+                      "attribute_type": "Color",
+                      "dmx_offset": 8,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_R",
+                      "attribute_type": "ColorRed",
+                      "dmx_offset": 9,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_G",
+                      "attribute_type": "ColorGreen",
+                      "dmx_offset": 10,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_B",
+                      "attribute_type": "ColorBlue",
+                      "dmx_offset": 11,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_W",
+                      "attribute_type": "ColorWhite",
+                      "dmx_offset": 12,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "CTC",
+                      "attribute_type": {
+                        "Unknown": "CTC"
+                      },
+                      "dmx_offset": 13,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Effects1",
+                      "attribute_type": "Effect",
+                      "dmx_offset": 14,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Effects1Rate",
+                      "attribute_type": "Effect",
+                      "dmx_offset": 15,
+                      "byte_count": 1,
+                      "default_value": 128,
+                      "default_fraction": 0.5019607843137255,
+                      "physical_range": [
+                        -100.0,
+                        100.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Effects2",
+                      "attribute_type": "Effect",
+                      "dmx_offset": 16,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Effects2Rate",
+                      "attribute_type": "Effect",
+                      "dmx_offset": 17,
+                      "byte_count": 1,
+                      "default_value": 128,
+                      "default_fraction": 0.5019607843137255,
+                      "physical_range": [
+                        -100.0,
+                        100.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "EffectsSync",
+                      "attribute_type": "Effect",
+                      "dmx_offset": 18,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Shutter1",
+                      "attribute_type": {
+                        "Unknown": "Shutter1"
+                      },
+                      "dmx_offset": 19,
+                      "byte_count": 1,
+                      "default_value": 22,
+                      "default_fraction": 0.08627450980392157,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Dimmer",
+                      "attribute_type": "Dimmer",
+                      "dmx_offset": 20,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "Color2",
+                      "attribute_type": "Color",
+                      "dmx_offset": 21,
+                      "byte_count": 1,
+                      "default_value": 0,
+                      "default_fraction": 0.0,
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_R",
+                      "attribute_type": "ColorRed",
+                      "dmx_offset": 22,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_G",
+                      "attribute_type": "ColorGreen",
+                      "dmx_offset": 23,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    },
+                    {
+                      "attribute_name": "ColorAdd_B",
+                      "attribute_type": "ColorBlue",
+                      "dmx_offset": 24,
+                      "byte_count": 1,
+                      "default_value": 255,
+                      "default_fraction": 1.0,
+                      "physical_range": [
+                        0.0,
+                        1.0
+                      ],
+                      "is_virtual": false,
+                      "resolved": true
+                    }
+                  ],
+                  "dmx_footprint": 25
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "fixtures": {
+        "101": {
+          "meta": {
+            "id": 101,
+            "guid": "c33ab420-ae2d-439d-9810-3d434e3cf150",
+            "name": "Fixture 1",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "fixture_type_guid": "f92b216b-8abb-475d-8a83-354e1a12ee91",
+          "revision": "0f24f13d-5ba8-4756-9be2-2d354f50903f",
+          "mode": "ae0441f0-c337-4838-9fbe-a30f32c6f835",
+          "breaks": [
+            {
+              "universe_id": "d27c0c34-4b43-4fcb-b9b2-4fb4241430a4",
+              "start_address": 1,
+              "channel_count": 14
+            }
+          ],
+          "parent_guid": null,
+          "position": null,
+          "rotation": null,
+          "fid_memberships": [],
+          "master_react": "Grand"
+        },
+        "102": {
+          "meta": {
+            "id": 102,
+            "guid": "8b16de08-cd6f-4fde-944c-5ea0b052ce71",
+            "name": "Fixture 2",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "fixture_type_guid": "f92b216b-8abb-475d-8a83-354e1a12ee91",
+          "revision": "0f24f13d-5ba8-4756-9be2-2d354f50903f",
+          "mode": "ae0441f0-c337-4838-9fbe-a30f32c6f835",
+          "breaks": [
+            {
+              "universe_id": "d27c0c34-4b43-4fcb-b9b2-4fb4241430a4",
+              "start_address": 15,
+              "channel_count": 14
+            }
+          ],
+          "parent_guid": null,
+          "position": null,
+          "rotation": null,
+          "fid_memberships": [],
+          "master_react": "Grand"
+        },
+        "103": {
+          "meta": {
+            "id": 103,
+            "guid": "de89337c-947a-4c83-98f1-3add64615ac7",
+            "name": "Fixture 3",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "fixture_type_guid": "f92b216b-8abb-475d-8a83-354e1a12ee91",
+          "revision": "0f24f13d-5ba8-4756-9be2-2d354f50903f",
+          "mode": "ae0441f0-c337-4838-9fbe-a30f32c6f835",
+          "breaks": [
+            {
+              "universe_id": "d27c0c34-4b43-4fcb-b9b2-4fb4241430a4",
+              "start_address": 29,
+              "channel_count": 14
+            }
+          ],
+          "parent_guid": null,
+          "position": null,
+          "rotation": null,
+          "fid_memberships": [],
+          "master_react": "Grand"
+        },
+        "104": {
+          "meta": {
+            "id": 104,
+            "guid": "58aa8de5-554a-4c65-8229-49827768d90a",
+            "name": "Fixture 4",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "fixture_type_guid": "f92b216b-8abb-475d-8a83-354e1a12ee91",
+          "revision": "0f24f13d-5ba8-4756-9be2-2d354f50903f",
+          "mode": "ae0441f0-c337-4838-9fbe-a30f32c6f835",
+          "breaks": [
+            {
+              "universe_id": "d27c0c34-4b43-4fcb-b9b2-4fb4241430a4",
+              "start_address": 43,
+              "channel_count": 14
+            }
+          ],
+          "parent_guid": null,
+          "position": null,
+          "rotation": null,
+          "fid_memberships": [],
+          "master_react": "Grand"
+        },
+        "105": {
+          "meta": {
+            "id": 105,
+            "guid": "ee5c3f83-a893-49de-b87b-62a5092883e3",
+            "name": "Fixture 5",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "fixture_type_guid": "f92b216b-8abb-475d-8a83-354e1a12ee91",
+          "revision": "0f24f13d-5ba8-4756-9be2-2d354f50903f",
+          "mode": "ae0441f0-c337-4838-9fbe-a30f32c6f835",
+          "breaks": [
+            {
+              "universe_id": "d27c0c34-4b43-4fcb-b9b2-4fb4241430a4",
+              "start_address": 57,
+              "channel_count": 14
+            }
+          ],
+          "parent_guid": null,
+          "position": null,
+          "rotation": null,
+          "fid_memberships": [],
+          "master_react": "Grand"
+        },
+        "106": {
+          "meta": {
+            "id": 106,
+            "guid": "c2bd619c-9e4a-4c77-a09c-8a55c65de20b",
+            "name": "Fixture 6",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "fixture_type_guid": "f92b216b-8abb-475d-8a83-354e1a12ee91",
+          "revision": "0f24f13d-5ba8-4756-9be2-2d354f50903f",
+          "mode": "ae0441f0-c337-4838-9fbe-a30f32c6f835",
+          "breaks": [
+            {
+              "universe_id": "d27c0c34-4b43-4fcb-b9b2-4fb4241430a4",
+              "start_address": 71,
+              "channel_count": 14
+            }
+          ],
+          "parent_guid": null,
+          "position": null,
+          "rotation": null,
+          "fid_memberships": [],
+          "master_react": "Grand"
+        }
+      },
+      "universes": {
+        "1": {
+          "meta": {
+            "id": 1,
+            "guid": "d27c0c34-4b43-4fcb-b9b2-4fb4241430a4",
+            "name": "Main",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "routes": [
+            {
+              "direction": "Out",
+              "line": "81d926bf-710d-4d2b-a3cf-f83a65f67a59",
+              "universe": 1
+            }
+          ],
+          "merge_mode": "Prio"
+        },
+        "2": {
+          "meta": {
+            "id": 2,
+            "guid": "8553e688-bad7-486a-9680-f9de9c2d046c",
+            "name": "Aux",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "routes": [
+            {
+              "direction": "Out",
+              "line": "81d926bf-710d-4d2b-a3cf-f83a65f67a59",
+              "universe": 2
+            }
+          ],
+          "merge_mode": "Prio"
+        }
+      }
+    },
+    "live_patch_name": "",
+    "fid_namespaces": {}
+  },
+  "datapools": {
+    "1": {
+      "meta": {
+        "id": 1,
+        "guid": "56db5840-c5c4-4862-a2f9-b111bcc11a51",
+        "name": "Default",
+        "note": null,
+        "color": null,
+        "icon": null,
+        "locked": false,
+        "hidden": false
+      },
+      "groups": {
+        "1": {
+          "meta": {
+            "id": 1,
+            "guid": "db6ff9ca-57a3-48de-9d92-c979ad430cbf",
+            "name": "All",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "members": [
+            {
+              "fixture": "c33ab420-ae2d-439d-9810-3d434e3cf150",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            },
+            {
+              "fixture": "8b16de08-cd6f-4fde-944c-5ea0b052ce71",
+              "x": 1,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            },
+            {
+              "fixture": "de89337c-947a-4c83-98f1-3add64615ac7",
+              "x": 2,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            },
+            {
+              "fixture": "58aa8de5-554a-4c65-8229-49827768d90a",
+              "x": 3,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            },
+            {
+              "fixture": "ee5c3f83-a893-49de-b87b-62a5092883e3",
+              "x": 4,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            },
+            {
+              "fixture": "c2bd619c-9e4a-4c77-a09c-8a55c65de20b",
+              "x": 5,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            }
+          ],
+          "master": "Scaling",
+          "preserve_grid": true,
+          "move_grid_cursor": "Linked",
+          "pawtern": null
+        },
+        "2": {
+          "meta": {
+            "id": 2,
+            "guid": "3f597e14-248c-42fa-ab10-9389b793b733",
+            "name": "Odd",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "members": [
+            {
+              "fixture": "ee5c3f83-a893-49de-b87b-62a5092883e3",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            },
+            {
+              "fixture": "de89337c-947a-4c83-98f1-3add64615ac7",
+              "x": 1,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            },
+            {
+              "fixture": "c33ab420-ae2d-439d-9810-3d434e3cf150",
+              "x": 2,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            }
+          ],
+          "master": "None",
+          "preserve_grid": true,
+          "move_grid_cursor": "Linked",
+          "pawtern": null
+        },
+        "3": {
+          "meta": {
+            "id": 3,
+            "guid": "10de34a2-2413-4f8d-9b57-def0a3d064f1",
+            "name": "Even",
+            "note": null,
+            "color": null,
+            "icon": null,
+            "locked": false,
+            "hidden": false
+          },
+          "members": [
+            {
+              "fixture": "8b16de08-cd6f-4fde-944c-5ea0b052ce71",
+              "x": 0,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            },
+            {
+              "fixture": "58aa8de5-554a-4c65-8229-49827768d90a",
+              "x": 1,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            },
+            {
+              "fixture": "c2bd619c-9e4a-4c77-a09c-8a55c65de20b",
+              "x": 2,
+              "y": 0,
+              "z": 0,
+              "rotation": 0.0,
+              "mirror_x": false,
+              "mirror_y": false
+            }
+          ],
+          "master": "None",
+          "preserve_grid": true,
+          "move_grid_cursor": "Linked",
+          "pawtern": null
+        }
+      },
+      "preset_groups": {},
+      "layouts": {},
+      "filters": {},
+      "worlds": {},
+      "macros": {},
+      "distribute_presets": {},
+      "dynamic_states": {},
+      "plugins": {},
+      "timecodes": {},
+      "priorities": {}
+    }
+  },
+  "datapool_priority_orders": {},
+  "show_settings": {
+    "show_name": "",
+    "description": "",
+    "created_with_version": "",
+    "format_version": 4,
+    "saved_with_commit": "",
+    "autosave_minutes": 15,
+    "show_id": "78a9cae1-e554-4720-ab3e-7720475c1f63",
+    "merge_default": "Merge",
+    "merge_timeout": 60
+  },
+  "spatial_3d": {
+    "world": {},
+    "stages": {},
+    "layers": {},
+    "cameras": {},
+    "patch": {},
+    "tracking": {}
+  },
+  "playback": {
+    "sequences": {},
+    "masters": {
+      "1": {
+        "guid": "f2a17693-895f-44cc-95bd-2cd1231ab3b4",
+        "name": "Grand",
+        "master_type": "Grand",
+        "level": 1.0,
+        "on": true
+      }
+    },
+    "effects": {},
+    "timing_presets": {},
+    "curve_presets": {},
+    "executors": {},
+    "park": {
+      "fixtures": [],
+      "channels": []
+    }
+  },
+  "playbacks": {
+    "sequences": {},
+    "group_masters": {}
+  },
+  "session": {
+    "patch_version": 0,
+    "stations": {}
+  },
+  "user_profiles": {
+    "1": {
+      "meta": {
+        "id": 1,
+        "guid": "9f8fee70-7c19-4bc6-9aac-a160144e36c0",
+        "name": "Admin",
+        "note": null,
+        "color": null,
+        "icon": null,
+        "locked": false,
+        "hidden": false
+      },
+      "role": "Admin",
+      "prog_lang": "Lum",
+      "alias_depth": "Base",
+      "keybindings": {},
+      "views": {},
+      "view_buttons": {},
+      "screen_configs": {},
+      "ui_keys": {},
+      "preferences": {
+        "show_descriptions": true,
+        "clear_buffer": false,
+        "preferred_ui_engine": "Shell",
+        "double_click_ms": 300,
+        "hold_ms": 500,
+        "meow_key": "Alt",
+        "notifications": {},
+        "notification_mode": "timed",
+        "grid_cursor_move": "AppendX",
+        "pool_drag": "Move"
+      },
+      "user_variables": {
+        "values": {}
+      },
+      "permissions": {
+        "can_edit_show": true,
+        "can_edit_patch": true,
+        "can_trigger_playback": true,
+        "can_configure_engines": false
+      },
+      "show_descriptions": false,
+      "clear_buffer": false,
+      "verbosity": "Summary",
+      "selected_datapool": null,
+      "selected_preset_group": null,
+      "attribute_overrides": {}
+    },
+    "2": {
+      "meta": {
+        "id": 2,
+        "guid": "7d0b07ed-66d0-4e78-87a5-b0f4be61e4d3",
+        "name": "Debug",
+        "note": null,
+        "color": null,
+        "icon": null,
+        "locked": false,
+        "hidden": false
+      },
+      "role": "Admin",
+      "prog_lang": "Lum",
+      "alias_depth": "Base",
+      "keybindings": {
+        "Ctrl-D": {
+          "key": "Ctrl-D",
+          "ui_key": "user.ctrl-d",
+          "description": "Toggle debug mode"
+        },
+        "Ctrl-Q": {
+          "key": "Ctrl-Q",
+          "ui_key": "user.ctrl-q",
+          "description": "Quick quit"
+        }
+      },
+      "views": {},
+      "view_buttons": {},
+      "screen_configs": {},
+      "ui_keys": {
+        "1": {
+          "guid": "87e6875e-e147-547c-bb25-1c83de843516",
+          "id": "user.ctrl-d",
+          "label": "Toggle debug mode",
+          "icon": "",
+          "tooltip": "",
+          "owner": "user",
+          "press": "debug",
+          "double_press": "",
+          "hold": "",
+          "double_replaces_press": false,
+          "locked": false
+        },
+        "2": {
+          "guid": "9e7f85bf-3399-5217-abf1-4869d850d209",
+          "id": "user.ctrl-q",
+          "label": "Quick quit",
+          "icon": "",
+          "tooltip": "",
+          "owner": "user",
+          "press": "shutdown",
+          "double_press": "",
+          "hold": "",
+          "double_replaces_press": false,
+          "locked": false
+        }
+      },
+      "preferences": {
+        "show_descriptions": true,
+        "clear_buffer": false,
+        "preferred_ui_engine": "Shell",
+        "double_click_ms": 300,
+        "hold_ms": 500,
+        "meow_key": "Alt",
+        "notifications": {},
+        "notification_mode": "timed",
+        "grid_cursor_move": "AppendX",
+        "pool_drag": "Move"
+      },
+      "user_variables": {
+        "values": {}
+      },
+      "permissions": {
+        "can_edit_show": true,
+        "can_edit_patch": true,
+        "can_trigger_playback": true,
+        "can_configure_engines": false
+      },
+      "show_descriptions": false,
+      "clear_buffer": false,
+      "verbosity": "Summary",
+      "selected_datapool": null,
+      "selected_preset_group": null,
+      "attribute_overrides": {}
+    }
+  },
+  "users": {
+    "1": {
+      "guid": "fce0632d-19b8-4329-8048-bc044d8b64e8",
+      "no": 1,
+      "name": "Admin",
+      "role": "Admin",
+      "remote_login": true,
+      "profile": "9f8fee70-7c19-4bc6-9aac-a160144e36c0",
+      "default_screen_config": null,
+      "programmer": {
+        "selected_fixtures": [],
+        "values": {},
+        "clear_state": "Fresh",
+        "grid": {},
+        "grid_cursor": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "rotation": 0.0,
+          "mirror_x": false,
+          "mirror_y": false
+        },
+        "value_since_select": false
+      }
+    },
+    "2": {
+      "guid": "346a4bd1-2588-49e0-9554-89dbf4202c0a",
+      "no": 2,
+      "name": "Debug",
+      "role": "Admin",
+      "remote_login": true,
+      "profile": "7d0b07ed-66d0-4e78-87a5-b0f4be61e4d3",
+      "default_screen_config": null,
+      "programmer": {
+        "selected_fixtures": [],
+        "values": {},
+        "clear_state": "Fresh",
+        "grid": {},
+        "grid_cursor": {
+          "x": 0,
+          "y": 0,
+          "z": 0,
+          "rotation": 0.0,
+          "mirror_x": false,
+          "mirror_y": false
+        },
+        "value_since_select": false
+      }
+    }
+  },
+  "protocols": {
+    "networks": {
+      "1": {
+        "meta": {
+          "id": 1,
+          "guid": "cd7c2f83-3bc8-45bd-a493-8059131f903d",
+          "name": "Default",
+          "note": null,
+          "color": null,
+          "icon": null,
+          "locked": false,
+          "hidden": false
+        }
+      }
+    },
+    "outputs": {
+      "1": {
+        "meta": {
+          "id": 1,
+          "guid": "81d926bf-710d-4d2b-a3cf-f83a65f67a59",
+          "name": "sACN 1",
+          "note": null,
+          "color": null,
+          "icon": null,
+          "locked": false,
+          "hidden": false
+        },
+        "direction": "Out",
+        "protocol": "Sacn",
+        "network": "cd7c2f83-3bc8-45bd-a493-8059131f903d",
+        "target": null,
+        "enabled": true,
+        "priority": 100,
+        "port": 0,
+        "user": null,
+        "input_priority": "LTP"
+      }
+    },
+    "inputs": {},
+    "bidirectional": {}
+  },
+  "effect_engines": {
+    "engines": {}
+  },
+  "variables": {
+    "values": {}
+  },
+  "icon_pool": {},
+  "attribute_defs": {},
+  "feature_groups": {},
+  "activation_groups": {}
+}

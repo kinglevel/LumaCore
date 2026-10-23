@@ -1,0 +1,84 @@
+<title>Drive Service</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --warn: #d08a2a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 88ch; line-height: 1.5; }
+h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board { display: flex; flex-direction: column; gap: 12px; }
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 13px; margin: 0; max-width: 100ch; min-width: 0; line-height: 1.45; }
+.facts dt { color: var(--faint); } .facts dd { margin: 0; }
+code, pre { font-family: var(--mono); font-size: 12px; color: var(--gold-text); }
+pre { margin: 0; background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; line-height: 1.55; color: var(--text); }
+pre b { color: var(--gold-text); font-weight: 500; } pre i { font-style: normal; color: var(--faint); } pre em { font-style: normal; color: var(--del); }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 100ch; line-height: 1.5; margin: 0; }
+.opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 22px; }
+.opt { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.opt h3 { margin: 0; font-size: 15px; font-weight: 500; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.opt h3 .tag { font-size: 11px; border: 1px solid var(--gold); color: var(--gold-hi); border-radius: 9px; padding: 0 7px; }
+.opt p { margin: 0; color: var(--dim); font-size: 13px; line-height: 1.45; }
+.opt ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 3px; font-size: 12.5px; color: var(--dim); line-height: 1.4; }
+.opt li::before { content: "＋ "; color: var(--ok-t); } .opt li.m::before { content: "－ "; color: var(--del); }
+</style>
+
+<main>
+  <header>
+    <h1>Drives · 6 · the service: finding, initialising, shares</h1>
+    <p>The last question of the drives round. Decided: C, the ids, the volume + library, <code>/Drive</code>, one files element. What runs on the station to make it true: how drives are found and watched, when the library tree is created, and who mounts a network share.</p>
+  </header>
+
+  <section class="board">
+    <h2>Fixed by what is decided and by the rules</h2>
+    <dl class="facts">
+      <dt>The watcher</dt><dd>A station thread (never the state thread; like discovery) reads the OS's mounts every 2 s — Linux <code>/proc/mounts</code> + <code>/dev/disk/by-uuid</code> and <code>by-id</code>, macOS <code>/Volumes</code> + <code>diskutil</code>, Windows the drive letters + volume serials — and sends the state thread one message when something changed; the state thread keeps the drive table in the station settings (id → volume id, kind, label, last seen), publishes it in <code>StationView</code> and the <code>station</code> feed, and writes a sysmon line: <code>Drives: usb1 "KINGSTON" in (28 GB free, library ready)</code> / <code>usb1 out</code>.</dd>
+      <dt>Free space</dt><dd>Read on the watcher's tick for drives that are in; the Drives menu and the rail show it; a save that would not fit is refused before writing (E-CMD-012 with the numbers).</dd>
+      <dt>The files feed</dt><dd>Rows for a drive + folder + kind, built on the state thread from a cache keyed by path + mtime; a folder's listing is refreshed when the watcher sees its drive change or a write of ours lands; the first listing of a big folder reads file heads on the background worker (<code>core::background</code>) and the rows fill in.</dd>
+      <dt>The local library</dt><dd><code>local-library</code> is <code>library/</code> as it is; its caches (<code>fixturetypes/</code>, <code>media/.store/</code>, <code>logs/</code>, <code>stations/</code>) are the station's, never on another drive; the backup folders (<code>.versions</code>, <code>.autosave</code>, <code>.trash</code>) live beside the shows on whichever drive holds them.</dd>
+    </dl>
+  </section>
+
+  <section class="board">
+    <h2>Two things left to decide</h2>
+    <div class="opts" id="opts"></div>
+    <p class="decide">Recommended: <b>initialise on the first write, never an ask</b> — a found drive is listed as it is (Library: no); the first thing written to it (a save, an export, a copy-in, a tap on the Library cell) creates <code>LumaCore/library/</code> with the folders and a README, one sysmon line; reading never creates anything, so a stick only looked at stays untouched. And <b>shares: the OS mounts them, LumaCore finds them</b> — a share mounted by the system appears as <code>smb1</code> / <code>nfs1</code> by its fs type; a share path you add with <code>Store Drive "smb1" /Path "//nas/shows"</code> is a Folder drive the station reads when the OS has it mounted and shows Out when not; LumaCore mounting shares itself (credentials in the keystore, platform mount calls) is a later part, planned.</p>
+  </section>
+</main>
+
+<script>
+const OPTS = [
+  { id: 'init', tag: 'recommended', title: 'Initialise: on the first write, never an ask',
+    pre: `<pre>usb1 in            → listed, Library: no        <i>(nothing written; a read-only look)</i>
+SaveShow "rig" /Drive usb1
+                   → LumaCore/library/{shows,gdtf,mvr,media,userprofiles,datapools,macro,presets}/ + README
+                   → sysmon: Drives: usb1 library created
+Set Drive "usb1" "Library" Yes          <i>(the menu's cell: the same, by hand)</i></pre>`,
+    text: 'A console creates the tree when it uses a stick; so does this. Reading never writes.',
+    pros: ['No pop-up for a stick that was only read', 'A file put there by hand after the first save lands in the standard place'],
+    cons: ['A read-only stick: the first write fails with the reason (E-CMD-012), the Library cell stays no'] },
+  { id: 'ask', title: 'Initialise: ask once when a new drive appears',
+    pre: `<pre>usb1 in            → station ask: "Set up KINGSTON for LumaCore? (creates LumaCore/library)"  [Yes · Not now]</pre>`,
+    text: 'The station asks the user at the desk the first time it sees a volume without the tree.',
+    pros: ['Explicit'], cons: ['An ask on every new stick, in the middle of a show, on every station it meets', 'A phone or a USB charger plugged into a console asks too'] },
+  { id: 'os', tag: 'recommended', title: 'Shares: the OS mounts them, LumaCore finds them',
+    pre: `<pre>//nas/shows mounted by the system at /mnt/nas   → found as <b>smb1</b> (fs type cifs)
+Store Drive "smb1" /Path "//nas/shows"          → a Folder drive; In while the OS has it mounted</pre>`,
+    text: 'A console\'s system (or the operator) mounts the share; LumaCore sees a mounted share like a volume and lets you add its path.',
+    pros: ['No credentials in LumaCore, no privileged mount calls', 'Works on every OS today'],
+    cons: ['Mounting is outside LumaCore: a share needs the OS set up once'] },
+  { id: 'self', title: 'Shares: LumaCore mounts them',
+    pre: `<pre>Store Drive "smb1" /Path "//nas/shows" /User "lx" /Password "…"   → the station mounts it (cifs / mount_smbfs / net use)</pre>`,
+    text: 'The station keeps the credentials in its keystore and mounts the share itself at start and on demand.',
+    pros: ['One place to set up a share, on the desk'], cons: ['Privileged mount calls per OS (Linux needs root or fstab / udisks), credentials to keep, errors to explain', 'A later part once the found drives are in'] },
+];
+document.getElementById('opts').innerHTML = OPTS.map(o => `<div class="opt"><h3>${o.title}${o.tag ? `<span class="tag">${o.tag}</span>` : ''}</h3>${o.pre}<p>${o.text}</p><ul>${o.pros.map(p => `<li>${p}</li>`).join('')}${o.cons.map(c => `<li class="m">${c}</li>`).join('')}</ul></div>`).join('');
+</script>

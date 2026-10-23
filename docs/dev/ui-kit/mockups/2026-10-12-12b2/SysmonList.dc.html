@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>System Monitor list</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 40px 48px; background: color-mix(in srgb, {{t.bg}} 70%, #000); color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; gap: 24px">
+  <section style="width: 900px; flex-shrink: 0; display: flex; flex-direction: column; border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; overflow: hidden">
+    <div style="height: 44px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 12px; border-bottom: 1px solid {{t.line}}">
+      <span style="width: 10px; height: 10px; border-radius: 50%; background: {{t.accent}}"></span><span style="font-size: 15px; font-weight: 500">System Monitor</span>
+      <span style="margin-left: 16px; height: 32px; width: 240px; border-radius: 5px; border: 1px solid {{t.line}}; background: {{t.bg}}; display: flex; align-items: center; gap: 6px; padding: 0 8px; color: {{t.dim}}; font-size: 13px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path> <circle cx="11" cy="11" r="8"></circle></svg>Search</span>
+      <span style="margin-left: auto; font-size: 13px; color: {{t.dim}}">{{count}}</span><span style="font-size: 12px; font-weight: 600; color: {{liveC}}">{{liveText}}</span>
+    </div>
+    <div class="mono" style="flex: 1; display: flex; min-height: 0; background: {{listBg}}">
+      <div style="flex: 1; display: flex; flex-direction: column; padding: 6px 10px; gap: 2px; font-size: 13px; overflow: hidden">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="31">
+          <span style="height: 22px; display: flex; gap: 10px; white-space: nowrap; color: {{r.c}}"><span style="color: {{t.dim}}">{{r.time}}</span><span style="width: 64px">{{r.sub}}</span><span>{{r.msg}}</span></span>
+        </sc-for>
+      </div>
+      <div style="width: 14px; flex-shrink: 0; position: relative; border-left: 1px solid {{t.line}}"><span style="position: absolute; left: 3px; right: 3px; top: {{thumbTop}}%; height: 6%; border-radius: 4px; background: {{t.dim}}"></span></div>
+    </div>
+  </section>
+  <section style="flex: 1; display: flex; flex-direction: column; gap: 12px">
+    <span style="font-size: 13px; color: {{t.dim}}">Board: try it</span>
+    <button type="button" onClick="{{reopen}}" style="height: 56px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 15px; text-align: left; padding: 0 14px">Open the window again (one batch)</button>
+    <button type="button" onClick="{{scrollUp}}" style="height: 56px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 15px; text-align: left; padding: 0 14px">Scroll up 1000 lines (paused)</button>
+    <button type="button" onClick="{{toBottom}}" style="height: 56px; border-radius: 6px; border: 1px solid {{t.line}}; background: {{t.raised}}; color: {{t.text}}; font: inherit; font-size: 15px; text-align: left; padding: 0 14px">Back to the bottom (live)</button>
+    <div class="mono" style="padding: 12px; border-radius: 6px; background: {{t.surface}}; border: 1px solid {{t.line}}; font-size: 12px; color: {{t.dim}}; line-height: 1.6">{{wire1}}<br>{{wire2}}</div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { top: 4180, opens: 1 }; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',gap:'#080808',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',gap:'#d4d4d4',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',gap:'#050202',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const t = P[this.props.theme ?? 'Dark'];
+    const s = this.state;
+    const total = 4200;
+    const subs = ['Cmd', 'Server', 'Session', 'Render', 'Http'];
+    const msgs = ['[Admin@Screen 1] Group 3 → ok', 'shell resize applied', 'clock locked, offset 0.12 ms', 'frame 2.1 ms (budget 16.7)', 'GET /api/station 200', 'Store Window "Terminal" → ok', 'purrrrrrrrr'];
+    const rows = [];
+    for (let i = 0; i < 31; i++) {
+      const n = s.top - 30 + i;
+      const ms = 77513000 + n * 913;
+      const d = new Date(ms);
+      const p2 = v => String(v).padStart(2, '0');
+      const lvl = n % 37 === 0 ? 'warn' : 'info';
+      rows.push({ time: p2(d.getUTCHours()) + ':' + p2(d.getUTCMinutes()) + ':' + p2(d.getUTCSeconds()) + '.' + String(ms % 1000).padStart(3, '0'), sub: subs[n % 5], msg: '#' + n + ' ' + msgs[n % 7], c: lvl === 'warn' ? t.warn : t.text });
+    }
+    const live = s.top >= total - 20;
+    return { t, rows, count: total + ' lines', liveText: live ? 'LIVE' : 'PAUSED', liveC: live ? t.ok : t.warn,
+      listBg: live ? t.gap : 'color-mix(in srgb, ' + t.warn + ' 10%, ' + t.gap + ')', thumbTop: Math.round((s.top - 23) / total * 94),
+      reopen: () => this.setState({ top: total - 20, opens: s.opens + 1 }), scrollUp: () => this.setState({ top: Math.max(30, s.top - 1000) }), toBottom: () => this.setState({ top: total - 20 }),
+      wire1: 'open #' + s.opens + ' → {"history": [4200 lines]}  (one message)', wire2: 'then every tick → {"lines": [ … ]}  · 24 rows in the page, not 4200' };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,398 @@
+<title>Device Sheet on the Rig</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* A working mock: the window full width in the kit's dark theme (a LumaCore screen), the questions below it; the page around it follows the viewer. */
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#9a7a08;--code:#ecebe4;
+  --font:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+  --k-bg:#121212;--k-surface:#1c1c1c;--k-raised:#303030;--k-line:#424242;--k-text:#d1d1d1;--k-dim:#8a8a8a;--k-accent:#9a7a08;--k-accent-hi:#d4a634;--k-sel:#3a3320;--k-strong:#ececec;--k-cell:#222;--k-alt:#262626;--k-none:#050505;--k-gap:#0a0a0a;
+  --v-prg:#d86a7c;--v-new:#3fc8d8;--v-lower:#4cc35a;--v-track:#d070d0;--v-block:#f4f4f4;--v-other:#d8b72a;--v-other-track:#968433;--v-fading:#1d3566;
+  --v-rel:#b48ad0;--v-fade:#4cc35a;--v-delay:#e08a2c;--v-preset:#3fc8d8;--v-park:#3f9a90;--v-default:#7c7c7c}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--font);margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1240px;margin:0 auto;display:grid;gap:28px}
+.narrow{max-width:1000px}
+h1{font-size:1.75rem;margin:0;text-wrap:balance;line-height:1.2}h2{font-size:1.18rem;margin:0 0 8px;text-wrap:balance}h3{font-size:1rem;margin:4px 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:600}
+p{max-width:74ch;margin:.4em 0}.mute{color:var(--mute)}
+code{font:.86em var(--mono);background:var(--code);padding:1px 5px;border-radius:4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.opts{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:6px}
+.opt{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+.q{display:grid;gap:4px;padding-top:14px;border-top:1px solid var(--line)}
+/* the window */
+.win{background:var(--k-bg);color:var(--k-text);border:3px solid var(--k-gap);border-radius:8px;font:13px/1.3 var(--font);min-width:0;display:grid;grid-template-rows:auto auto 1fr auto auto}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 8px;background:var(--k-surface);border-bottom:1px solid var(--k-line)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--k-accent-hi);flex:none}
+.title{font-weight:700;font-size:14px;color:#eee;margin-right:4px}
+.cnt{font-size:12px;color:var(--k-accent-hi)}
+.sp{flex:1}
+.seg{display:inline-flex;border:1px solid var(--k-line);border-radius:6px;overflow:hidden}
+.seg button,.tg{background:var(--k-raised);color:#bbb;border:0;padding:7px 10px;font:600 12px var(--font);cursor:pointer;min-height:32px}
+.seg button+button{border-left:1px solid var(--k-line)}
+.seg button.on{background:var(--k-sel);color:#f3ecd3;box-shadow:inset 0 -2px 0 var(--k-accent-hi)}
+.tg{border:1px solid var(--k-line);border-radius:6px}.tg.on{background:var(--k-sel);color:#f3ecd3;border-color:var(--k-accent)}
+.blab{font-size:10.5px;color:var(--k-dim);text-transform:uppercase;letter-spacing:.06em;margin-left:4px}
+button:focus-visible{outline:2px solid var(--k-accent-hi);outline-offset:-2px}
+.scroll{overflow:auto;max-height:560px;min-width:0;background:var(--k-bg)}
+table.sh{border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;min-width:100%}
+.sh th{position:sticky;background:var(--k-surface);color:#aaa;font:600 11.5px var(--font);padding:4px 6px;border-right:1px solid #161616;border-bottom:1px solid #161616;white-space:nowrap;z-index:2}
+.sh tr.g th{top:0;height:20px;color:#d4c08a;text-align:left;font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+.sh tr.a th{top:29px;height:20px;text-align:right}
+.sh th.fz,.sh td.fz{position:sticky;z-index:3}.sh th.fz{z-index:4}
+.sh td{padding:0;border-bottom:1px solid #161616}
+.idc{display:flex;align-items:center;justify-content:flex-end;width:100%;background:var(--k-surface);height:30px;padding:0 7px;font:600 13px var(--mono);white-space:nowrap;overflow:hidden;border-right:1px solid #161616;box-sizing:border-box;position:relative;color:#ddd}
+.idc.name{justify-content:flex-start;font-family:var(--font);font-weight:600;cursor:pointer}
+.sh .w0,.sh .w1,.sh .w2{box-sizing:border-box}.sh .w0{width:210px;min-width:210px;max-width:210px}.sh .w1{width:58px;min-width:58px;max-width:58px}.sh .w2{width:62px;min-width:62px;max-width:62px}
+.idc .i{position:absolute;top:2px;left:4px;width:20px;height:3px;display:flex;gap:2px}.idc .i b{flex:1;border-radius:1px}
+tr.sel .idc{background:var(--k-sel);color:#f0d77a}
+tr.fold .idc{color:#c9c3b3;background:#1a1a1a}
+.tw{display:inline-block;width:14px;color:#888}
+.vc{position:relative;display:flex;align-items:center;justify-content:flex-end;gap:5px;height:30px;min-width:58px;padding:0 7px;box-sizing:border-box;background:var(--k-cell);color:var(--v-default);font:600 13px var(--mono);border-right:1px solid #161616;overflow:hidden;cursor:pointer;white-space:nowrap}
+tr:nth-child(even) .vc{background:var(--k-alt)}
+.vc .ind{position:absolute;left:3px;right:3px;top:2px;height:3px;display:flex;gap:2px}.vc .ind b{flex:0 0 11px;border-radius:1px}.vc .ind .s{flex:1}
+.vc .sym{margin-right:auto;width:11px;height:11px;border-radius:2px;flex:none}
+.vc .prog{position:absolute;left:0;bottom:0;height:2px;background:var(--k-strong);opacity:.7}
+.vc.none{background:var(--k-none)!important;cursor:default}
+.vc.mixed{color:#555}
+.vc:hover{box-shadow:inset 0 0 0 1px #777}
+.status{display:flex;gap:10px;align-items:center;padding:6px 10px;background:var(--k-surface);border-top:1px solid var(--k-line);font:12px var(--mono);color:#bdbdbd;min-height:30px;flex-wrap:wrap}
+.cmd{display:flex;gap:8px;align-items:center;padding:7px 10px;background:#0d0d0d;border-top:1px solid var(--k-line);font:13px var(--mono);color:#e8e2cf;min-height:34px;flex-wrap:wrap}
+.cmd .pr{color:var(--k-accent-hi)}
+.ftabs{display:flex;gap:4px;flex-wrap:wrap;padding:6px 8px;background:var(--k-surface);border-bottom:1px solid var(--k-line)}
+/* channel tiles */
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--tw,92px),1fr));gap:3px;padding:6px}
+.tile{position:relative;background:var(--k-cell);border-radius:4px;padding:6px 6px 5px;display:grid;gap:3px;cursor:pointer;min-width:0}
+.tile.sel{background:var(--k-sel)}
+.tile .id{font:600 13px var(--mono);color:#ddd;display:flex;justify-content:space-between;align-items:center}.tile.sel .id{color:#f0d77a}
+.tile .sw{width:11px;height:11px;border-radius:2px}
+.tile .lv{height:16px;background:#151515;border-radius:2px;position:relative;overflow:hidden}
+.tile .lv span{position:absolute;inset:0 auto 0 0;background:#3b3b3b}
+.tile .lv em{position:relative;font:600 11.5px var(--mono);font-style:normal;padding-left:4px;line-height:16px}
+.tile .i{position:absolute;top:2px;left:5px;width:20px;height:3px;display:flex;gap:2px}.tile .i b{flex:1;border-radius:1px}
+.tile .xs{display:grid;grid-template-columns:repeat(auto-fit,minmax(40px,1fr));gap:2px}.tile .xs .vc{min-width:0;height:22px;font-size:11px;padding:0 4px}
+.tsep{grid-column:1/-1;height:2px;background:#333;margin:3px 0}
+/* miniature */
+.minis{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.mini{width:210px;height:300px;background:var(--k-bg);border:3px solid var(--k-gap);border-radius:6px;overflow:hidden;font:600 10.5px var(--mono);color:#ccc}
+.mini .mr{display:grid;grid-template-columns:30px 1fr 52px 16px 34px;height:15px;align-items:center;border-bottom:1px solid #181818}
+.mini .mr span{padding:0 3px;overflow:hidden;white-space:nowrap}
+.mini .mr.h{color:#888;background:var(--k-surface);font-weight:600}
+.mini .mr.sel{box-shadow:inset 3px 0 0 #4d8fd6}
+.mini .lvl{position:relative;height:11px;background:#1a1a1a;border-radius:2px;margin:0 2px}.mini .lvl i{position:absolute;inset:0 auto 0 0;background:#555}.mini .lvl b{position:relative;padding-left:2px;font-size:9.5px}
+.mini .sw{width:10px;height:10px;border-radius:2px}
+.legend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:12px;color:var(--mute)}.legend span{display:inline-flex;align-items:center;gap:6px}.legend i{display:inline-block;width:20px;height:12px;border-radius:2px}
+</style>
+
+<main>
+<header class="narrow" style="display:grid;gap:8px">
+  <div class="kicker">Device sheet · round 1 · page 3 of 3 · 2026-10-22</div>
+  <h1>The device sheet, drawn on the rig</h1>
+  <p>The window built from page 2's <code>&lt;luma-device-grid&gt;</code> and value marks, on the demo rig: the 40d tree's folders (Media 99 ALL › Media 1 Stage 1 Mainstage › Media 7003 ACME Icarus) with Icarus, Photon, Tornado, Ozone and Titan rows. The values are an example: Admin's programmer holds Icarus 785 and 837 (selected) plus Titan 1657. Sequence 1 (selected) runs cue 3 on the Photons and the other Icarus. Sequence 7 (not selected) fades the Tornados, and Ozone 1647's tilt is parked. The attribute sets are drawn per type for the mock; the build reads each type's GDTF.</p>
+  <p class="mute">Try it: switch the mode and the layer, turn on <em>Programmer only</em>, hover a cell for its source, tap a name to select, tap a value to see the line.</p>
+</header>
+
+<section class="win" id="win" aria-label="Device sheet mock">
+  <div class="bar">
+    <span class="dot"></span><span class="title">Device Sheet</span><span class="cnt" id="cnt"></span>
+    <span class="sp"></span>
+    <span class="blab">Mode</span><span class="seg" id="mode"><button data-v="fixture" class="on">Fixture</button><button data-v="channel">Channel</button><button data-v="dimplus">Dimmer+</button></span>
+    <span class="blab">Layer</span><span class="seg" id="layer"><button data-v="abs" class="on">Absolute</button><button data-v="fade">Fade</button><button data-v="delay">Delay</button><button data-v="out">Output</button><button data-v="dmx">DMX</button></span>
+  </div>
+  <div class="bar" style="background:#181818">
+    <span class="blab">Show</span>
+    <button class="tg" id="tgProg">Programmer only</button>
+    <button class="tg" id="tgSel">Selected only</button>
+    <button class="tg on" id="tgSort">Selection first</button>
+    <button class="tg on" id="tgTree">Folders</button>
+    <button class="tg" id="tgMerge">Merge cells</button>
+    <span class="sp"></span>
+    <span style="font-size:11.5px;color:#888">Readout Natural · Colour RGB</span>
+  </div>
+  <div id="body" class="scroll"></div>
+  <div class="status" id="status">Hover a cell: its value, where it comes from, and its layers.</div>
+  <div class="cmd"><span class="pr">Admin[Fixture]&gt;</span><span id="line"></span></div>
+</section>
+
+<div class="narrow" style="display:grid;gap:10px;margin:0 auto;width:100%">
+  <div class="legend" id="legend"></div>
+</div>
+
+<section class="narrow card" style="display:grid;gap:12px;margin:0 auto;width:100%;box-sizing:border-box">
+  <h2>The miniature and the phone</h2>
+  <p>Already decided (12e round 5): the miniature is the hybrid. Fix and Name as text, Dim a level bar with the value on top in programmer colour when it is yours, Color a swatch, selected fixtures with a blue edge. Drawn here from the same rows. On a phone the pane stays a miniature; holding it opens the window full screen in Channel mode, the one that fits a short side.</p>
+  <div class="minis"><div class="mini" id="mini"></div><div class="mini" id="phone" style="width:190px"></div></div>
+</section>
+
+<section class="narrow card" style="display:grid;gap:4px;margin:0 auto;width:100%;box-sizing:border-box">
+  <h2>To decide on this page</h2>
+
+  <div class="q"><strong>1. The name.</strong> The roadmap says <em>device sheet</em>; established consoles say <em>Fixture Sheet</em>, and LumaCore's object is <code>Fixture</code>.
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>“Device Sheet”: the Devices claim and menu already use the word, and the sheet will also show things that aren't lights (fog, machinery, the camera).</div><div class="opt"><span class="tag">B</span><br>“Fixture Sheet”: what a console operator looks for.</div></div></div>
+
+  <div class="q"><strong>2. Modes in the first build.</strong>
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>Fixture and Channel; Dimmer+ when feature-group selection exists on the encoder bar.</div><div class="opt"><span class="tag">B</span><br>All three at once.</div><div class="opt"><span class="tag">C</span><br>Fixture only.</div></div></div>
+
+  <div class="q"><strong>3. Folders as tree rows: what does a folder row show?</strong> A value at a folder fans out to every fixture below (the programmer's Direct / Down switch defaults to Down).
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>The common value when every fixture below agrees, a faint “·” when they differ. Bars when anything below is in your programmer. As drawn.</div><div class="opt"><span class="tag">B</span><br>The name only; value cells empty.</div><div class="opt"><span class="tag">C</span><br>No folder rows; a flat list in patch order, folders only in the patch dialog.</div></div></div>
+
+  <div class="q"><strong>4. What the sheet shows when it opens.</strong>
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>Every fixture, Selection first on. Programmer only and Selected only are toggles on the bar, each a <code>Set Self "…"</code> line kept on the window.</div><div class="opt"><span class="tag">B</span><br>Follow the selection: only selected fixtures, everything when nothing is selected.</div></div></div>
+
+  <div class="q"><strong>5. Columns across types.</strong>
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>The union of the attributes in scope, under feature-group headers, a black cell where a type has none. The grid's column sets: Condensed = each group's main attributes, Full = all, Extended = all plus readouts like CTO in K.</div><div class="opt"><span class="tag">B</span><br>One block per fixture type, each with its own header row.</div></div></div>
+
+  <div class="q"><strong>6. A tap on a value cell.</strong>
+    <div class="opts"><div class="opt rec"><span class="tag">A · recommended</span><br>Tap selects the fixture and puts the attribute on the encoder bar (two lines, as shown). A second tap on the same cell opens the calculator, and Enter runs <code>Fixture 785 Attribute "Pan" At -45</code>. Hold: the one context menu.</div><div class="opt"><span class="tag">B</span><br>Tap opens the calculator at once.</div></div></div>
+
+  <div class="q"><strong>7. Layers in the first build.</strong> Absolute, Fade, Delay, Output, DMX as drawn. Relative and the phaser layers appear when those values exist. Your current sheet keeps Auto off and Absolute on; is <em>Auto</em> (follow the encoder bar's layer) wanted from the start?</div>
+</section>
+</main>
+
+<script>
+// ---------- rig rows (the tree from 40d; fixtures are the rig's own FIDs) ----------
+const ATTR = [
+  ['Dimmer', [['Dim','Dim']]],
+  ['Position', [['Pan','Pan'],['Tilt','Tilt']]],
+  ['Gobo', [['Gobo1','Gobo1'],['G1Rot','G1 ⟳']]],
+  ['Color', [['Mix','◼'],['C','C'],['M','M'],['Y','Y'],['R','R'],['G','G'],['B','B'],['W','W'],['CTO','CTO']]],
+  ['Beam', [['Shutter','Shutter'],['Prism','Prism'],['Iris','Iris']]],
+  ['Focus', [['Zoom','Zoom'],['Focus','Focus']]],
+];
+const TYPES = {
+  icarus: {name:'ACME Icarus 620', has:'Dim Pan Tilt Gobo1 G1Rot Mix C M Y CTO Shutter Prism Iris Zoom Focus'},
+  photon: {name:'ACME Photon Hybrid 500', has:'Dim Pan Tilt Gobo1 G1Rot Mix C M Y CTO Shutter Prism Zoom Focus'},
+  tornado:{name:'ACME Tornado TB 5', has:'Dim Tilt Mix R G B W Shutter Zoom'},
+  ozone:  {name:'ACME Ozone CM-400Z', has:'Dim Pan Tilt Mix R G B W CTO Shutter Zoom'},
+  titan:  {name:'Astera Titan Tube', has:'Dim Mix R G B CTO Shutter'},
+};
+const DEF = {Dim:['0',0],Pan:['0°',.5],Tilt:['0°',.5],Gobo1:['Open',0],G1Rot:['0°',0],C:['0',0],M:['0',0],Y:['0',0],R:['100',1],G:['100',1],B:['100',1],W:['100',1],CTO:['0',0],Shutter:['Open',1],Prism:['Out',0],Iris:['100',1],Zoom:['20°',.3],Focus:['50',.5]};
+const tree = [
+  {folder:'ALL', id:'Media 99', kids:[
+    {folder:'Stage 1 Mainstage', id:'Media 1', kids:[
+      {folder:'ACME Icarus', id:'Media 7003', kids:[143,186,211,245,785,837].map(f => ({fid:f, t:'icarus'}))},
+      ...[6,122,196,283,317,319].map(f => ({fid:f, t:'photon'})),
+      ...[642,654,698,710,734,754,770].map(f => ({fid:f, t:'tornado'})),
+    ]},
+    {fid:1647, t:'ozone'}, {fid:1657, t:'titan'},
+  ]},
+];
+// ---------- the example: who holds what (Absolute layer) ----------
+// st: def prgA prgI new lower track block other otherT park ; L: indicator layers ; fade/delay: the layer values
+const V = {};
+const set = (fid, a, o) => { (V[fid] ||= {})[a] = Object.assign({}, V[fid]?.[a] || {}, o); };
+for (const f of [785, 837]) {
+  set(f,'Dim',{v:'100',n:1,st:'prgA',L:['abs'],src:'your programmer (Admin), active'});
+  set(f,'Pan',{v:f===785?'−45°':'45°',n:f===785?.375:.625,st:'prgA',L:['abs'],src:'your programmer (Admin), active'});
+  set(f,'Tilt',{v:'30°',n:.67,st:'prgI',L:['deact'],src:'your programmer (Admin), not active: kept, not stored'});
+  for (const [a,v,n] of [['C','0',0],['M','80',.8],['Y','100',1]]) set(f,a,{v,n,st:'prgA',L:['abs','preset'],src:'your programmer (Admin), active, from Preset 4.2 "Amber"'});
+  set(f,'Mix',{sym:'#f0902a',st:'prgA',L:['abs','preset'],v:'',src:'mixed colour, from Preset 4.2 "Amber"'});
+}
+set(785,'Dim',{L:['abs','fade'],fade:'2.0s'}); set(837,'Pan',{L:['abs','delay'],delay:'0.5s'});
+set(245,'Dim',{v:'60',n:.6,st:'prgI',L:['deact'],src:'your programmer (Admin), not active'});
+for (const f of [143,186,211]) { set(f,'Dim',{v:'40',n:.4,st:'track',src:'Sequence 1 "Main", cue 3: tracked from cue 2'}); set(f,'Pan',{v:'10°',n:.53,st:'track',src:'Sequence 1, cue 3: tracked'}); set(f,'Tilt',{v:'25°',n:.64,st:'track',src:'Sequence 1, cue 3: tracked'}); }
+for (const f of [122,196,283]) set(f,'Dim',{v:'75',n:.75,st:'new',src:'Sequence 1 "Main", cue 3: new, higher than cue 2',cfade:'3.0s'});
+set(6,'Dim',{v:'20',n:.2,st:'lower',src:'Sequence 1, cue 3: new, lower than cue 2',cfade:'3.0s'});
+for (const f of [317,319]) set(f,'Dim',{v:'75',n:.75,st:'track',src:'Sequence 1, cue 3: tracked from cue 1'});
+for (const f of [6,122,196,283,317,319]) { set(f,'Pan',{v:'−20°',n:.44,st:'track',src:'Sequence 1, cue 3: tracked'}); set(f,'Tilt',{v:'40°',n:.72,st:'track',src:'Sequence 1, cue 3: tracked'}); set(f,'M',{v:'35',n:.35,st:'track',src:'Sequence 1, cue 3: tracked'}); set(f,'Mix',{sym:'#f4c9e9',v:'',st:'track',src:'mixed colour'}); }
+set(122,'Gobo1',{v:'Open',n:0,st:'block',src:'Sequence 1, cue 3: blocked (stored again with the same value)'});
+for (const f of [642,654,698,710,734,754,770]) {
+  set(f,'Dim',{v:'50',n:.5,st:'other',src:'Sequence 7 "Tornado FX" (not selected), cue 2: new'});
+  set(f,'Tilt',{v:'−15°',n:.42,st:'otherT',src:'Sequence 7 (not selected): tracked'});
+  for (const [a,v,n] of [['R','100',1],['G','20',.2],['B','0',0],['W','0',0]]) set(f,a,{v,n,st:'other',src:'Sequence 7 (not selected), cue 2: new'});
+  set(f,'Mix',{sym:'#ff3b10',v:'',st:'other',src:'mixed colour'});
+}
+for (const f of [734,754]) set(f,'Dim',{v:'38',n:.38,fading:.4,src:'Sequence 7 (not selected): fading to 50, 40 % through 4.0s'});
+set(1647,'Tilt',{v:'12°',n:.57,st:'park',L:['park'],src:'parked at 12° (Park Fixture 1647 Attribute "Tilt")'});
+set(1657,'Dim',{v:'80',n:.8,st:'prgA',L:['abs'],src:'your programmer (Admin), active'});
+for (const [a,v,n] of [['R','100',1],['G','45',.45],['B','0',0]]) set(1657,a,{v,n,st:'prgA',L:['abs','preset'],src:'your programmer (Admin), active, from Preset 4.2 "Amber"'});
+set(1657,'Mix',{sym:'#ff8a10',v:'',st:'prgA',L:['abs','preset'],src:'mixed colour'});
+// ---------- state ----------
+const ST = {mode:'fixture', layer:'abs', prog:false, selOnly:false, sort:true, tree:true, merge:false, sel:[785,837], feat:'Position'};
+const C = {def:'var(--v-default)',prgA:'#fff',prgI:'var(--v-prg)',new:'var(--v-new)',lower:'var(--v-lower)',track:'var(--v-track)',block:'var(--v-block)',other:'var(--v-other)',otherT:'var(--v-other-track)',park:'var(--v-park)'};
+const LC = {abs:'var(--v-prg)',rel:'var(--v-rel)',fade:'var(--v-fade)',delay:'var(--v-delay)',preset:'var(--v-preset)',park:'var(--v-park)'};
+const has = (t,a) => TYPES[t].has.split(' ').includes(a);
+const inProg = fid => Object.values(V[fid]||{}).some(c => c.st==='prgA'||c.st==='prgI');
+function val(fid, t, a){
+  if (!has(t,a)) return null;
+  const c = V[fid]?.[a]; const d = DEF[a] || ['',0];
+  return Object.assign({v:d[0], n:d[1], st:'def', L:[], src:'at its default'}, c || {});
+}
+function shown(c){ // the layer decides what the cell says
+  const o = {text:c.v, st:c.st, bg:null, L:c.L, sym:c.sym, fading:c.fading};
+  const L = ST.layer;
+  if (L==='fade' || L==='delay'){
+    const x = L==='fade' ? (c.fade || (c.cfade && c.st!=='def' ? c.cfade : null)) : c.delay;
+    o.sym = null; o.fading = null;
+    if (!x) return Object.assign(o,{text:'', st:'def', L:[]});
+    o.text = x; const col = L==='fade' ? 'var(--v-fade)' : 'var(--v-delay)';
+    if (c.st==='prgA'||c.st==='prgI') { o.st='ink'; o.bg=col; } else { o.st='layer'; o.color=col; }
+    return o;
+  }
+  if (L==='out'){ o.st='out'; o.L=[]; return o; }
+  if (L==='dmx'){ o.st='out'; o.L=[]; o.sym=null; o.text = c.v==='' ? '' : String(Math.round((c.n||0)*255)); return o; }
+  if (c.st==='prgA') o.bg='var(--v-prg)';
+  return o;
+}
+function vcell(c, extra){
+  const d = document.createElement('div'); d.className='vc';
+  if (!c){ d.className+=' none'; return d; }
+  const o = shown(c);
+  d.style.color = o.st==='ink' ? '#fff' : o.st==='layer' ? o.color : o.st==='out' ? '#e6e6e6' : C[o.st];
+  if (o.bg) d.style.background = o.bg;
+  if (o.fading!=null) d.style.background = 'var(--v-fading)';
+  if (o.L && o.L.length){ const i=document.createElement('div'); i.className='ind';
+    if (o.L.includes('deact')) i.innerHTML+='<b style="background:#fff"></b>';
+    for (const k of ['abs','rel','fade','delay','preset','park']) if (o.L.includes(k)) i.innerHTML+=`<b style="background:${LC[k]}"></b>`;
+    if (o.L.includes('fade') && ST.layer==='abs') {} d.append(i); }
+  if (o.sym){ const s=document.createElement('span'); s.className='sym'; s.style.background=o.sym; d.append(s); }
+  d.append(document.createTextNode(o.text));
+  if (o.fading!=null){ const p=document.createElement('span'); p.className='prog'; p.style.width=(o.fading*100)+'%'; d.append(p); }
+  if (extra) Object.assign(d.dataset, extra);
+  return d;
+}
+// ---------- rows ----------
+function flatten(nodes, depth, out, parent){
+  for (const n of nodes){
+    if (n.folder){ const row={folder:n.folder,id:n.id,depth,kids:[]}; out.push(row); const start=out.length; flatten(n.kids, depth+1, out, row); row.fixtures=out.slice(start).filter(r=>r.fid).map(r=>r); }
+    else out.push({fid:n.fid,t:n.t,depth});
+  }
+  return out;
+}
+function rows(){
+  let r = flatten(tree, 0, []);
+  if (ST.prog) r = r.filter(x => x.fid ? inProg(x.fid) : x.fixtures.some(f=>inProg(f.fid)));
+  if (ST.selOnly) r = r.filter(x => x.fid ? ST.sel.includes(x.fid) : x.fixtures.some(f=>ST.sel.includes(f.fid)));
+  if (!ST.tree) r = r.filter(x => x.fid).map(x => Object.assign({},x,{depth:0}));
+  if (ST.sort && !ST.tree){ r.sort((a,b)=>{ const ia=ST.sel.indexOf(a.fid), ib=ST.sel.indexOf(b.fid); return (ia<0?1e9:ia)-(ib<0?1e9:ib) || a.fid-b.fid; }); }
+  return r;
+}
+function cols(rs){ // the union of attributes in scope
+  const ts = new Set(rs.filter(r=>r.fid).map(r=>r.t));
+  return ATTR.map(([g,as]) => [g, as.filter(([a]) => [...ts].some(t=>has(t,a)))]).filter(([,as])=>as.length);
+}
+function folderCell(row, a){
+  const vals = row.fixtures.map(f => val(f.fid,f.t,a)).filter(Boolean);
+  if (!vals.length) return vcell(null);
+  const texts = new Set(vals.map(v=>shown(v).text));
+  const anyProg = vals.some(v=>v.st==='prgA'||v.st==='prgI');
+  if (texts.size===1){ const c = Object.assign({},vals[0]); c.src='every fixture below: '+c.src; if (c.st==='prgA'){c.st='prgI';} c.L = anyProg?['abs']:[]; return vcell(c,{folder:row.id,attr:a}); }
+  const d = vcell({v:'·',n:0,st:'def',L:anyProg?['abs']:[]},{folder:row.id,attr:a}); d.classList.add('mixed'); d.dataset.mixed='1'; return d;
+}
+const nameOf = r => r.fid ? `${TYPES[r.t].name.replace('ACME ','').replace('Astera ','')} ${r.fid}` : r.folder;
+function ind(fid){ const st = new Set(Object.values(V[fid]||{}).map(c=>c.st)); let h=''; if (st.has('prgA')) h+='<b style="background:var(--v-prg)"></b>'; if (st.has('prgI')) h+='<b style="background:#fff"></b>'; return h ? `<span class="i">${h}</span>` : ''; }
+// ---------- draw ----------
+function drawFixture(rs){
+  const cs = cols(rs);
+  const t = document.createElement('table'); t.className='sh';
+  const W = [210,58,62]; const left=[0,210,268];
+  let g = '<tr class="g"><th class="fz w0" style="left:0" colspan="1"></th><th class="fz w1" style="left:210px"></th><th class="fz w2" style="left:268px"></th>';
+  let a = '<tr class="a"><th class="fz w0" style="left:0;text-align:left">Name</th><th class="fz w1" style="left:210px">FID</th><th class="fz w2" style="left:268px">Type</th>';
+  for (const [grp, as] of cs){ g += `<th colspan="${as.length}">${grp}</th>`; for (const [,lab] of as) a += `<th>${lab}</th>`; }
+  t.innerHTML = '<thead>'+g+'</tr>'+a+'</tr></thead>';
+  const tb = document.createElement('tbody');
+  for (const r of rs){
+    const tr = document.createElement('tr');
+    if (r.fid && ST.sel.includes(r.fid)) tr.className='sel'; if (!r.fid) tr.className='fold';
+    const nm = `<span style="padding-left:${r.depth*14}px"></span>${r.fid?'<span class="tw"></span>':'<span class="tw">▾</span>'}${nameOf(r)}`;
+    const anyProg = r.fid ? '' : (r.fixtures.some(f=>inProg(f.fid)) ? '<span class="i"><b style="background:var(--v-prg)"></b></span>' : '');
+    tr.innerHTML = `<td class="fz w0" style="left:0"><div class="idc name" data-row="${r.fid||r.id}">${r.fid?ind(r.fid):anyProg}${nm}</div></td><td class="fz w1" style="left:210px"><div class="idc">${r.fid||''}</div></td><td class="fz w2" style="left:268px"><div class="idc" style="justify-content:flex-start;font-family:var(--font);font-weight:500;color:#999">${r.fid?'Fixture':'Media'}</div></td>`;
+    for (const [, as] of cs){
+      let prev=null, prevCell=null;
+      for (const [attr] of as){
+        const td = document.createElement('td');
+        let cell = r.fid ? vcell(val(r.fid,r.t,attr),{fid:r.fid,attr}) : folderCell(r, attr);
+        if (ST.merge && r.fid){ const v=val(r.fid,r.t,attr); const key = v ? shown(v).text+'|'+v.st : null;
+          if (key && key===prev && prevCell && attr!=='Mix'){ prevCell.parentNode.colSpan=(prevCell.parentNode.colSpan||1)+1; continue; }
+          prev = key; prevCell = cell; }
+        td.append(cell); tr.append(td);
+      }
+    }
+    tb.append(tr);
+  }
+  t.append(tb); return t;
+}
+function drawTiles(rs, plus){
+  const w = document.createElement('div');
+  if (plus){ const ft=document.createElement('div'); ft.className='ftabs';
+    for (const [g] of ATTR.slice(1)) ft.insertAdjacentHTML('beforeend',`<button class="tg ${ST.feat===g?'on':''}" data-feat="${g}">${g}</button>`);
+    w.append(ft); }
+  const d = document.createElement('div'); d.className='tiles'; if (plus) d.style.setProperty('--tw','170px');
+  let lastType=null;
+  for (const r of rs){
+    if (!r.fid){ continue; }
+    if (plus && lastType && lastType!==r.t) d.insertAdjacentHTML('beforeend','<div class="tsep"></div>'); lastType=r.t;
+    const c = val(r.fid,r.t,'Dim'), o = shown(c); const mix = val(r.fid,r.t,'Mix');
+    const tile = document.createElement('div'); tile.className='tile'+(ST.sel.includes(r.fid)?' sel':''); tile.dataset.row=r.fid;
+    const col = o.bg ? '#fff' : (o.st==='ink'?'#fff':o.st==='layer'?o.color:o.st==='out'?'#e6e6e6':C[o.st]);
+    const fill = o.bg || (o.fading!=null?'var(--v-fading)':'#3b3b3b');
+    tile.innerHTML = `${ind(r.fid).replace('class="i"','class="i"')}<div class="id"><span>${r.fid}</span>${mix&&mix.sym?`<span class="sw" style="background:${mix.sym}"></span>`:'<span class="sw" style="background:#555"></span>'}</div><div class="lv" data-fid="${r.fid}" data-attr="Dim"><span style="width:${(c.n||0)*100}%;background:${fill}"></span><em style="color:${col}">${o.text}</em></div>`;
+    if (plus){ const grp = ATTR.find(([g])=>g===ST.feat)[1]; const xs=document.createElement('div'); xs.className='xs';
+      for (const [a] of grp){ if (a==='Mix') continue; xs.append(vcell(val(r.fid,r.t,a),{fid:r.fid,attr:a})); } tile.append(xs); }
+    d.append(tile);
+  }
+  w.append(d); return w;
+}
+function draw(){
+  const rs = rows();
+  const body = document.getElementById('body');
+  body.replaceChildren(ST.mode==='fixture' ? drawFixture(rs) : drawTiles(rs, ST.mode==='dimplus'));
+  document.getElementById('cnt').textContent = `${ST.sel.length} selected · ${rs.filter(r=>r.fid).length} fixtures`;
+  drawMini();
+}
+// ---------- interaction ----------
+const line = s => document.getElementById('line').textContent = s;
+const status = s => document.getElementById('status').textContent = s;
+function seg(id, key){ document.getElementById(id).addEventListener('click', e => { const b=e.target.closest('button'); if(!b) return; ST[key]=b.dataset.v; for (const x of e.currentTarget.children) x.classList.toggle('on', x===b);
+  line(key==='mode' ? `Set Self "SheetMode" ${b.textContent}` : `Set Self "Layer" ${b.textContent}`); draw(); }); }
+seg('mode','mode'); seg('layer','layer');
+for (const [id,key,prop] of [['tgProg','prog','ProgrammerOnly'],['tgSel','selOnly','SelectedOnly'],['tgSort','sort','SelectionFirst'],['tgTree','tree','Folders'],['tgMerge','merge','MergeCells']])
+  document.getElementById(id).addEventListener('click', e => { ST[key]=!ST[key]; e.currentTarget.classList.toggle('on',ST[key]); line(`Set Self "${prop}" ${ST[key]?'On':'Off'}`); draw(); });
+const body = document.getElementById('body');
+body.addEventListener('click', e => {
+  const f = e.target.closest('[data-feat]'); if (f){ ST.feat=f.dataset.feat; line(`FeatureGroup "${ST.feat}"`); draw(); return; }
+  const v = e.target.closest('.vc,.lv');
+  if (v && (v.dataset.fid || v.dataset.folder)){
+    const who = v.dataset.fid ? `Fixture ${v.dataset.fid}` : `Fixture ${v.dataset.folder}`; const a = v.dataset.attr;
+    if (body.dataset.last === who+a){ const c = v.dataset.fid ? val(+v.dataset.fid, findType(+v.dataset.fid), a) : null; line(`${who} Attribute "${a==='Mix'?'Color':a}" At ${c? String(c.v).replace('−','-').replace('°',''):''}   ← the calculator, Enter runs it`); body.dataset.last=''; }
+    else { body.dataset.last = who+a; if (v.dataset.fid && !ST.sel.includes(+v.dataset.fid)) ST.sel=[+v.dataset.fid]; line(`${who} ; Attribute "${a==='Mix'?'Color':a}"   ← selects it and puts ${a} on the encoder bar (tap again to type a value)`); draw(); }
+    return; }
+  const r = e.target.closest('[data-row]'); if (!r) return;
+  const id = r.dataset.row;
+  if (/^Media/.test(id)){ line(`Fixture ${id}   ← a folder: its fixtures follow (Down)`); const node = flatten(tree,0,[]).find(x=>x.id===id); ST.sel = node.fixtures.map(f=>f.fid); draw(); return; }
+  const fid = +id; const i = ST.sel.indexOf(fid);
+  if (i>=0){ ST.sel.splice(i,1); line(`- Fixture ${fid}`); } else { ST.sel.push(fid); line(`+ Fixture ${fid}`); }
+  draw();
+});
+function findType(fid){ return flatten(tree,0,[]).find(r=>r.fid===fid).t; }
+body.addEventListener('mouseover', e => {
+  const v = e.target.closest('.vc,.lv'); if (!v) return;
+  if (v.classList.contains('none')) { status('No such attribute on this type.'); return; }
+  if (v.dataset.folder){ status(`${v.dataset.folder} · ${v.dataset.attr} · ${v.dataset.mixed?'the fixtures below differ':'every fixture below has this value'}`); return; }
+  if (!v.dataset.fid) return;
+  const fid=+v.dataset.fid, a=v.dataset.attr, c=val(fid,findType(fid),a);
+  const extra = [c.fade?`individual fade ${c.fade}`:'', c.delay?`individual delay ${c.delay}`:'', c.cfade?`cue fade ${c.cfade}`:''].filter(Boolean).join(' · ');
+  status(`Fixture ${fid} · ${a} · ${c.v||'—'} · ${c.src}${extra?' · '+extra:''}`);
+});
+// ---------- legend ----------
+const LG = [['var(--v-prg)','#fff','your programmer, active'],[null,'var(--v-prg)','programmer, not active'],[null,'var(--v-new)','cue: new / higher'],[null,'var(--v-lower)','cue: lower'],[null,'var(--v-track)','cue: tracked'],[null,'var(--v-block)','cue: blocked'],[null,'var(--v-other)','another sequence'],[null,'var(--v-other-track)','another sequence, tracked'],['var(--v-fading)','var(--v-other)','fading'],[null,'var(--v-park)','parked'],['#050505',null,'no such attribute']];
+document.getElementById('legend').innerHTML = LG.map(([bg,fg,t]) => `<span><i style="background:${bg||'#222'};box-shadow:inset 0 -3px 0 ${fg||'transparent'}"></i>${t}</span>`).join('') + '<span>bars on top: <i style="background:linear-gradient(90deg,var(--v-prg) 0 30%,transparent 30% 35%,var(--v-fade) 35% 65%,transparent 65% 70%,var(--v-preset) 70%);height:4px"></i> absolute · fade · preset</span>';
+// ---------- miniature + phone ----------
+function drawMini(){
+  const rs = rows().filter(r=>r.fid);
+  const m = document.getElementById('mini');
+  m.innerHTML = '<div class="mr h"><span>Fix</span><span>Name</span><span>Dim</span><span></span><span>Pan</span></div>' + rs.map(r => {
+    const d = val(r.fid,r.t,'Dim'), mix = val(r.fid,r.t,'Mix'), p = val(r.fid,r.t,'Pan');
+    const mine = d.st==='prgA'||d.st==='prgI';
+    return `<div class="mr ${ST.sel.includes(r.fid)?'sel':''}"><span>${r.fid}</span><span style="font-family:var(--font)">${TYPES[r.t].name.split(' ')[1]}</span><span><span class="lvl" style="display:block"><i style="width:${d.n*100}%;background:${mine?'var(--v-prg)':'#555'}"></i><b>${d.v}</b></span></span><span><span class="sw" style="display:block;background:${mix&&mix.sym||'#555'}"></span></span><span>${p?p.v:''}</span></div>`; }).join('');
+  const ph = document.getElementById('phone'); ph.style.overflow='hidden';
+  ph.innerHTML = '<div style="padding:5px 6px;background:var(--k-surface);font:600 11px var(--font);color:#eee">Device Sheet · Channel</div><div class="tiles" style="--tw:52px;padding:4px;gap:2px">' + rs.map(r => {
+    const d = val(r.fid,r.t,'Dim'); const o = shown(d); const mix = val(r.fid,r.t,'Mix');
+    return `<div class="tile ${ST.sel.includes(r.fid)?'sel':''}" style="padding:4px 3px 3px">${ind(r.fid)}<div class="id" style="font-size:10.5px"><span>${r.fid}</span><span class="sw" style="width:8px;height:8px;background:${mix&&mix.sym||'#555'}"></span></div><div class="lv" style="height:12px"><span style="width:${d.n*100}%;background:${o.bg||(d.fading!=null?'var(--v-fading)':'#3b3b3b')}"></span><em style="font-size:9.5px;line-height:12px;color:${o.bg?'#fff':C[o.st]||'#ddd'}">${o.text}</em></div></div>`; }).join('') + '</div>';
+}
+line('Fixture 785 + 837'); draw();
+</script>

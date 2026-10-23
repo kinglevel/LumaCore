@@ -1,0 +1,22 @@
+# The manual demo (decisions §40 16): command lines gen-demo replays on top of the generated
+# rig before it saves library/shows/demo.luma. One line per row, `#` starts a comment, every
+# line runs as Admin. Keep here what the demo is to have beyond the imports — the profile as
+# `Set UserProfile …` lines, groups, masters, views; the journal shows every line a session ran.
+
+# Group 1 (Photon) is a scaling master (decisions §22).
+Set Group 1 "Mode" Scaling
+
+# Presets (decisions 0288): one pool, stored from the programmer. A Universal dimmer level, a
+# Selective pair, each tagged so the Presets window has something to sort.
+Fixture 101 Thru 110 At 100
+Store Preset 1 "Full"
+ResetAll
+Fixture 101 Thru 110 At 50
+Store Preset 2 "Half"
+ResetAll
+Fixture 101 At 20
+Fixture 102 At 80
+Store Preset 3 "Split"
+ResetAll
+Store Tag 901 "Wash"
+Assign Tag "Wash" At Preset 1 + 2

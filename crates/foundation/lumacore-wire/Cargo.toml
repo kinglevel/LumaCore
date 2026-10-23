@@ -1,0 +1,14 @@
+[package]
+name = "lumacore-wire"
+version.workspace = true
+edition.workspace = true
+
+# The client↔station contract (decisions §23 "Step 8"): clients compile only
+# this. Keep it small — no lumacore crate, no async runtime, no UI.
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+socket2 = { workspace = true }
+
+[lints]
+workspace = true

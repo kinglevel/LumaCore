@@ -1,0 +1,125 @@
+# cargo-fuzz targets (decisions §25 "Step 10 hardening"). Outside the
+# workspace, nightly only: `cargo +nightly fuzz run <target> --fuzz-dir fuzz`,
+# or every target overnight with `scripts/unix/fuzz_long`.
+[package]
+name = "lumacore-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+serde_json = "1.0"
+lumacore-sweep = { path = "../../crates/dev/lumacore-sweep" }
+lumacore-artnet = { path = "../../crates/network/protocols/dmx/lumacore-artnet" }
+lumacore-sacn = { path = "../../crates/network/protocols/dmx/lumacore-sacn" }
+lumacore-wire = { path = "../../crates/foundation/lumacore-wire" }
+lumacore-syntax = { path = "../../crates/foundation/lumacore-syntax" }
+
+# Not part of the LumaCore workspace.
+[workspace]
+members = ["."]
+
+[profile.release]
+debug = 1
+
+[[bin]]
+name = "osc"
+path = "fuzz_targets/osc.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "sacn"
+path = "fuzz_targets/sacn.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "artdmx"
+path = "fuzz_targets/artdmx.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "artpoll_reply"
+path = "fuzz_targets/artpoll_reply.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "remote_request"
+path = "fuzz_targets/remote_request.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "time_reply"
+path = "fuzz_targets/time_reply.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "shell_client"
+path = "fuzz_targets/shell_client.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "shell_server"
+path = "fuzz_targets/shell_server.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "beacon"
+path = "fuzz_targets/beacon.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "stream_frame"
+path = "fuzz_targets/stream_frame.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "command_line"
+path = "fuzz_targets/command_line.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "token"
+path = "fuzz_targets/token.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "commands"
+path = "fuzz_targets/commands.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "syntax_parse"
+path = "fuzz_targets/syntax_parse.rs"
+test = false
+doc = false
+bench = false

@@ -1,0 +1,461 @@
+<title>DMX Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one column of boards — the Universes tab's Map view (zoomed out, usage bars, conflicts),
+   Edit Patch (zoomed in, the slot grid and the address tools), identify / find, swap, and the
+   kit-wide renumber. The console look of the locked round 2 Patch mockups (single dark). */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --del-t: #f2a3a3; --new: #4f8fd6; --sel: #2d3a52;
+  --t1: #3b5f8a; --t1b: #46709f; --t2: #5a4a86; --t2b: #6a589b; --t3: #4b6b3a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+header h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 82ch; line-height: 1.5; }
+.board { display: flex; flex-direction: column; gap: 10px; }
+.board > h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board > .why { color: var(--dim); margin: 0; line-height: 1.5; max-width: 86ch; }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 86ch; line-height: 1.5; margin: 0; }
+.icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+code, .mono { font-family: var(--mono); font-size: 12px; }
+button:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+
+.dlg { border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.title { min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 6px 4px 6px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.crumb .up { color: var(--dim); } .crumb .sep { color: var(--faint); font-size: 14px; } .crumb .here { font-weight: 500; }
+.chip { height: 30px; display: inline-flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; white-space: nowrap; }
+.chip .d { width: 8px; height: 8px; border-radius: 4px; background: var(--gold-hi); }
+.x { margin-left: auto; width: 50px; height: 44px; display: grid; place-items: center; border-radius: 6px; color: var(--text); background: none; border: 0; }
+.x .icon { width: 22px; height: 22px; }
+.strip { display: flex; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; align-items: center; }
+.tb { height: 40px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--dim); display: inline-flex; align-items: center; font-size: 14px; }
+.tb.on { color: var(--text); border-color: var(--gold-hi); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-left: auto; }
+.seg button { font: inherit; color: var(--dim); background: var(--cell); border: 0; border-right: 1px solid var(--line); height: 40px; padding: 0 14px; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--head); color: var(--text); box-shadow: inset 0 -3px 0 var(--gold-hi); }
+
+/* Zoomed out: a bar per universe */
+.umap { padding: 10px; display: flex; flex-direction: column; gap: 10px; overflow-x: auto; }
+.urow { display: grid; grid-template-columns: 116px minmax(560px, 1fr); gap: 10px; align-items: center; }
+.uname { display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.uname small { color: var(--dim); font-size: 12px; font-variant-numeric: tabular-nums; }
+.usage { height: 6px; border-radius: 3px; background: var(--cell); overflow: hidden; }
+.usage i { display: block; height: 100%; background: var(--ok); }
+.ubar { position: relative; height: 54px; border-radius: 4px; background: repeating-linear-gradient(90deg, var(--cell) 0 calc(100% / 32 - 1px), var(--cell-line) calc(100% / 32 - 1px) calc(100% / 32)); border: 1px solid var(--cell-line); }
+.blk { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; background: var(--t1); border: 0; color: #dfe8f3; font: inherit; font-size: 11.5px; text-align: left; padding: 3px 5px; overflow: hidden; white-space: nowrap; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; }
+.blk:nth-child(even) { background: var(--t1b); }
+.blk.bmfl { background: var(--t2); } .blk.bmfl:nth-child(even) { background: var(--t2b); }
+.blk small { opacity: .75; font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.blk.sel { outline: 2px solid var(--gold-hi); outline-offset: -2px; }
+.blk.clash { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--del) 70%, var(--cell)) 0 6px, color-mix(in srgb, var(--del) 45%, var(--cell)) 6px 12px); color: #fff; }
+.blk.parked { opacity: .55; border: 1px dashed var(--del-t); }
+.free { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; border: 1px dashed var(--line); background: none; color: var(--faint); font: inherit; font-size: 11.5px; cursor: pointer; }
+.free:hover { border-color: var(--gold-hi); color: var(--gold-hi); }
+.ruler { display: grid; grid-template-columns: 116px minmax(560px, 1fr); gap: 10px; font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.ruler div { display: flex; justify-content: space-between; }
+.conflicts { border-top: 1px solid var(--line); }
+.conflicts h3 { margin: 0; padding: 9px 12px; font-size: 12px; color: var(--del-t); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; background: var(--head); border-bottom: 1px solid var(--cell-line); display: flex; gap: 8px; align-items: center; }
+.crow { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--cell-line); font-size: 13px; }
+.crow small { color: var(--dim); display: block; }
+.fixes { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.fix { height: 36px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--text); font: inherit; font-size: 13px; cursor: pointer; }
+.fix.primary { border-color: var(--gold-hi); color: var(--gold-hi); }
+.pstate { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 8px; border-radius: 11px; background: color-mix(in srgb, var(--del) 20%, transparent); color: var(--del-t); font-size: 12px; }
+
+/* Zoomed in: Edit Patch */
+.ep { display: grid; grid-template-columns: minmax(300px, .8fr) minmax(0, 1.6fr); }
+.eleft { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+.etable { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.etable th { text-align: left; font-weight: 400; color: var(--dim); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.etable td { padding: 4px 6px; border-bottom: 1px solid var(--cell-line); white-space: nowrap; }
+.etable td span { display: block; padding: 6px 8px; border-radius: 4px; }
+.etable td.adr span { background: var(--cell); border: 1px solid var(--cell-line); }
+.etable tr.cur td.adr span { border-color: var(--gold-hi); color: var(--gold-hi); }
+.etable tr.cur { background: var(--sel); }
+.opts { padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; border-top: 1px solid var(--line); margin-top: auto; }
+.opt { min-height: 46px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; justify-content: center; padding: 4px 10px; font-size: 13px; }
+.opt small { color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.opt.on { border-color: var(--gold-hi); }
+.eright { display: flex; flex-direction: column; min-width: 0; }
+.sheetbar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--cell-line); background: var(--head); flex-wrap: wrap; }
+.sheetbar .u { font-size: 15px; min-width: 110px; text-align: center; }
+.mini { height: 36px; min-width: 36px; padding: 0 8px; border-radius: 4px; border: 1px solid var(--line); background: var(--cell); color: var(--text); font: inherit; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.mini.on { border-color: var(--gold-hi); color: var(--gold-hi); }
+.legend { margin-left: auto; display: flex; gap: 12px; font-size: 12px; color: var(--dim); flex-wrap: wrap; }
+.sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+.sheet { overflow: auto; max-height: 430px; padding: 6px 8px 8px; }
+.srow { display: grid; grid-template-columns: 58px repeat(20, minmax(26px, 1fr)); gap: 2px; margin-bottom: 2px; }
+.srow .lab { font-family: var(--mono); font-size: 11px; color: var(--faint); display: flex; align-items: center; }
+.slot { height: 34px; border-radius: 3px; background: var(--cell); border: 1px solid transparent; font-size: 10.5px; color: var(--faint); font-variant-numeric: tabular-nums; display: flex; flex-direction: column; justify-content: flex-end; padding: 1px 3px; position: relative; overflow: hidden; font-family: inherit; text-align: left; cursor: pointer; }
+.slot .fid { position: absolute; top: 1px; left: 3px; font-size: 10.5px; color: #fff; white-space: nowrap; }
+.slot.a { background: var(--t1); color: #c9d6e8; } .slot.b { background: var(--t1b); color: #c9d6e8; }
+.slot.cur { background: color-mix(in srgb, var(--gold) 72%, var(--cell)); color: var(--gold-text); }
+.slot.flash { animation: flash 1s steps(1) infinite; }
+@keyframes flash { 0% { box-shadow: inset 0 0 0 2px #fff; background: #f4f4f4; color: #111; } 50% { box-shadow: none; background: #444; color: var(--dim); } }
+@media (prefers-reduced-motion: reduce) { .slot.flash { animation: none; background: #f4f4f4; color: #111; } }
+.funcs { border-top: 1px solid var(--line); padding: 8px; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
+.fb { min-height: 52px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--text); font: inherit; font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; text-align: center; padding: 4px; cursor: pointer; }
+.fb small { color: var(--faint); font-size: 11px; }
+.fb.tog.on { border-color: var(--gold-hi); color: var(--gold-hi); }
+.foot { border-top: 1px solid var(--line); display: flex; align-items: center; gap: 10px; padding: 8px; flex-wrap: wrap; }
+.line { flex: 1 1 360px; min-width: 0; font-family: var(--mono); font-size: 12.5px; color: var(--dim); background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+.line b { color: var(--text); font-weight: 400; }
+
+/* Swap / renumber */
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.card { border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.card h3 { margin: 0; padding: 10px 12px; font-size: 14px; font-weight: 500; border-bottom: 1px solid var(--line); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.card h3 small { color: var(--dim); font-weight: 400; font-size: 12.5px; }
+.card .body { padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+.mini-grid { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.mini-grid th { text-align: left; font-weight: 400; color: var(--dim); padding: 6px 8px; border-bottom: 1px solid var(--line); }
+.mini-grid td { padding: 6px 8px; border-bottom: 1px solid var(--cell-line); }
+.mini-grid tr.ls td { background: color-mix(in srgb, var(--sel) 80%, transparent); }
+.mini-grid td.new { color: var(--gold-hi); }
+.mini-grid td.old { color: var(--faint); text-decoration: line-through; }
+.lasso { position: relative; }
+.ask { border: 1px solid var(--gold-hi); border-radius: 6px; padding: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; background: var(--head); }
+.ask input { width: 90px; height: 36px; border-radius: 4px; border: 1px solid var(--gold-hi); background: var(--cell); color: var(--text); font: inherit; padding: 0 10px; }
+.ask .seg { margin-left: 0; }
+.ask .seg button { height: 36px; font-size: 13px; }
+dl.rules { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 13px; }
+dl.rules dt { color: var(--faint); } dl.rules dd { margin: 0; line-height: 1.45; }
+
+.warn { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: color-mix(in srgb, var(--del) 28%, var(--dlg)); color: var(--del-t); border-bottom: 1px solid var(--del); font-size: 13px; }
+.warn[hidden] { display: none; }
+.warn span { flex: 1; }
+.blk, .slot.a, .slot.b, .slot.cur { touch-action: none; }
+.blk.drag { opacity: .35; }
+.ghost { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; border: 2px solid var(--gold-hi); background: color-mix(in srgb, var(--gold) 35%, transparent); pointer-events: none; color: var(--gold-text); font-size: 11.5px; padding: 3px 5px; white-space: nowrap; overflow: hidden; z-index: 2; }
+.ghost.bad { border-color: var(--del); background: color-mix(in srgb, var(--del) 35%, transparent); color: #fff; }
+.slot.g { box-shadow: inset 0 0 0 2px var(--gold-hi); }
+.slot.gbad { box-shadow: inset 0 0 0 2px var(--del); background: color-mix(in srgb, var(--del) 40%, var(--cell)); }
+.slot.parked { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--del) 60%, var(--cell)) 0 5px, color-mix(in srgb, var(--del) 35%, var(--cell)) 5px 10px); color: #fff; }
+.lassobox { position: absolute; border: 1px dashed var(--gold-hi); background: color-mix(in srgb, var(--gold) 15%, transparent); pointer-events: none; z-index: 3; }
+.sheet { position: relative; }
+.ok-row { padding: 9px 12px; color: var(--ok-t); font-size: 13px; }
+
+@media (max-width: 960px) {
+  .ep { grid-template-columns: minmax(0, 1fr); }
+  .eleft { border-right: 0; border-bottom: 1px solid var(--line); }
+  .funcs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .two { grid-template-columns: minmax(0, 1fr); }
+  .srow { grid-template-columns: 50px repeat(10, minmax(24px, 1fr)); }
+  .crow { grid-template-columns: minmax(0, 1fr); }
+  .fixes { justify-content: flex-start; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M12 22v-5M9 8V2M15 8V2M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+</svg>
+
+<main>
+<header>
+  <h1>DMX map · round 3 · v2</h1>
+  <p>Mockup for the 34g4 round 3 hardening (decisions §34, 2026-10-18): one kit element, the DMX map, at two zooms — the Universes tab's Map view and Edit Patch — with the address tools taken from other consoles (Titan, Eos, ONYX, Capture). Every button writes one line. Data: the demo show's six MAC Aura XB on universe 1 (1.001–1.084); universe 2 holds two Robin BMFL WashBeam and a third that overlaps the second, to show a conflict.</p>
+</header>
+
+<section class="board" aria-labelledby="h1">
+  <h2 id="h1">1 · Universes › Map — zoomed out</h2>
+  <p class="why">A bar per universe: each fixture a block (FID, name, range), coloured by type; dashed runs are free — tap one with fixtures selected to patch them there. <b>Drag a block</b> along its bar or onto another universe's bar: the ghost snaps to slots, gold when free, red when it would overlap; dropping writes one Patch line (a selected block takes the whole selection with it, keeping its layout). The usage bar and count under each universe name show channels in use of 512 (Titan). An overlap is striped red, and <b>both fixtures are parked</b>: they keep their addresses and programming but send nothing until resolved. The conflict list below the map has one-tap fixes. Try dragging 303 onto 302, or 106 onto universe 3.</p>
+  <div class="dlg">
+    <div class="title">
+      <div class="crumb"><svg class="icon"><use href="#i-plug"/></svg><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Universes</span></div>
+      <span class="chip"><i class="d"></i>Devices draft · Admin</span>
+      <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="strip"><span class="tb">Patch</span><span class="tb">Fixture types</span><span class="tb on">Universes</span>
+      <div class="seg" role="group" aria-label="View"><button aria-pressed="false">List</button><button aria-pressed="true">Map</button></div></div>
+    <div class="umap" id="umap"></div>
+    <div class="conflicts">
+      <div id="clist"></div>
+    </div>
+    <div class="foot"><div class="line" id="mapline"></div></div>
+  </div>
+  <p class="decide">Decided: an overlap parks <b>both</b> fixtures (§34 round 3, 18).</p>
+</section>
+
+<section class="board" aria-labelledby="h2">
+  <h2 id="h2">2 · Edit Patch — zoomed in</h2>
+  <p class="why">An Address cell or Patch to… opens it for the selected fixtures: the fixtures on the left with a cell per break, the universe's slot grid on the right (an Edit Patch). Tap a slot = the current fixture (or its next break) lands there; <b>drag</b> any fixture's run in the grid (gold = the selection, blue = others) and drop it on another slot — the selection moves together; with <b>Keep spacing</b> the rest follow in selection order keeping their gaps, with <b>Bunch up</b> they close up after it (Titan, Capture). The function row gathers the established consoles' tools.</p>
+  <div class="dlg">
+    <div class="title">
+      <div class="crumb"><svg class="icon"><use href="#i-plug"/></svg><span class="up">Patch</span><span class="sep">›</span><span class="here">Edit Patch</span></div>
+      <span class="chip" id="epchip">3 fixtures · 104–106</span>
+      <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="ep">
+      <div class="eleft">
+        <table class="etable"><thead><tr><th>FID</th><th>Name</th><th>Type</th><th>Break 1</th></tr></thead>
+          <tbody id="etbody"></tbody></table>
+        <div class="opts">
+          <div class="opt on"><small>Layout</small><span id="lay">Keep spacing</span></div>
+          <div class="opt"><small>Offset</small>0</div>
+          <div class="opt"><small>Address as</small>Universe.address</div>
+          <div class="opt on"><small>Skip patched</small>On</div>
+        </div>
+      </div>
+      <div class="eright">
+        <div class="sheetbar">
+          <button class="mini" aria-label="Previous universe"><svg class="icon"><use href="#i-left"/></svg></button>
+          <span class="u">Universe 1</span>
+          <button class="mini" aria-label="Next universe"><svg class="icon"><use href="#i-right"/></svg></button>
+          <button class="mini" id="probe"><svg class="icon"><use href="#i-zap"/></svg>Probe</button>
+          <span class="legend"><span><i class="sw" style="background:var(--t1)"></i>other fixtures</span><span><i class="sw" style="background:var(--gold)"></i>being patched</span><span><i class="sw" style="background:#f4f4f4"></i>flashing</span></span>
+        </div>
+        <div class="warn" id="warn" hidden><svg class="icon"><use href="#i-alert"/></svg><span id="warntext"></span><button class="mini" id="stopflash">Stop</button></div>
+        <div class="sheet" id="sheet"></div>
+      </div>
+    </div>
+    <div class="funcs">
+      <button class="fb">Patch to<small>tap a slot</small></button>
+      <button class="fb">Unpatch</button>
+      <button class="fb">Next free address</button>
+      <button class="fb">Next free universe</button>
+      <button class="fb">Move to this universe</button>
+      <button class="fb tog on" id="t-lay">Keep spacing<small>or Bunch up</small></button>
+      <button class="fb">Swap addresses…</button>
+      <button class="fb tog" id="ident">Identify<small>flash the selection</small></button>
+      <button class="fb">Find<small>step by footprint</small></button>
+      <button class="fb">Multipatch…</button>
+      <button class="fb">Offset<small>0</small></button>
+      <button class="fb tog on">Skip patched</button>
+    </div>
+    <div class="foot"><div class="line" id="epline"></div></div>
+  </div>
+</section>
+
+<section class="board" aria-labelledby="h3">
+  <h2 id="h3">3 · Identify, probe, find</h2>
+  <p class="why"><b>Identify</b> flashes the selected fixtures (their intensity at full, dropping to 15 % every other second — Eos's Flash) outside every programmer, until you stop it or leave. <b>Probe</b> (ONYX's Highlight Tool) does the same to a raw address: tap any slot, even an unpatched one, to find what is there. <b>Find</b> (Titan) moves the current fixture's address one footprint at a time while it flashes — when the real unit reacts, Patch here. All three are the station's own output, never stored, never replicated, and stop when the dialog closes. Try Probe above, then tap slot 1.150.</p>
+  <p class="decide">Decided: Identify / Probe / Find need Setup and up, at any time; while one flashes, the dialog shows a red warning strip with Stop, because it goes out on the live rig (§34 round 3, 18).</p>
+</section>
+
+<section class="board" aria-labelledby="h4">
+  <h2 id="h4">4 · Swap addresses and renumber</h2>
+  <p class="why">Moved to their own mockup, <code>address-tools.html</code> (swap two selections; renumber with the grid's lasso, then type the first number).</p>
+</section>
+
+<section class="board" aria-labelledby="h5">
+  <h2 id="h5">Rules this mockup shows</h2>
+  <dl class="rules">
+    <dt>One element</dt><dd>The DMX map draws a universe as a bar (Map view) or as a slot grid (Edit Patch, Insert fixtures' sheet); the data is the same feed.</dd>
+    <dt>Usage</dt><dd>Channels in use of 512 per universe (a multipatched or overlapping slot counts once).</dd>
+    <dt>Drag</dt><dd>A fixture's block (Map) or run (Edit Patch) drags to any slot or universe; the ghost snaps to slots and shows red where it would overlap; a drop is one Patch line, a dropped overlap is allowed and parks both.</dd>
+    <dt>Conflicts</dt><dd>An overlap or a run past 512 is red, listed, and both fixtures are parked (send nothing) until resolved; nothing asks at patch time.</dd>
+    <dt>Never stored</dt><dd>Identify, Probe and Find are station output only — no programmer, no Oops step, no replication; Setup and up; a warning strip while one runs.</dd>
+    <dt>Lines</dt><dd>Patch to / Next free / Swap / Unpatch / Renumber each write one line; their exact words go through lum.md first.</dd>
+  </dl>
+</section>
+</main>
+
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const a3 = n => String(n).padStart(3, '0');
+const ids = list => { // 104,105,106,108 → "104 Thru 106 + 108"
+  const n = [...list].sort((a, b) => a - b), out = [];
+  for (let i = 0; i < n.length;) { let j = i; while (j + 1 < n.length && n[j + 1] === n[j] + 1) j++; out.push(j > i ? `${n[i]} Thru ${n[j]}` : `${n[i]}`); i = j + 1; }
+  return out.join(' + ');
+};
+
+// ---- One patch for both zooms ----
+const FX = [
+  ...Array.from({ length: 6 }, (_, i) => ({ fid: 101 + i, name: `Aura ${i + 1}`, u: 1, start: [1, 15, 29, 85, 105, 125][i], len: 14, t: '' })),
+  { fid: 301, name: 'BMFL 1', u: 2, start: 1, len: 48, t: 'bmfl' },
+  { fid: 302, name: 'BMFL 2', u: 2, start: 49, len: 48, t: 'bmfl' },
+  { fid: 303, name: 'BMFL 3', u: 2, start: 81, len: 48, t: 'bmfl' },
+];
+const UN = [{ no: 1, name: 'Truss' }, { no: 2, name: 'Floor' }, { no: 3, name: 'Spare' }];
+const st = { sel: new Set([104, 105, 106]), spacing: true, probe: false, ident: false, flash: null, line: '' };
+const fx = fid => FX.find(f => f.fid === fid);
+const end = f => f.start + f.len - 1;
+const hits = (a, b) => a.u === b.u && a.start <= end(b) && b.start <= end(a);
+function conflicts() {
+  const pairs = [], parked = new Set();
+  for (let i = 0; i < FX.length; i++) {
+    if (end(FX[i]) > 512) { pairs.push([FX[i], null]); parked.add(FX[i].fid); }
+    for (let j = i + 1; j < FX.length; j++) if (hits(FX[i], FX[j])) { pairs.push([FX[i], FX[j]]); parked.add(FX[i].fid); parked.add(FX[j].fid); }
+  }
+  return { pairs, parked };
+}
+function nextFree(f) {
+  for (let s = 1; s + f.len - 1 <= 512; s++) {
+    const c = { ...f, start: s };
+    if (!FX.some(o => o !== f && hits(c, o))) return s;
+  }
+  return null;
+}
+// Moving a set: the grabbed fixture lands on `start`; the others keep their offsets (Keep spacing) or close up in FID order (Bunch up).
+function plan(grab, u, start) {
+  const group = st.sel.has(grab.fid) ? FX.filter(f => st.sel.has(f.fid)).sort((a, b) => a.u - b.u || a.start - b.start) : [grab];
+  const out = []; let at = start;
+  const g0 = group.find(f => f === grab), base = g0.start;
+  if (st.spacing) for (const f of group) out.push({ f, u, start: start + (f.start - base) + (f.u - g0.u) * 0 });
+  else { const gi = group.indexOf(g0); at = start - group.slice(0, gi).reduce((n, f) => n + f.len, 0); for (const f of group) { out.push({ f, u, start: at }); at += f.len; } }
+  const moved = new Set(group);
+  for (const m of out) m.bad = m.start < 1 || m.start + m.f.len - 1 > 512 || FX.some(o => !moved.has(o) && hits({ ...m.f, u: m.u, start: m.start }, o));
+  return out;
+}
+const planLine = (p) => `Patch Fixture ${ids(p.map(m => m.f.fid))} At ${p[0].u}.${a3(Math.min(...p.map(m => m.start)))}${!st.spacing && p.length > 1 ? ' /Bunch' : ''}`;
+function apply(p) { for (const m of p) { m.f.u = m.u; m.f.start = m.start; } }
+
+// ---- Map view ----
+const pct = n => `${(n - 1) / 512 * 100}%`;
+function umap(ghost) {
+  const { pairs, parked } = conflicts();
+  let html = '';
+  for (const u of UN) {
+    const list = FX.filter(f => f.u === u.no).sort((a, b) => a.start - b.start);
+    const used = new Set(); for (const f of list) for (let s = f.start; s <= Math.min(end(f), 512); s++) used.add(s);
+    let blocks = '', last = 1;
+    for (const f of list) {
+      if (f.start > last) blocks += `<span class="free" style="left:${pct(last)};width:calc(${(f.start - last) / 512 * 100}% - 2px)"></span>`;
+      const drag = ghost && ghost.some(m => m.f === f);
+      blocks += `<button class="blk ${f.t} ${parked.has(f.fid) ? 'clash parked' : ''} ${st.sel.has(f.fid) ? 'sel' : ''} ${drag ? 'drag' : ''}" data-fid="${f.fid}" style="left:${pct(f.start)};width:calc(${f.len / 512 * 100}% - 2px)" title="${f.fid} ${esc(f.name)} ${u.no}.${a3(f.start)}–${a3(end(f))}"><span>${f.fid}</span><small>${f.len > 20 ? esc(f.name) : ''}</small></button>`;
+      last = Math.max(last, end(f) + 1);
+    }
+    if (last <= 512) blocks += `<span class="free" style="left:${pct(last)};width:calc(${(513 - last) / 512 * 100}% - 2px);display:grid;place-items:center">free ${u.no}.${a3(last)}–512</span>`;
+    for (const m of (ghost || []).filter(m => m.u === u.no)) blocks += `<span class="ghost ${m.bad ? 'bad' : ''}" style="left:${pct(m.start)};width:calc(${m.f.len / 512 * 100}% - 2px)">${m.f.fid} · ${u.no}.${a3(m.start)}</span>`;
+    html += `<div class="urow"><div class="uname">${u.no} · ${esc(u.name)}<small>${used.size} / 512</small><span class="usage"><i style="width:${used.size / 512 * 100}%"></i></span></div><div class="ubar" data-u="${u.no}">${blocks}<span class="lassobox" hidden></span></div></div>`;
+  }
+  html += `<div class="ruler"><span></span><div><span>1</span><span>128</span><span>256</span><span>384</span><span>512</span></div></div>`;
+  document.getElementById('umap').innerHTML = html;
+  // conflict list
+  let c = `<h3 ${pairs.length ? '' : 'style="color:var(--ok-t)"'}><svg class="icon"><use href="#i-alert"/></svg>${pairs.length} conflict${pairs.length === 1 ? '' : 's'}</h3>`;
+  if (!pairs.length) c += `<div class="ok-row">No overlaps — every fixture sends.</div>`;
+  for (const [a, b] of pairs) {
+    const r = f => `${f.u}.${a3(f.start)}–${f.u}.${a3(end(f))}`;
+    const nfA = nextFree(a), nfB = b && nextFree(b);
+    c += `<div class="crow"><div>${b ? `${b.fid} ${esc(b.name)} overlaps ${a.fid} ${esc(a.name)}` : `${a.fid} ${esc(a.name)} runs past 512`} <small>${b ? `${r(b)} against ${r(a)}` : r(a)}</small></div>
+      <div><span class="pstate">${b ? `${a.fid} + ${b.fid} parked` : `${a.fid} parked`} · send nothing</span></div>
+      <div class="fixes">${b && nfB ? `<button class="fix primary" data-fix="free" data-fid="${b.fid}">${b.fid} to next free (${b.u}.${a3(nfB)})</button>` : ''}${nfA ? `<button class="fix ${b ? '' : 'primary'}" data-fix="free" data-fid="${a.fid}">${a.fid} to next free</button>` : ''}${b ? `<button class="fix" data-fix="swap" data-a="${a.fid}" data-b="${b.fid}">Swap ${a.fid} ⇄ ${b.fid}</button>` : ''}<button class="fix" data-fix="unpatch" data-fid="${(b || a).fid}">Unpatch ${(b || a).fid}</button></div></div>`;
+  }
+  document.getElementById('clist').innerHTML = c;
+  document.getElementById('mapline').innerHTML = st.line ? `<b>${esc(st.line)}</b>` : `Drag a block, lasso empty space, or tap a fix — each writes one line`;
+}
+
+// ---- Edit Patch (universe 1, slots 1–200) ----
+function sheet(ghost) {
+  const { parked } = conflicts();
+  const g = new Map(); for (const m of ghost || []) if (m.u === 1) for (let s = m.start; s < m.start + m.f.len; s++) g.set(s, m.bad);
+  const flashing = new Set(); if (st.probe && st.flash) flashing.add(st.flash);
+  if (st.ident) for (const f of FX) if (st.sel.has(f.fid) && f.u === 1) for (let s = f.start; s <= end(f); s++) flashing.add(s);
+  let html = '';
+  for (let row = 0; row < 10; row++) {
+    html += `<div class="srow"><span class="lab">1:${a3(row * 20 + 1)}</span>`;
+    for (let c = 1; c <= 20; c++) {
+      const s = row * 20 + c;
+      const on = FX.filter(f => f.u === 1 && s >= f.start && s <= end(f));
+      const f = on[on.length - 1];
+      const cls = !f ? '' : parked.has(f.fid) ? 'parked' : st.sel.has(f.fid) ? 'cur' : (f.fid % 2 ? 'a' : 'b');
+      const gc = g.has(s) ? (g.get(s) ? 'gbad' : 'g') : '';
+      html += `<button type="button" class="slot ${cls} ${gc} ${flashing.has(s) ? 'flash' : ''}" data-slot="${s}" ${f ? `data-fid="${f.fid}"` : ''} aria-label="1.${a3(s)}">${f && f.start === s ? `<span class="fid">${f.fid}</span>` : ''}${s}</button>`;
+    }
+    html += '</div>';
+  }
+  document.getElementById('sheet').innerHTML = html;
+  const cur = FX.filter(f => st.sel.has(f.fid)).sort((a, b) => a.fid - b.fid);
+  document.getElementById('etbody').innerHTML = cur.map((f, i) => `<tr class="${i === 0 ? 'cur' : ''}"><td>${f.fid}</td><td>${esc(f.name)}</td><td>${f.t ? 'Robin BMFL WashBeam' : 'MAC Aura XB'}</td><td class="adr"><span>${f.u}.${a3(f.start)}</span></td></tr>`).join('');
+  document.getElementById("epchip").textContent = `${cur.length} fixture${cur.length === 1 ? '' : 's'} · ${ids(cur.map(f => f.fid)) || 'none'}`;
+  const w = st.probe && st.flash ? `Probe 1.${a3(st.flash)} is flashing on the live rig` : st.ident ? `Identify: ${ids([...st.sel])} flashing on the live rig` : '';
+  document.getElementById('warn').hidden = !w; document.getElementById('warntext').textContent = w;
+  document.getElementById('epline').innerHTML = st.probe && st.flash ? `Probe 1.${a3(st.flash)} — station output only, no line`
+    : st.ident ? `Identify — station output only, no line` : st.line ? `<b>${esc(st.line)}</b>` : `Drag a run, tap a slot, or lasso empty slots' fixtures`;
+}
+const render = ghost => { umap(ghost); sheet(ghost); };
+
+// ---- One drag engine: tap selects, drag moves the selection, drag on empty space lassos ----
+let drag = null;
+document.addEventListener('pointerdown', e => {
+  if (e.button) return;
+  const blk = e.target.closest('.blk'), slot = e.target.closest('.slot'), bar = e.target.closest('.ubar'), sh = e.target.closest('.sheet');
+  if (st.probe && slot) return; // probe taps are clicks
+  if (blk || (slot && slot.dataset.fid)) {
+    const f = fx(+(blk || slot).dataset.fid);
+    const grabSlot = blk ? f.start + Math.floor(((e.clientX - blk.getBoundingClientRect().left) / blk.getBoundingClientRect().width) * f.len) : +slot.dataset.slot;
+    drag = { kind: 'move', f, off: grabSlot - f.start, x: e.clientX, y: e.clientY, moved: false, plan: null };
+  } else if (bar || sh) {
+    const host = bar || sh;
+    drag = { kind: 'lasso', host, x: e.clientX, y: e.clientY, moved: false, add: e.shiftKey };
+  } else return;
+  e.preventDefault();
+});
+function slotAt(x, y) {
+  const el = document.elementFromPoint(x, y);
+  const slot = el && el.closest('.slot'); if (slot) return { u: 1, s: +slot.dataset.slot };
+  const bar = el && el.closest('.ubar');
+  if (bar) { const r = bar.getBoundingClientRect(); return { u: +bar.dataset.u, s: Math.max(1, Math.min(512, Math.floor((x - r.left) / r.width * 512) + 1)) }; }
+  return null;
+}
+document.addEventListener('pointermove', e => {
+  if (!drag) return;
+  if (!drag.moved && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 5) return;
+  drag.moved = true;
+  if (drag.kind === 'move') {
+    const at = slotAt(e.clientX, e.clientY); if (!at) return;
+    if (!st.sel.has(drag.f.fid)) { st.sel = new Set([drag.f.fid]); }
+    drag.plan = plan(drag.f, at.u, at.s - drag.off);
+    st.line = planLine(drag.plan); render(drag.plan);
+  } else {
+    const box = drag.host.querySelector('.lassobox') || Object.assign(document.createElement('span'), { className: 'lassobox' });
+    if (!box.parentNode) drag.host.appendChild(box);
+    const r = drag.host.getBoundingClientRect();
+    const x0 = Math.min(drag.x, e.clientX), x1 = Math.max(drag.x, e.clientX), y0 = Math.min(drag.y, e.clientY), y1 = Math.max(drag.y, e.clientY);
+    Object.assign(box.style, { left: `${x0 - r.left + drag.host.scrollLeft}px`, top: `${y0 - r.top + drag.host.scrollTop}px`, width: `${x1 - x0}px`, height: `${y1 - y0}px` }); box.hidden = false;
+    const picked = new Set(drag.add ? st.sel : []);
+    for (const el of document.querySelectorAll('.blk, .slot[data-fid]')) {
+      const b = el.getBoundingClientRect();
+      if (b.right > x0 && b.left < x1 && b.bottom > y0 && b.top < y1) picked.add(+el.dataset.fid);
+    }
+    drag.picked = picked;
+    for (const el of document.querySelectorAll('.blk')) el.classList.toggle('sel', picked.has(+el.dataset.fid));
+    for (const el of document.querySelectorAll('.slot[data-fid]')) if (!el.classList.contains('parked')) el.classList.toggle('cur', picked.has(+el.dataset.fid));
+  }
+});
+document.addEventListener('pointerup', e => {
+  if (!drag) return;
+  const d = drag; drag = null;
+  if (d.kind === 'move') {
+    if (d.moved && d.plan) { apply(d.plan); st.line = planLine(d.plan); }
+    else { // tap: select (Meow = Shift adds)
+      if (e.shiftKey) st.sel.has(d.f.fid) ? st.sel.delete(d.f.fid) : st.sel.add(d.f.fid); else st.sel = new Set([d.f.fid]);
+      st.line = `Select Fixture ${ids([...st.sel])}`;
+    }
+  } else if (d.moved) { st.sel = d.picked || new Set(); st.line = st.sel.size ? `Select Fixture ${ids([...st.sel])}` : 'ClearSelection'; }
+  else if (d.host.classList.contains('ubar') && st.sel.size) { // tap on free run: patch the selection there
+    const at = slotAt(e.clientX, e.clientY); const first = FX.filter(f => st.sel.has(f.fid)).sort((a, b) => a.u - b.u || a.start - b.start)[0];
+    if (at && first) { const p = plan(first, at.u, at.s); apply(p); st.line = planLine(p); }
+  }
+  render();
+});
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.slot && st.probe) { const s = +b.dataset.slot; st.flash = st.flash === s ? null : s; sheet(); return; }
+  if (b.dataset.slot && !b.dataset.fid && st.sel.size && !st.probe) { // tap a free slot: the selection lands there
+    const first = FX.filter(f => st.sel.has(f.fid)).sort((a, c) => a.u - c.u || a.start - c.start)[0];
+    const p = plan(first, 1, +b.dataset.slot); apply(p); st.line = planLine(p); render(); return;
+  }
+  if (b.dataset.fix === 'free') { const f = fx(+b.dataset.fid); f.start = nextFree(f); st.line = `Patch Fixture ${f.fid} At Next`; render(); }
+  else if (b.dataset.fix === 'swap') { const a = fx(+b.dataset.a), c = fx(+b.dataset.b); [a.start, c.start, a.u, c.u] = [c.start, a.start, c.u, a.u]; st.line = `Patch Fixture ${a.fid} At Fixture ${c.fid} /Swap`; render(); }
+  else if (b.dataset.fix === 'unpatch') { const f = fx(+b.dataset.fid); FX.splice(FX.indexOf(f), 1); st.line = `Unpatch Fixture ${f.fid}`; render(); }
+  else if (b.id === 'probe') { st.probe = !st.probe; st.flash = null; st.ident = false; document.getElementById('ident').classList.remove('on'); b.classList.toggle('on', st.probe); sheet(); }
+  else if (b.id === 'ident') { st.ident = !st.ident; st.probe = false; st.flash = null; document.getElementById('probe').classList.remove('on'); b.classList.toggle('on', st.ident); sheet(); }
+  else if (b.id === 'stopflash') { st.ident = st.probe = false; st.flash = null; document.getElementById('probe').classList.remove('on'); document.getElementById('ident').classList.remove('on'); sheet(); }
+  else if (b.id === 't-lay') { st.spacing = !st.spacing; b.classList.toggle('on', st.spacing); b.firstChild.textContent = st.spacing ? 'Keep spacing' : 'Bunch up'; document.getElementById('lay').textContent = st.spacing ? 'Keep spacing' : 'Bunch up'; }
+});
+render();
+</script>

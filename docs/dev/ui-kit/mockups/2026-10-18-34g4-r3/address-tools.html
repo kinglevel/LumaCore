@@ -1,0 +1,359 @@
+<title>Address Tools</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: two boards — Swap addresses (pick A, pick B, preview, one line) and Renumber (lasso,
+   type the first number, preview, one line) in the patch grid and in a pool. The console look of
+   the locked round 2 Patch mockups (single dark), like dmx-map.html. */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --del-t: #f2a3a3; --sel: #2d3a52; --selb: #4a6390;
+  --b: #3b6fb0; --b-t: #a9c8ef;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+header h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 82ch; line-height: 1.5; }
+.board { display: flex; flex-direction: column; gap: 10px; }
+.board > h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board > .why { color: var(--dim); margin: 0; line-height: 1.5; max-width: 86ch; }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 86ch; line-height: 1.5; margin: 0; }
+.icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button { font: inherit; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+
+.dlg { border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.title { min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 6px 4px 6px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.crumb .up { color: var(--dim); } .crumb .sep { color: var(--faint); font-size: 14px; } .crumb .here { font-weight: 500; }
+.chip { height: 30px; display: inline-flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; white-space: nowrap; }
+.chip .d { width: 8px; height: 8px; border-radius: 4px; background: var(--gold-hi); }
+.x { margin-left: auto; width: 50px; height: 44px; display: grid; place-items: center; border-radius: 6px; color: var(--text); background: none; border: 0; }
+.bar { display: flex; gap: 6px; padding: 8px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; align-items: center; background: var(--head); }
+.mini { height: 36px; min-width: 36px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--line); background: var(--cell); color: var(--text); font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.mini.on { border-color: var(--gold-hi); color: var(--gold-hi); }
+.mini.b.on { border-color: var(--b); color: var(--b-t); }
+.mini:disabled { opacity: .45; cursor: default; }
+.hint { color: var(--dim); font-size: 13px; margin-left: auto; }
+
+/* the grid (stand-in for <luma-grid>) */
+.gwrap { position: relative; overflow: auto; max-height: 440px; user-select: none; -webkit-user-select: none; touch-action: none; }
+.grid { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+.grid th { position: sticky; top: 0; background: var(--dlg); text-align: left; font-weight: 400; color: var(--dim); padding: 8px 10px; border-bottom: 1px solid var(--line); z-index: 1; }
+.grid td { padding: 8px 10px; border-bottom: 1px solid var(--cell-line); white-space: nowrap; }
+.grid tr.a td { background: color-mix(in srgb, var(--gold) 26%, var(--dlg)); }
+.grid tr.bb td { background: color-mix(in srgb, var(--b) 30%, var(--dlg)); }
+.grid tr.s td { background: var(--sel); }
+.grid td .tag { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 3px; font-size: 11px; margin-right: 6px; text-align: center; }
+.tag.ta { background: var(--gold); color: var(--gold-text); } .tag.tb { background: var(--b); color: #fff; }
+.grid .old { color: var(--faint); text-decoration: line-through; margin-right: 6px; }
+.grid .new { color: var(--gold-hi); }
+.grid .clash { color: var(--del-t); }
+.lassobox { position: absolute; border: 1px dashed var(--gold-hi); background: color-mix(in srgb, var(--gold) 15%, transparent); pointer-events: none; z-index: 3; }
+
+/* the pool (tiles) */
+.pool { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; padding: 10px; }
+.tile { height: 74px; border-radius: 6px; background: var(--cell); border: 1px solid var(--cell-line); padding: 6px 8px; display: flex; flex-direction: column; justify-content: space-between; font-size: 13px; }
+.tile .no { color: var(--faint); font-size: 12px; font-variant-numeric: tabular-nums; }
+.tile.empty { background: none; border-style: dashed; }
+.tile.s { border-color: var(--gold-hi); background: var(--sel); }
+.tile .new { color: var(--gold-hi); }
+
+.ask { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px; border-top: 1px solid var(--gold-hi); background: color-mix(in srgb, var(--gold) 10%, var(--dlg)); }
+.ask[hidden] { display: none; }
+.ask label { color: var(--gold-text); }
+.ask input { width: 96px; height: 40px; border-radius: 4px; border: 1px solid var(--gold-hi); background: var(--cell); color: var(--text); font: inherit; font-size: 16px; padding: 0 10px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { color: var(--dim); background: var(--cell); border: 0; border-right: 1px solid var(--line); height: 40px; padding: 0 12px; cursor: pointer; font-size: 13px; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--head); color: var(--text); box-shadow: inset 0 -3px 0 var(--gold-hi); }
+.go { height: 40px; padding: 0 16px; border-radius: 6px; border: 1px solid var(--gold-hi); background: var(--gold); color: var(--gold-text); cursor: pointer; }
+.go:disabled { opacity: .45; cursor: default; }
+.cancel { height: 40px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--text); cursor: pointer; }
+.warnline { color: var(--del-t); font-size: 13px; flex-basis: 100%; }
+.warnline:empty { display: none; }
+.foot { border-top: 1px solid var(--line); padding: 8px; }
+.line { font-family: var(--mono); font-size: 12.5px; color: var(--dim); background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+.line b { color: var(--text); font-weight: 400; }
+dl.rules { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 13px; }
+dl.rules dt { color: var(--faint); } dl.rules dd { margin: 0; line-height: 1.45; }
+@media (max-width: 700px) { .hint { margin-left: 0; flex-basis: 100%; } .grid .hide-s { display: none; } dl.rules { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M12 22v-5M9 8V2M15 8V2M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4M20 7H4M8 21l-4-4 4-4M4 17h16"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></symbol>
+  <symbol id="i-lasso" viewBox="0 0 24 24"><path d="M7 22a5 5 0 0 1-2-4M3.3 14A6.8 6.8 0 0 1 2 10c0-4.4 4.5-8 10-8s10 3.6 10 8-4.5 8-10 8a12 12 0 0 1-5-1"/><path d="M5 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></symbol>
+</svg>
+
+<main>
+<header>
+  <h1>Address tools · round 3</h1>
+  <p>Mockup for the 34g4 round 3 hardening (decisions §34, 2026-10-18, item 18): swapping addresses between two selections, and the kit-wide renumber — lasso, type the first number. Both start from the grid's own selection (tap, Shift adds, drag on rows lassos) and end in one line. Data: the demo show's six MAC Aura XB (14 ch) on universe 1, three Robin BMFL WashBeam (48 ch) on universe 2.</p>
+</header>
+
+<section class="board" aria-labelledby="h1">
+  <h2 id="h1">1 · Swap addresses</h2>
+  <p class="why">Select <b>A</b> (gold), press <b>Swap addresses…</b>, then select <b>B</b> (blue) the same way — tap or lasso. The grid previews every pair, old → new, in selection order. A fixture with a different footprint keeps the start address of the one it swaps with; whatever then overlaps turns red and parks both, as everywhere (nothing asks). Swap writes one line. Try: lasso 101–103, Swap addresses…, lasso 104–106, Swap.</p>
+  <div class="dlg">
+    <div class="title">
+      <div class="crumb"><svg class="icon"><use href="#i-plug"/></svg><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></div>
+      <span class="chip"><i class="d"></i>Devices draft · Admin</span>
+      <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="bar">
+      <button class="mini" id="sw-start"><svg class="icon"><use href="#i-swap"/></svg>Swap addresses…</button>
+      <span class="hint" id="sw-hint">Select the fixtures to swap from (A)</span>
+    </div>
+    <div class="gwrap" id="sw-wrap"><table class="grid"><thead><tr><th>FID</th><th>Name</th><th class="hide-s">Type</th><th>Address</th><th class="hide-s">Footprint</th></tr></thead><tbody id="sw-body"></tbody></table></div>
+    <div class="ask" id="sw-ask" hidden>
+      <label id="sw-count"></label>
+      <div class="seg" role="group" aria-label="Uneven counts"><button aria-pressed="true" data-uneven="pairs">Pair up to the shorter</button><button aria-pressed="false" data-uneven="rotate">Rotate the rest</button></div>
+      <button class="go" id="sw-go">Swap</button><button class="cancel" id="sw-cancel">Cancel</button>
+      <span class="warnline" id="sw-warn"></span>
+    </div>
+    <div class="foot"><div class="line" id="sw-line">Tap a row, Shift adds, drag on rows to lasso</div></div>
+  </div>
+  <p class="decide">To decide: when A and B have different counts — swap the pairs up to the shorter one and leave the rest where they are (drawn first), or rotate: the extra fixtures move into the freed addresses in order?</p>
+</section>
+
+<section class="board" aria-labelledby="h2">
+  <h2 id="h2">2 · Renumber — every list and grid</h2>
+  <p class="why">Lasso or select, then just <b>type a number</b> (or press Renumber…): the selection is numbered from it. <b>Selection order</b> numbers in the order you picked (tap order, or the lasso's direction); <b>Grid order</b> in the grid's current sort. A number that is taken by an object outside the selection is red; <b>Skip taken</b> jumps over it, <b>Swap</b> gives that object the selection's old number (the door's rule for a taken slot). One line through the object door. The same gesture works in a pool — try the Group pool below.</p>
+  <div class="dlg">
+    <div class="title">
+      <div class="crumb"><svg class="icon"><use href="#i-plug"/></svg><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></div>
+      <span class="chip"><i class="d"></i>Devices draft · Admin</span>
+      <button class="x" aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="bar">
+      <div class="seg" role="group" aria-label="View"><button aria-pressed="true" data-view="grid"><svg class="icon"><use href="#i-hash"/></svg> Patch grid</button><button aria-pressed="false" data-view="pool"><svg class="icon"><use href="#i-grid"/></svg> Group pool</button></div>
+      <button class="mini" id="rn-start">Renumber…</button>
+      <span class="hint">Lasso, then type the first number</span>
+    </div>
+    <div class="gwrap" id="rn-wrap"><table class="grid" id="rn-table"><thead><tr><th>FID</th><th>Name</th><th class="hide-s">Type</th><th>Address</th></tr></thead><tbody id="rn-body"></tbody></table><div class="pool" id="rn-pool" hidden></div></div>
+    <div class="ask" id="rn-ask" hidden>
+      <label for="rn-num">Number from</label><input id="rn-num" inputmode="numeric" autocomplete="off">
+      <div class="seg" role="group" aria-label="Order"><button aria-pressed="true" data-order="sel">Selection order</button><button aria-pressed="false" data-order="grid">Grid order</button></div>
+      <div class="seg" role="group" aria-label="Taken"><button aria-pressed="true" data-taken="skip">Skip taken</button><button aria-pressed="false" data-taken="swap">Swap</button></div>
+      <button class="go" id="rn-go">Renumber</button><button class="cancel" id="rn-cancel">Cancel</button>
+      <span class="warnline" id="rn-warn"></span>
+    </div>
+    <div class="foot"><div class="line" id="rn-line">Tap a row, Shift adds, drag on rows to lasso</div></div>
+  </div>
+  <p class="decide">To decide: a taken number — Skip taken (drawn first: the selection jumps over 105 and nothing else moves) or Swap (the one in the way gets the selection's old number), and which one is the default?</p>
+</section>
+
+<section class="board" aria-labelledby="h3">
+  <h2 id="h3">Rules this mockup shows</h2>
+  <dl class="rules">
+    <dt>One lasso</dt><dd>Every list and grid lassos the same way (the kit's one drag engine): drag on rows or tiles, Shift adds, the device's Drag: Auto | Lasso | Scroll decides touch.</dd>
+    <dt>Typing renumbers</dt><dd>Digits typed with a selection in a grid or pool open the Number from strip with them in it; Enter runs it, Esc cancels. The command line keeps its keys everywhere else.</dd>
+    <dt>Swap</dt><dd>Pairs in selection order; a different footprint keeps the partner's start address; overlaps park both and list as conflicts.</dd>
+    <dt>Lines</dt><dd>Swap and renumber each write one line, one Oops step; the exact words go through lum.md first.</dd>
+  </dl>
+</section>
+</main>
+
+<script>
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const a3 = n => String(n).padStart(3, '0');
+const ids = list => {
+  const n = [...list].sort((a, b) => a - b), out = [];
+  for (let i = 0; i < n.length;) { let j = i; while (j + 1 < n.length && n[j + 1] === n[j] + 1) j++; out.push(j > i ? `${n[i]} Thru ${n[j]}` : `${n[i]}`); i = j + 1; }
+  return out.join(' + ');
+};
+const inOrder = list => list.every((v, i) => !i || v > list[i - 1]) ? ids(list) : list.join(' + ');
+const fixtures = () => [
+  ...Array.from({ length: 6 }, (_, i) => ({ fid: 101 + i, name: `Aura ${i + 1}`, type: 'MAC Aura XB', u: 1, start: 1 + i * 14, len: 14 })),
+  ...Array.from({ length: 3 }, (_, i) => ({ fid: 301 + i, name: `BMFL ${i + 1}`, type: 'Robin BMFL WashBeam', u: 2, start: 1 + i * 48, len: 48 })),
+];
+
+// ---- One lasso for rows and tiles: tap selects, Shift adds, drag lassos (in pick order) ----
+function lasso(wrap, itemSel, keyOf, onPick) {
+  let d = null;
+  wrap.addEventListener('pointerdown', e => {
+    if (e.button) return;
+    const it = e.target.closest(itemSel);
+    d = { x: e.clientX, y: e.clientY, it, add: e.shiftKey, moved: false };
+    wrap.setPointerCapture(e.pointerId);
+  });
+  wrap.addEventListener('pointermove', e => {
+    if (!d) return;
+    if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) < 6) return;
+    d.moved = true;
+    let box = wrap.querySelector('.lassobox');
+    if (!box) { box = document.createElement('div'); box.className = 'lassobox'; wrap.appendChild(box); }
+    const r = wrap.getBoundingClientRect();
+    const x0 = Math.min(d.x, e.clientX), x1 = Math.max(d.x, e.clientX), y0 = Math.min(d.y, e.clientY), y1 = Math.max(d.y, e.clientY);
+    Object.assign(box.style, { left: `${x0 - r.left + wrap.scrollLeft}px`, top: `${y0 - r.top + wrap.scrollTop}px`, width: `${x1 - x0}px`, height: `${y1 - y0}px` });
+    const hit = [];
+    for (const el of wrap.querySelectorAll(itemSel)) {
+      const b = el.getBoundingClientRect();
+      if (b.right > x0 && b.left < x1 && b.bottom > y0 && b.top < y1) hit.push(keyOf(el));
+    }
+    if (e.clientY < d.y || (e.clientY === d.y && e.clientX < d.x)) hit.reverse(); // the lasso's direction is the pick order
+    onPick(hit, d.add, true);
+  });
+  wrap.addEventListener('pointerup', () => {
+    if (!d) return;
+    const box = wrap.querySelector('.lassobox'); if (box) box.remove();
+    if (!d.moved && d.it) onPick([keyOf(d.it)], d.add, false);
+    else if (!d.moved) onPick([], d.add, false);
+    d = null;
+  });
+}
+const merge = (cur, hit, add) => add ? [...cur.filter(k => !hit.includes(k)), ...hit] : hit;
+
+// ---- 1 · Swap ----
+const SW = { fx: fixtures(), a: [], b: [], phase: 'a', uneven: 'pairs', line: '' };
+function swapPlan() {
+  const A = SW.a.map(f => SW.fx.find(x => x.fid === f)), B = SW.b.map(f => SW.fx.find(x => x.fid === f));
+  const moves = new Map();
+  const n = Math.min(A.length, B.length);
+  for (let i = 0; i < n; i++) { moves.set(A[i].fid, { u: B[i].u, start: B[i].start }); moves.set(B[i].fid, { u: A[i].u, start: A[i].start }); }
+  if (SW.uneven === 'rotate' && A.length !== B.length) {
+    const longer = A.length > B.length ? A : B, other = A.length > B.length ? B : A;
+    // the rest of the longer list move into the shorter list's... nothing is freed beyond the pairs, so they follow the last pair's partner run
+    let tail = other[other.length - 1]; let at = tail ? tail.start + tail.len : 1;
+    for (const f of longer.slice(n)) { moves.set(f.fid, { u: tail ? tail.u : f.u, start: at }); at += f.len; }
+  }
+  return moves;
+}
+function clashes(fx, moves) {
+  const pos = fx.map(f => ({ ...f, ...(moves.get(f.fid) || {}) }));
+  const bad = new Set();
+  for (let i = 0; i < pos.length; i++) for (let j = i + 1; j < pos.length; j++) {
+    const p = pos[i], q = pos[j];
+    if (p.u === q.u && p.start <= q.start + q.len - 1 && q.start <= p.start + p.len - 1) { bad.add(p.fid); bad.add(q.fid); }
+  }
+  for (const p of pos) if (p.start + p.len - 1 > 512) bad.add(p.fid);
+  return bad;
+}
+function swRender() {
+  const preview = SW.phase === 'b' && SW.a.length && SW.b.length;
+  const moves = preview ? swapPlan() : new Map();
+  const bad = preview ? clashes(SW.fx, moves) : new Set();
+  document.getElementById('sw-body').innerHTML = SW.fx.map(f => {
+    const ia = SW.a.indexOf(f.fid), ib = SW.b.indexOf(f.fid), m = moves.get(f.fid);
+    const cls = ia >= 0 ? 'a' : ib >= 0 ? 'bb' : '';
+    const tag = ia >= 0 ? `<span class="tag ta">A${ia + 1}</span>` : ib >= 0 ? `<span class="tag tb">B${ib + 1}</span>` : '';
+    const adr = `${f.u}.${a3(f.start)}`;
+    const cell = m ? `<span class="old">${adr}</span><span class="${bad.has(f.fid) ? 'clash' : 'new'}">${m.u}.${a3(m.start)}${bad.has(f.fid) ? ' · parked' : ''}</span>` : adr;
+    return `<tr class="${cls}" data-fid="${f.fid}"><td>${tag}${f.fid}</td><td>${esc(f.name)}</td><td class="hide-s">${esc(f.type)}</td><td>${cell}</td><td class="hide-s">${f.len} ch</td></tr>`;
+  }).join('');
+  const start = document.getElementById('sw-start');
+  start.classList.toggle('on', SW.phase === 'b');
+  document.getElementById('sw-hint').textContent = SW.phase === 'a' ? (SW.a.length ? `A: ${SW.a.length} picked — press Swap addresses…` : 'Select the fixtures to swap from (A)') : 'Now select B — tap or lasso';
+  document.getElementById('sw-ask').hidden = SW.phase !== 'b';
+  document.getElementById('sw-count').textContent = `A ${SW.a.length} · B ${SW.b.length}`;
+  document.querySelectorAll('[data-uneven]').forEach(b => { b.parentElement.style.display = SW.a.length !== SW.b.length && SW.b.length ? '' : 'none'; b.setAttribute('aria-pressed', b.dataset.uneven === SW.uneven); });
+  document.getElementById('sw-go').disabled = !preview;
+  document.getElementById('sw-warn').textContent = bad.size ? `Different footprints: ${ids([...bad])} would overlap — they stay red and parked until resolved.` : '';
+  document.getElementById('sw-line').innerHTML = preview ? `<b>Patch Fixture ${inOrder(SW.a)} At Fixture ${inOrder(SW.b)} /Swap</b>` : SW.line ? `<b>${esc(SW.line)}</b>` : SW.a.length ? `<b>Select Fixture ${inOrder(SW.a)}</b>` : 'Tap a row, Shift adds, drag on rows to lasso';
+}
+lasso(document.getElementById('sw-wrap'), 'tbody tr', el => +el.dataset.fid, (hit, add) => {
+  SW.line = '';
+  if (SW.phase === 'a') SW.a = merge(SW.a, hit, add);
+  else SW.b = merge(SW.b, hit.filter(f => !SW.a.includes(f)), add);
+  swRender();
+});
+document.getElementById('sw-start').onclick = () => { if (SW.phase === 'a' && SW.a.length) { SW.phase = 'b'; SW.b = []; } else { SW.phase = 'a'; SW.b = []; } swRender(); };
+document.getElementById('sw-cancel').onclick = () => { SW.phase = 'a'; SW.b = []; swRender(); };
+document.querySelectorAll('[data-uneven]').forEach(b => b.onclick = () => { SW.uneven = b.dataset.uneven; swRender(); });
+document.getElementById('sw-go').onclick = () => {
+  const moves = swapPlan();
+  for (const f of SW.fx) { const m = moves.get(f.fid); if (m) Object.assign(f, m); }
+  SW.line = `Patch Fixture ${inOrder(SW.a)} At Fixture ${inOrder(SW.b)} /Swap`;
+  SW.phase = 'a'; SW.a = []; SW.b = []; swRender();
+};
+
+// ---- 2 · Renumber ----
+const RN = { view: 'grid', fx: fixtures(), groups: [
+    { no: 1, name: 'All Auras' }, { no: 2, name: 'Odd' }, { no: 3, name: 'Even' }, { no: 5, name: 'BMFL' },
+    { no: 6, name: 'Floor L' }, { no: 7, name: 'Floor R' }, { no: 10, name: 'Truss' }, { no: 11, name: 'Specials' } ],
+  sel: [], order: 'sel', taken: 'skip', line: '', open: false };
+const rows = () => RN.view === 'grid' ? RN.fx.map(f => ({ key: f.fid, name: f.name, f })) : RN.groups.map(g => ({ key: g.no, name: g.name }));
+function rnPlan() {
+  const from = parseInt(document.getElementById('rn-num').value, 10);
+  if (!RN.open || !RN.sel.length || !(from > 0)) return null;
+  const order = RN.order === 'sel' ? RN.sel : rows().map(r => r.key).filter(k => RN.sel.includes(k));
+  const outside = new Set(rows().map(r => r.key).filter(k => !RN.sel.includes(k)));
+  const map = new Map(), hit = []; let n = from;
+  for (const k of order) {
+    if (RN.taken === 'skip') while (outside.has(n)) n++;
+    else if (outside.has(n)) hit.push(n);
+    map.set(k, n++);
+  }
+  // Swap: the one in the way takes an old number of the selection that is now free
+  const swaps = new Map();
+  if (RN.taken === 'swap') {
+    const freed = order.filter(k => ![...map.values()].includes(k));
+    hit.forEach((t, i) => swaps.set(t, freed[i]));
+  }
+  return { order, map, swaps, from };
+}
+function rnLine(p) {
+  const word = RN.view === 'grid' ? 'Fixture' : 'Group';
+  return `Move ${word} ${inOrder(p.order)} At ${p.from}${RN.taken === 'swap' ? ' /Swap' : ''}${RN.order === 'grid' ? ' /Sorted' : ''}`;
+}
+function rnRender() {
+  const p = rnPlan();
+  const lab = k => {
+    if (p && p.map.has(k)) return `<span class="old">${k}</span><span class="new">${p.map.get(k)}</span>`;
+    if (p && p.swaps.has(k)) return `<span class="old">${k}</span><span class="new">${p.swaps.get(k)}</span>`;
+    return `${k}`;
+  };
+  document.getElementById('rn-table').hidden = RN.view !== 'grid';
+  document.getElementById('rn-pool').hidden = RN.view !== 'pool';
+  if (RN.view === 'grid') {
+    document.getElementById('rn-body').innerHTML = RN.fx.map(f => `<tr class="${RN.sel.includes(f.fid) ? 's' : ''}" data-key="${f.fid}"><td>${lab(f.fid)}</td><td>${esc(f.name)}</td><td class="hide-s">${esc(f.type)}</td><td>${f.u}.${a3(f.start)}</td></tr>`).join('');
+  } else {
+    const max = Math.max(16, ...RN.groups.map(g => g.no));
+    let h = '';
+    for (let n = 1; n <= max; n++) {
+      const g = RN.groups.find(x => x.no === n);
+      h += g ? `<div class="tile ${RN.sel.includes(n) ? 's' : ''}" data-key="${n}"><span class="no">${lab(n)}</span><span>${esc(g.name)}</span></div>` : `<div class="tile empty"><span class="no">${n}</span></div>`;
+    }
+    document.getElementById('rn-pool').innerHTML = h;
+  }
+  document.getElementById('rn-ask').hidden = !RN.open;
+  document.querySelectorAll('[data-order]').forEach(b => b.setAttribute('aria-pressed', b.dataset.order === RN.order));
+  document.querySelectorAll('[data-taken]').forEach(b => b.setAttribute('aria-pressed', b.dataset.taken === RN.taken));
+  document.querySelectorAll('[data-view]').forEach(b => b.setAttribute('aria-pressed', b.dataset.view === RN.view));
+  document.getElementById('rn-go').disabled = !p;
+  document.getElementById('rn-warn').textContent = p && p.swaps.size ? `Swap: ${[...p.swaps].map(([t, o]) => `${t} → ${o}`).join(', ')}` : '';
+  const word = RN.view === 'grid' ? 'Fixture' : 'Group';
+  document.getElementById('rn-line').innerHTML = p ? `<b>${esc(rnLine(p))}</b>` : RN.line ? `<b>${esc(RN.line)}</b>` : RN.sel.length ? `<b>Select ${word} ${inOrder(RN.sel)}</b>   ← type a number to renumber` : 'Tap a row, Shift adds, drag on rows to lasso';
+}
+lasso(document.getElementById('rn-wrap'), '[data-key]', el => +el.dataset.key, (hit, add) => { RN.line = ''; RN.sel = merge(RN.sel, hit, add); rnRender(); });
+const openAsk = (digit) => { if (!RN.sel.length) return; RN.open = true; const i = document.getElementById('rn-num'); i.value = digit ?? i.value; rnRender(); i.focus(); };
+document.getElementById('rn-start').onclick = () => openAsk(String(RN.view === 'grid' ? 201 : 20));
+document.getElementById('rn-cancel').onclick = () => { RN.open = false; rnRender(); };
+document.getElementById('rn-num').addEventListener('input', rnRender);
+document.getElementById('rn-num').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('rn-go').click(); if (e.key === 'Escape') { RN.open = false; rnRender(); } });
+document.querySelectorAll('[data-order]').forEach(b => b.onclick = () => { RN.order = b.dataset.order; rnRender(); });
+document.querySelectorAll('[data-taken]').forEach(b => b.onclick = () => { RN.taken = b.dataset.taken; rnRender(); });
+document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => { RN.view = b.dataset.view; RN.sel = []; RN.open = false; RN.line = ''; rnRender(); });
+document.getElementById('rn-go').onclick = () => {
+  const p = rnPlan(); if (!p) return;
+  const list = RN.view === 'grid' ? RN.fx : RN.groups, key = RN.view === 'grid' ? 'fid' : 'no';
+  const next = new Map([...p.map, ...p.swaps]);
+  for (const o of list) if (next.has(o[key])) o[key] = next.get(o[key]);
+  list.sort((a, b) => a[key] - b[key]);
+  RN.line = rnLine(p); RN.sel = [...p.map.values()]; RN.open = false; rnRender();
+};
+// typing digits with a selection opens the strip with them
+document.addEventListener('keydown', e => {
+  if (e.target.closest('input') || !/^[0-9]$/.test(e.key) || !RN.sel.length || RN.open) return;
+  e.preventDefault(); openAsk(e.key);
+});
+swRender(); rnRender();
+</script>

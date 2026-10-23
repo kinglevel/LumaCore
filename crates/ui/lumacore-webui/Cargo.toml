@@ -1,0 +1,11 @@
+[package]
+name = "lumacore-webui"
+version.workspace = true
+edition.workspace = true
+
+# The WebUI (decisions §36 1): the files the station's page and the app's connect page are made
+# of, embedded by build.rs. Files only — no dependencies (tidy `the_webui_is_only_files`).
+[dependencies]
+
+[lints]
+workspace = true

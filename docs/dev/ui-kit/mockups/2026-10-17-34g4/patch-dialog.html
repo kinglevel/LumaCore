@@ -1,0 +1,655 @@
+<title>Devices Patch Setup</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a mode switcher, then one fixed 1440×900 desk frame holding the Patch setup dialog (the 12d <luma-setup> frame: title row, left tabs = Luma layers, top strip, <luma-grid>, echo line, slab with power toggle); the Import MVR dialog opens over it; notes below. Palette: the 12d mockups + the user's concept (matte greys, one gold accent, status as small marks); the import tints follow a reference patcher, muted. */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --stripe: #2fa3b8; --stripe-off: #5a5a5a; --ok: #00a60a; --warn: #e08a00; --alert: #e10000; --del: #e05a5a;
+  --sel: #1d3550; --sel-line: #3f6fb0;
+  --t-new: #10320f; --t-new-edge: #1f6b1c; --t-diff: #3a2208; --t-diff-edge: #8a4c12;
+  --t-lost: #3a1010; --t-lost-edge: #8f2a2a; --t-guid: #0f2238; --t-guid-text: #b9c8d8;
+  --lane: #1e1c06; --lane-line: #383309; --lane-text: #ccc085;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 40px; }
+main { max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1 { margin: 0; font-size: 22px; font-weight: 400; text-wrap: balance; }
+.cap { margin: 0; color: var(--dim); max-width: 92ch; }
+.modes { display: flex; flex-wrap: wrap; gap: 6px; }
+.modes button { height: 40px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--dim); font: inherit; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.modes button[aria-pressed="true"] { background: #303030; color: var(--text); border-color: #5a5a5a; }
+.modes button .d { width: 8px; height: 8px; border-radius: 4px; }
+.well { overflow-x: auto; }
+.frame { width: 1440px; height: 900px; position: relative; overflow: hidden; background: var(--page); }
+.mono { font-family: var(--mono); }
+svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* setup dialog */
+.dlg { position: absolute; top: 20px; left: 40px; width: 1360px; height: 860px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+.title { height: 52px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 16px; border-bottom: 1px solid var(--line); }
+.title .name { font-size: 17px; font-weight: 500; }
+.chip { height: 30px; display: inline-flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; white-space: nowrap; }
+.chip .d { width: 8px; height: 8px; border-radius: 4px; }
+.chip.quiet { color: var(--dim); }
+.title .right { margin-left: auto; font-size: 12px; color: var(--faint); }
+.close { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: var(--text); }
+.mid { flex: 1; display: flex; min-height: 0; }
+.left { width: 176px; flex: none; border-right: 1px solid var(--cell-line); display: flex; flex-direction: column; overflow: hidden; }
+.lt { height: 62px; flex: none; border-bottom: 1px solid var(--cell); padding: 0 12px 0 18px; box-shadow: inset 5px 0 0 var(--stripe-off); display: flex; flex-direction: column; justify-content: center; gap: 3px; color: var(--dim); font-size: 15px; }
+.lt small { font-size: 12px; color: var(--dim); }
+.lt.on { background: var(--cell); color: var(--text); box-shadow: inset 5px 0 0 var(--stripe); }
+.lt.sub { padding-left: 34px; height: 52px; font-size: 14px; }
+.lt.add { color: var(--faint); height: 48px; box-shadow: none; }
+.lt .m { display: inline-flex; gap: 4px; margin-left: 4px; } .lt .m i { width: 7px; height: 7px; border-radius: 2px; display: inline-block; }
+.work { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.strip { height: 50px; flex: none; display: flex; gap: 6px; align-items: center; padding: 0 12px; border-bottom: 1px solid var(--cell-line); }
+.strip .tb { height: 44px; padding: 0 18px; border-radius: 6px; display: flex; align-items: center; font-size: 14px; color: var(--dim); }
+.strip .tb.on { background: #303030; color: var(--text); }
+.selbar { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.selbar .n { font-size: 13px; color: var(--dim); margin-right: 4px; }
+.sb { height: 44px; min-width: 52px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.sb.big { font-size: 15px; font-weight: 500; }
+.sb.lasso { border-style: dashed; color: var(--dim); gap: 6px; }
+.lane { height: 40px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 14px; background: var(--lane); border-bottom: 1px solid var(--lane-line); font-size: 13px; color: var(--dim); }
+.lane b { font-weight: 400; color: var(--lane-text); }
+.lane .k { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+.lane .k i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.lane .r { margin-left: auto; }
+.livebar { height: 40px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: #14241a; border-bottom: 1px solid #1f3b29; font-size: 13px; color: var(--dim); }
+.livebar b { font-weight: 400; color: #8fd19a; }
+.gridbox { flex: 1; overflow: hidden; }
+.grid { display: grid; grid-auto-rows: 48px; font-size: 14px; }
+.hd { background: var(--head); border-bottom: 1px solid var(--cell-line); border-right: 1px solid var(--cell); color: var(--dim); font-size: 12px; padding: 0 10px; display: flex; align-items: center; justify-content: space-between; white-space: nowrap; }
+.hd .k { color: var(--faint); }
+.hd.no { justify-content: center; border-right: 1px solid var(--cell-line); color: var(--faint); }
+.no { border-bottom: 1px solid var(--cell); border-right: 1px solid var(--cell-line); color: var(--dim); font-size: 13px; display: flex; align-items: center; justify-content: center; background: transparent; }
+.no.sel { background: var(--sel); color: var(--text); }
+.cl { margin: 3px 2px; border-radius: 4px; border: 1px solid var(--cell-line); background: var(--cell); color: var(--text); padding: 0 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; position: relative; font-size: 14px; }
+.cl.ro { border-color: transparent; background: transparent; color: var(--dim); }
+.cl.locked { border-color: transparent; background: transparent; color: var(--faint); }
+.cl.sel { background: var(--sel); border-color: var(--sel-line); }
+.cl .st2 { display: flex; flex-direction: column; line-height: 1.12; min-width: 0; }
+.cl .sub { font-size: 11.5px; color: var(--faint); }
+.cl.new { background: var(--t-new); border-color: var(--t-new-edge); }
+.cl.diff { background: var(--t-diff); border-color: var(--t-diff-edge); }
+.cl.offer { background: var(--cell); border: 1px dashed var(--t-diff-edge); }
+.cl.offer .sub { color: #c0874a; }
+.cl.lost { background: var(--t-lost); border-color: transparent; }
+.cl.clash { background: var(--t-lost); border-color: var(--t-lost-edge); }
+.cl.clash .sub { color: #d87a7a; }
+.cl.guid { background: var(--t-guid); border-color: transparent; color: var(--t-guid-text); font-family: var(--mono); font-size: 12px; }
+.cl .tk { margin-left: auto; width: 16px; height: 16px; border-radius: 2px; background: #3a3a3a; flex: none; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+.cl .tk.on::after { content: "✓"; color: var(--text); }
+.cl .dot { position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 4px; }
+.cl .lk { margin-left: auto; color: var(--faint); }
+.edit { position: absolute; right: 4px; top: 6px; height: 28px; padding: 0 10px; border-radius: 14px; background: var(--gold); color: var(--gold-text); font-size: 12px; display: flex; align-items: center; }
+.stc { margin: 3px 2px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text); }
+.stc.ok { color: var(--faint); border: 1px solid var(--cell-line); }
+.stc.diff { background: var(--t-diff-edge); } .stc.new { background: var(--t-new-edge); } .stc.lost { background: var(--t-lost-edge); }
+.stc.clash { background: var(--alert); color: #fff; }
+.addrow { border-right: 1px solid var(--cell-line); display: flex; align-items: center; justify-content: center; color: var(--faint); }
+.addline { border-bottom: 1px dashed var(--cell-line); color: var(--dim); display: flex; align-items: center; padding: 0 10px; font-size: 14px; }
+.echo { height: 34px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; border-top: 1px solid var(--cell-line); font-size: 12px; color: var(--dim); }
+.echo .r { margin-left: auto; font-family: var(--font); }
+/* slab */
+.slab { height: 136px; flex: none; border-top: 1px solid var(--line); padding: 8px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 12px repeat(4, minmax(0, 1fr)) 210px; grid-template-rows: 60px 60px; gap: 6px; }
+.a { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; }
+.a.dis { color: #5a5a5a; border-style: dashed; background: transparent; }
+.a.del { color: var(--del); }
+.a.new svg { color: var(--ok); }
+.a.val { flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; }
+.a.val small { font-size: 12px; color: var(--dim); }
+.a.fn { color: var(--text); }
+.sep { grid-row: 1 / span 2; }
+.power { grid-row: 1 / span 2; grid-column: 11; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; position: relative; overflow: hidden; }
+.power svg { width: 34px; height: 34px; }
+.power b { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+.power small { font-size: 12px; color: var(--dim); }
+.power::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--pw, var(--ok)); }
+/* import dialog over the setup */
+.veil { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+.idlg { position: absolute; top: 70px; left: 130px; width: 1180px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+.idlg .title { border-bottom: 1px solid var(--line); }
+.cols { display: grid; grid-template-columns: 1fr 450px; }
+.pane { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pane + .pane { border-left: 1px solid var(--cell-line); }
+.pane .h { font-size: 13px; color: var(--dim); }
+.files { display: grid; grid-template-columns: 1.4fr 1.3fr 80px 140px 80px; grid-auto-rows: 44px; font-size: 14px; }
+.files .hd { border-right: none; }
+.files .fc { margin: 3px 0; padding: 0 10px; display: flex; align-items: center; background: var(--cell); border-top: 1px solid var(--cell-line); border-bottom: 1px solid var(--cell-line); white-space: nowrap; overflow: hidden; color: var(--dim); }
+.files .fc.first { border-left: 1px solid var(--cell-line); border-radius: 4px 0 0 4px; color: var(--text); }
+.files .fc.last { border-right: 1px solid var(--cell-line); border-radius: 0 4px 4px 0; justify-content: flex-end; }
+.files .fc.r { justify-content: flex-end; }
+.files .sel { background: var(--sel); border-color: var(--sel-line); color: var(--text); }
+.path { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--dim); }
+.cells { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sc { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); padding: 7px 10px; display: flex; flex-direction: column; gap: 2px; position: relative; min-width: 0; }
+.sc small { font-size: 12px; color: var(--dim); } .sc span { font-size: 15px; }
+.sc .badge { position: absolute; top: 7px; right: 9px; font-size: 11px; color: var(--faint); }
+.sc.wide { grid-column: 1 / -1; }
+.tr { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); padding: 0 6px 0 12px; height: 46px; font-size: 14px; }
+.seg { display: inline-flex; gap: 4px; } .seg i { font-style: normal; height: 34px; padding: 0 12px; border-radius: 5px; display: inline-flex; align-items: center; font-size: 13px; color: var(--dim); border: 1px solid var(--cell-line); }
+.seg i.on { background: #3a3a3a; color: var(--text); border-color: #5a5a5a; }
+.cbx { width: 18px; height: 18px; border-radius: 3px; border: 1px solid var(--line); background: #303030; }
+.ibtns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.ibtns div { height: 56px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.ibtns .go { background: var(--gold); border-color: transparent; color: var(--gold-text); font-weight: 600; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 10px; }
+.notes > div { min-width: 0; border: 1px solid var(--cell-line); border-radius: 6px; background: var(--dlg); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.notes .h { color: var(--text); font-size: 15px; }
+.notes ul { margin: 0; padding-left: 18px; color: var(--dim); display: flex; flex-direction: column; gap: 3px; }
+.notes code { font-family: var(--mono); font-size: 12px; color: var(--text); }
+/* Devices › DMX › Patch: the crumb in the title row and the device-kind rail */
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.crumb .up { color: var(--dim); font-weight: 400; }
+.crumb .sep { color: var(--faint); font-size: 14px; }
+.crumb .here { font-weight: 500; }
+.kinds { height: 44px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 10px; border-bottom: 1px solid var(--line); background: var(--head); }
+.kinds .lbl { font-size: 12px; color: var(--faint); margin-right: 6px; }
+.kind { height: 34px; padding: 0 14px; border-radius: 5px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--dim); }
+.kind .gd { width: 11px; height: 11px; border-radius: 50%; background: #312600; }
+.kind.on { background: #303030; color: var(--text); } .kind.on .gd { background: #7c6200; }
+.kind.later { border: 1px dashed var(--cell-line); color: var(--faint); }
+.kinds .claimnote { margin-left: auto; font-size: 12px; color: var(--faint); }
+/* Luma layer tree */
+.tree { flex: 1; overflow: hidden; display: flex; flex-direction: column; padding: 6px 0; }
+.tn { position: relative; height: 48px; flex: none; display: flex; align-items: center; gap: 6px; padding-right: 6px; color: var(--dim); font-size: 14px; }
+.tn .chev { width: 18px; text-align: center; color: var(--faint); font-size: 11px; flex: none; }
+.tn .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; overflow: hidden; }
+.tn .nm small { font-size: 11.5px; color: var(--faint); white-space: nowrap; }
+.tn .nm span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tn .guide { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--cell-line); }
+.tn.on { background: var(--cell); color: var(--text); box-shadow: inset 4px 0 0 var(--stripe); }
+.tn .addsub { width: 30px; height: 30px; border-radius: 5px; border: 1px solid var(--line); background: #303030; color: var(--text); display: none; align-items: center; justify-content: center; font-size: 16px; flex: none; }
+.tn.on .addsub, .tn.hov .addsub { display: flex; }
+.tn.ghost { color: var(--gold-hi); }
+.tn.ghost .nm span { border: 1px dashed var(--gold); border-radius: 4px; padding: 2px 6px; background: #221d05; }
+.tn .mk { display: inline-flex; gap: 3px; margin-left: 5px; vertical-align: middle; } .tn .mk i { width: 7px; height: 7px; border-radius: 2px; display: inline-block; }
+.treebar { flex: none; border-top: 1px solid var(--cell-line); padding: 6px; display: grid; grid-template-columns: 1fr 1fr 44px; gap: 4px; }
+.treebar span { height: 40px; border-radius: 5px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 12.5px; color: var(--text); }
+.treebar span.more { font-size: 16px; }
+/* Exit + import-apply buttons in the power slot */
+.exitbtn { grid-row: 1 / span 2; grid-column: 11; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; position: relative; overflow: hidden; }
+.exitbtn b { font-size: 16px; font-weight: 500; } .exitbtn small { font-size: 12px; color: var(--dim); text-align: center; padding: 0 8px; }
+.exitbtn::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--eb, var(--gold-hi)); }
+.exitbtn.go { background: var(--gold); border-color: transparent; color: var(--gold-text); }
+.exitbtn.go small { color: #e6d9a8; } .exitbtn.go::after { background: var(--gold-hi); }
+/* exit prompt */
+.ask { position: absolute; top: 290px; left: 470px; width: 500px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; }
+.ask .title { border-bottom: 1px solid var(--line); }
+.ask .q { padding: 16px 18px 6px; font-size: 17px; }
+.ask .s { padding: 0 18px 16px; color: var(--dim); font-size: 14px; display: flex; flex-direction: column; gap: 4px; }
+.ask .btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.ask .btns div { height: 56px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.ask .btns .save { background: var(--gold); border-color: transparent; color: var(--gold-text); font-weight: 600; }
+.ask .btns .disc { color: var(--del); }
+.toast { position: absolute; top: 132px; left: 50%; transform: translateX(-50%); height: 40px; padding: 0 16px; border-radius: 20px; background: #303030; border: 1px solid #5a5a5a; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.toast .d { width: 8px; height: 8px; border-radius: 4px; background: var(--ok); }
+.cl.came { box-shadow: inset 3px 0 0 var(--t-diff-edge); }
+.cl.camenew { box-shadow: inset 3px 0 0 var(--t-new-edge); }
+
+.stc.outside { background: var(--gold); color: var(--gold-text); }
+.tn .addsub { font-size: 17px; }
+.lmenu { position: absolute; width: 270px; border-radius: 6px; background: #262626; border: 1px solid var(--line); padding: 4px; display: flex; flex-direction: column; gap: 2px; z-index: 5; }
+.lmenu div { height: 42px; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; font-size: 14px; cursor: pointer; }
+.lmenu div:hover { background: #303030; } .lmenu div.del { color: var(--del); }
+.lmenu div small { margin-left: auto; color: var(--faint); font-size: 12px; }
+.lmenu hr { border: none; border-top: 1px solid var(--cell-line); margin: 3px 0; }
+.opts2 { display: flex; flex-direction: column; gap: 6px; padding: 0 12px 12px; }
+.opts2 div { height: 48px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; gap: 10px; padding: 0 14px; font-size: 15px; }
+.opts2 div.sug { border-color: #7c6200; } .opts2 div small { margin-left: auto; color: var(--faint); font-size: 12px; }
+.foot3 { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-top: 1px solid var(--line); color: var(--dim); font-size: 13px; }
+.b2 { height: 44px; padding: 0 18px; border-radius: 6px; border: 1px solid transparent; background: var(--gold); color: var(--gold-text); display: inline-flex; align-items: center; font-weight: 600; cursor: pointer; }
+.dupb { padding: 4px 14px 14px; display: flex; flex-direction: column; gap: 6px; }
+.kinds2 { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 4px 4px 6px 12px; font-size: 14px; }
+.cb2 { display: inline-flex; align-items: center; gap: 8px; }
+.cbx.on { background: #5a5a5a; position: relative; } .cbx.on::after { content: "✓"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text); }
+.cbx { display: inline-block; flex: none; }
+.ask .btns .save, .b2, [data-go] { cursor: pointer; }
+</style>
+
+<main>
+  <h1>Patch setup dialog</h1>
+  <p class="cap">All the decisions so far, in the kit's setup dialog. The dialog is <b>Devices › DMX › Patch</b>: the claim and the draft cover all of Devices, DMX is the first device kind, and Metadata holds the MVR layers and classes. The left side is the Luma layer tree, with a ≡ menu on the selected layer. One <span class="mono">&lt;luma-grid&gt;</span> serves the Live Patch, the draft and an import under review. The Import MVR dialog has a <b>File | Xchange</b> switch, None / Take / Offer per field group (default Offer), New fixtures: Automatic, and a scope of a Luma layer, an MVR layer, an MVR class or the whole patch. Review → Import ticked asks where new fixtures go (one pop-up per group, "Use for all other imported layers"), then returns to the draft. Use the strip below or the buttons inside the mockup. The command lines are sketches, not decided syntax.</p>
+  <div class="modes" role="group" aria-label="State">
+    <button type="button" data-mode="live"><span class="d" style="background:var(--ok)"></span>Live patch · Alice</button>
+    <button type="button" data-mode="draft"><span class="d" style="background:var(--gold-hi)"></span>Devices draft · Bob</button>
+    <button type="button" data-mode="menu"><span class="d" style="background:var(--gold-hi)"></span>Layer ≡ menu</button>
+    <button type="button" data-mode="dup"><span class="d" style="background:var(--gold-hi)"></span>Duplicate layer</button>
+    <button type="button" data-mode="meta"><span class="d" style="background:var(--gold-hi)"></span>Metadata tab</button>
+    <button type="button" data-mode="dialog"><span class="d" style="background:var(--gold-hi)"></span>Import MVR · File</button>
+    <button type="button" data-mode="xchange"><span class="d" style="background:var(--gold-hi)"></span>Import MVR · Xchange</button>
+    <button type="button" data-mode="import"><span class="d" style="background:var(--t-diff-edge)"></span>Reviewing the import</button>
+    <button type="button" data-mode="place"><span class="d" style="background:var(--t-diff-edge)"></span>Place new fixtures</button>
+    <button type="button" data-mode="after"><span class="d" style="background:var(--gold-hi)"></span>After Import ticked</button>
+    <button type="button" data-mode="export"><span class="d" style="background:var(--gold-hi)"></span>Export MVR</button>
+    <button type="button" data-mode="exit"><span class="d" style="background:var(--gold-hi)"></span>Exit prompt</button>
+  </div>
+  <div class="well"><div class="frame" id="frame"></div></div>
+  <div class="notes">
+    <div><span class="h">One grid, three modes</span><ul>
+      <li>The rows are fixtures by GUID, and the columns come from the fixture's declared properties (the 12d rule).</li>
+      <li><b>Live:</b> a column is editable when its property is marked live (the usual Live Patch set: name, address, position, inverts, master react, …). Every other column is greyed with a lock, and a press on it says "claim Devices to change it".</li>
+      <li><b>Draft:</b> every column is editable. The power toggle shows the claim; pressing it leaves the patch (Keep / Discard / Cancel).</li>
+      <li><b>Import:</b> the same grid, with a Status column, cell marks and ticks. The slab's function block switches to the import's actions.</li>
+    </ul></div>
+    <div><span class="h">What the import marks mean</span><ul>
+      <li>Orange with a tick: taken from the file (the dialog's switch was Take); the live value is under it.</li>
+      <li>Dashed: offered and not taken (the switch was Offer); the file's value is under it.</li>
+      <li>Green: a new fixture. Red row: LOST, kept unless Delete is ticked. Red cell: a clash, which is never taken and blocks Keep.</li>
+      <li>Blue GUID: the GUID was the match. Gold dot: Bob's own edit. Violet dot: someone's live edit that reached the draft.</li>
+    </ul></div>
+    <div><span class="h">Layer tree</span><ul>
+      <li>The Luma layers, nested, one per fixture, drawn as a tree with folding arrows and guide lines. The selected layer filters the grid and is where New puts fixtures.</li>
+      <li>The selected layer (or the one under the pointer) shows a <b>≡</b> menu: New sublayer, Rename, Copy, Duplicate…, Move…, Select fixtures, Delete layer…. The bar under the tree keeps "+ Layer" and "+ Sublayer".</li><li><b>Duplicate</b> asks for clean fixtures or cloned data (all, or chosen kinds: presets, groups, sequences, effects, layouts, masters), a first FID (the next free block, spacing kept), and leaves the copies unpatched, with new GUIDs and no MVR source. <b>Delete layer</b> deletes its fixtures too, after one question naming what uses them.</li>
+      <li>Dragging fixtures onto a layer moves them. Dragging a layer onto another makes it a sublayer.</li>
+      <li>In import review each layer shows its marks (new, diff, lost).</li>
+    </ul></div>
+    <div><span class="h">Devices › DMX › Patch</span><ul>
+      <li>The claim chip and Exit belong to <code>Devices</code>: one draft for every device kind, and Exit saves or discards all of it.</li>
+      <li>The kind rail lists the kinds under Devices: <b>DMX</b> now (<code>Devices.Dmx</code>), <b>Metadata</b> (MVR layers and classes, shared with 3DSpatial), and a dashed slot for kinds that come later.</li>
+      <li>Inside DMX the strip has Patch, Fixture types and Universes, the parts of <code>Devices.Dmx</code>.</li>
+    </ul></div>
+    <div><span class="h">Import, then back to the draft</span><ul>
+      <li>Under review nothing is in the draft yet. The ticks come from the dialog's Take / Offer switches, and you change them per cell.</li>
+      <li>The gold button reads "Import ticked (22)". First it asks where new fixtures go, one pop-up per MVR group, with the suggestion ★ first and "Use for all other imported layers". Then it writes the ticked changes into the draft and returns to it. Cancel import leaves the draft as it was.</li><li>Scope: both sides are filtered, but a GUID is matched across the whole patch. A fixture matched outside the scope shows as OUTSIDE with "Bring into House", and only fixtures inside the scope can be LOST.</li>
+      <li>After the import, the rows it changed keep a thin edge mark until Exit, so you can see what came from the file.</li>
+    </ul></div>
+  </div>
+</main>
+
+<script>
+const I = {
+  patch: '<path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0zM12 18v4"/>',
+  close: '<path d="M18 6 6 18M6 6l12 12"/>',
+  filter: '<path d="M3 4h18l-7 8v6l-4 2v-8z"/>',
+  select: '<path d="m4 4 7 17 2.5-7.5L21 11z"/>', plus: '<path d="M12 5v14M5 12h14"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/>',
+  cut: '<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/>',
+  paste: '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+  del: '<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/>', oops: '<path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/>',
+  imp: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>', exp: '<path d="M12 21V9M7 14l5-5 5 5M5 3h14"/>',
+  edit: '<path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/>', power: '<path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  exit: '<path d="M10 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h5"/><path d="M15 16l4-4-4-4M19 12H9"/>',
+  tree: '<path d="M4 5h6M4 12h6M4 19h6M14 5h6M14 12h6M14 19h6"/>',
+  devices: '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+};
+const ic = (n, s) => `<svg class="i" viewBox="0 0 24 24"${s ? ` style="${s}"` : ""}>${I[n]}</svg>`;
+const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+// Fixtures in Luma layer House (a sample). imp = what Festival_R12.mvr says about each.
+const ROWS = [
+  { fid: 101, name: "MegaPointe SL 1", guid: "3FF944C6-6CD0…", type: "Robe MegaPointe", mode: "Mode 1", addr: "1.001", pos: "-6.00 / 2.10 / 7.20", mr: "Grand", inv: "Off", layer: "Truss 1", imp: { st: "ok", by: "guid" } },
+  { fid: 102, name: "MegaPointe SL 2", guid: "BCFF38D7-29E0…", type: "Robe MegaPointe", mode: "Mode 1", addr: "1.035", pos: "-4.00 / 2.10 / 7.20", mr: "Grand", inv: "Off", layer: "Truss 1", imp: { st: "diff", by: "guid", take: { addr: "1.039" } } },
+  { fid: 103, name: "MegaPointe SR 3", guid: "BE45BAEC-22F6…", type: "Robe MegaPointe", mode: "Mode 1", addr: "1.069", pos: "4.00 / 2.10 / 7.20", mr: "Grand", inv: "Off", layer: "Truss 1", sel: true, imp: { st: "diff", by: "guid", offer: { name: "MP SR 3" }, take: { pos: "4.00 / 2.10 / 7.45" } } },
+  { fid: 104, name: "MP SR 4 (spare)", mine: "name", guid: "7FC837DE-0104…", type: "Robe MegaPointe", mode: "Mode 1", addr: "1.103", pos: "6.00 / 2.10 / 7.20", mr: "Grand", inv: "On", live: "inv", layer: "Truss 1", imp: { st: "diff", by: "fid", take: { pos: "6.00 / 2.10 / 7.45" } } },
+  { fid: 201, name: "X5 Wash 1", guid: "684E7A79-8E7D…", type: "GLP impression X5", mode: "Mode 2 · rev 2", addr: "2.001", pos: "-8.00 / 0.00 / 6.50", mr: "Grand", inv: "Off", layer: "Truss 2", imp: { st: "diff", by: "guid", offer: { mode: "rev 3" } } },
+  { fid: 202, name: "X5 Wash 2", guid: "F0073515-0833…", type: "GLP impression X5", mode: "Mode 2 · rev 2", addr: "2.031", pos: "-6.00 / 0.00 / 6.50", mr: "Grand", inv: "Off", layer: "Truss 2", imp: { st: "clash", by: "guid", clash: { addr: "7.001 = Fixture 901 · Touring" } } },
+  { fid: 305, name: "Diablo 5", guid: "E8AF5278-B873…", type: "Ayrton Diablo", mode: "Standard", addr: "3.001", pos: "0.00 / -1.50 / 8.00", mr: "Grand", inv: "Off", layer: "Truss 3", imp: { st: "new" }, onlyImport: true },
+  { fid: 306, name: "Diablo 6", guid: "423836B2-C3C1…", type: "Ayrton Diablo", mode: "Standard", addr: "3.041", pos: "2.00 / -1.50 / 8.00", mr: "Grand", inv: "Off", layer: "Truss 3", imp: { st: "new" }, onlyImport: true },
+  { fid: 905, name: "Floor spot 5", guid: "A41B77D0-19C2…", type: "Robe Spiider", mode: "Mode 1", addr: "9.001", pos: "-2.00 / 4.00 / 0.30", mr: "Grand", inv: "Off", layer: "Touring › Floor package", imp: { st: "outside", by: "guid" }, onlyImport: true },
+  { fid: 410, name: "Sunstrip 10", guid: "9D1E0C44-71B2…", type: "Showtec Sunstrip", mode: "10ch", addr: "4.091", pos: "0.00 / 6.00 / 0.40", mr: "Group", inv: "Off", layer: "Floor", imp: { st: "lost" } },
+  { fid: 411, name: "Sunstrip 11", guid: "0AC5F2E9-5D13…", type: "Showtec Sunstrip", mode: "10ch", addr: "4.101", pos: "1.00 / 6.00 / 0.40", mr: "Group", inv: "Off", layer: "Floor", imp: { st: "lost" } },
+];
+// The fixture's declared properties = the grid's columns; live = editable in the Live Patch.
+const COLS = [
+  { k: "name", t: "Name", w: "1.15fr", live: true },
+  { k: "type", t: "Fixture type", w: "1fr", live: false },
+  { k: "mode", t: "Mode", w: "0.85fr", live: false },
+  { k: "addr", t: "Address", w: "0.6fr", live: true },
+  { k: "pos", t: "Position X / Y / Z", w: "1fr", live: true },
+  { k: "inv", t: "Invert pan", w: "0.55fr", live: true },
+  { k: "mr", t: "Master react", w: "0.6fr", live: true },
+  { k: "layer", t: "Luma layer", w: "0.6fr", live: false },
+];
+
+function cellHtml(r, c, mode) {
+  const v = r[c.k];
+  const dot = (r.mine === c.k ? '<span class="dot" style="background:#ccc085"></span>' : "") + (r.live === c.k && mode !== "live" ? '<span class="dot" style="background:#8e74c0"></span>' : "");
+  if (mode === "live") {
+    if (!c.live) return `<div class="cl locked">${esc(v)}<span class="lk">${ic("lock", "width:14px;height:14px")}</span></div>`;
+    const sel = r.sel && c.k === "addr";
+    return `<div class="cl${sel ? " sel" : ""}">${esc(v)}${sel ? '<span class="edit">Edit</span>' : ""}</div>`;
+  }
+  if (mode === "after") {
+    const im = r.imp || {};
+    if (im.st === "new") return `<div class="cl camenew">${esc(v)}</div>`;
+    if (im.take && im.take[c.k]) return `<div class="cl came">${esc(im.take[c.k])}</div>`;
+    if (im.st === "lost") return `<div class="cl">${esc(v)}${c.k === "name" ? '<span class="lk" style="font-size:11.5px">LOST · kept</span>' : ""}</div>`;
+    return `<div class="cl">${esc(v)}${dot}</div>`;
+  }
+  if (mode === "draft" || mode === "dialog") {
+    const sel = r.sel && c.k === "pos";
+    return `<div class="cl${sel ? " sel" : ""}">${esc(v)}${dot}${sel ? '<span class="edit">Edit</span>' : ""}</div>`;
+  }
+  // import marks
+  const im = r.imp || {};
+  if (im.st === "new") return `<div class="cl new">${esc(v)}${c.k === "name" ? '<span class="tk on"></span>' : ""}</div>`;
+  if (im.st === "lost") return `<div class="cl lost">${esc(v)}</div>`;
+  if (im.clash && im.clash[c.k]) return `<div class="cl clash"><span class="st2"><span>${esc(v)}</span><span class="sub">file ${esc(im.clash[c.k])}</span></span><span class="tk"></span></div>`;
+  if (im.take && im.take[c.k]) return `<div class="cl diff"><span class="st2"><span>${esc(im.take[c.k])}</span><span class="sub">live ${esc(v)}</span></span><span class="tk on"></span></div>`;
+  if (im.offer && im.offer[c.k]) return `<div class="cl offer"><span class="st2"><span>${esc(v)}</span><span class="sub">file: ${esc(im.offer[c.k])}</span></span><span class="tk"></span></div>`;
+  return `<div class="cl">${esc(v)}${dot}</div>`;
+}
+
+function grid(mode) {
+  const imp = mode === "import";
+  const cols = imp ? [{ k: "_st", t: "Status", w: "78px" }, { k: "_guid", t: "GUID", w: "0.9fr" }, ...COLS.filter(c => c.k !== "layer"), { k: "_del", t: "Delete / bring in", w: "0.85fr" }] : COLS;
+  const tpl = "56px " + cols.map(c => c.w).join(" ");
+  let h = `<div class="grid" style="grid-template-columns:${tpl}"><span class="hd no">FID</span>`;
+  h += cols.map(c => `<span class="hd">${esc(c.t)}<span class="k">${mode === "live" && c.live === false ? ic("lock", "width:12px;height:12px") : "⋮"}</span></span>`).join("");
+  const rows = ROWS.filter(r => imp || mode === "after" || !r.onlyImport);
+  for (const r of rows) {
+    h += `<span class="no${r.sel ? " sel" : ""}">${r.fid}</span>`;
+    for (const c of cols) {
+      if (c.k === "_st") { const s = r.imp.st; h += `<div class="stc ${s}">${{ ok: "OK", diff: "DIFF", new: "NEW", lost: "LOST", clash: "CLASH", outside: "OUTSIDE" }[s]}</div>`; continue; }
+      if (c.k === "_guid") { h += r.imp.by === "guid" ? `<div class="cl guid">${esc(r.guid)}</div>` : `<div class="cl ro mono" style="font-size:12px">${esc(r.guid)}${r.imp.by ? `<span class="lk" style="font-family:var(--font)">by ${r.imp.by.toUpperCase()}</span>` : ""}</div>`; continue; }
+      if (c.k === "_del") { if (r.imp.st === "outside") { h += `<div class="cl offer"><span class="st2"><span>Bring into House</span><span class="sub">in Touring in the show</span></span><span class="tk"></span></div>`; continue; } h += r.imp.st === "lost" ? `<div class="cl lost">Delete<span class="tk"></span></div>` : `<div class="cl ro"></div>`; continue; }
+      h += cellHtml(r, c, mode);
+    }
+  }
+  if (mode === "draft" || mode === "after") h +=`<span class="addrow">+</span><span class="addline" style="grid-column:2 / span ${cols.length}">New fixtures in Truss 1…</span>`;
+  return h + "</div>";
+}
+
+function left(mode) {
+  // [name, count, depth, open (null = leaf), marks, state]
+  const T = [
+    ["Patch · all", "1 436", 0, true],
+    ["House", "412", 1, true, null, "on"],
+    ["Truss 1", "96", 2, true, "1n 4d"],
+    ["Downstage", "48", 3, null],
+    ["Upstage", "48", 3, null],
+    ["Truss 2", "88", 2, false, "2d 1c"],
+    ["Truss 3", "64", 2, false, "8n"],
+    ["Floor", "164", 2, false, "4l"],
+    ["Touring", "96", 1, false],
+    ["Specials", "28", 1, null, null, "hov"],
+  ];
+  const mk = { n: "var(--t-new-edge)", d: "var(--t-diff-edge)", l: "var(--t-lost-edge)", c: "var(--alert)" };
+  const IND = 16;
+  let h = `<div class="tree">`;
+  for (const [n, c, depth, open, marks, state] of T) {
+    let guides = "";
+    for (let d = 1; d <= depth; d++) guides += `<span class="guide" style="left:${8 + (d - 1) * IND + 9}px"></span>`;
+    const chev = open === null || open === undefined ? "" : open ? "▾" : "▸";
+    let m = "", sub = `${c} fixtures`;
+    if (mode === "import" && marks) {
+      m = `<span class="mk">${marks.split(" ").map(x => `<i style="background:${mk[x.slice(-1)]}"></i>`).join("")}</span>`;
+      sub = marks.replace(/(\d+)n/, "$1 new").replace(/(\d+)d/, "$1 diff").replace(/(\d+)l/, "$1 lost").replace(/(\d+)c/, "$1 clash");
+    }
+    if (state === "on" && mode === "import") sub = "412 · 8 new · 4 lost";
+    if (state === "ghost") sub = "type a name · under House";
+    const live = mode === "live";
+    h += `<div class="tn${state ? " " + state : ""}" style="padding-left:${8 + depth * IND}px">${guides}<span class="chev">${chev}</span><span class="nm"><span>${esc(n)}${m}</span><small>${sub}</small></span>${live || state === "ghost" || depth === 0 ? "" : `<span class="addsub" title="Layer menu">≡</span>`}</div>`;
+  }
+  h += `</div>`;
+  const dis = mode === "live" ? ' style="color:#5a5a5a;border-style:dashed;background:transparent"' : "";
+  return h + `<div class="treebar"><span${dis}>+ Layer</span><span${dis}>+ Sublayer</span><span class="more"${dis}>⋯</span></div>`;
+}
+
+function slab(mode) {
+  const L = [["select", "Select"], ["plus", "New", "new"], ["copy", "Copy 1"], ["cut", "Cut 1"], ["paste", "Paste", "dis"],
+    ["del", "Delete 1", "del"], ["oops", "Oops"], ["imp", "Import…"], ["exp", "Export…"], ["edit", "Edit 1"]];
+  const live = mode === "live";
+  let h = L.map(([i, t, cls], n) => {
+    const off = live && ["New", "Copy 1", "Cut 1", "Delete 1", "Import…"].includes(t);
+    const pos = `grid-row:${n < 5 ? 1 : 2};grid-column:${(n % 5) + 1}`;
+    return `<div class="a${off ? " dis" : cls ? " " + cls : ""}" style="${pos}">${ic(i)}${t}</div>`;
+  }).join("");
+  h += `<span class="sep" style="grid-column:6"></span>`;
+  const F = {
+    live: [["Patch to…"], ["Next free address"], ["Info"], ["Columns: Condensed"], ["Address mode", "Univ.addr"], ["Patch offset", "0"], ["Sort", "FID"], ["Show 3D", "Off"]],
+    draft: [["Insert fixtures…"], ["Patch to…"], ["Next free address"], ["Multipatch…"], ["Address mode", "Univ.addr"], ["Patch offset", "0"], ["Sort", "FID"], ["Show 3D", "Off"]],
+    import: [["Tick new"], ["Tick diff"], ["Untick all"], ["Re-read file"], ["Cancel import", null, "del"], ["Match", "Auto"], ["Scope", "MVR House"], ["Preset", "CAD update"]],
+  }[mode === "dialog" || mode === "after" || mode === "exit" ? "draft" : mode];
+  h += F.map(([t, v, cls], n) => {
+    const pos = `grid-row:${n < 4 ? 1 : 2};grid-column:${7 + (n % 4)}`;
+    return v != null ? `<div class="a val" style="${pos}"><small>${esc(t)}</small>${esc(v)}</div>` : `<div class="a fn${cls ? " " + cls : ""}" style="${pos}">${esc(t)}</div>`;
+  }).join("");
+  if (mode === "import") {
+    h += `<div class="exitbtn go" data-go="place" role="button" tabindex="0">${ic("imp", "width:30px;height:30px")}<b>Import ticked (22)</b><small>into the Devices draft, then back to it</small></div>`;
+  } else if (live) {
+    h += `<div class="exitbtn" style="--eb:var(--ok)" role="button" tabindex="0">${ic("exit", "width:30px;height:30px")}<b>Exit</b><small>Live patch · nothing to save</small></div>`;
+  } else {
+    h += `<div class="exitbtn" data-go="exit" role="button" tabindex="0">${ic("exit", "width:30px;height:30px")}<b>Exit</b><small>Devices draft · Bob</small></div>`;
+  }
+  return h;
+}
+
+function exitAsk() {
+  return `<div class="veil"></div>
+  <div class="ask" role="dialog" aria-label="Exit">
+    <div class="title">${ic("exit")}<span class="name">Exit Devices</span></div>
+    <div class="q">Do you want to save or discard the draft?</div>
+    <div class="s"><span>Devices draft · Bob · since 10:42</span><span>DMX patch: 8 new · 19 changed · 4 LOST kept · 2 new layers</span><span>Save is one Oops step. Alice's live edits stay either way.</span></div>
+    <div class="btns"><div class="save">Save</div><div class="disc">Discard</div><div data-go="draft" role="button" tabindex="0">Cancel</div></div>
+  </div>`;
+}
+
+function setup(mode) {
+  const live = mode === "live";
+  const claim = live ? `<span class="chip"><span class="d" style="background:var(--ok)"></span>live · Alice (Program)</span>` : `<span class="chip"><span class="d" style="background:var(--gold-hi)"></span>Devices draft · Bob</span>`;
+  const sub = mode === "import"
+    ? `<div class="lane"><span><b>Festival_R12.mvr</b> → draft · preset "CAD update"</span><span class="k"><i style="background:var(--cell-line)"></i>380 OK</span><span class="k"><i style="background:var(--t-diff-edge)"></i>20 diff</span><span class="k"><i style="background:var(--t-new-edge)"></i>8 new</span><span class="k"><i style="background:var(--t-lost-edge)"></i>4 lost</span><span class="k"><i style="background:var(--alert)"></i>1 clash</span><span class="r">22 taken · 4 offered</span></div>`
+    : live ? `<div class="livebar"><b>Live patch</b><span>Name, address, position, inverts and master react change at once. Bob holds the Devices draft; a cell he changed there is refused here.</span></div>` : "";
+  const echo = { live: `Set Fixture 103 "Address" 1.069`, draft: `Set Fixture 103 "PosZ" 7.20`, dialog: `Import MVR`, import: `Import MVR "Festival_R12.mvr" /Scope MvrLayer "House" /Preset "CAD update"`, after: `Apply Import · 22 changes into the draft`, exit: `Exit Devices` }[mode];
+  const foot = mode === "import" ? "Matched 404: 401 GUID · 2 FID · 1 name · 8 new" : live ? "Locked columns: claim Devices to change them" : mode === "after" ? "22 changes from Festival_R12.mvr · edge-marked until Exit" : "1 cell · 1 row";
+  return `
+  <div class="dlg">
+    <div class="title">
+      <span class="crumb">${ic("devices")}<span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></span>
+      ${claim}
+      <span class="chip">${ic("filter", "width:14px;height:14px")}Filter row</span>
+      <span class="chip quiet">Columns: Condensed</span>
+      <span class="right">Root.ShowData.Devices.Dmx.Patch · Luma layer: House</span>
+    </div>
+    <div class="kinds">
+      <span class="lbl">Devices</span>
+      <span class="kind on"><span class="gd"></span>DMX</span>
+      <span class="kind"><span class="gd"></span>Metadata</span>
+      <span class="kind later">+ more device kinds later</span>
+      <span class="claimnote">${live ? "Devices not claimed by you · Bob holds the draft" : "the claim and the draft cover all of Devices"}</span>
+    </div>
+    <div class="mid">
+      <div class="left">${left(mode)}</div>
+      <div class="work">
+        <div class="strip">
+          <span class="tb on">Patch</span><span class="tb">Fixture types</span><span class="tb">Universes</span>
+          <div class="selbar"><span class="n">1 cells · 1 rows</span><span class="sb big">+</span><span class="sb big">−</span><span class="sb big">Thru</span><span class="sb">All</span><span class="sb">None</span><span class="sb">Invert</span><span class="sb lasso">Lasso: Auto</span></div>
+        </div>
+        ${sub}
+        <div class="gridbox">${grid(mode)}</div>
+        <div class="echo"><span class="mono">lines name their rows: ${esc(echo)}</span><span class="r">${foot}</span></div>
+      </div>
+    </div>
+    <div class="slab">${slab(mode)}</div>
+  </div>`;
+}
+
+function seg(opts, on) { return `<span class="seg">${opts.map(o => `<i class="${o === on ? "on" : ""}">${o}</i>`).join("")}</span>`; }
+
+function importDialog(src) {
+  const xch = src === "xchange";
+  const F = xch
+    ? [["Festival_R13.mvr", "CAD office · Vectorworks 2026", "1 344", "2026-10-18 09:02", "\"moved Truss 3, 4 new on Truss 2\"", true],
+       ["Festival_R12.mvr", "CAD office · Vectorworks 2026", "1 340", "2026-10-17 11:58", "\"R12 for the desk\""],
+       ["Floor package.mvr", "FOH 2 · LumaCore", "96", "2026-10-17 10:20", "\"touring floor\""],
+       ["Previz.mvr", "Previz laptop · Capture 2026", "1 340", "2026-10-16 22:41", "\"focus points\""]]
+    : [["Festival_R12.mvr", "Vectorworks 2026 · MVR 1.6", "1 340", "2026-10-17 11:55", "4.2 MB", true],
+       ["Festival_R11.mvr", "Vectorworks 2026 · MVR 1.6", "1 332", "2026-10-14 09:12", "4.1 MB"],
+       ["House rig 2026.mvr", "Console 2.5 · MVR 1.6", "409", "2026-09-30 00:44", "51.9 MB"],
+       ["Touring floor.mvr", "LumaCore · MVR 1.6", "96", "2026-09-29 19:14", "3.3 MB"]];
+  let files = `<div class="files" style="grid-template-columns:1.2fr 1.4fr 80px 140px ${xch ? "1.3fr" : "80px"}"><span class="hd">Name</span><span class="hd">${xch ? "From station" : "Provider"}</span><span class="hd" style="justify-content:flex-end">Fixtures</span><span class="hd" style="justify-content:flex-end">${xch ? "Committed" : "Date"}</span><span class="hd" style="justify-content:flex-end">${xch ? "Comment" : "Size"}</span>`;
+  for (const [n, p, f, d, s, sel] of F) {
+    const c = sel ? " sel" : "";
+    files += `<span class="fc first${c}">${esc(n)}</span><span class="fc${c}">${esc(p)}</span><span class="fc r${c}">${f}</span><span class="fc r${c}">${d}</span><span class="fc last${c}">${esc(s)}</span>`;
+  }
+  files += "</div>";
+  const path = xch
+    ? `<span>Group "Default" · on en1 · 3 stations</span><span>Fetched into library/mvr/.xchange/ when you import</span>`
+    : `<span class="mono">library/mvr/Festival_R12.mvr · sha256 9f3c…e1a0</span><span>Drive: Library ▾</span>`;
+  const T = ["Addresses", "IDs (FID, CID)", "Names", "Position and rotation", "Type revisions", "New fixtures"];
+  const take = T.map(t => `<div class="tr"><span>${t}</span>${seg(["None", "Take", "Offer"], "Offer")}</div>`).join("")
+    + `<div class="tr"><span>LOST (in scope, not in the file)</span>${seg(["Mark", "Delete"], "Mark")}</div>`
+    + `<div class="tr"><span>Ignore rotation differences</span><span class="cbx"></span></div>`;
+  return `<div class="veil"></div>
+  <div class="idlg" style="top:40px">
+    <div class="title">${ic("imp")}<span class="name">Import MVR</span><span class="chip quiet">into the Devices draft</span>
+      <span class="seg" style="margin-left:18px"><i class="${xch ? "" : "on"}" data-go="dialog">File</i><i class="${xch ? "on" : ""}" data-go="xchange">Xchange</i></span>
+      <span class="close" style="margin-left:auto">${ic("close", "width:20px;height:20px")}</span></div>
+    <div class="cols">
+      <div class="pane">
+        <span class="h">${xch ? "Committed in the group" : "File"}</span>${files}
+        <div class="path">${path}</div>
+        <span class="h" style="margin-top:4px">What it covers</span>
+        <div class="cells">
+          <div class="sc wide"><small>Scope</small><span>MVR layer "House" ▾</span><span class="badge">Luma layer · MVR layer · MVR class · Whole patch</span></div>
+          <div class="sc"><small>New fixtures go into</small><span>Automatic ▾</span><span class="badge">layers from the drawing</span></div>
+          <div class="sc"><small>Match</small><span>Auto · GUID → FID → Name</span></div>
+          <div class="sc"><small>Offsets</small><span>FID +0 · universe +0</span></div>
+          <div class="sc"><small>Rig offset</small><span>0.00 / 0.00 / 0.00 m · 0°</span></div>
+        </div>
+      </div>
+      <div class="pane">
+        <span class="h">What goes into the draft</span>${take}
+        <div class="sc"><small>Settings</small><span>Preset "CAD update" ▾</span><span class="badge">yours · saved</span></div>
+      </div>
+    </div>
+    <div class="ibtns"><div data-go="draft">Cancel</div><div class="go" data-go="import">Review</div></div>
+  </div>`;
+}
+
+function placeAsk() {
+  return `<div class="veil"></div>
+  <div class="ask" style="top:200px;left:440px;width:560px">
+    <div class="title">${ic("tree")}<span class="name">Place new fixtures</span><span class="chip quiet" style="margin-left:auto;margin-right:12px">1 of 3</span></div>
+    <div class="q">4 new fixtures from House › Truss 2</div>
+    <div class="s"><span>FID 141–144 · Robe MegaPointe. The layer made from Truss 2 is now called "Mid truss".</span></div>
+    <div class="opts2">
+      <div class="sug">★ Mid truss<small>made from Truss 2</small></div>
+      <div>New layer "Truss 2" under House</div>
+      <div>Pick a layer…</div>
+      <div>Leave in Unsorted</div>
+    </div>
+    <div class="foot3"><span><span class="cbx" style="display:inline-block;vertical-align:middle;margin-right:8px"></span>Use for all other imported layers</span><span class="b2" data-go="after">Next</span></div>
+  </div>`;
+}
+
+function layerMenu() {
+  const it = [["New sublayer"], ["Rename"], ["Copy"], ["Duplicate…", "dup"], ["Move…"], ["Select fixtures", null, "412"], ["-"], ["Delete layer…", null, null, "del"]];
+  return `<div class="lmenu" style="top:196px;left:200px">${it.map(([t, go, n, cls]) => t === "-" ? "<hr>" : `<div${go ? ` data-go="${go}"` : ""} class="${cls || ""}">${t}${n ? `<small>${n}</small>` : ""}</div>`).join("")}</div>`;
+}
+
+function dupDialog() {
+  const kinds = ["Presets", "Groups", "Sequences and cues", "Effects", "Layouts", "Masters"];
+  return `<div class="veil"></div>
+  <div class="ask" style="top:110px;left:380px;width:680px">
+    <div class="title">${ic("copy")}<span class="name">Duplicate layer "House"</span></div>
+    <div class="q">412 fixtures in House and its 4 sublayers</div>
+    <div class="dupb">
+      <div class="tr"><span>The copies</span>${seg(["Clean fixtures", "Clone their data"], "Clone their data")}</div>
+      <div class="tr"><span>Data to clone</span>${seg(["All", "Choose"], "Choose")}</div>
+      <div class="kinds2">${kinds.map((k, i) => `<span class="cb2"><span class="cbx${i < 3 ? " on" : ""}"></span>${k}</span>`).join("")}</div>
+      <div class="cells">
+        <div class="sc"><small>First FID</small><span>501</span><span class="badge">next free block · spacing kept</span></div>
+        <div class="sc"><small>Address</small><span>Unpatched</span><span class="badge">Patch to… later</span></div>
+        <div class="sc wide"><small>New layer</small><span>"House 2" beside House</span><span class="badge">new GUIDs · no MVR source</span></div>
+      </div>
+    </div>
+    <div class="btns"><div class="save" data-go="draft">Duplicate</div><div data-go="draft">Cancel</div><div style="visibility:hidden"></div></div>
+  </div>`;
+}
+
+function exportDialog() {
+  return `<div class="veil"></div>
+  <div class="ask" style="top:130px;left:400px;width:640px">
+    <div class="title">${ic("exp")}<span class="name">Export MVR</span><span class="chip quiet" style="margin-left:10px">Bob's Devices draft</span></div>
+    <div class="dupb">
+      <div class="cells">
+        <div class="sc"><small>Name</small><span>Festival_R12_luma.mvr</span></div>
+        <div class="sc"><small>What</small><span>Whole patch ▾</span><span class="badge">or a Luma layer · selected</span></div>
+      </div>
+      <div class="tr"><span>Layout</span>${seg(["By MVR layer", "By Luma layer"], "By MVR layer")}</div>
+      <div class="tr"><span>Embed GDTFs</span><span class="cbx on"></span></div>
+      <div class="tr"><span>Commit to Xchange group "Default"</span><span class="cbx on"></span></div>
+      <div class="sc"><small>Comment for the group</small><span>"R12 patched, 4 new Diablos on Truss 3"</span></div>
+    </div>
+    <div class="btns"><div class="save" data-go="draft">Export</div><div data-go="draft">Cancel</div><div style="visibility:hidden"></div></div>
+  </div>`;
+}
+
+function metaView() {
+  const L = [["Layers", "2", 1], ["Classes", "3"], ["Positions", "5"], ["Groups", "7"], ["Mapping definitions", "1"], ["Files", "3"]];
+  const rows = [
+    ["House", "A1C3…7E02", "412", "Festival_R12.mvr", "Vectorworks 2026", ""],
+    ["groupings", "5F0B…11AA", "0", "House rig 2026.mvr", "Console 2.5", "unused"],
+  ];
+  let g = `<div class="grid" style="grid-template-columns:56px 1fr 1fr 0.6fr 1.2fr 1fr 0.7fr"><span class="hd no">No</span><span class="hd">Name</span><span class="hd">UUID</span><span class="hd">Fixtures</span><span class="hd">From file</span><span class="hd">Provider</span><span class="hd">State</span>`;
+  rows.forEach((r, i) => { g += `<span class="no${i === 0 ? " sel" : ""}">${i + 1}</span><div class="cl${i === 0 ? " sel" : ""}">${r[0]}${i === 0 ? '<span class="edit">Label</span>' : ""}</div><div class="cl ro mono" style="font-size:12px">${r[1]}</div><div class="cl ro">${r[2]}</div><div class="cl ro">${r[3]}</div><div class="cl ro">${r[4]}</div><div class="cl ro" style="${r[5] ? "color:var(--gold-hi)" : ""}">${r[5] || "in use"}</div>`; });
+  g += `</div>`;
+  const lt = L.map(([n, c, on]) => `<div class="lt${on ? " on" : ""}"><span>${n}</span><small>${c}</small></div>`).join("");
+  const sl = [["select", "Select"], ["plus", "New", "dis"], ["copy", "Copy", "dis"], ["cut", "Cut", "dis"], ["paste", "Paste", "dis"], ["del", "Delete", "dis"], ["oops", "Oops"], ["imp", "Import…"], ["exp", "Export…"], ["edit", "Label 1"]]
+    .map(([i, t, c], n) => `<div class="a${c ? " " + c : ""}" style="grid-row:${n < 5 ? 1 : 2};grid-column:${(n % 5) + 1}">${ic(i)}${t}</div>`).join("")
+    + `<span class="sep" style="grid-column:6"></span>`
+    + [["Clean up unused"], ["Select its fixtures"], ["Use as import scope"], ["Info"]].map(([t], n) => `<div class="a fn" style="grid-row:1;grid-column:${7 + n}">${t}</div>`).join("")
+    + `<div class="a val" style="grid-row:2;grid-column:7"><small>Entries come from</small>imports only</div>`
+    + `<div class="exitbtn" data-go="exit">${ic("exit", "width:30px;height:30px")}<b>Exit</b><small>Devices draft · Bob</small></div>`;
+  return `
+  <div class="dlg">
+    <div class="title"><span class="crumb">${ic("devices")}<span class="up">Devices</span><span class="sep">›</span><span class="up">Metadata</span><span class="sep">›</span><span class="here">MVR</span></span>
+      <span class="chip"><span class="d" style="background:var(--gold-hi)"></span>Devices draft · Bob</span>
+      <span class="right">Root.ShowData.Devices.Metadata.MVR · shared by the patch and 3DSpatial</span></div>
+    <div class="kinds"><span class="lbl">Devices</span><span class="kind" data-go="draft"><span class="gd"></span>DMX</span><span class="kind on"><span class="gd"></span>Metadata</span><span class="kind later">+ more device kinds later</span><span class="claimnote">entries arrive by import, matched by UUID</span></div>
+    <div class="mid">
+      <div class="left">${lt}</div>
+      <div class="work">
+        <div class="strip"><span class="tb on">MVR</span><span class="tb" style="color:var(--faint)">more formats later</span></div>
+        <div class="gridbox">${g}</div>
+        <div class="echo"><span class="mono">lines name their rows: Label MvrLayer 1 "House rig"</span><span class="r">A rename in CAD renames it here on the next import</span></div>
+      </div>
+    </div>
+    <div class="slab">${sl}</div>
+  </div>`;
+}
+
+function show(mode) {
+  const f = document.getElementById("frame");
+  const over = { dialog: "draft", xchange: "draft", exit: "draft", menu: "draft", dup: "draft", export: "draft", place: "import" };
+  const base = over[mode] || mode;
+  f.innerHTML = (mode === "meta" ? metaView() : setup(base))
+    + (mode === "dialog" ? importDialog("file") : "")
+    + (mode === "xchange" ? importDialog("xchange") : "")
+    + (mode === "exit" ? exitAsk() : "")
+    + (mode === "menu" ? layerMenu() : "")
+    + (mode === "dup" ? dupDialog() : "")
+    + (mode === "export" ? exportDialog() : "")
+    + (mode === "place" ? placeAsk() : "")
+    + (mode === "after" ? `<div class="toast"><span class="d"></span>22 changes from Festival_R12.mvr are in the draft</div>` : "");
+  document.querySelectorAll(".modes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+  try { localStorage.setItem("patch-mode-v3", mode); } catch (e) {}
+}
+document.querySelectorAll(".modes button").forEach(b => b.addEventListener("click", () => show(b.dataset.mode)));
+document.getElementById("frame").addEventListener("click", e => {
+  const go = e.target.closest("[data-go]");
+  if (go) { show(go.dataset.go); return; }
+  const a = e.target.closest(".a");
+  if (a && !a.classList.contains("dis")) {
+    if (/Import…/.test(a.textContent)) { show("dialog"); return; }
+    if (/Export…/.test(a.textContent)) { show("export"); return; }
+  }
+  if (e.target.closest(".addsub")) { show("menu"); return; }
+  if (e.target.closest(".kind.on") === null && e.target.closest(".kind:not(.later)")) { show("meta"); return; }
+  const c = e.target.closest(".ask .save, .ask .disc");
+  if (c) show(c.classList.contains("disc") || c.classList.contains("save") ? "live" : "draft");
+});
+let start = "draft";
+try { start = localStorage.getItem("patch-mode-v3") || "draft"; } catch (e) {}
+show(start);
+</script>

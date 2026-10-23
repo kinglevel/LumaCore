@@ -1,0 +1,32 @@
+[package]
+name = "lumacore-render"
+version.workspace = true
+edition.workspace = true
+description = "The one renderer: the merge, the plan compiler, the 60 Hz render tick and its thread (decisions §27, §34 20.3)"
+
+[dependencies]
+lumacore-fixtures = { path = "../../model/lumacore-fixtures" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-tree = { path = "../../model/lumacore-tree" }
+lumacore-protocols = { path = "../../model/lumacore-protocols" }
+lumacore-trace = { path = "../../foundation/lumacore-trace" }
+spin_sleep = { workspace = true }
+crossbeam-channel = { workspace = true }
+thread-priority = { workspace = true }
+arrayvec = { workspace = true }
+uuid = { workspace = true }
+log = { workspace = true }
+arc-swap = { workspace = true }
+assert_no_alloc = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+criterion = { workspace = true }
+
+[[bench]]
+name = "render"
+harness = false
+
+[lints]
+workspace = true

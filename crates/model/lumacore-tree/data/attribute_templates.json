@@ -1,0 +1,709 @@
+{
+ "rules": [
+  [
+   "StrobeMode",
+   "strobemode",
+   "family"
+  ],
+  [
+   "*MSpeed",
+   "control",
+   "family"
+  ],
+  [
+   "*Reset*",
+   "control",
+   "family"
+  ],
+  [
+   "Video*",
+   "video",
+   "family"
+  ],
+  [
+   "*Mode",
+   "control",
+   "family"
+  ],
+  [
+   "Dimmer*",
+   "dimmer",
+   "family"
+  ],
+  [
+   "PositionEffect*",
+   "pantilt",
+   "family"
+  ],
+  [
+   "Pan*",
+   "pantilt",
+   "family"
+  ],
+  [
+   "Tilt*",
+   "pantilt",
+   "family"
+  ],
+  [
+   "XYZ_*",
+   "xyz",
+   "family"
+  ],
+  [
+   "Rot_*",
+   "rotation",
+   "family"
+  ],
+  [
+   "Scale_*",
+   "scale",
+   "family"
+  ],
+  [
+   "Shutter{n}*",
+   "shutter",
+   "family"
+  ],
+  [
+   "Strobe*",
+   "shutter",
+   "family"
+  ],
+  [
+   "Gobo{n}*",
+   "gobo",
+   "family"
+  ],
+  [
+   "AnimationWheel*",
+   "gobo",
+   "family"
+  ],
+  [
+   "AnimationSystem*",
+   "gobo",
+   "family"
+  ],
+  [
+   "Media*",
+   "media",
+   "family"
+  ],
+  [
+   "Model*",
+   "media",
+   "family"
+  ],
+  [
+   "Play*",
+   "media",
+   "family"
+  ],
+  [
+   "Object*",
+   "object",
+   "family"
+  ],
+  [
+   "Configuration*",
+   "object",
+   "family"
+  ],
+  [
+   "ColorRGB_Red*",
+   "indirect",
+   "family"
+  ],
+  [
+   "ColorRGB_Green*",
+   "indirect",
+   "family"
+  ],
+  [
+   "ColorRGB_Blue*",
+   "indirect",
+   "family"
+  ],
+  [
+   "ColorRGB_*",
+   "rgb",
+   "family"
+  ],
+  [
+   "ColorAdd_*",
+   "rgb",
+   "family"
+  ],
+  [
+   "ColorSub_*",
+   "rgb",
+   "family"
+  ],
+  [
+   "ColorMacro*",
+   "rgb",
+   "family"
+  ],
+  [
+   "HSB_*",
+   "hsb",
+   "family"
+  ],
+  [
+   "CIE_*",
+   "cie",
+   "family"
+  ],
+  [
+   "Color{n}*",
+   "colorwheel",
+   "family"
+  ],
+  [
+   "CTO*",
+   "colorwheel",
+   "family"
+  ],
+  [
+   "CTB*",
+   "colorwheel",
+   "family"
+  ],
+  [
+   "CTC*",
+   "colorwheel",
+   "family"
+  ],
+  [
+   "Tint*",
+   "colorwheel",
+   "family"
+  ],
+  [
+   "ColorEffects*",
+   "colorwheel",
+   "family"
+  ],
+  [
+   "Iris*",
+   "beam",
+   "family"
+  ],
+  [
+   "Frost{n}*",
+   "beam",
+   "family"
+  ],
+  [
+   "Prism{n}*",
+   "beam",
+   "family"
+  ],
+  [
+   "Effects{n}*",
+   "effects",
+   "family"
+  ],
+  [
+   "EffectsSync*",
+   "effects",
+   "family"
+  ],
+  [
+   "BeamShaper*",
+   "beam",
+   "family"
+  ],
+  [
+   "Focus{n}*",
+   "focus",
+   "family"
+  ],
+  [
+   "Zoom*",
+   "focus",
+   "family"
+  ],
+  [
+   "Blade*",
+   "shapers",
+   "family"
+  ],
+  [
+   "Shaper*",
+   "shapers",
+   "family"
+  ],
+  [
+   "KeyStone*",
+   "shapers",
+   "family"
+  ],
+  [
+   "LampControl*",
+   "control",
+   "family"
+  ],
+  [
+   "Fan*",
+   "control",
+   "family"
+  ],
+  [
+   "Fog*",
+   "control",
+   "family"
+  ],
+  [
+   "Haze*",
+   "control",
+   "family"
+  ],
+  [
+   "Blower*",
+   "control",
+   "family"
+  ],
+  [
+   "Control*",
+   "control",
+   "family"
+  ],
+  [
+   "Function*",
+   "control",
+   "family"
+  ],
+  [
+   "FieldOfView*",
+   "video",
+   "family"
+  ],
+  [
+   "InputSource*",
+   "video",
+   "family"
+  ],
+  [
+   "*reset*",
+   "control",
+   "keyword"
+  ],
+  [
+   "*invert*",
+   "control",
+   "keyword"
+  ],
+  [
+   "*calibrat*",
+   "control",
+   "keyword"
+  ],
+  [
+   "*demist*",
+   "control",
+   "keyword"
+  ],
+  [
+   "*speed*",
+   "control",
+   "keyword"
+  ],
+  [
+   "*mode*",
+   "control",
+   "keyword"
+  ],
+  [
+   "*strobe*",
+   "shutter",
+   "keyword"
+  ],
+  [
+   "*burst*",
+   "shutter",
+   "keyword"
+  ],
+  [
+   "*pulse*",
+   "shutter",
+   "keyword"
+  ],
+  [
+   "*shutter*",
+   "shutter",
+   "keyword"
+  ],
+  [
+   "*pattern*",
+   "effects",
+   "keyword"
+  ],
+  [
+   "*chase*",
+   "effects",
+   "keyword"
+  ],
+  [
+   "*effect*",
+   "effects",
+   "keyword"
+  ],
+  [
+   "*macro*",
+   "effects",
+   "keyword"
+  ],
+  [
+   "*gobo*",
+   "gobo",
+   "keyword"
+  ],
+  [
+   "*prism*",
+   "beam",
+   "keyword"
+  ],
+  [
+   "*iris*",
+   "beam",
+   "keyword"
+  ],
+  [
+   "*frost*",
+   "beam",
+   "keyword"
+  ],
+  [
+   "*zoom*",
+   "focus",
+   "keyword"
+  ],
+  [
+   "*focus*",
+   "focus",
+   "keyword"
+  ],
+  [
+   "*dimmer*",
+   "dimmer",
+   "keyword"
+  ],
+  [
+   "*intensity*",
+   "dimmer",
+   "keyword"
+  ],
+  [
+   "*colo*",
+   "colorwheel",
+   "keyword"
+  ],
+  [
+   "*red*",
+   "rgb",
+   "keyword"
+  ],
+  [
+   "*green*",
+   "rgb",
+   "keyword"
+  ],
+  [
+   "*blue*",
+   "rgb",
+   "keyword"
+  ],
+  [
+   "*white*",
+   "rgb",
+   "keyword"
+  ],
+  [
+   "*amber*",
+   "rgb",
+   "keyword"
+  ],
+  [
+   "*pan*",
+   "pantilt",
+   "keyword"
+  ],
+  [
+   "*tilt*",
+   "pantilt",
+   "keyword"
+  ],
+  [
+   "*media*",
+   "media",
+   "keyword"
+  ],
+  [
+   "*video*",
+   "video",
+   "keyword"
+  ]
+ ],
+ "std_class": {
+  "Dimmer.Dimmer": "dimmer",
+  "Position.PanTilt": "pantilt",
+  "Position.XYZ": "xyz",
+  "Position.Rotation": "rotation",
+  "Position.Scale": "scale",
+  "Gobo.Gobo": "gobo",
+  "Gobo.Media": "media",
+  "Gobo.Object": "object",
+  "Color.RGB": "rgb",
+  "Color.Color": "colorwheel",
+  "Color.HSB": "hsb",
+  "Color.CIE": "cie",
+  "Color.ColorCorrection": "colorcorrection",
+  "Color.HSBC_Shift": "hsbcshift",
+  "Color.ColorKey": "colorkey",
+  "Color.Indirect": "indirect",
+  "Beam.Beam": "beam",
+  "Focus.Focus": "focus",
+  "Control.Control": "control",
+  "Shapers.Shapers": "shapers",
+  "Video.Video": "video"
+ },
+ "fallback": "control",
+ "templates": [
+  {
+   "name": "LumaCore FX",
+   "groups": [
+    {
+     "name": "Dimmer",
+     "color": "#e6b422",
+     "icon": "sun",
+     "features": [
+      "Dimmer"
+     ]
+    },
+    {
+     "name": "Position",
+     "color": "#4d8fd6",
+     "icon": "move",
+     "features": [
+      "PanTilt",
+      "XYZ",
+      "Rotation",
+      "Scale"
+     ]
+    },
+    {
+     "name": "Color",
+     "color": "#ff5c8a",
+     "icon": "palette",
+     "features": [
+      "RGB",
+      "Color",
+      "HSB",
+      "CIE",
+      "Indirect",
+      "ColorCorrection",
+      "HSBC_Shift",
+      "ColorKey"
+     ]
+    },
+    {
+     "name": "Shutter",
+     "color": "#f3ecd3",
+     "icon": "zap",
+     "features": [
+      "Shutter"
+     ]
+    },
+    {
+     "name": "FX",
+     "color": "#b07be6",
+     "icon": "sparkles",
+     "features": [
+      "Gobo",
+      "Beam",
+      "Effects",
+      "Focus"
+     ]
+    },
+    {
+     "name": "Control",
+     "color": "#9a9a9a",
+     "icon": "sliders-horizontal",
+     "features": [
+      "Control"
+     ]
+    },
+    {
+     "name": "Shapers",
+     "color": "#c08a5a",
+     "icon": "crop",
+     "features": [
+      "Shapers"
+     ]
+    },
+    {
+     "name": "Video",
+     "color": "#3fbf4a",
+     "icon": "video",
+     "features": [
+      "Media",
+      "Object",
+      "Video"
+     ]
+    }
+   ],
+   "classes": {
+    "dimmer": "Dimmer.Dimmer",
+    "pantilt": "Position.PanTilt",
+    "xyz": "Position.XYZ",
+    "rotation": "Position.Rotation",
+    "scale": "Position.Scale",
+    "shutter": "Shutter.Shutter",
+    "strobemode": "Shutter.Shutter",
+    "gobo": "FX.Gobo",
+    "beam": "FX.Beam",
+    "effects": "FX.Effects",
+    "focus": "FX.Focus",
+    "media": "Video.Media",
+    "object": "Video.Object",
+    "video": "Video.Video",
+    "rgb": "Color.RGB",
+    "indirect": "Color.Indirect",
+    "hsb": "Color.HSB",
+    "cie": "Color.CIE",
+    "colorwheel": "Color.Color",
+    "colorcorrection": "Color.ColorCorrection",
+    "hsbcshift": "Color.HSBC_Shift",
+    "colorkey": "Color.ColorKey",
+    "control": "Control.Control",
+    "shapers": "Shapers.Shapers"
+   }
+  },
+  {
+   "name": "GDTF standard",
+   "groups": [
+    {
+     "name": "Dimmer",
+     "color": "#e6b422",
+     "icon": "sun",
+     "features": [
+      "Dimmer"
+     ]
+    },
+    {
+     "name": "Position",
+     "color": "#4d8fd6",
+     "icon": "move",
+     "features": [
+      "PanTilt",
+      "XYZ",
+      "Rotation",
+      "Scale"
+     ]
+    },
+    {
+     "name": "Gobo",
+     "color": "#d6a05a",
+     "icon": "circle-dot",
+     "features": [
+      "Gobo",
+      "Media",
+      "Object"
+     ]
+    },
+    {
+     "name": "Color",
+     "color": "#ff5c8a",
+     "icon": "palette",
+     "features": [
+      "RGB",
+      "Color",
+      "HSB",
+      "CIE",
+      "Indirect",
+      "ColorCorrection",
+      "HSBC_Shift",
+      "ColorKey"
+     ]
+    },
+    {
+     "name": "Beam",
+     "color": "#6fd6c8",
+     "icon": "cone",
+     "features": [
+      "Beam"
+     ]
+    },
+    {
+     "name": "Focus",
+     "color": "#8ab0c0",
+     "icon": "focus",
+     "features": [
+      "Focus"
+     ]
+    },
+    {
+     "name": "Control",
+     "color": "#9a9a9a",
+     "icon": "sliders-horizontal",
+     "features": [
+      "Control"
+     ]
+    },
+    {
+     "name": "Shapers",
+     "color": "#c08a5a",
+     "icon": "crop",
+     "features": [
+      "Shapers"
+     ]
+    },
+    {
+     "name": "Video",
+     "color": "#3fbf4a",
+     "icon": "video",
+     "features": [
+      "Video"
+     ]
+    }
+   ],
+   "classes": {
+    "dimmer": "Dimmer.Dimmer",
+    "pantilt": "Position.PanTilt",
+    "xyz": "Position.XYZ",
+    "rotation": "Position.Rotation",
+    "scale": "Position.Scale",
+    "shutter": "Beam.Beam",
+    "strobemode": "Control.Control",
+    "gobo": "Gobo.Gobo",
+    "beam": "Beam.Beam",
+    "effects": "Beam.Beam",
+    "focus": "Focus.Focus",
+    "media": "Gobo.Media",
+    "object": "Gobo.Object",
+    "video": "Video.Video",
+    "rgb": "Color.RGB",
+    "indirect": "Color.Indirect",
+    "hsb": "Color.HSB",
+    "cie": "Color.CIE",
+    "colorwheel": "Color.Color",
+    "colorcorrection": "Color.ColorCorrection",
+    "hsbcshift": "Color.HSBC_Shift",
+    "colorkey": "Color.ColorKey",
+    "control": "Control.Control",
+    "shapers": "Shapers.Shapers"
+   }
+  }
+ ],
+ "refine": {
+  "beam": [
+   "shutter",
+   "effects"
+  ],
+  "control": [
+   "strobemode"
+  ]
+ }
+}

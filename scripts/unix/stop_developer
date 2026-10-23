@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+# Stop all processes the dev plans start (server, CLI, Meownitor, Tracy, app).
+# Does NOT kill lumacore-scripts (the TUI launcher).
+#
+# Usage:
+#   ./scripts/unix/stop_developer [--debug]
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+
+DEBUG=0
+
+for arg in "$@"; do
+    if [ "$arg" = "--debug" ]; then
+        DEBUG=1
+    elif [ "$arg" = "--help" ] || [ "$arg" = "-h" ]; then
+        cat <<'EOF'
+Usage: ./scripts/unix/stop_developer [--debug]
+
+Stops all developer processes: lumacore-server, lumacore-cli, lumacore-app
+and Tracy.
+Does NOT stop lumacore-scripts (the TUI launcher).
+EOF
+        exit 0
+    else
+        echo "Unknown argument: $arg" >&2
+        exit 1
+    fi
+done
+
+# ── The server first, with time for its clean shutdown (autosave) ──
+lc_profile "$DEBUG"
+stop_server --force || true
+
+# ── Collect PIDs ───────────────────────────────────────────────────
+# Find all matching processes, excluding lumacore-scripts.
+
+collect_pids() {
+    {
+        pgrep -f lumacore-server || true
+        pgrep -f lumacore-cli || true
+        pgrep -x lumacore-app || true
+        pgrep -f tracy-profiler || true
+        pgrep -f tracy-capture || true
+        pgrep -f "Tracy" || true
+        # Known ports: TCP :47654 (shell), UDP :47653 (command),
+        # HTTP :47656 (REST/WS), HTTP :47657 (Perfetto)
+        lsof -tiTCP:47654 -sTCP:LISTEN 2>/dev/null || true
+        lsof -tiUDP:47653 2>/dev/null || true
+        lsof -tiTCP:47656 -sTCP:LISTEN 2>/dev/null || true
+        lsof -tiTCP:47657 -sTCP:LISTEN 2>/dev/null || true
+    } | sed '/^$/d' | sort -u
+}
+
+# Filter out lumacore-scripts PIDs so we never kill the TUI launcher.
+filter_scripts() {
+    local all_pids="$1"
+    local script_pids
+    script_pids="$(pgrep -f lumacore-scripts 2>/dev/null || true)"
+
+    if [ -z "$script_pids" ]; then
+        echo "$all_pids"
+        return
+    fi
+
+    # Remove script PIDs from the list
+    echo "$all_pids" | while read -r pid; do
+        if ! echo "$script_pids" | grep -qx "$pid"; then
+            echo "$pid"
+        fi
+    done
+}
+
+RAW_PIDS="$(collect_pids)"
+PIDS="$(filter_scripts "$RAW_PIDS")"
+
+if [ -z "$PIDS" ]; then
+    echo "No running developer processes found."
+    exit 0
+fi
+
+echo "Stopping developer processes:"
+printf '  %s\n' $PIDS
+
+# ── SIGTERM ────────────────────────────────────────────────────────
+printf '%s\n' "$PIDS" | while read -r pid; do
+    [ -n "$pid" ] && kill "$pid" 2>/dev/null || true
+done
+
+sleep 0.5
+
+# ── Check for survivors ───────────────────────────────────────────
+RAW_REMAINING="$(collect_pids)"
+REMAINING="$(filter_scripts "$RAW_REMAINING")"
+
+if [ -n "$REMAINING" ]; then
+    echo "Force-killing remaining processes:"
+    printf '  %s\n' $REMAINING
+    printf '%s\n' "$REMAINING" | while read -r pid; do
+        [ -n "$pid" ] && kill -9 "$pid" 2>/dev/null || true
+    done
+    sleep 0.5
+
+    # Final check
+    RAW_FINAL="$(collect_pids)"
+    FINAL="$(filter_scripts "$RAW_FINAL")"
+    if [ -n "$FINAL" ]; then
+        echo "Some processes are still running:"
+        printf '  %s\n' $FINAL
+        exit 1
+    fi
+fi
+
+echo "All developer processes stopped."
+
+# Let shells settle after SIGTERM so iTerm's "is at shell prompt" check
+# sees a clean prompt (fish prints "terminated by signal SIGTERM" first).
+sleep 1
+
+# ── Close orphaned terminal windows (macOS) ──────────────────────
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    term_app="${TERM_PROGRAM:-Terminal}"
+    case "$term_app" in
+        iTerm.app|iTerm2)
+            osascript <<APPLE 2>/dev/null || true
+tell application "iTerm"
+    repeat with w in windows
+        set dominated to true
+        repeat with t in tabs of w
+            repeat with s in sessions of t
+                if (is at shell prompt of s) is false then
+                    set dominated to false
+                end if
+            end repeat
+        end repeat
+        if dominated then
+            close w
+        end if
+    end repeat
+end tell
+APPLE
+            ;;
+        Apple_Terminal|Terminal)
+            osascript <<APPLE 2>/dev/null || true
+tell application "Terminal"
+    repeat with w in windows
+        if (busy of current tab of w) is false then
+            close w
+        end if
+    end repeat
+end tell
+APPLE
+            ;;
+    esac
+fi

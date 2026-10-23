@@ -1,0 +1,306 @@
+<title>Fixture Parts</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one column of boards — a fixture type's parts and their roles, programming with a part
+   focus (encoder bar + command line), how values are stored, the map with parts, effects over
+   parts and cells. The console look of the round 2 Patch mockups (single dark). */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --ok: #00a60a; --ok-t: #7fdc85; --del: #e05a5a; --del-t: #f2a3a3; --new: #4f8fd6; --new-t: #9cc3f0; --sel: #2d3a52;
+  --main: #3b5f8a; --ring: #7a4a8a; --shared: #3a4a3a;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 48px; }
+main { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
+header h1 { font-size: 22px; font-weight: 500; margin: 0 0 6px; text-wrap: balance; }
+header p { margin: 0; color: var(--dim); max-width: 84ch; line-height: 1.5; }
+.board { display: flex; flex-direction: column; gap: 10px; }
+.board > h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-weight: 600; margin: 0; }
+.board > .why { color: var(--dim); margin: 0; line-height: 1.5; max-width: 86ch; }
+.decide { border: 1px dashed var(--gold-hi); border-radius: 6px; padding: 10px 12px; color: var(--gold-text); background: color-mix(in srgb, var(--gold) 14%, transparent); max-width: 86ch; line-height: 1.5; margin: 0; }
+.icon { width: 16px; height: 16px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+code, .mono { font-family: var(--mono); font-size: 12px; }
+button:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 2px; }
+.dlg { border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.title { min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.title .t { font-size: 16px; font-weight: 500; }
+.title .sub { color: var(--dim); font-size: 13px; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.line { font-family: var(--mono); font-size: 12.5px; color: var(--dim); background: var(--head); border: 1px solid var(--cell-line); border-radius: 6px; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+.line b { color: var(--text); font-weight: 400; }
+
+/* Parts of a type */
+.tree { padding: 10px 12px; font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
+.tree .g { display: flex; align-items: center; gap: 8px; min-height: 30px; }
+.tree .g .n { color: var(--dim); }
+.tree .g .attrs { color: var(--faint); font-size: 12px; }
+.tag { height: 22px; display: inline-flex; align-items: center; padding: 0 8px; border-radius: 11px; font-size: 12px; white-space: nowrap; color: #fff; }
+.r-main { background: var(--main); } .r-ring { background: var(--ring); } .r-shared { background: var(--shared); color: var(--ok-t); } .r-pixel { background: #5a6b2a; } .r-panel { background: #6b4a2a; }
+.indent1 { padding-left: 18px; } .indent2 { padding-left: 36px; } .indent3 { padding-left: 54px; }
+.rules table, table.t { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.t th { text-align: left; font-weight: 400; color: var(--dim); padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.t td { padding: 7px 10px; border-bottom: 1px solid var(--cell-line); }
+.tw { overflow-x: auto; }
+
+/* Programming */
+.prog { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.left { border-right: 1px solid var(--line); display: flex; flex-direction: column; min-width: 0; }
+.fx { display: flex; gap: 10px; padding: 12px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--cell-line); }
+.lamp { width: 74px; height: 74px; border-radius: 37px; display: grid; place-items: center; position: relative; background: #111; border: 1px solid var(--line); }
+.lamp .ring { position: absolute; inset: 5px; border-radius: 50%; border: 9px solid #222; transition: border-color .2s; }
+.lamp .core { width: 30px; height: 30px; border-radius: 15px; background: #222; transition: background .2s; }
+.lamp small { position: absolute; bottom: -18px; font-size: 11px; color: var(--dim); }
+.ebar { display: flex; flex-direction: column; gap: 8px; padding: 12px; }
+.ebar .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.ebar .lab { font-size: 12px; color: var(--faint); min-width: 70px; text-transform: uppercase; letter-spacing: .05em; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; flex-wrap: wrap; }
+.seg button { font: inherit; color: var(--dim); background: var(--cell); border: 0; border-right: 1px solid var(--line); height: 44px; padding: 0 14px; cursor: pointer; }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--head); color: var(--text); box-shadow: inset 0 -3px 0 var(--gold-hi); }
+.seg button .tag { margin-left: 6px; height: 18px; font-size: 11px; }
+.enc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.e { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.e .k { font-size: 12px; color: var(--dim); display: flex; justify-content: space-between; gap: 6px; }
+.e .v { font-size: 20px; font-variant-numeric: tabular-nums; }
+.e input { width: 100%; accent-color: var(--gold-hi); }
+.e.part { border-color: var(--ring); }
+.right { display: flex; flex-direction: column; min-width: 0; }
+.store { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.store h4 { margin: 0; font-size: 12px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-family: var(--mono); font-size: 12.5px; }
+.kv span:nth-child(odd) { color: var(--dim); }
+.kv .new { color: var(--gold-hi); }
+
+/* Map with parts (lines, the chosen variant B) */
+.vb { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(90px, .45fr) minmax(0, 1fr); padding: 10px; }
+.colB { display: flex; flex-direction: column; gap: 6px; z-index: 2; min-width: 0; }
+.colB h3 { margin: 0 0 2px; font-size: 12px; color: var(--faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+.colB .sep { font-size: 11.5px; color: var(--faint); margin-top: 6px; display: flex; gap: 6px; align-items: center; }
+.node { height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); font-size: 13px; }
+.node.none { border-style: dashed; border-color: color-mix(in srgb, var(--del) 50%, var(--line)); }
+.node.fold { border-color: var(--gold-hi); border-style: dashed; }
+svg.links { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+svg.links path { fill: none; stroke-width: 2; }
+.l-auto { stroke: color-mix(in srgb, var(--ok) 70%, transparent); }
+.l-fold { stroke: var(--gold-hi); stroke-dasharray: 6 4; }
+.foldbar { border-top: 1px solid var(--line); padding: 8px 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.foldbar .lab { color: var(--dim); font-size: 13px; }
+
+/* Effects over parts */
+.jdc { display: flex; flex-direction: column; gap: 4px; padding: 12px; }
+.jdc .strip { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; }
+.jdc .strip span { height: 22px; border-radius: 3px; background: #222; transition: background .15s; }
+.jdc .face span { height: 34px; }
+.jdc .lbl { font-size: 12px; color: var(--dim); margin-top: 4px; }
+dl.rules { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 16px; margin: 0; font-size: 13px; }
+dl.rules dt { color: var(--faint); } dl.rules dd { margin: 0; line-height: 1.45; }
+@media (max-width: 860px) {
+  .two, .prog { grid-template-columns: minmax(0, 1fr); }
+  .left { border-right: 0; border-bottom: 1px solid var(--line); }
+  .enc { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .vb { grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+<header>
+  <h1>Fixture parts · a proposal</h1>
+  <p>Mockup for the 34g4 round 3 hardening (decisions §34, 2026-10-18): how a fixture's parts — a centre and a ring, a pixel strip, the heads of a bar — are programmed and mapped <b>without</b> subfixtures. The fixture stays the one object (one FID, one patch row, one selection, one grid spot; §28). A part is a <b>focus on its values</b>, never an object of its own. Real fixtures: MAC Aura XB (Extended) and GLP JDC-1 from <code>library/gdtf/</code>. The words are placeholders until lum.md.</p>
+</header>
+
+<section class="board" aria-labelledby="h1">
+  <h2 id="h1">1 · A mode declares its parts</h2>
+  <p class="why">Read from the GDTF geometry tree: a geometry that carries channels of its own is a part; channels on the root (Base / Yoke / Head) are shared by the whole fixture. Each part gets a <b>role</b> from rules saved in the show (like attribute rules) — the Aura XB's "Auras" and another type's "Halo" are both <b>Ring</b>, so programming and maps line up across types. A part with repeated geometries (12 tube sections) has <b>cells</b>.</p>
+  <div class="two">
+    <div class="dlg">
+      <div class="title"><span class="t">MAC Aura XB · Extended</span><span class="sub">25 channels</span></div>
+      <div class="tree">
+        <div class="g"><span class="n">Base</span><span class="tag r-shared">shared</span><span class="attrs">Control1 · Effects1/2 · rates · sync</span></div>
+        <div class="g indent1"><span class="n">Yoke</span><span class="tag r-shared">shared</span><span class="attrs">Pan</span></div>
+        <div class="g indent2"><span class="n">Head</span><span class="tag r-shared">shared</span><span class="attrs">Tilt · Zoom</span></div>
+        <div class="g indent3"><span class="n">Beams</span><span class="tag r-main">Main</span><span class="attrs">Shutter1 · Dimmer · Color1 · R G B W · CTC</span></div>
+        <div class="g indent3"><span class="n">Auras</span><span class="tag r-ring">Ring</span><span class="attrs">Shutter1 · Dimmer · Color2 · R G B</span></div>
+      </div>
+    </div>
+    <div class="dlg">
+      <div class="title"><span class="t">GLP JDC-1 · DMX Mode 2</span><span class="sub">tube + RGB face, 12 sections each</span></div>
+      <div class="tree">
+        <div class="g"><span class="n">Base</span><span class="tag r-shared">shared</span><span class="attrs">Control</span></div>
+        <div class="g indent1"><span class="n">Head</span><span class="tag r-shared">shared</span><span class="attrs">Tilt</span></div>
+        <div class="g indent2"><span class="n">Beams</span><span class="tag r-main">Main</span><span class="attrs">12 cells · Dimmer · Shutter</span></div>
+        <div class="g indent2"><span class="n">Plates</span><span class="tag r-panel">Panel</span><span class="attrs">12 cells · Dimmer · R G B</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="dlg rules">
+    <div class="title"><span class="t">Part roles</span><span class="sub">rules in the show · first match wins · built-in at the bottom</span></div>
+    <div class="tw"><table class="t">
+      <thead><tr><th>#</th><th>If the geometry is</th><th>Role</th><th>Scope</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><code>Auras</code></td><td><span class="tag r-ring">Ring</span></td><td>MAC Aura XB (example of an exact rule)</td></tr>
+        <tr><td>2</td><td><code>*Halo*</code> · <code>*Ring*</code> · <code>*Aura*</code></td><td><span class="tag r-ring">Ring</span></td><td>built-in</td></tr>
+        <tr><td>3</td><td><code>*Plate*</code> · <code>*Panel*</code> · <code>*Face*</code></td><td><span class="tag r-panel">Panel</span></td><td>built-in</td></tr>
+        <tr><td>4</td><td><code>*Pixel*</code> · <code>*Cell*</code> · <code>*Segment*</code></td><td><span class="tag r-pixel">Pixel</span></td><td>built-in</td></tr>
+        <tr><td>5</td><td><code>Head{n}</code> (several heads)</td><td>Head(n)</td><td>built-in</td></tr>
+        <tr><td>6</td><td>the part with the beam geometry</td><td><span class="tag r-main">Main</span></td><td>built-in, fallback</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<section class="board" aria-labelledby="h2">
+  <h2 id="h2">2 · Programming with a part focus</h2>
+  <p class="why">Select fixtures as always (101–106). The encoder bar's <b>Part</b> switch narrows what the encoders set: <b>All</b> sets the whole fixture (both parts, as today), <b>Ring</b> sets only the ring. The selection, the grid and groups don't change; the focus is the programmer's, like a feature-group switch. Try it: set Dimmer on All, then switch to Ring and pull it down.</p>
+  <div class="dlg">
+    <div class="title"><span class="t">Programmer</span><span class="sub">Fixture 101 Thru 106 · MAC Aura XB · Extended</span></div>
+    <div class="prog">
+      <div class="left">
+        <div class="fx" id="lamps"></div>
+        <div class="ebar">
+          <div class="row"><span class="lab">Part</span><div class="seg" role="group" aria-label="Part"><button id="p-all" aria-pressed="true">All</button><button id="p-main" aria-pressed="false">Main<span class="tag r-main">Beams</span></button><button id="p-ring" aria-pressed="false">Ring<span class="tag r-ring">Auras</span></button></div></div>
+          <div class="enc">
+            <div class="e" id="e-dim"><span class="k"><span>Dimmer</span><span id="dim-who">All</span></span><span class="v" id="dim-v">100</span><input id="dim" type="range" min="0" max="100" value="100" aria-label="Dimmer"></div>
+            <div class="e" id="e-hue"><span class="k"><span>Colour</span><span id="hue-who">All</span></span><span class="v" id="hue-v">Amber</span><input id="hue" type="range" min="0" max="360" value="35" aria-label="Colour hue"></div>
+            <div class="e"><span class="k"><span>Tilt</span><span>shared</span></span><span class="v">−20°</span><input type="range" min="0" max="100" value="40" aria-label="Tilt" disabled></div>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="store">
+          <h4>What the programmer holds</h4>
+          <div class="kv" id="kv"></div>
+        </div>
+        <div class="store"><h4>The line</h4><div class="line" id="pline"></div></div>
+      </div>
+    </div>
+  </div>
+  <p class="decide">To decide: the command-line word for a part focus (lum.md first) — e.g. <code>Fixture 101 Thru 106 Ring At 0</code> (the role as a word after the selection), <code>… Part "Ring" At 0</code>, or a dotted path <code>Fixture 101.Ring</code> (§12's Path reading; no number of its own).</p>
+</section>
+
+<section class="board" aria-labelledby="h3">
+  <h2 id="h3">3 · How values are stored</h2>
+  <p class="why">The key is <b>fixture + attribute + optional part</b>. No part = the whole fixture, exactly as today, so every existing show and line keeps working. A part value exists only where you set one — sparse, never one copy per part. Rendering: a part value wins over the whole-fixture value for that part; the rest of the fixture takes the whole value.</p>
+  <div class="dlg tw"><table class="t">
+    <thead><tr><th>Stored in Cue 3</th><th>Beams (Main) gets</th><th>Auras (Ring) gets</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>101 · Dimmer = 100</code></td><td>100</td><td>100</td><td>whole fixture: every part with a Dimmer</td></tr>
+      <tr><td><code>101 · Dimmer = 100</code><br><code>101 · Dimmer · Ring = 0</code></td><td>100</td><td>0</td><td>the part value wins for its part</td></tr>
+      <tr><td><code>101 · Dimmer · Ring = 60</code></td><td>— (unchanged)</td><td>60</td><td>only the ring was programmed</td></tr>
+      <tr><td><code>101 · Tilt = −20°</code></td><td colspan="2">−20° (shared, on the head)</td><td>shared channels have no parts</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="board" aria-labelledby="h4">
+  <h2 id="h4">4 · The map with parts (lines, as chosen)</h2>
+  <p class="why">Rows are part + attribute, grouped by part; parts line up by <b>role</b> first, then by GDTF geometry name. MAC Aura XB (Extended) → MAC Quantum Profile (one part, Main): the Main rows map straight; the Ring rows have no ring to go to — <b>Fold onto Main</b> (the ring's values become the head's, where Main has none of its own) or <b>Keep unused</b>, chosen for the whole part.</p>
+  <div class="dlg">
+    <div class="title"><span class="t">Map attributes</span><span class="sub">6 fixtures · MAC Aura XB · Extended → MAC Quantum Profile · Basic</span></div>
+    <div class="vb" id="vb">
+      <div class="colB" id="L"></div><div></div><div class="colB" id="R"></div>
+      <svg class="links" id="links"></svg>
+    </div>
+    <div class="foldbar"><span class="lab">Ring has no ring on the Quantum:</span><div class="seg" role="group" aria-label="Ring"><button id="f-fold" aria-pressed="false">Fold onto Main</button><button id="f-keep" aria-pressed="true">Keep unused</button></div></div>
+  </div>
+</section>
+
+<section class="board" aria-labelledby="h5">
+  <h2 id="h5">5 · Effects over parts and cells</h2>
+  <p class="why">An effect line's <b>Resolution</b> spreads its pattern over whole fixtures, over parts, or over cells (§28 kept cells for effects; this adds Part). A chase over the JDC-1's 12 tube sections is Resolution Cell, Part Main; the face can run a colour wave at the same time (Part Panel). Static per-cell values stay out for now — the model leaves room for them.</p>
+  <div class="dlg">
+    <div class="title"><span class="t">GLP JDC-1</span><span class="sub">Main: chase over 12 cells · Panel: colour wave over 12 cells</span></div>
+    <div class="jdc"><div class="strip" id="tube"></div><span class="lbl">Beams · Main · 12 cells</span><div class="strip face" id="face"></div><span class="lbl">Plates · Panel · 12 cells</span></div>
+  </div>
+</section>
+
+<section class="board" aria-labelledby="h6">
+  <h2 id="h6">Why not subfixtures</h2>
+  <dl class="rules">
+    <dt>Subfixtures</dt><dd>Every part is a fixture of its own (101.1, 101.2) with its own patch row, selection, grid spot, group place and data. A type change reshapes all of them; data scatters (handoffs/effects.md: "subfixtures are bad").</dd>
+    <dt>Here</dt><dd>One object; a part is a facet of a value and a focus in the programmer. A type change maps part roles; groups, selection and the grid never notice.</dd>
+    <dt>Hog</dt><dd>Dotted numbers aggregated on selection — still separate objects.</dd>
+    <dt>MagicQ</dt><dd>Multi-element heads matched across types by function — closest to this, without roles.</dd>
+  </dl>
+</section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const st = { part: 'all', whole: { dim: 100, hue: 35 }, ring: {}, main: {}, fold: false };
+const hueName = h => h < 15 || h >= 345 ? 'Red' : h < 45 ? 'Amber' : h < 70 ? 'Yellow' : h < 160 ? 'Green' : h < 200 ? 'Cyan' : h < 260 ? 'Blue' : h < 300 ? 'Violet' : 'Magenta';
+const val = (part, k) => (st[part] && st[part][k] != null) ? st[part][k] : st.whole[k];
+function render() {
+  for (const p of ['all', 'main', 'ring']) $('p-' + p).setAttribute('aria-pressed', st.part === p);
+  const src = st.part === 'all' ? 'whole' : st.part;
+  const d = val(src, 'dim'), h = val(src, 'hue');
+  $('dim').value = d; $('hue').value = h; $('dim-v').textContent = d; $('hue-v').textContent = hueName(+h);
+  const who = st.part === 'all' ? 'All' : st.part === 'ring' ? 'Ring' : 'Main';
+  $('dim-who').textContent = who; $('hue-who').textContent = who;
+  $('e-dim').classList.toggle('part', st.part !== 'all'); $('e-hue').classList.toggle('part', st.part !== 'all');
+  let lamps = '';
+  for (let i = 1; i <= 6; i++) {
+    const md = val('main', 'dim'), mh = val('main', 'hue'), rd = val('ring', 'dim'), rh = val('ring', 'hue');
+    lamps += `<div class="lamp" aria-label="Fixture ${100 + i}"><span class="ring" style="border-color:hsl(${rh} 90% ${8 + rd * .45}%)"></span><span class="core" style="background:hsl(${mh} 90% ${8 + md * .5}%)"></span><small>${100 + i}</small></div>`;
+  }
+  $('lamps').innerHTML = lamps;
+  const rows = [['101–106 · Dimmer', st.whole.dim], ['101–106 · Colour', hueName(st.whole.hue)]];
+  for (const p of ['main', 'ring']) {
+    const nm = p === 'ring' ? 'Ring' : 'Main';
+    if (st[p].dim != null) rows.push([`101–106 · Dimmer · ${nm}`, st[p].dim, true]);
+    if (st[p].hue != null) rows.push([`101–106 · Colour · ${nm}`, hueName(st[p].hue), true]);
+  }
+  $('kv').innerHTML = rows.map(([k, v, n]) => `<span class="${n ? 'new' : ''}">${k}</span><span class="${n ? 'new' : ''}">${v}</span>`).join('');
+  const last = st.part === 'all' ? `Fixture 101 Thru 106 At ${d}` : `Fixture 101 Thru 106 ${who} At ${d}`;
+  $('pline').innerHTML = `<b>${last}</b>   ← the part word is a placeholder (lum.md first)`;
+}
+function setVal(k, v) { const p = st.part === 'all' ? 'whole' : st.part; st[p][k] = v; render(); }
+$('dim').addEventListener('input', e => setVal('dim', +e.target.value));
+$('hue').addEventListener('input', e => setVal('hue', +e.target.value));
+// The map with parts.
+const LEFT = [['Shared', ['Pan', 'Tilt', 'Zoom', 'Control1']], ['Main · Beams', ['Dimmer', 'Shutter1', 'Color']], ['Ring · Auras', ['Dimmer', 'Shutter1', 'Color']]];
+const RIGHT = [['Shared', ['Pan', 'Tilt', 'Zoom', 'Focus1', 'Control1']], ['Main · Head', ['Dimmer', 'Shutter1', 'Color']]];
+function mapRender() {
+  $('L').innerHTML = '<h3>MAC Aura XB · Extended</h3>' + LEFT.map(([p, as]) => `<div class="sep">${p.startsWith('Ring') ? '<span class="tag r-ring">Ring</span>' : p.startsWith('Main') ? '<span class="tag r-main">Main</span>' : '<span class="tag r-shared">shared</span>'}${p.split(' · ')[1] || ''}</div>` +
+    as.map(a => `<div class="node ${p.startsWith('Ring') ? (st.fold ? 'fold' : 'none') : ''}" data-l="${p}|${a}">${a}${a === 'Color' ? ' <span class="mono">(through colour)</span>' : ''}</div>`).join('')).join('');
+  $('R').innerHTML = '<h3>MAC Quantum Profile · Basic</h3>' + RIGHT.map(([p, as]) => `<div class="sep">${p.startsWith('Main') ? '<span class="tag r-main">Main</span>' : '<span class="tag r-shared">shared</span>'}${p.split(' · ')[1] || ''}</div>` +
+    as.map(a => `<div class="node" data-r="${p.startsWith('Main') ? 'Main' : 'Shared'}|${a}">${a}</div>`).join('')).join('');
+  const box = $('vb'), r0 = box.getBoundingClientRect();
+  const pos = (el, side) => { const r = el.getBoundingClientRect(); return [side === 'r' ? r.right - r0.left : r.left - r0.left, r.top - r0.top + r.height / 2]; };
+  let html = '';
+  for (const n of box.querySelectorAll('[data-l]')) {
+    const [p, a] = n.dataset.l.split('|');
+    const ring = p.startsWith('Ring');
+    if (ring && !st.fold) continue;
+    const t = box.querySelector(`[data-r="${p.startsWith('Shared') ? 'Shared' : 'Main'}|${a}"]`); if (!t) continue;
+    const [x1, y1] = pos(n, 'r'), [x2, y2] = pos(t, 'l'), mx = (x1 + x2) / 2;
+    html += `<path class="${ring ? 'l-fold' : 'l-auto'}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}"></path>`;
+  }
+  $('links').innerHTML = html;
+  $('f-fold').setAttribute('aria-pressed', st.fold); $('f-keep').setAttribute('aria-pressed', !st.fold);
+}
+// Effects over cells.
+$('tube').innerHTML = Array.from({ length: 12 }, () => '<span></span>').join('');
+$('face').innerHTML = Array.from({ length: 12 }, () => '<span></span>').join('');
+let t0 = performance.now();
+const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function tick(now) {
+  const t = (now - t0) / 1000;
+  [...$('tube').children].forEach((s, i) => { const on = still ? i % 3 === 0 : Math.floor(t * 8) % 12 === i; s.style.background = on ? '#f4f4f4' : '#222'; });
+  [...$('face').children].forEach((s, i) => { s.style.background = `hsl(${(still ? i * 30 : i * 30 + t * 90) % 360} 85% 45%)`; });
+  if (!still) requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.id.startsWith('p-')) { st.part = b.id.slice(2); render(); }
+  if (b.id === 'f-fold' || b.id === 'f-keep') { st.fold = b.id === 'f-fold'; mapRender(); }
+});
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(mapRender, 100); });
+st.whole.hue = 35;
+render(); mapRender();
+</script>

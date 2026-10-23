@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# Watch a run live from another terminal (Ctrl-C stops watching, not the run).
+#
+# Usage:
+#   ./scripts/unix/logs            # the newest script run; switches to the next run when one starts
+#   ./scripts/unix/logs fuzz       # the newest fuzz run (sweep progress every 5 s)
+#   ./scripts/unix/logs server     # the local server's output (target/<profile>/server.log)
+#   ./scripts/unix/logs list       # the recent runs, newest first
+#   ./scripts/unix/logs <file>     # one log
+set -euo pipefail
+export LC_NO_LOG=1
+source "$(dirname "$0")/lib.sh"
+
+follow() {
+    local file="$1"
+    echo "Following $file (Ctrl-C stops watching; the run goes on)"
+    exec tail -n 200 -F "$file"
+}
+
+case "${1:-}" in
+    ""|script|scripts)
+        [ -e "$LOG_DIR/latest.log" ] || die "No script runs yet ($LOG_DIR)"
+        follow "$LOG_DIR/latest.log" ;;
+    fuzz)
+        f="$REPO_ROOT/target/fuzz-report/logs/latest.log"
+        [ -e "$f" ] || die "No fuzz run yet — start one: ./scripts/unix/test fuzz"
+        follow "$f" ;;
+    server)
+        f="$(ls -1t "$REPO_ROOT"/target/{release,debug}/server.log 2>/dev/null | head -1)"
+        [ -n "$f" ] || die "No server output yet — start one: ./scripts/unix/server start"
+        follow "$f" ;;
+    list)
+        ls -1t "$LOG_DIR"/*_*.log 2>/dev/null | head -20 | while read -r f; do
+            printf '%s  %6s  %s\n' "$(date -r "$f" '+%Y-%m-%d %H:%M:%S')" "$(du -h "$f" | cut -f1)" "$(basename "$f")"
+        done ;;
+    -h|--help) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//' ;;
+    *)
+        [ -f "$1" ] || [ -f "$LOG_DIR/$1" ] || die "No such log: $1"
+        [ -f "$1" ] && follow "$1" || follow "$LOG_DIR/$1" ;;
+esac

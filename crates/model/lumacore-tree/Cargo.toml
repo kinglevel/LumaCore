@@ -1,0 +1,29 @@
+[package]
+name = "lumacore-tree"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+lumacore-fixtures = { path = "../lumacore-fixtures" }
+lumacore-protocols = { path = "../lumacore-protocols" }
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-playback = { path = "../lumacore-playback" }
+lumacore-effects = { path = "../lumacore-effects" }
+lumacore-timecode = { path = "../lumacore-timecode" }
+lumacore-runtime = { path = "../lumacore-runtime" }
+lumacore-tags = { path = "../lumacore-tags" }
+uuid = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+log = { workspace = true }
+hostname = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+# A protocol row for the routing tests (a route takes the row's wire universes): test catalog only.
+lumacore-sacn = { path = "../../network/protocols/dmx/lumacore-sacn" }
+
+[lints]
+workspace = true

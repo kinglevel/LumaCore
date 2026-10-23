@@ -1,0 +1,22 @@
+[package]
+name = "lumacore-cmd-tags"
+version.workspace = true
+edition.workspace = true
+description = "The Tag object: the tag tree's words — Store, Label, Delete, Move, Assign / Unassign, List, Info, select (decisions §12 \"Tags hardened\")"
+
+[dependencies]
+lumacore-registry = { path = "../../../foundation/lumacore-registry" }
+lumacore-syntax = { path = "../../../foundation/lumacore-syntax" }
+lumacore-syntax-derive = { path = "../../../foundation/lumacore-syntax-derive" }
+lumacore-wire = { path = "../../../foundation/lumacore-wire" }
+lumacore-tags = { path = "../../../model/lumacore-tags" }
+lumacore-tree = { path = "../../../model/lumacore-tree" }
+lumacore-objects = { path = "../../../model/lumacore-objects" }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

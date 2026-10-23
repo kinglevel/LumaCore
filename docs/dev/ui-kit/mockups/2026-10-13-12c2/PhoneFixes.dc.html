@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Phone fixes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; background: #0b0b0b; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; gap: 40px; padding: 24px 50px; box-sizing: border-box">
+
+  <div style="width: 390px; display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 13px; color: #9c9c9c">Command line · suggestions fit the screen · pool Fit</span>
+    <div style="height: 806px; border-radius: 14px; border: 1px solid #303030; background: #121212; overflow: hidden; display: flex; flex-direction: column; position: relative">
+      <div style="height: 44px; flex-shrink: 0; display: flex; align-items: flex-end; padding: 0 12px 6px; font-size: 13px; color: #9c9c9c; background: #1c1c1c">LumaCore · Admin</div>
+      <div style="height: 40px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 10px; background: #1c1c1c; border-bottom: 1px solid #424242; font-size: 14px"><span style="width: 12px; height: 12px; border-radius: 6px; background: #9a7a08"></span>Groups<span style="color: #9c9c9c">Default</span></div>
+      <div style="flex: 1; padding: 8px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; align-content: start">
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="9">
+          <div style="height: 80px; border-radius: 5px; background: {{g.bg}}; padding: 6px 8px; font-size: 14px; display: flex; flex-direction: column; justify-content: space-between"><span style="color: #9c9c9c; font-size: 12px">{{g.no}}</span>{{g.name}}</div>
+        </sc-for>
+      </div>
+      <sc-if value="{{sugOn}}" hint-placeholder-val="{{ true }}">
+        <div style="position: absolute; left: 8px; right: 8px; bottom: 66px; border-radius: 6px; background: #262626; border: 1px solid #424242; overflow: hidden">
+          <sc-for list="{{sugg}}" as="r" hint-placeholder-count="4">
+            <div style="height: 48px; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: {{r.bg}}; border-bottom: 1px solid #303030"><span style="font-size: 15px">{{r.t}}</span><span style="font-size: 12px; color: #9c9c9c; margin-left: auto">{{r.s}}</span></div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <div style="height: 58px; flex-shrink: 0; display: flex; align-items: stretch; background: #1c1c1c; border-top: 1px solid #424242; padding-bottom: 0">
+        <button type="button" style="width: 60px; border: none; background: none; color: #9a7a08; font: inherit; font-weight: 500; font-size: 13px; letter-spacing: .06em">PURR</button>
+        <button type="button" onClick="{{toggleSug}}" class="mono" style="flex: 1; min-width: 0; border: none; border-left: 1px solid #424242; border-right: 1px solid #424242; background: #121212; color: #d1d1d1; font-size: 15px; text-align: left; padding: 0 10px; white-space: nowrap; overflow: hidden">Gro<span style="color: #6a6a6a">up 3</span></button>
+        <button type="button" aria-label="Keyboard" style="width: 52px; border: none; background: none; color: #9c9c9c; font: inherit; font-size: 12px">VK</button>
+        <button type="button" onClick="{{toggleStat}}" aria-label="Status" style="width: 52px; border: none; background: none; color: #00a60a; font: inherit; font-size: 18px">⋯</button>
+      </div>
+      <sc-if value="{{statOn}}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; right: 8px; bottom: 66px; width: 230px; border-radius: 6px; background: #303030; border: 1px solid #424242; padding: 6px">
+          <sc-for list="{{status}}" as="r" hint-placeholder-count="4">
+            <div style="height: 44px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 14px"><span>{{r.k}}</span><span style="color: {{r.c}}">{{r.v}}</span></div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="width: 390px; display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 13px; color: #9c9c9c">Settings window · title and × always on screen</span>
+    <div style="height: 806px; border-radius: 14px; border: 1px solid #303030; background: #1c1c1c; overflow: hidden; display: flex; flex-direction: column; position: relative">
+      <div style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 0 0 0 14px; border-bottom: 1px solid #424242">
+        <span style="font-size: 16px; font-weight: 500; margin-right: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Settings · 1.3 System Monitor</span>
+        <button type="button" onClick="{{toggleAct}}" aria-label="More" style="width: 50px; height: 50px; border: none; border-radius: 5px; background: {{actBg}}; color: #d1d1d1; font: inherit; font-size: 18px">⋯</button>
+        <button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+      </div>
+      <div style="height: 52px; flex-shrink: 0; display: flex; gap: 6px; padding: 6px 10px; border-bottom: 1px solid #424242; overflow: hidden">
+        <sc-for list="{{stabs}}" as="t" hint-placeholder-count="3">
+          <span style="height: 40px; flex-shrink: 0; display: flex; align-items: center; padding: 0 16px; border-radius: 20px; background: {{t.bg}}; color: {{t.fg}}; font-size: 15px; white-space: nowrap">{{t.n}}</span>
+        </sc-for>
+      </div>
+      <div style="flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 8px">
+        <sc-for list="{{cells}}" as="c" hint-placeholder-count="5">
+          <div style="height: 64px; border-radius: 6px; border: 1px solid #424242; background: #303030; display: flex; align-items: stretch">
+            <div style="flex: 1; padding: 8px 12px; display: flex; flex-direction: column; justify-content: space-between"><span style="font-size: 12px; color: #9c9c9c">{{c.k}}</span><span style="font-size: 16px; font-weight: 500">{{c.v}}</span></div>
+            <span style="width: 48px; display: flex; align-items: center; justify-content: center; border-left: 1px solid #424242; color: {{c.pin}}">⊙</span>
+          </div>
+        </sc-for>
+      </div>
+      <sc-if value="{{actOn}}" hint-placeholder-val="{{ true }}">
+        <div style="position: absolute; top: 54px; right: 8px; width: 220px; border-radius: 6px; background: #303030; border: 1px solid #424242; padding: 6px">
+          <sc-for list="{{acts}}" as="a" hint-placeholder-count="4">
+            <div style="height: 48px; display: flex; align-items: center; padding: 0 10px; font-size: 15px; color: {{a.c}}">{{a.t}}</div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <div style="width: 390px; display: flex; flex-direction: column; gap: 8px">
+    <span style="font-size: 13px; color: #9c9c9c">Users & Profiles · one column, tabs scroll sideways</span>
+    <div style="height: 806px; border-radius: 14px; border: 1px solid #303030; background: #1c1c1c; overflow: hidden; display: flex; flex-direction: column">
+      <div style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 0 0 14px; border-bottom: 1px solid #424242">
+        <span style="font-size: 16px; font-weight: 500; margin-right: auto; white-space: nowrap">Users &amp; Profiles</span>
+        <button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+      </div>
+      <div style="display: flex; gap: 6px; padding: 8px 10px">
+        <sc-for list="{{seg}}" as="g" hint-placeholder-count="2">
+          <button type="button" onClick="{{g.pick}}" style="flex: 1; height: 44px; border-radius: 6px; border: 1px solid {{g.b}}; background: {{g.bg}}; color: #d1d1d1; font: inherit; font-size: 15px">{{g.n}}</button>
+        </sc-for>
+      </div>
+      <div style="flex: 1; padding: 0 10px; display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+          <div style="height: 60px; border-radius: 6px; background: #303030; display: flex; align-items: center; gap: 12px; padding: 0 12px">
+            <span style="width: 36px; height: 36px; border-radius: 18px; background: {{r.c}}; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #121212; font-weight: 600">{{r.i}}</span>
+            <span style="display: flex; flex-direction: column; flex: 1; min-width: 0"><span style="font-size: 15px">{{r.n}}</span><span style="font-size: 12px; color: #9c9c9c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.s}}</span></span>
+            <span style="font-size: 12px; color: {{r.lc}}">{{r.lock}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px">
+        <button type="button" style="height: 56px; border-radius: 6px; border: none; background: #9a7a08; color: #f3ecd3; font: inherit; font-size: 15px; font-weight: 500">{{newLabel}}</button>
+        <button type="button" style="height: 56px; border-radius: 6px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 15px">Import…</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { sug: true, stat: false, act: true, seg: 'users' }; }
+  renderVals() {
+    const s = this.state;
+    const names = ['All', 'Front', 'Back', 'Wash', 'Spots', 'Odd', 'Even', 'Left', 'Right'];
+    const groups = names.map((n, i) => ({ no: i + 1, name: n, bg: 'color-mix(in srgb, #758ba0 18%, #1c1c1c)' }));
+    const sugg = [{ t: 'Group 3 “Back”', s: 'Group', bg: '#3a3420' }, { t: 'Group 4 “Wash”', s: 'Group', bg: 'transparent' }, { t: 'GrandMaster', s: 'Master', bg: 'transparent' }, { t: 'Goto Cue', s: 'Verb', bg: 'transparent' }];
+    const status = [{ k: 'sACN', v: '0/1', c: '#00a60a' }, { k: 'Network', v: 'Online', c: '#00a60a' }, { k: 'Shortcuts', v: 'KBD', c: '#d1d1d1' }, { k: 'Selection', v: '4 fixtures', c: '#d1d1d1' }];
+    const stabs = ['Display', 'Window bar', 'Mask', 'Colours'].map((n, i) => ({ n, bg: i === 0 ? '#9a7a08' : '#303030', fg: i === 0 ? '#f3ecd3' : '#d1d1d1' }));
+    const cells = [['Level', 'All', '#9a7a08'], ['Subsystems', '—', '#6a6a6a'], ['Search', '—', '#6a6a6a'], ['Auto scroll', 'Yes', '#6a6a6a'], ['Wrap lines', 'No', '#9a7a08']].map(([k, v, pin]) => ({ k, v, pin }));
+    const acts = [{ t: 'Load preset…', c: '#d1d1d1' }, { t: 'Save preset…', c: '#d1d1d1' }, { t: 'Reset window…', c: '#c27a12' }, { t: 'Delete window…', c: '#ff6a5a' }];
+    const users = [['AD', 'Admin', 'Admin · profile Admin', '#9a7a08', 'locked', '#9c9c9c'], ['BO', 'Bob', 'Programmer · profile Bob · Station B', '#3f9a90', '', ''], ['AN', 'Anna', 'Programmer · shares Stage', '#8a80c8', '', ''], ['GU', 'Guest', 'Guest · shares Stage', '#758ba0', '', '']];
+    const profs = [['DF', 'Default', 'template for new profiles', '#787878', 'locked', '#9c9c9c'], ['AD', 'Admin', 'used by Admin', '#9a7a08', '', ''], ['BO', 'Bob', 'used by Bob', '#3f9a90', '', ''], ['ST', 'Stage', 'used by Anna, Guest', '#d86a7c', '', '']];
+    const rows = (s.seg === 'users' ? users : profs).map(([i, n, sub, c, lock, lc]) => ({ i, n, s: sub, c, lock, lc }));
+    const seg = [['users', 'Users'], ['profiles', 'Profiles']].map(([k, n]) => ({ n, b: s.seg === k ? '#9a7a08' : '#424242', bg: s.seg === k ? 'color-mix(in srgb, #9a7a08 18%, #303030)' : '#262626', pick: () => this.setState({ seg: k }) }));
+    return { groups, sugg, status, stabs, cells, acts, rows, seg,
+      sugOn: s.sug, toggleSug: () => this.setState({ sug: !s.sug, stat: false }),
+      statOn: s.stat, toggleStat: () => this.setState({ stat: !s.stat, sug: false }),
+      actOn: s.act, toggleAct: () => this.setState({ act: !s.act }), actBg: s.act ? '#3a3420' : 'transparent',
+      newLabel: s.seg === 'users' ? 'New user…' : 'New profile…' };
+  }
+}
+</script>
+</body>
+</html>

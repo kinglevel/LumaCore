@@ -1,0 +1,330 @@
+<title>Layer Placement Asks</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+
+/* Layout: a mode switcher, then one fixed 1440×900 desk frame holding the Patch setup dialog (the 12d <luma-setup> frame: title row, left tabs = Luma layers, top strip, <luma-grid>, echo line, slab with power toggle); the Import MVR dialog opens over it; notes below. Palette: the 12d mockups + the user's concept (matte greys, one gold accent, status as small marks); the import tints follow a reference patcher, muted. */
+:root {
+  --page: #0b0b0b; --dlg: #1c1c1c; --head: #181818; --cell: #262626; --cell-line: #303030; --line: #424242;
+  --text: #d1d1d1; --dim: #9c9c9c; --faint: #787878; --gold: #9a7a08; --gold-hi: #c9a227; --gold-text: #f3ecd3;
+  --stripe: #2fa3b8; --stripe-off: #5a5a5a; --ok: #00a60a; --warn: #e08a00; --alert: #e10000; --del: #e05a5a;
+  --sel: #1d3550; --sel-line: #3f6fb0;
+  --t-new: #10320f; --t-new-edge: #1f6b1c; --t-diff: #3a2208; --t-diff-edge: #8a4c12;
+  --t-lost: #3a1010; --t-lost-edge: #8f2a2a; --t-guid: #0f2238; --t-guid-text: #b9c8d8;
+  --lane: #1e1c06; --lane-line: #383309; --lane-text: #ccc085;
+  --font: "Myriad Pro", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--text); font-family: var(--font); font-size: 14px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 40px; }
+main { max-width: 1440px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1 { margin: 0; font-size: 22px; font-weight: 400; text-wrap: balance; }
+.cap { margin: 0; color: var(--dim); max-width: 92ch; }
+.modes { display: flex; flex-wrap: wrap; gap: 6px; }
+.modes button { height: 40px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); color: var(--dim); font: inherit; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.modes button[aria-pressed="true"] { background: #303030; color: var(--text); border-color: #5a5a5a; }
+.modes button .d { width: 8px; height: 8px; border-radius: 4px; }
+.well { overflow-x: auto; }
+.frame { width: 1440px; height: 900px; position: relative; overflow: hidden; background: var(--page); }
+.mono { font-family: var(--mono); }
+svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* setup dialog */
+.dlg { position: absolute; top: 20px; left: 40px; width: 1360px; height: 860px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+.title { height: 52px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 16px; border-bottom: 1px solid var(--line); }
+.title .name { font-size: 17px; font-weight: 500; }
+.chip { height: 30px; display: inline-flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid var(--cell-line); background: var(--cell); font-size: 13px; white-space: nowrap; }
+.chip .d { width: 8px; height: 8px; border-radius: 4px; }
+.chip.quiet { color: var(--dim); }
+.title .right { margin-left: auto; font-size: 12px; color: var(--faint); }
+.close { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; color: var(--text); }
+.mid { flex: 1; display: flex; min-height: 0; }
+.left { width: 176px; flex: none; border-right: 1px solid var(--cell-line); display: flex; flex-direction: column; overflow: hidden; }
+.lt { height: 62px; flex: none; border-bottom: 1px solid var(--cell); padding: 0 12px 0 18px; box-shadow: inset 5px 0 0 var(--stripe-off); display: flex; flex-direction: column; justify-content: center; gap: 3px; color: var(--dim); font-size: 15px; }
+.lt small { font-size: 12px; color: var(--dim); }
+.lt.on { background: var(--cell); color: var(--text); box-shadow: inset 5px 0 0 var(--stripe); }
+.lt.sub { padding-left: 34px; height: 52px; font-size: 14px; }
+.lt.add { color: var(--faint); height: 48px; box-shadow: none; }
+.lt .m { display: inline-flex; gap: 4px; margin-left: 4px; } .lt .m i { width: 7px; height: 7px; border-radius: 2px; display: inline-block; }
+.work { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.strip { height: 50px; flex: none; display: flex; gap: 6px; align-items: center; padding: 0 12px; border-bottom: 1px solid var(--cell-line); }
+.strip .tb { height: 44px; padding: 0 18px; border-radius: 6px; display: flex; align-items: center; font-size: 14px; color: var(--dim); }
+.strip .tb.on { background: #303030; color: var(--text); }
+.selbar { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+.selbar .n { font-size: 13px; color: var(--dim); margin-right: 4px; }
+.sb { height: 44px; min-width: 52px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 13px; }
+.sb.big { font-size: 15px; font-weight: 500; }
+.sb.lasso { border-style: dashed; color: var(--dim); gap: 6px; }
+.lane { height: 40px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 14px; background: var(--lane); border-bottom: 1px solid var(--lane-line); font-size: 13px; color: var(--dim); }
+.lane b { font-weight: 400; color: var(--lane-text); }
+.lane .k { display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+.lane .k i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.lane .r { margin-left: auto; }
+.livebar { height: 40px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: #14241a; border-bottom: 1px solid #1f3b29; font-size: 13px; color: var(--dim); }
+.livebar b { font-weight: 400; color: #8fd19a; }
+.gridbox { flex: 1; overflow: hidden; }
+.grid { display: grid; grid-auto-rows: 48px; font-size: 14px; }
+.hd { background: var(--head); border-bottom: 1px solid var(--cell-line); border-right: 1px solid var(--cell); color: var(--dim); font-size: 12px; padding: 0 10px; display: flex; align-items: center; justify-content: space-between; white-space: nowrap; }
+.hd .k { color: var(--faint); }
+.hd.no { justify-content: center; border-right: 1px solid var(--cell-line); color: var(--faint); }
+.no { border-bottom: 1px solid var(--cell); border-right: 1px solid var(--cell-line); color: var(--dim); font-size: 13px; display: flex; align-items: center; justify-content: center; background: transparent; }
+.no.sel { background: var(--sel); color: var(--text); }
+.cl { margin: 3px 2px; border-radius: 4px; border: 1px solid var(--cell-line); background: var(--cell); color: var(--text); padding: 0 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden; position: relative; font-size: 14px; }
+.cl.ro { border-color: transparent; background: transparent; color: var(--dim); }
+.cl.locked { border-color: transparent; background: transparent; color: var(--faint); }
+.cl.sel { background: var(--sel); border-color: var(--sel-line); }
+.cl .st2 { display: flex; flex-direction: column; line-height: 1.12; min-width: 0; }
+.cl .sub { font-size: 11.5px; color: var(--faint); }
+.cl.new { background: var(--t-new); border-color: var(--t-new-edge); }
+.cl.diff { background: var(--t-diff); border-color: var(--t-diff-edge); }
+.cl.offer { background: var(--cell); border: 1px dashed var(--t-diff-edge); }
+.cl.offer .sub { color: #c0874a; }
+.cl.lost { background: var(--t-lost); border-color: transparent; }
+.cl.clash { background: var(--t-lost); border-color: var(--t-lost-edge); }
+.cl.clash .sub { color: #d87a7a; }
+.cl.guid { background: var(--t-guid); border-color: transparent; color: var(--t-guid-text); font-family: var(--mono); font-size: 12px; }
+.cl .tk { margin-left: auto; width: 16px; height: 16px; border-radius: 2px; background: #3a3a3a; flex: none; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; }
+.cl .tk.on::after { content: "✓"; color: var(--text); }
+.cl .dot { position: absolute; top: 5px; right: 5px; width: 7px; height: 7px; border-radius: 4px; }
+.cl .lk { margin-left: auto; color: var(--faint); }
+.edit { position: absolute; right: 4px; top: 6px; height: 28px; padding: 0 10px; border-radius: 14px; background: var(--gold); color: var(--gold-text); font-size: 12px; display: flex; align-items: center; }
+.stc { margin: 3px 2px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text); }
+.stc.ok { color: var(--faint); border: 1px solid var(--cell-line); }
+.stc.diff { background: var(--t-diff-edge); } .stc.new { background: var(--t-new-edge); } .stc.lost { background: var(--t-lost-edge); }
+.stc.clash { background: var(--alert); color: #fff; }
+.addrow { border-right: 1px solid var(--cell-line); display: flex; align-items: center; justify-content: center; color: var(--faint); }
+.addline { border-bottom: 1px dashed var(--cell-line); color: var(--dim); display: flex; align-items: center; padding: 0 10px; font-size: 14px; }
+.echo { height: 34px; flex: none; display: flex; align-items: center; gap: 18px; padding: 0 16px; border-top: 1px solid var(--cell-line); font-size: 12px; color: var(--dim); }
+.echo .r { margin-left: auto; font-family: var(--font); }
+/* slab */
+.slab { height: 136px; flex: none; border-top: 1px solid var(--line); padding: 8px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 12px repeat(4, minmax(0, 1fr)) 210px; grid-template-rows: 60px 60px; gap: 6px; }
+.a { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; gap: 10px; padding: 0 12px; font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; }
+.a.dis { color: #5a5a5a; border-style: dashed; background: transparent; }
+.a.del { color: var(--del); }
+.a.new svg { color: var(--ok); }
+.a.val { flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; }
+.a.val small { font-size: 12px; color: var(--dim); }
+.a.fn { color: var(--text); }
+.sep { grid-row: 1 / span 2; }
+.power { grid-row: 1 / span 2; grid-column: 11; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; position: relative; overflow: hidden; }
+.power svg { width: 34px; height: 34px; }
+.power b { font-size: 15px; font-weight: 600; letter-spacing: .02em; }
+.power small { font-size: 12px; color: var(--dim); }
+.power::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--pw, var(--ok)); }
+/* import dialog over the setup */
+.veil { position: absolute; inset: 0; background: rgba(0,0,0,.55); }
+.idlg { position: absolute; top: 70px; left: 130px; width: 1180px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; display: flex; flex-direction: column; }
+.idlg .title { border-bottom: 1px solid var(--line); }
+.cols { display: grid; grid-template-columns: 1fr 450px; }
+.pane { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.pane + .pane { border-left: 1px solid var(--cell-line); }
+.pane .h { font-size: 13px; color: var(--dim); }
+.files { display: grid; grid-template-columns: 1.4fr 1.3fr 80px 140px 80px; grid-auto-rows: 44px; font-size: 14px; }
+.files .hd { border-right: none; }
+.files .fc { margin: 3px 0; padding: 0 10px; display: flex; align-items: center; background: var(--cell); border-top: 1px solid var(--cell-line); border-bottom: 1px solid var(--cell-line); white-space: nowrap; overflow: hidden; color: var(--dim); }
+.files .fc.first { border-left: 1px solid var(--cell-line); border-radius: 4px 0 0 4px; color: var(--text); }
+.files .fc.last { border-right: 1px solid var(--cell-line); border-radius: 0 4px 4px 0; justify-content: flex-end; }
+.files .fc.r { justify-content: flex-end; }
+.files .sel { background: var(--sel); border-color: var(--sel-line); color: var(--text); }
+.path { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--dim); }
+.cells { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.sc { border-radius: 6px; border: 1px solid var(--line); background: var(--cell); padding: 7px 10px; display: flex; flex-direction: column; gap: 2px; position: relative; min-width: 0; }
+.sc small { font-size: 12px; color: var(--dim); } .sc span { font-size: 15px; }
+.sc .badge { position: absolute; top: 7px; right: 9px; font-size: 11px; color: var(--faint); }
+.sc.wide { grid-column: 1 / -1; }
+.tr { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); padding: 0 6px 0 12px; height: 46px; font-size: 14px; }
+.seg { display: inline-flex; gap: 4px; } .seg i { font-style: normal; height: 34px; padding: 0 12px; border-radius: 5px; display: inline-flex; align-items: center; font-size: 13px; color: var(--dim); border: 1px solid var(--cell-line); }
+.seg i.on { background: #3a3a3a; color: var(--text); border-color: #5a5a5a; }
+.cbx { width: 18px; height: 18px; border-radius: 3px; border: 1px solid var(--line); background: #303030; }
+.ibtns { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.ibtns div { height: 56px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.ibtns .go { background: var(--gold); border-color: transparent; color: var(--gold-text); font-weight: 600; }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 10px; }
+.notes > div { min-width: 0; border: 1px solid var(--cell-line); border-radius: 6px; background: var(--dlg); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+.notes .h { color: var(--text); font-size: 15px; }
+.notes ul { margin: 0; padding-left: 18px; color: var(--dim); display: flex; flex-direction: column; gap: 3px; }
+.notes code { font-family: var(--mono); font-size: 12px; color: var(--text); }
+/* Devices › DMX › Patch: the crumb in the title row and the device-kind rail */
+.crumb { display: flex; align-items: center; gap: 8px; font-size: 17px; }
+.crumb .up { color: var(--dim); font-weight: 400; }
+.crumb .sep { color: var(--faint); font-size: 14px; }
+.crumb .here { font-weight: 500; }
+.kinds { height: 44px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 10px; border-bottom: 1px solid var(--line); background: var(--head); }
+.kinds .lbl { font-size: 12px; color: var(--faint); margin-right: 6px; }
+.kind { height: 34px; padding: 0 14px; border-radius: 5px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--dim); }
+.kind .gd { width: 11px; height: 11px; border-radius: 50%; background: #312600; }
+.kind.on { background: #303030; color: var(--text); } .kind.on .gd { background: #7c6200; }
+.kind.later { border: 1px dashed var(--cell-line); color: var(--faint); }
+.kinds .claimnote { margin-left: auto; font-size: 12px; color: var(--faint); }
+/* Luma layer tree */
+.tree { flex: 1; overflow: hidden; display: flex; flex-direction: column; padding: 6px 0; }
+.tn { position: relative; height: 48px; flex: none; display: flex; align-items: center; gap: 6px; padding-right: 6px; color: var(--dim); font-size: 14px; }
+.tn .chev { width: 18px; text-align: center; color: var(--faint); font-size: 11px; flex: none; }
+.tn .nm { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; overflow: hidden; }
+.tn .nm small { font-size: 11.5px; color: var(--faint); white-space: nowrap; }
+.tn .nm span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tn .guide { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--cell-line); }
+.tn.on { background: var(--cell); color: var(--text); box-shadow: inset 4px 0 0 var(--stripe); }
+.tn .addsub { width: 30px; height: 30px; border-radius: 5px; border: 1px solid var(--line); background: #303030; color: var(--text); display: none; align-items: center; justify-content: center; font-size: 16px; flex: none; }
+.tn.on .addsub, .tn.hov .addsub { display: flex; }
+.tn.ghost { color: var(--gold-hi); }
+.tn.ghost .nm span { border: 1px dashed var(--gold); border-radius: 4px; padding: 2px 6px; background: #221d05; }
+.tn .mk { display: inline-flex; gap: 3px; margin-left: 5px; vertical-align: middle; } .tn .mk i { width: 7px; height: 7px; border-radius: 2px; display: inline-block; }
+.treebar { flex: none; border-top: 1px solid var(--cell-line); padding: 6px; display: grid; grid-template-columns: 1fr 1fr 44px; gap: 4px; }
+.treebar span { height: 40px; border-radius: 5px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 12.5px; color: var(--text); }
+.treebar span.more { font-size: 16px; }
+/* Exit + import-apply buttons in the power slot */
+.exitbtn { grid-row: 1 / span 2; grid-column: 11; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; position: relative; overflow: hidden; }
+.exitbtn b { font-size: 16px; font-weight: 500; } .exitbtn small { font-size: 12px; color: var(--dim); text-align: center; padding: 0 8px; }
+.exitbtn::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: var(--eb, var(--gold-hi)); }
+.exitbtn.go { background: var(--gold); border-color: transparent; color: var(--gold-text); }
+.exitbtn.go small { color: #e6d9a8; } .exitbtn.go::after { background: var(--gold-hi); }
+/* exit prompt */
+.ask { position: absolute; top: 290px; left: 470px; width: 500px; border-radius: 6px; background: var(--dlg); border: 1px solid var(--line); overflow: hidden; }
+.ask .title { border-bottom: 1px solid var(--line); }
+.ask .q { padding: 16px 18px 6px; font-size: 17px; }
+.ask .s { padding: 0 18px 16px; color: var(--dim); font-size: 14px; display: flex; flex-direction: column; gap: 4px; }
+.ask .btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; padding: 8px; border-top: 1px solid var(--line); }
+.ask .btns div { height: 56px; border-radius: 6px; border: 1px solid var(--line); background: var(--cell); display: flex; align-items: center; justify-content: center; font-size: 15px; }
+.ask .btns .save { background: var(--gold); border-color: transparent; color: var(--gold-text); font-weight: 600; }
+.ask .btns .disc { color: var(--del); }
+.toast { position: absolute; top: 132px; left: 50%; transform: translateX(-50%); height: 40px; padding: 0 16px; border-radius: 20px; background: #303030; border: 1px solid #5a5a5a; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.toast .d { width: 8px; height: 8px; border-radius: 4px; background: var(--ok); }
+.cl.came { box-shadow: inset 3px 0 0 var(--t-diff-edge); }
+.cl.camenew { box-shadow: inset 3px 0 0 var(--t-new-edge); }
+
+.opt { display:flex; flex-direction:column; gap:10px; }
+.opt h2 { margin:0; font-size:19px; font-weight:400; display:flex; gap:10px; align-items:center; }
+.opt h2 .gd { width:12px; height:12px; border-radius:50%; background:#7c6200; }
+.opt .cap { margin:0; }
+.f2 { width:1360px; position:relative; background:var(--page); }
+.box { border-radius:6px; background:var(--dlg); border:1px solid var(--line); overflow:hidden; display:flex; flex-direction:column; }
+.pc { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:10px; }
+.pc > div { min-width:0; border:1px solid var(--cell-line); border-radius:6px; background:var(--dlg); padding:10px 14px; display:flex; flex-direction:column; gap:5px; }
+.pc .h { font-size:14px; } .pc .pro .h { color:#7fcf86; } .pc .con .h { color:#e08484; }
+.pc ul { margin:0; padding-left:18px; color:var(--dim); display:flex; flex-direction:column; gap:3px; }
+.pick { display:inline-flex; gap:4px; flex-wrap:nowrap; }
+.pick i { font-style:normal; height:34px; padding:0 11px; border-radius:5px; display:inline-flex; align-items:center; font-size:13px; color:var(--dim); border:1px solid var(--cell-line); background:var(--cell); white-space:nowrap; }
+.pick i.on { background:#3a3a3a; color:var(--text); border-color:#5a5a5a; }
+.pick i.sug::before { content:"★ "; color:var(--gold-hi); }
+.need { color:var(--gold-hi); }
+.okc { color:#7fcf86; }
+.lrow { display:grid; grid-template-columns: 56px 1.2fr 0.9fr 0.55fr 2.3fr 0.8fr; grid-auto-rows:56px; font-size:14px; }
+.lrow .hd { height:40px; }
+.lrow .c2 { display:flex; align-items:center; padding:0 10px; border-bottom:1px solid var(--cell); gap:8px; min-width:0; white-space:nowrap; }
+.lrow .c2 small { color:var(--faint); font-size:12px; }
+.lrow .c2.n { justify-content:center; color:var(--dim); border-right:1px solid var(--cell-line); font-size:13px; }
+.badge2 { display:inline-flex; align-items:center; height:24px; padding:0 8px; border-radius:4px; font-size:12px; }
+.badge2.new { background:var(--t-new-edge); } .badge2.move { background:var(--t-diff-edge); }
+.popup { position:absolute; width:560px; border-radius:6px; background:var(--dlg); border:1px solid var(--line); overflow:hidden; }
+.popup .q { padding:14px 18px 4px; font-size:17px; }
+.popup .s { padding:0 18px 12px; color:var(--dim); font-size:14px; }
+.popup .opts { display:flex; flex-direction:column; gap:6px; padding:0 12px 12px; }
+.popup .opts div { height:48px; border-radius:6px; border:1px solid var(--line); background:var(--cell); display:flex; align-items:center; gap:10px; padding:0 14px; font-size:15px; }
+.popup .opts div.sug { border-color:#7c6200; }
+.popup .opts div small { margin-left:auto; color:var(--faint); font-size:12px; }
+.popup .foot2 { display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-top:1px solid var(--line); color:var(--dim); font-size:13px; }
+.popup .foot2 span.b { height:44px; padding:0 16px; border-radius:6px; border:1px solid var(--line); background:var(--cell); display:inline-flex; align-items:center; color:var(--text); }
+.stack2 { position:absolute; width:560px; height:200px; border-radius:6px; border:1px solid var(--line); background:#202020; }
+.lcell { margin:3px 2px; border-radius:4px; border:1px dashed var(--t-diff-edge); background:var(--cell); padding:0 8px; display:flex; align-items:center; gap:6px; overflow:hidden; white-space:nowrap; position:relative; }
+.lcell .st2 { display:flex; flex-direction:column; line-height:1.12; min-width:0; }
+.lcell .sub { font-size:11.5px; color:#c0874a; }
+.lcell .dd { margin-left:auto; color:var(--faint); }
+.lcell.newl { border-color:var(--t-new-edge); } .lcell.newl .sub { color:#7fcf86; }
+.lcell.sel { background:var(--sel); border:1px solid var(--sel-line); }
+.ddmenu { position:absolute; width:300px; border-radius:6px; background:#262626; border:1px solid var(--line); padding:4px; display:flex; flex-direction:column; gap:2px; z-index:3; }
+.ddmenu div { height:40px; border-radius:4px; display:flex; align-items:center; gap:8px; padding:0 10px; font-size:14px; }
+.ddmenu div.on { background:var(--sel); }
+.ddmenu div small { margin-left:auto; color:var(--faint); font-size:12px; }
+.ddmenu hr { border:none; border-top:1px solid var(--cell-line); margin:3px 0; }
+
+</style>
+<main>
+  <h1>Where an import puts new and moved fixtures</h1>
+  <p class="cap">The example: Bob imported R12 with Automatic, then sorted by hand. He moved 6 fixtures into his own layer "Specials" and renamed the layer made from group "Truss 2" to "Mid truss". R13 arrives with 4 new fixtures in group Truss 2, 6 new in a new group Truss 4, and 2 fixtures the drawing moved from Truss 1 to Truss 3. Automatic never moves anything without asking. Here are three ways to ask. ★ marks the suggestion.</p>
+
+  <section class="opt">
+    <h2><span class="gd"></span>1 · A Layers step, one row per group</h2>
+    <p class="cap">The review gets a second strip tab, Layers. It has one row per MVR group with new or moved fixtures, each with a choice. "Import ticked" waits until every row is answered.</p>
+    <div class="well"><div class="f2"><div class="box">
+      <div class="title"><span class="crumb"><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></span><span class="chip"><span class="d" style="background:var(--gold-hi)"></span>Devices draft · Bob</span><span class="right">reviewing Festival_R13.mvr</span></div>
+      <div class="lane"><span><b>Festival_R13.mvr</b> → review</span><span class="k"><i style="background:var(--t-diff-edge)"></i>12 diff</span><span class="k"><i style="background:var(--t-new-edge)"></i>10 new</span><span class="k"><i style="background:var(--t-diff-edge)"></i>2 moved</span><span class="r need">1 layer question left</span></div>
+      <div class="strip"><span class="tb">Fixtures · 26 ticked</span><span class="tb on">Layers · 1 to answer</span></div>
+      <div class="lrow">
+        <span class="hd no">No</span><span class="hd">MVR group (source)</span><span class="hd">Fixtures</span><span class="hd">What</span><span class="hd">Goes into</span><span class="hd">State</span>
+        <span class="c2 n">1</span><span class="c2">House › Truss 2 <small>made "Mid truss"</small></span><span class="c2">4 new <small>FID 141–144</small></span><span class="c2"><span class="badge2 new">New</span></span><span class="c2"><span class="pick"><i class="sug on">Mid truss</i><i>New layer "Truss 2"</i><i>Pick…</i><i>Unsorted</i></span></span><span class="c2 okc">answered</span>
+        <span class="c2 n">2</span><span class="c2">House › Truss 4 <small>new group</small></span><span class="c2">6 new <small>FID 151–156</small></span><span class="c2"><span class="badge2 new">New</span></span><span class="c2"><span class="pick"><i class="sug on">New layer "Truss 4" under House</i><i>Pick…</i><i>Unsorted</i></span></span><span class="c2 okc">answered</span>
+        <span class="c2 n">3</span><span class="c2">House › Truss 1 → Truss 3 <small>moved in the drawing</small></span><span class="c2">2 <small>FID 117, 118</small></span><span class="c2"><span class="badge2 move">Moved</span></span><span class="c2"><span class="pick"><i class="sug">Keep where they are</i><i>Move to "Truss 3"</i><i>Pick…</i></span></span><span class="c2 need">to answer</span>
+      </div>
+      <div class="echo"><span class="mono">Bob's "Specials" layer isn't asked about: none of its fixtures moved in the drawing.</span><span class="r">Rows with no new or moved fixtures don't show</span></div>
+      <div class="slab" style="grid-template-columns: repeat(4, minmax(0,1fr)) 12px repeat(4, minmax(0,1fr)) 210px">
+        <div class="a fn" style="grid-row:1;grid-column:1">Take all suggestions</div><div class="a fn" style="grid-row:1;grid-column:2">All new → Unsorted</div><div class="a fn" style="grid-row:1;grid-column:3">Keep all moved</div><div class="a fn" style="grid-row:1;grid-column:4">Show in tree</div>
+        <div class="a val" style="grid-row:2;grid-column:1"><small>New fixtures go into</small>Automatic</div><div class="a fn del" style="grid-row:2;grid-column:2">Cancel import</div>
+        <span class="sep" style="grid-column:5"></span>
+        <div class="exitbtn" style="grid-column:10;--eb:#5a5a5a;color:var(--dim)"><b>Import ticked (26)</b><small>waits for 1 layer answer</small></div>
+      </div>
+    </div></div></div>
+    <div class="pc"><div class="pro"><span class="h">For</span><ul><li>Every layer question is on one page: 3 rows, not 12 fixtures.</li><li>The suggestion is already selected, so "Take all suggestions" answers everything in one tap.</li><li>It fits the review: Fixtures for the values, Layers for where they go.</li></ul></div><div class="con"><span class="h">Against</span><ul><li>One more tab to visit. You have to notice "1 to answer" (the lane and the button say it).</li><li>The answer is per group. One odd fixture means Pick… for its group, or fixing it in the tree afterwards.</li></ul></div></div>
+  </section>
+
+  <section class="opt">
+    <h2><span class="gd"></span>2 · A pop-up per group at Import ticked</h2>
+    <p class="cap">Nothing to visit. Pressing Import ticked asks each layer question in turn, as station dialogs, before anything is written.</p>
+    <div class="well"><div class="f2" style="height:470px">
+      <div class="box" style="position:absolute;inset:0;opacity:.45">
+        <div class="title"><span class="crumb"><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></span><span class="chip"><span class="d" style="background:var(--gold-hi)"></span>Devices draft · Bob</span></div>
+        <div class="lane"><span><b>Festival_R13.mvr</b> → review</span></div>
+        <div class="strip"><span class="tb on">Fixtures · 26 ticked</span></div>
+      </div>
+      <div class="veil"></div>
+      <div class="stack2" style="top:58px;left:416px"></div>
+      <div class="stack2" style="top:50px;left:408px"></div>
+      <div class="popup" style="top:42px;left:400px">
+        <div class="title"><span class="name">Place new fixtures</span><span class="chip quiet" style="margin-left:auto;margin-right:12px">1 of 3</span></div>
+        <div class="q">4 new fixtures from House › Truss 2</div>
+        <div class="s">FID 141–144 · Robe MegaPointe. The layer made from Truss 2 is now called "Mid truss".</div>
+        <div class="opts">
+          <div class="sug">★ Mid truss<small>made from Truss 2</small></div>
+          <div>New layer "Truss 2" under House</div>
+          <div>Pick a layer…</div>
+          <div>Leave in Unsorted</div>
+        </div>
+        <div class="foot2"><span><span class="cbx" style="display:inline-block;vertical-align:middle;margin-right:8px"></span>Use the suggestion for the rest</span><span class="b">Cancel import</span></div>
+      </div>
+    </div></div>
+    <div class="pc"><div class="pro"><span class="h">For</span><ul><li>Nothing to find. The questions come exactly when they matter.</li><li>It uses the station's one dialog path (§30 "12b"), the same on every client, the terminal included.</li></ul></div><div class="con"><span class="h">Against</span><ul><li>A big rig can ask 15 times in a row, and you can't see the whole picture at once.</li><li>A wrong answer means cancelling the import and starting over, or fixing it in the tree afterwards.</li></ul></div></div>
+  </section>
+
+  <section class="opt">
+    <h2><span class="gd"></span>3 · A Layer cell on each fixture</h2>
+    <p class="cap">Placement is just another column in the review grid. New and moved fixtures get a Layer offer with the suggestion filled in. Select many rows and set them in one go.</p>
+    <div class="well"><div class="f2" style="height:520px"><div class="box" style="height:100%">
+      <div class="title"><span class="crumb"><span class="up">Devices</span><span class="sep">›</span><span class="up">DMX</span><span class="sep">›</span><span class="here">Patch</span></span><span class="chip"><span class="d" style="background:var(--gold-hi)"></span>Devices draft · Bob</span><span class="right">reviewing Festival_R13.mvr</span></div>
+      <div class="lane"><span><b>Festival_R13.mvr</b> → review</span><span class="k"><i style="background:var(--t-new-edge)"></i>10 new</span><span class="k"><i style="background:var(--t-diff-edge)"></i>2 moved</span><span class="r">4 selected</span></div>
+      <div style="position:relative">
+      <div class="grid" style="grid-template-columns:56px 78px 1.1fr 0.9fr 0.6fr 1.5fr">
+        <span class="hd no">FID</span><span class="hd">Status</span><span class="hd">Name</span><span class="hd">Fixture type</span><span class="hd">Address</span><span class="hd">Luma layer</span>
+        <span class="no sel">141</span><div class="stc new">NEW</div><div class="cl new">MegaPointe MID 1</div><div class="cl new">Robe MegaPointe</div><div class="cl new">5.001</div><div class="lcell newl sel"><span class="st2"><span>★ Mid truss</span><span class="sub">made from Truss 2</span></span><span class="dd">▾</span></div>
+        <span class="no sel">142</span><div class="stc new">NEW</div><div class="cl new">MegaPointe MID 2</div><div class="cl new">Robe MegaPointe</div><div class="cl new">5.035</div><div class="lcell newl sel"><span class="st2"><span>★ Mid truss</span><span class="sub">made from Truss 2</span></span><span class="dd">▾</span></div>
+        <span class="no sel">143</span><div class="stc new">NEW</div><div class="cl new">MegaPointe MID 3</div><div class="cl new">Robe MegaPointe</div><div class="cl new">5.069</div><div class="lcell newl sel"><span class="st2"><span>★ Mid truss</span><span class="sub">made from Truss 2</span></span><span class="dd">▾</span></div>
+        <span class="no sel">144</span><div class="stc new">NEW</div><div class="cl new">MegaPointe MID 4</div><div class="cl new">Robe MegaPointe</div><div class="cl new">5.103</div><div class="lcell newl sel"><span class="st2"><span>★ Mid truss</span><span class="sub">made from Truss 2</span></span><span class="dd">▾</span></div>
+        <span class="no">117</span><div class="stc diff">MOVED</div><div class="cl">MegaPointe SL 17</div><div class="cl">Robe MegaPointe</div><div class="cl">1.205</div><div class="lcell"><span class="st2"><span>★ Truss 1 (keep)</span><span class="sub">file: Truss 3</span></span><span class="dd">▾</span></div>
+        <span class="no">118</span><div class="stc diff">MOVED</div><div class="cl">MegaPointe SL 18</div><div class="cl">Robe MegaPointe</div><div class="cl">1.239</div><div class="lcell"><span class="st2"><span>★ Truss 1 (keep)</span><span class="sub">file: Truss 3</span></span><span class="dd">▾</span></div>
+      </div>
+      <div class="ddmenu" style="top:94px;right:24px">
+        <div class="on">★ Mid truss<small>made from Truss 2</small></div>
+        <div>Truss 3</div>
+        <div>Specials<small>Bob's</small></div>
+        <hr>
+        <div>New layer "Truss 2" under House</div>
+        <div>Pick a layer…</div>
+        <div>Unsorted</div>
+        <hr>
+        <div style="color:var(--dim)">Sets the 4 selected rows</div>
+      </div>
+      </div>
+    </div></div></div>
+    <div class="pc"><div class="pro"><span class="h">For</span><ul><li>Each fixture is exact: one odd fixture just gets another layer.</li><li>No new tab and no pop-up: it's a cell like Address, so the grid's selection, Thru and the edit card work on it.</li></ul></div><div class="con"><span class="h">Against</span><ul><li>Many rows to look at. 40 new fixtures means 40 cells, unless you select by group.</li><li>The group, the thing Automatic decides by, is hidden behind each cell.</li></ul></div></div>
+  </section>
+</main>

@@ -1,0 +1,22 @@
+[package]
+name = "lumacore-protocols"
+version.workspace = true
+edition.workspace = true
+description = "What a protocol is: the ProtocolDef row, the driver traits, the input merger and line plans (decisions §34 22)"
+
+[dependencies]
+lumacore-registry = { path = "../../foundation/lumacore-registry" }
+lumacore-base = { path = "../../foundation/lumacore-base" }
+lumacore-runtime = { path = "../lumacore-runtime" }
+crossbeam-channel = { workspace = true }
+uuid = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }
+ctor = { workspace = true }
+
+[lints]
+workspace = true

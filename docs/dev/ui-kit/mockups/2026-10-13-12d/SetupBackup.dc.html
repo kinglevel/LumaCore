@@ -1,0 +1,539 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Setup Backup grid</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0b0b0b">
+  <div style="position: absolute; top: 8px; left: 28px; right: 28px; display: flex; gap: 8px; align-items: center; min-height: 34px">
+    <span style="font-size: 13px; color: #9c9c9c; flex: 1; line-height: 1.35">{{caption}}</span>
+    <sc-for list="{{levels}}" as="o" hint-placeholder-count="0"><button type="button" onClick="{{o.go}}" style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid {{o.b}}; background: #1c1c1c; color: #d1d1d1; font: inherit; font-size: 12px">{{o.label}}</button></sc-for>
+  </div>
+
+  <section style="position: absolute; top: 48px; left: 28px; width: 960px; height: 830px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden; display: flex; flex-direction: column">
+    <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 4px 0 16px; border-bottom: 1px solid #424242">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{icon}}"></path></svg>
+      <span style="font-size: 17px; font-weight: 500">{{title}}</span>
+      <sc-for list="{{chips}}" as="c" hint-placeholder-count="2"><span style="height: 30px; display: flex; align-items: center; gap: 7px; padding: 0 11px; border-radius: 15px; border: 1px solid #303030; background: #262626; font-size: 13px; white-space: nowrap"><span style="width: 8px; height: 8px; border-radius: 4px; background: {{c.dot}}"></span>{{c.t}}</span></sc-for>
+      <sc-if value="{{hasViews}}" hint-placeholder-val="{{ false }}"><div style="display: flex; border: 1px solid #424242; border-radius: 15px; overflow: hidden"><sc-for list="{{views}}" as="v" hint-placeholder-count="2"><button type="button" onClick="{{v.go}}" style="height: 30px; padding: 0 12px; border: none; background: {{v.bg}}; color: {{v.fg}}; font: inherit; font-size: 13px">{{v.t}}</button></sc-for></div></sc-if>
+      <span style="margin-left: auto; font-size: 12px; color: #787878; white-space: nowrap">{{home}}</span>
+      <button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1; flex-shrink: 0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+    </div>
+    <div style="flex: 1; display: flex; min-height: 0">
+      <div style="width: 130px; flex-shrink: 0; border-right: 1px solid #303030; display: flex; flex-direction: column">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button type="button" onClick="{{t.go}}" style="height: 76px; border: none; border-bottom: 1px solid #262626; background: {{t.bg}}; color: {{t.fg}}; font: inherit; font-size: 15px; text-align: left; padding: 0 14px; box-shadow: {{t.mark}}; display: flex; flex-direction: column; justify-content: center; gap: 4px"><span>{{t.label}}</span><span style="font-size: 12px; color: #9c9c9c">{{t.sub}}</span></button></sc-for>
+      </div>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+        <sc-if value="{{banner}}" hint-placeholder-val="{{ false }}"><div style="margin: 10px 12px 0; border-radius: 6px; border: 1px solid #303030; background: #262626; padding: 10px 14px; font-size: 13px; color: #c4c4c4; line-height: 1.45">{{banner}}</div></sc-if>
+        <sc-if value="{{isList}}" hint-placeholder-val="{{ true }}">
+          <div style="height: 50px; flex-shrink: 0; display: flex; gap: 6px; align-items: center; padding: 0 12px; border-bottom: 1px solid #303030">
+            <span style="font-size: 13px; color: #9c9c9c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{count}}</span>
+            <div style="margin-left: auto; display: flex; gap: 6px">
+              <sc-for list="{{modes}}" as="m" hint-placeholder-count="3"><button type="button" onClick="{{m.go}}" style="width: 52px; height: 44px; border-radius: 6px; border: 1px solid {{m.b}}; background: {{m.bg}}; color: {{m.fg}}; font: inherit; font-size: 15px; font-weight: 500">{{m.t}}</button></sc-for>
+              <button type="button" onClick="{{all}}" style="height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid #424242; background: #262626; color: #d1d1d1; font: inherit; font-size: 13px">All</button>
+              <button type="button" onClick="{{none}}" style="height: 44px; padding: 0 12px; border-radius: 6px; border: 1px solid #424242; background: #262626; color: #d1d1d1; font: inherit; font-size: 13px">None</button>
+            </div>
+          </div>
+        </sc-if>
+        <div style="flex: 1; overflow: hidden">
+          <sc-if value="{{showGrid}}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid; grid-template-columns: {{gcols}}; grid-auto-rows: 48px; font-size: 14px">
+              <span style="background: #181818; border-bottom: 1px solid #303030; border-right: 1px solid #303030; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #787878">No</span>
+              <sc-for list="{{heads}}" as="h" hint-placeholder-count="5"><button type="button" onClick="{{h.go}}" style="background: {{h.bg}}; border: none; border-bottom: 1px solid #303030; border-right: 1px solid #262626; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font: inherit; font-size: 12px; color: #9c9c9c">{{h.t}}<span style="color: #5a5a5a">⋮</span></button></sc-for>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+                <sc-if value="{{r.group}}" hint-placeholder-val="{{ false }}"><span style="grid-column: 1 / -1; display: flex; align-items: center; padding: 0 12px; font-size: 12px; color: #c9a227; background: #171717; border-bottom: 1px solid #262626">{{r.group}}</span></sc-if>
+                <sc-if value="{{r.isRow}}" hint-placeholder-val="{{ true }}">
+                  <button type="button" onClick="{{r.pickRow}}" style="background: {{r.noBg}}; border: none; border-bottom: 1px solid #262626; border-right: 1px solid #303030; color: #9c9c9c; font: inherit; font-size: 13px; box-shadow: {{r.mark}}">{{r.no}}</button>
+                  <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="5"><button type="button" onClick="{{c.pick}}" style="margin: 3px 2px; border-radius: 4px; border: {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; font: inherit; font-size: 14px; font-style: {{c.style}}; text-align: left; padding: 0 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden"><span style="width: {{c.dw}}px; height: 9px; border-radius: 5px; background: {{c.dot}}; flex-shrink: 0"></span>{{c.t}}</button></sc-for>
+                </sc-if>
+              </sc-for>
+              <sc-if value="{{newLabel}}" hint-placeholder-val="{{ false }}">
+                <span style="border-right: 1px solid #303030; display: flex; align-items: center; justify-content: center; color: #787878">+</span>
+                <button type="button" onClick="{{newRun}}" style="grid-column: 2 / -1; border: none; border-bottom: 1px dashed #303030; background: transparent; color: #9c9c9c; font: inherit; font-size: 14px; text-align: left; padding: 0 10px">{{newLabel}}</button>
+              </sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{showCards}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px">
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="3"><sc-if value="{{r.isRow}}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{r.pickRow}}" style="min-height: 140px; border-radius: 6px; border: 1px solid {{r.cardB}}; background: {{r.cardBg}}; color: #d1d1d1; font: inherit; text-align: left; padding: 12px 14px; display: flex; flex-direction: column; gap: 7px">
+                  <span style="display: flex; align-items: center; gap: 8px; width: 100%"><span style="width: 9px; height: 9px; border-radius: 5px; background: {{r.dot}}"></span><span style="font-size: 17px; font-weight: 500">{{r.title}}</span><span style="margin-left: auto; font-size: 12px; color: #9c9c9c">{{r.no}}</span></span>
+                  <sc-for list="{{r.kv}}" as="l" hint-placeholder-count="3"><span style="font-size: 13px; color: #9c9c9c; display: flex; justify-content: space-between; width: 100%"><span>{{l.k}}</span><span style="color: {{l.c}}">{{l.v}}</span></span></sc-for>
+                </button>
+              </sc-if></sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{showMatrix}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; height: 100%">
+              <div style="display: grid; grid-template-columns: 52px {{mx.cols}}; grid-auto-rows: 46px; font-size: 13px">
+                <span style="background: #181818; border-bottom: 1px solid #303030; border-right: 1px solid #303030"></span>
+                <sc-for list="{{mx.heads}}" as="h" hint-placeholder-count="8"><span style="background: #181818; border-bottom: 1px solid #303030; border-right: 1px solid #262626; display: flex; align-items: center; padding: 0 6px; font-size: 11px; color: #9c9c9c; overflow: hidden; white-space: nowrap">{{h}}</span></sc-for>
+                <sc-for list="{{mx.rows}}" as="r" hint-placeholder-count="5">
+                  <button type="button" onClick="{{r.pick}}" style="background: {{r.noBg}}; border: none; border-bottom: 1px solid #262626; border-right: 1px solid #303030; color: #9c9c9c; font: inherit; font-size: 12px; box-shadow: {{r.mark}}">●</button>
+                  <span style="display: flex; align-items: center; padding: 0 8px; border-bottom: 1px solid #262626; color: #d1d1d1; white-space: nowrap; overflow: hidden">{{r.when}}</span>
+                  <sc-for list="{{r.cells}}" as="c" hint-placeholder-count="8"><button type="button" onClick="{{c.go}}" style="margin: 3px 2px; border-radius: 4px; border: {{c.border}}; background: {{c.bg}}; font: inherit; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 2px; overflow: hidden; white-space: nowrap"><span style="color: #6fcf73">{{c.a}}</span><span style="color: #d9b36a">{{c.c}}</span><span style="color: #ff8a7a">{{c.r}}</span><span style="color: #4a4a4a">{{c.none}}</span></button></sc-for>
+                </sc-for>
+              </div>
+              <div style="margin: 10px 12px; border-radius: 6px; border: 1px solid #303030; background: #181818; padding: 10px 12px; font-size: 13px; color: #c4c4c4; line-height: 1.5">{{mx.detail}}</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{showSettings}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 12px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 80px; gap: 10px">
+              <sc-for list="{{setcells}}" as="f" hint-placeholder-count="6"><button type="button" onClick="{{f.go}}" title="{{f.why}}" style="border-radius: 6px; border: 1px solid {{f.border}}; background: {{f.bg}}; color: {{f.fg}}; font: inherit; text-align: left; padding: 8px 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 4px">
+                <span style="font-size: 12px; color: #9c9c9c; display: flex; align-items: center; width: 100%; gap: 6px"><span style="height: 18px; min-width: 26px; padding: 0 5px; border-radius: 4px; border: 1px solid {{f.kc}}; color: {{f.kc}}; font-size: 11px; font-weight: 600; box-sizing: border-box; display: flex; align-items: center; justify-content: center">{{f.kb}}</span><span>{{f.label}}</span><span style="margin-left: auto; color: {{f.hc}}; white-space: nowrap; font-size: 11px">{{f.home}}</span></span>
+                <sc-if value="{{f.isText}}" hint-placeholder-val="{{ true }}"><span style="font-size: 16px; border-bottom: 1px solid #5a5a5a; padding-bottom: 2px; width: 100%">{{f.value}}</span></sc-if>
+                <sc-if value="{{f.isInt}}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; gap: 8px; width: 100%"><span onClick="{{f.dec}}" style="width: 30px; height: 26px; border-radius: 4px; border: 1px solid #424242; display: flex; align-items: center; justify-content: center; font-size: 16px">−</span><span style="flex: 1; text-align: right; font-size: 17px; font-variant-numeric: tabular-nums">{{f.value}}</span><span style="font-size: 12px; color: #9c9c9c">{{f.unit}}</span><span onClick="{{f.inc}}" style="width: 30px; height: 26px; border-radius: 4px; border: 1px solid #424242; display: flex; align-items: center; justify-content: center; font-size: 16px">+</span></span></sc-if>
+                <sc-if value="{{f.isBool}}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; gap: 10px"><span style="width: 46px; height: 26px; border-radius: 13px; background: {{f.track}}; position: relative; border: 1px solid {{f.trackB}}"><span style="position: absolute; top: 2px; left: {{f.knobX}}px; width: 20px; height: 20px; border-radius: 10px; background: {{f.knob}}"></span></span><span style="font-size: 16px">{{f.value}}</span></span></sc-if>
+                <sc-if value="{{f.isList}}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 28px; border-radius: 4px; border: 1px solid #424242; background: #1c1c1c; padding: 0 8px; box-sizing: border-box"><span style="font-size: 15px">{{f.value}}</span><span style="color: #9c9c9c">▾</span></span></sc-if>
+              </button></sc-for>
+            </div>
+          </sc-if>
+        </div>
+        <div style="height: 34px; flex-shrink: 0; display: flex; align-items: center; padding: 0 16px; border-top: 1px solid #303030; font-size: 12px; color: #9c9c9c; white-space: nowrap; overflow: hidden" class="mono">{{echo}}</div>
+      </div>
+    </div>
+    <div style="height: 136px; flex-shrink: 0; border-top: 1px solid #424242; padding: 8px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) 10px repeat(3, minmax(0, 1fr)) {{powerW}}; grid-template-rows: 60px 60px; gap: 6px; box-sizing: border-box">
+      <sc-for list="{{left}}" as="a" hint-placeholder-count="10"><button type="button" onClick="{{a.run}}" title="{{a.why}}" style="border-radius: 6px; border: 1px solid #424242; background: {{a.bg}}; color: {{a.fg}}; font: inherit; font-size: 14px; padding: 0 10px; text-align: left; display: flex; align-items: center; gap: 9px; grid-column: {{a.col}}; grid-row: {{a.row}}; white-space: nowrap; overflow: hidden"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{a.ic}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{a.d}}"></path></svg>{{a.t}}</button></sc-for>
+      <span style="grid-column: 6; grid-row: 1 / span 2; border-left: 1px solid #303030; margin-left: 4px"></span>
+      <sc-for list="{{right}}" as="a" hint-placeholder-count="6"><button type="button" onClick="{{a.run}}" title="{{a.why}}" style="border-radius: 6px; border: 1px solid {{a.bd}}; background: {{a.bg}}; color: {{a.fg}}; font: inherit; font-size: 14px; padding: 0 10px; text-align: left; display: flex; align-items: center; gap: 9px; grid-column: {{a.col}}; grid-row: {{a.row}}; white-space: nowrap; overflow: hidden"><svg width="{{a.iw}}" height="20" viewBox="0 0 24 24" fill="none" stroke="{{a.ic}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{a.d}}"></path></svg>{{a.t}}</button></sc-for>
+      <sc-if value="{{hasPower}}" hint-placeholder-val="{{ false }}">
+        <button type="button" onClick="{{power.press}}" style="grid-column: 10; grid-row: 1 / span 2; border-radius: 6px; border: 1px solid {{power.border}}; background: {{power.bg}}; color: #d1d1d1; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; position: relative; overflow: hidden">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="{{power.icon}}" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v10"></path><path d="M18.4 6.6a9 9 0 1 1-12.8 0"></path></svg>
+          <span style="font-size: 15px; font-weight: 600; letter-spacing: 0.04em">{{power.word}}</span>
+          <span style="font-size: 12px; color: {{power.subC}}">{{power.sub}}</span>
+          <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: {{power.icon}}"></span>
+        </button>
+      </sc-if>
+    </div>
+  </section>
+
+  <div style="position: absolute; top: 48px; left: 1020px; width: 390px; height: 830px; border-radius: 16px; border: 1px solid #303030; background: #121212; overflow: hidden; display: flex; flex-direction: column">
+    <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 0 2px 0 14px; background: #1c1c1c; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500; margin-right: auto">{{title}}</span><sc-if value="{{hasViews}}" hint-placeholder-val="{{ false }}"><div style="display: flex; border: 1px solid #424242; border-radius: 15px; overflow: hidden"><sc-for list="{{views}}" as="v" hint-placeholder-count="2"><button type="button" onClick="{{v.go}}" style="height: 30px; padding: 0 10px; border: none; background: {{v.bg}}; color: {{v.fg}}; font: inherit; font-size: 12px">{{v.t}}</button></sc-for></div></sc-if><button type="button" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div>
+    <div style="height: 50px; flex-shrink: 0; display: flex; gap: 6px; padding: 3px 8px; background: #1c1c1c; border-bottom: 1px solid #303030; box-sizing: border-box; overflow: hidden">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button type="button" onClick="{{t.go}}" style="flex: 1; min-width: 0; height: 44px; border-radius: 22px; border: 1px solid {{t.pb}}; background: #262626; color: {{t.fg}}; font: inherit; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px">{{t.label}}</button></sc-for>
+    </div>
+    <sc-if value="{{isList}}" hint-placeholder-val="{{ true }}">
+      <div style="height: 46px; flex-shrink: 0; display: flex; gap: 6px; align-items: center; padding: 0 8px; background: #1c1c1c; border-bottom: 1px solid #303030">
+        <span style="font-size: 12px; color: #9c9c9c; margin-right: auto">{{countShort}}</span>
+        <sc-for list="{{modes}}" as="m" hint-placeholder-count="3"><button type="button" onClick="{{m.go}}" style="width: 48px; height: 40px; border-radius: 6px; border: 1px solid {{m.b}}; background: {{m.bg}}; color: {{m.fg}}; font: inherit; font-size: 14px; font-weight: 500">{{m.t}}</button></sc-for>
+      </div>
+    </sc-if>
+    <div style="flex: 1; overflow: hidden; background: #1c1c1c">
+      <sc-if value="{{phoneGrid}}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; grid-template-columns: 44px 1.2fr 1fr; grid-auto-rows: 52px">
+          <span style="background: #181818; border-bottom: 1px solid #303030; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #787878">No</span>
+          <sc-for list="{{phoneHeads}}" as="h" hint-placeholder-count="2"><span style="background: #181818; border-bottom: 1px solid #303030; display: flex; align-items: center; padding: 0 8px; font-size: 12px; color: #9c9c9c">{{h}}</span></sc-for>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+            <sc-if value="{{r.group}}" hint-placeholder-val="{{ false }}"><span style="grid-column: 1 / -1; display: flex; align-items: center; padding: 0 10px; font-size: 12px; color: #c9a227; background: #171717">{{r.group}}</span></sc-if>
+            <sc-if value="{{r.isRow}}" hint-placeholder-val="{{ true }}">
+              <button type="button" onClick="{{r.pickRow}}" style="background: {{r.noBg}}; border: none; border-bottom: 1px solid #262626; color: #9c9c9c; font: inherit; font-size: 13px; box-shadow: {{r.mark}}">{{r.no}}</button>
+              <sc-for list="{{r.phone}}" as="c" hint-placeholder-count="2"><button type="button" onClick="{{r.pickRow}}" style="margin: 3px 2px; border-radius: 4px; border: {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; font: inherit; font-size: 14px; text-align: left; padding: 0 8px; display: flex; align-items: center; gap: 6px; white-space: nowrap; overflow: hidden"><span style="width: {{c.dw}}px; height: 9px; border-radius: 5px; background: {{c.dot}}; flex-shrink: 0"></span>{{c.t}}</button></sc-for>
+            </sc-if>
+          </sc-for>
+        </div>
+        <p style="margin: 8px 10px; font-size: 12px; color: #787878; line-height: 1.4">Other columns fold into the row or scroll sideways; the first column stays frozen.</p>
+      </sc-if>
+      <sc-if value="{{phoneMatrix}}" hint-placeholder-val="{{ false }}">
+        <div style="padding: 8px; display: flex; flex-direction: column; gap: 6px">
+          <sc-for list="{{mx.rows}}" as="r" hint-placeholder-count="4"><button type="button" onClick="{{r.pick}}" style="border-radius: 6px; border: 1px solid #303030; background: #262626; color: #d1d1d1; font: inherit; text-align: left; padding: 8px 10px; display: flex; flex-direction: column; gap: 3px; box-shadow: {{r.mark}}"><span style="font-size: 14px">{{r.when}}</span><span style="font-size: 12px; color: #9c9c9c">{{r.kinds}}</span></button></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{phoneCards}}" hint-placeholder-val="{{ false }}">
+        <div style="padding: 8px; display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="3"><sc-if value="{{r.isRow}}" hint-placeholder-val="{{ true }}">
+            <button type="button" onClick="{{r.pickRow}}" style="border-radius: 6px; border: 1px solid {{r.cardB}}; background: {{r.cardBg}}; color: #d1d1d1; font: inherit; text-align: left; padding: 10px 12px; display: flex; flex-direction: column; gap: 5px">
+              <span style="display: flex; align-items: center; gap: 8px; width: 100%"><span style="width: 9px; height: 9px; border-radius: 5px; background: {{r.dot}}"></span><span style="font-size: 16px; font-weight: 500">{{r.title}}</span></span>
+              <sc-for list="{{r.kv}}" as="l" hint-placeholder-count="2"><span style="font-size: 12px; color: #9c9c9c; display: flex; justify-content: space-between; width: 100%"><span>{{l.k}}</span><span style="color: {{l.c}}">{{l.v}}</span></span></sc-for>
+            </button>
+          </sc-if></sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{showSettings}}" hint-placeholder-val="{{ false }}">
+        <div style="padding: 8px; display: flex; flex-direction: column; gap: 8px">
+          <sc-for list="{{setcells}}" as="f" hint-placeholder-count="5"><button type="button" onClick="{{f.go}}" title="{{f.why}}" style="min-height: 70px; border-radius: 6px; border: 1px solid {{f.border}}; background: {{f.bg}}; color: {{f.fg}}; font: inherit; text-align: left; padding: 8px 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 4px">
+                <span style="font-size: 12px; color: #9c9c9c; display: flex; align-items: center; width: 100%; gap: 6px"><span style="height: 18px; min-width: 26px; padding: 0 5px; border-radius: 4px; border: 1px solid {{f.kc}}; color: {{f.kc}}; font-size: 11px; font-weight: 600; box-sizing: border-box; display: flex; align-items: center; justify-content: center">{{f.kb}}</span><span>{{f.label}}</span><span style="margin-left: auto; color: {{f.hc}}; white-space: nowrap; font-size: 11px">{{f.homeShort}}</span></span>
+                <sc-if value="{{f.isText}}" hint-placeholder-val="{{ true }}"><span style="font-size: 16px; border-bottom: 1px solid #5a5a5a; padding-bottom: 2px; width: 100%">{{f.value}}</span></sc-if>
+                <sc-if value="{{f.isInt}}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; gap: 8px; width: 100%"><span onClick="{{f.dec}}" style="width: 30px; height: 26px; border-radius: 4px; border: 1px solid #424242; display: flex; align-items: center; justify-content: center; font-size: 16px">−</span><span style="flex: 1; text-align: right; font-size: 17px; font-variant-numeric: tabular-nums">{{f.value}}</span><span style="font-size: 12px; color: #9c9c9c">{{f.unit}}</span><span onClick="{{f.inc}}" style="width: 30px; height: 26px; border-radius: 4px; border: 1px solid #424242; display: flex; align-items: center; justify-content: center; font-size: 16px">+</span></span></sc-if>
+                <sc-if value="{{f.isBool}}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; gap: 10px"><span style="width: 46px; height: 26px; border-radius: 13px; background: {{f.track}}; position: relative; border: 1px solid {{f.trackB}}"><span style="position: absolute; top: 2px; left: {{f.knobX}}px; width: 20px; height: 20px; border-radius: 10px; background: {{f.knob}}"></span></span><span style="font-size: 16px">{{f.value}}</span></span></sc-if>
+                <sc-if value="{{f.isList}}" hint-placeholder-val="{{ false }}"><span style="display: flex; align-items: center; justify-content: space-between; width: 100%; height: 28px; border-radius: 4px; border: 1px solid #424242; background: #1c1c1c; padding: 0 8px; box-sizing: border-box"><span style="font-size: 15px">{{f.value}}</span><span style="color: #9c9c9c">▾</span></span></sc-if>
+              </button></sc-for>
+        </div>
+      </sc-if>
+    </div>
+    <div style="flex-shrink: 0; border-top: 1px solid #424242; background: #1c1c1c; padding: 6px 6px 14px; display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: 50px; gap: 6px">
+      <sc-if value="{{hasPower}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{power.press}}" style="grid-column: 1 / -1; border-radius: 6px; border: 1px solid {{power.border}}; background: {{power.bg}}; color: #d1d1d1; font: inherit; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; overflow: hidden"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{power.icon}}" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v10"></path><path d="M18.4 6.6a9 9 0 1 1-12.8 0"></path></svg><span style="font-size: 14px; font-weight: 600">{{power.word}}</span><span style="font-size: 12px; color: {{power.subC}}">{{power.sub}}</span><span style="position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: {{power.icon}}"></span></button></sc-if>
+      <sc-for list="{{phoneSlab}}" as="a" hint-placeholder-count="6"><button type="button" onClick="{{a.run}}" style="border-radius: 6px; border: 1px solid #424242; background: {{a.bg}}; color: {{a.fg}}; font: inherit; font-size: 14px; padding: 0 10px; text-align: left; display: flex; align-items: center; gap: 9px; white-space: nowrap; overflow: hidden"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{a.ic}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="{{a.d}}"></path></svg>{{a.t}}</button></sc-for>
+    </div>
+  </div>
+
+  <sc-if value="{{editing}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5)"></div>
+    <section style="position: absolute; top: 120px; left: 200px; width: 820px; height: 620px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden; display: flex; flex-direction: column">
+      <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 18px; border-bottom: 1px solid #424242">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l4 4L8 20H4v-4z"></path></svg>
+        <span style="font-size: 17px; font-weight: 500">{{card.title}}</span>
+        <span style="font-size: 13px; color: #9c9c9c; margin-right: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{card.sub}}</span>
+        <button type="button" onClick="{{closeCard}}" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+      </div>
+      <div style="height: 54px; flex-shrink: 0; display: flex; gap: 6px; align-items: center; padding: 0 12px; border-bottom: 1px solid #303030">
+        <sc-for list="{{card.tabs}}" as="t" hint-placeholder-count="2"><button type="button" onClick="{{t.go}}" style="height: 44px; padding: 0 20px; border-radius: 22px; border: 1px solid {{t.b}}; background: #262626; color: {{t.fg}}; font: inherit; font-size: 14px">{{t.label}}</button></sc-for>
+      </div>
+      <div style="flex: 1; overflow: hidden; padding: 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 76px; gap: 10px; align-content: start">
+        <sc-for list="{{card.fields}}" as="f" hint-placeholder-count="6"><button type="button" onClick="{{f.go}}" title="{{f.why}}" style="border-radius: 6px; border: 1px solid {{f.border}}; background: {{f.bg}}; color: #d1d1d1; font: inherit; text-align: left; padding: 9px 12px; display: flex; flex-direction: column; justify-content: space-between"><span style="font-size: 12px; color: #9c9c9c; display: flex; align-items: center; gap: 6px; width: 100%"><span style="height: 18px; min-width: 26px; padding: 0 5px; border-radius: 4px; border: 1px solid {{f.kc}}; color: {{f.kc}}; font-size: 11px; font-weight: 600; box-sizing: border-box; display: flex; align-items: center; justify-content: center">{{f.kb}}</span><span>{{f.label}}</span><span style="margin-left: auto">{{f.mark}}</span></span><span style="font-size: 16px; font-style: {{f.style}}; color: {{f.fg}}; display: flex; justify-content: space-between; width: 100%"><span>{{f.value}}</span><span style="color: #9c9c9c">{{f.tail}}</span></span></button></sc-for>
+      </div>
+      <sc-if value="{{card.picking}}" hint-placeholder-val="{{ false }}">
+        <div style="flex-shrink: 0; border-top: 1px solid #424242; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; background: #181818">
+          <span style="font-size: 13px; color: #9c9c9c">{{card.pickTitle}}</span>
+          <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px"><sc-for list="{{card.choices}}" as="o" hint-placeholder-count="6"><button type="button" onClick="{{o.go}}" style="height: 52px; border-radius: 6px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 14px">{{o.t}}</button></sc-for></div>
+        </div>
+      </sc-if>
+      <div style="height: 40px; flex-shrink: 0; display: flex; align-items: center; padding: 0 16px; border-top: 1px solid #303030; font-size: 12px; color: #9c9c9c; white-space: nowrap; overflow: hidden" class="mono">{{card.echo}}</div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.55)"></div>
+    <section style="position: absolute; top: 70px; left: 220px; width: 780px; height: 760px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden; display: flex; flex-direction: column">
+      <div style="height: 52px; flex-shrink: 0; display: flex; align-items: center; gap: 10px; padding: 0 4px 0 18px; border-bottom: 1px solid #424242"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9a227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg><span style="font-size: 17px; font-weight: 500">{{ld.title}}</span><span style="font-size: 13px; color: #9c9c9c; margin-right: auto">{{ld.facts}}</span><button type="button" onClick="{{ld.cancel}}" aria-label="Close" style="width: 50px; height: 50px; border: none; background: none; color: #d1d1d1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div>
+      <div style="padding: 10px 16px 6px; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #303030"><span style="font-size: 13px; color: #9c9c9c; margin-right: auto">Tick what to take from the file. Untick = keep what is loaded now. Open a part to pick single objects.</span><button type="button" onClick="{{ld.all}}" style="height: 40px; padding: 0 12px; border-radius: 6px; border: 1px solid #424242; background: #262626; color: #d1d1d1; font: inherit; font-size: 13px">All</button><button type="button" onClick="{{ld.none}}" style="height: 40px; padding: 0 12px; border-radius: 6px; border: 1px solid #424242; background: #262626; color: #d1d1d1; font: inherit; font-size: 13px">None</button></div>
+      <div style="flex: 1; overflow: hidden; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{ld.parts}}" as="p" hint-placeholder-count="5">
+          <div style="border-radius: 6px; border: 1px solid {{p.border}}; background: #262626">
+            <div style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 6px 0 12px">
+              <button type="button" onClick="{{p.toggle}}" style="width: 30px; height: 30px; border-radius: 5px; border: 1px solid {{p.boxB}}; background: {{p.boxBg}}; color: #f3ecd3; font: inherit; font-size: 16px; display: flex; align-items: center; justify-content: center">{{p.mark}}</button>
+              <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 15px">{{p.label}}</span><span style="font-size: 12px; color: #9c9c9c">{{p.sum}}</span></span>
+              <span style="margin-left: auto; font-size: 13px; color: {{p.stateC}}">{{p.state}}</span>
+              <button type="button" onClick="{{p.open}}" style="height: 40px; padding: 0 12px; border-radius: 6px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 13px">{{p.openT}}</button>
+            </div>
+            <sc-if value="{{p.isOpen}}" hint-placeholder-val="{{ false }}"><div style="padding: 0 12px 10px 54px; display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{p.objs}}" as="o" hint-placeholder-count="4"><button type="button" onClick="{{o.go}}" style="height: 36px; padding: 0 10px; border-radius: 18px; border: 1px solid {{o.b}}; background: {{o.bg}}; color: {{o.fg}}; font: inherit; font-size: 13px">{{o.t}}</button></sc-for></div></sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex-shrink: 0; border-top: 1px solid #424242; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 14px; color: {{ld.modeC}}">{{ld.mode}}</span>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px"><button type="button" onClick="{{ld.go}}" style="height: 60px; border-radius: 6px; border: none; background: {{ld.goBg}}; color: {{ld.goFg}}; font: inherit; font-size: 15px; font-weight: 500">{{ld.goT}}</button><button type="button" onClick="{{ld.cancel}}" style="height: 60px; border-radius: 6px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 15px">Cancel</button></div>
+        <span class="mono" style="font-size: 12px; color: #9c9c9c">{{ld.line}}</span>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{asking}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.55)"></div>
+    <section style="position: absolute; top: 250px; left: 360px; width: 640px; border-radius: 6px; background: #1c1c1c; border: 1px solid #424242; overflow: hidden">
+      <div style="height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; border-bottom: 1px solid #424242"><span style="font-size: 17px; font-weight: 500">{{ask.title}}</span><span class="mono" style="font-size: 13px; color: #c27a12">station ask</span></div>
+      <div style="padding: 18px; display: flex; flex-direction: column; gap: 12px">
+        <p style="margin: 0; font-size: 15px; line-height: 1.45">{{ask.text}}</p>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+          <button type="button" onClick="{{ask.yes}}" style="height: 60px; border-radius: 6px; border: 1px solid {{ask.b}}; background: {{ask.bg}}; color: {{ask.fg}}; font: inherit; font-size: 15px; font-weight: 500">{{ask.btn}}</button>
+          <button type="button" onClick="{{ask.no}}" style="height: 60px; border-radius: 6px; border: 1px solid #424242; background: #303030; color: #d1d1d1; font: inherit; font-size: 15px">Cancel</button>
+        </div>
+        <span class="mono" style="font-size: 12px; color: #9c9c9c">{{ask.line}}</span>
+      </div>
+    </section>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){
+    super(p);
+    const C = this.cfg();
+    const data = {};
+    C.tabs.forEach(t => { if (t.data) data[t.key] = t.data.map(r => ({ ...r })); });
+    this.state = { tab: C.tabs[0].key, data, sel: C.startSel || [], mode: 'replace', view: 'grid', echo: '', editing: false, edTab: null, edField: null, edEcho: '', asking: null, mx: null, load: null, setv: {}, power: 0, level: C.levels ? C.levels[0] : null };
+  }
+  cfg() {
+    const OK = '#00a60a', WA = '#c27a12', AL = '#e10000', PIN = '#c9a227';
+    return {
+      title: 'Backup', icon: 'M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8',
+      caption: 'Backup on <luma-grid> + slab. Library (Festival 2026 is selected) › Load show… opens the Load show dialog: take everything, or only some parts / single objects from the .luma into the current show. Show · History: one row per save (a show history + ours: by, station, reason, changes, kept).',
+      chips: s => [['demo · unsaved changes', WA], ['recovery copy in 3:12', OK], ['212 GB free', OK]],
+      startSel: [1],
+      loadParts: [
+        { key: 'data', label: 'Show data', sum: 'groups, presets, sequences, macros, pools', word: 'DataPool', objs: ['Group 1 Thru 12', 'Preset 4.1 Thru 4.20', 'Sequence 1', 'Sequence 2', 'Sequence 3', 'Macro 1 Thru 8'] },
+        { key: 'patch', label: 'Patch', sum: '212 fixtures, 8 fixture types', word: 'Patch', objs: ['Fixture 1 Thru 120 (spots)', 'Fixture 121 Thru 212 (washes)', 'FixtureType * (8)'] },
+        { key: 'proto', label: 'DMX protocols', sum: 'networks, lines, routes', word: 'Network', objs: ['Network "Main"', 'Network "Video"', 'Output 1 Thru 4', 'Input 1'] },
+        { key: 'users', label: 'Users & profiles', sum: '5 users, 6 profiles', word: 'User', objs: ['User "LD"', 'User "Anna"', 'UserProfile "LD"', 'UserProfile "Anna"'] },
+        { key: 'stations', label: 'Station table', sum: 'wiring of 4 stations', word: 'Station', objs: ['Station "FOH"', 'Station "Backstage"', 'Station "Tower"'] }
+      ],
+      tabs: [
+        { key: 'lib', label: 'Library', sub: d => d.length + ' shows', word: 'Show', plural: 'shows', home: 'library/shows on this station', phoneCols: ['name', 'saved'],
+          cols: [
+            { f: 'name', label: 'Show', w: 1.3 }, { f: 'saved', label: 'Last saved', w: 1, ro: true }, { f: 'size', label: 'Size', w: 0.6, ro: true },
+            { f: 'fmt', label: 'Format', w: 1, ro: true, dot: d => d.fmt.startsWith('12') ? OK : WA, color: d => d.fmt.startsWith('12') ? null : '#e0a050' }, { f: 'pin', label: 'Pinned', w: 0.6, show: d => d.pin ? '★' : '—' }
+          ],
+          data: [
+            { no: 1, name: 'demo', saved: 'today 14:02', size: '1.1 MB', fmt: '12 · loads', pin: false },
+            { no: 2, name: 'Festival 2026', saved: '3 days ago', size: '48 MB', fmt: '12 · loads', pin: true },
+            { no: 3, name: 'Tour rig', saved: '2 weeks ago', size: '12 MB', fmt: '11 · older, refused', pin: false },
+            { no: 4, name: 'Corporate', saved: '1 month ago', size: '6 MB', fmt: '12 · loads', pin: false }
+          ],
+          newLine: 'NewShow   (asks)', disable: { Cut: 'Shows are not moved', Paste: 'Nothing copied' },
+          delWhy: rows => rows.some(r => r.name === 'demo') ? 'demo is the loaded show' : '',
+          delText: rows => `${rows.map(r => r.name).join(', ')} go to .trash for 30 days.`,
+          edit: { tabs: [{ key: 's', label: 'Show', fields: [{ f: 'name', label: 'Name', single: true, opts: ['…'] }, { f: 'pin', label: 'Pinned', opts: ['Yes', 'No'] }] }] },
+          right: [
+            { t: 'Load show…', icon: 'load', primary: true, phone: true, need: 'one', run: ctx => ctx.load(ctx.sel[0].name, `saved ${ctx.sel[0].saved} · ${ctx.sel[0].size} · format ${ctx.sel[0].fmt.split(' ')[0]}`), why: ctx => ctx.sel[0] && ctx.sel[0].fmt.startsWith('11') ? 'Older format, refused' : '' }, { t: 'Save show', icon: 'save', phone: true, line: () => 'SaveShow   (the previous file becomes a version)' }, { t: 'Save as…', icon: 'saveas', line: () => 'SaveShow "…"   (keyboard ask)' }, { t: 'New show…', icon: 'newshow', phone: true, line: () => 'NewShow   (asks: unsaved changes, name)' },
+            { t: 'Info', icon: 'info', need: 'one', line: ctx => `Info ${ctx.target}` }, { t: 'History…', icon: 'history', need: 'one', line: ctx => `List History ${ctx.target}   (read from the file, not loaded)` }
+          ] },
+        { key: 'show', label: 'Show · History', sub: 'demo · unsaved', matrix: ['Fixtures', 'Patch', 'Groups', 'Presets', 'Sequences', 'Cues', 'Macros', 'Lines', 'Users', 'Profiles'], word: 'Version', plural: 'saves', home: 'History = one row per save, read from each file’s manifest', phoneCols: ['when', 'reason'],
+          banner: 'demo — saved 14:02 by Admin on FOH · format 12 · 212 fixtures · 18 sequences · recovery copy every 5 min (next in 3:12) · versions + copies use 84 MB of 500 MB',
+          target: rows => 'Version ' + rows.map(r => `"${r.when}"`).join(' + '),
+          cols: [
+            { f: 'when', label: 'Saved', w: 1, ro: true, dot: d => d.kept === '★ pinned' ? PIN : null },
+            { f: 'by', label: 'By', w: 0.6, ro: true }, { f: 'st', label: 'Station', w: 0.7, ro: true },
+            { f: 'reason', label: 'Reason', w: 0.9, ro: true, dot: d => /merge/.test(d.reason) ? AL : /Before|Signal/.test(d.reason) ? WA : null },
+            { f: 'note', label: 'Note', w: 1.1 }, { f: 'chg', label: 'Changes', w: 1.3, ro: true },
+            { f: 'kept', label: 'Kept', w: 0.7, color: d => d.kept === 'pruned' ? '#787878' : null }
+          ],
+          data: [
+            { no: 1, when: 'today 14:02', m: { Fixtures: [12, 0, 0], Patch: [12, 3, 0], Cues: [3, 5, 0], Sequences: [0, 2, 0] }, why: { Fixtures: '+ Fixture 201 Thru 212 (Aura XB)', Patch: '+12 addresses · ~ Fixture 4, 9, 17 moved to universe 3', Cues: '+ Sequence 2 Cue 14 Thru 16 · ~ Sequence 1 Cue 3, 5, 7, 8, 9 (fade times)', Sequences: '~ Sequence 1 (5 cues retimed) · ~ Sequence 2 (3 cues added)' }, by: 'Admin', st: 'FOH', reason: 'Save', note: '', chg: '+12 fixtures · +3 cues', kept: 'current' },
+            { no: 2, when: 'today 13:10', m: { Groups: [1, 0, 0] }, why: { Groups: '+ Group 13 “Aura XB”' }, by: 'LD', st: 'FOH', reason: 'Before load', note: '', chg: '+1 group', kept: 'version' },
+            { no: 3, when: 'today 11:30', m: { Sequences: [0, 0, 1], Cues: [0, 0, 12], Macros: [0, 1, 0] }, why: { Sequences: '− Sequence 9 “Test”', Cues: '− Sequence 9 Cue 1 Thru 12 (with the sequence)', Macros: '~ Macro 3 “Reset” (2 lines)' }, by: 'LD', st: 'FOH', reason: 'Quick', note: 'before rehearsal', chg: '−1 sequence', kept: '★ pinned' },
+            { no: 4, when: 'today 10:05', m: { Presets: [40, 6, 0], Users: [0, 1, 0], Profiles: [0, 1, 0] }, why: { Presets: '+ Preset 4.21 Thru 4.60 · ~ Preset 2.1 Thru 2.6', Users: '~ User “Prog” (colour)', Profiles: '~ UserProfile “Prog” (views)' }, by: 'Prog', st: 'Backstage', reason: 'Save', note: '', chg: '+40 presets', kept: 'version' },
+            { no: 5, when: 'yesterday 22:40', m: { Lines: [1, 1, 0] }, why: { Lines: '+ Output 4 · ~ Output 1 (rate 30 → 44)' }, by: 'Admin', st: 'FOH', reason: 'Save As', note: 'renamed from “Festival”', chg: 'name changed', kept: 'version' },
+            { no: 6, when: '3 days ago', m: { Fixtures: [80, 0, 0], Patch: [80, 0, 0], Groups: [12, 0, 0], Sequences: [3, 0, 0], Cues: [48, 0, 0] }, why: { Fixtures: 'first full rig' }, by: 'Admin', st: 'FOH', reason: 'Save', note: 'format 11 → 12', chg: 'build e8f1c2', kept: 'pruned' }
+          ],
+          newLabel: 'Save now…', newLine: 'SaveShow   (the previous file becomes a version)',
+          disable: { Copy: 'Versions are not copied', Cut: 'Versions are not moved', Paste: 'Nothing copied' },
+          delWhy: rows => rows.some(r => r.kept === 'current') ? 'The current file is the show' : '',
+          delText: rows => `${rows.length} version file(s) go to .trash for 30 days; their history rows stay (marked pruned).`,
+          edit: { tabs: [{ key: 'v', label: 'Save', fields: [{ f: 'note', label: 'Note', opts: ['before rehearsal', 'show 1', 'final'], kind: 'list' }, { f: 'kept', label: 'Kept', opts: ['★ pinned', 'version'], kind: 'list' }] }] },
+          right: [
+            { t: 'Load show…', icon: 'load', primary: true, phone: true, run: ctx => ctx.tab('lib', [1]) }, { t: 'Save show', icon: 'save', phone: true, line: () => 'SaveShow   (the previous file becomes a version)' }, { t: 'Save as…', icon: 'saveas', line: () => 'SaveShow "…"   (keyboard ask)' }, { t: 'New show…', icon: 'newshow', phone: true, line: () => 'NewShow   (asks: unsaved changes, name)' },
+            { t: 'Open version', need: 'one', line: ctx => `LoadShow "demo" /Version "${ctx.sel[0].when}"   (loads as unsaved changes)`, why: ctx => ctx.sel[0] && ctx.sel[0].kept === 'pruned' ? 'Pruned: only the history row is left' : '' },
+            { t: 'Take parts…', need: 'one', run: ctx => ctx.load('demo @ ' + ctx.sel[0].when, `${ctx.sel[0].reason} by ${ctx.sel[0].by} on ${ctx.sel[0].st}`), why: ctx => ctx.sel[0] && ctx.sel[0].kept === 'pruned' ? 'Pruned: only the history row is left' : '' }
+          ] },
+        { key: 'rec', label: 'Recovery', sub: '4 copies', word: 'Recovery', plural: 'copies', home: '.autosave on this station · cleanup: station setting', phoneCols: ['when', 'reason'],
+          target: rows => 'Recovery ' + rows.map(r => `"${r.when}"`).join(' + '),
+          cols: [
+            { f: 'when', label: 'Time', w: 0.8, ro: true }, { f: 'reason', label: 'Reason', w: 1.8, ro: true, dot: d => d.reason.startsWith('Lost') ? AL : d.reason.startsWith('Timed') ? OK : WA },
+            { f: 'by', label: 'Station · user', w: 1.1, ro: true }, { f: 'kept', label: 'Kept', w: 0.7 }
+          ],
+          data: [
+            { group: 'demo — today' },
+            { no: 1, when: '15:47', reason: 'Timed recovery copy', by: 'FOH · Admin', kept: '1 h' },
+            { no: 2, when: '13:10', reason: 'Before loading “Tour rig”', by: 'FOH · LD', kept: '7 d' },
+            { no: 3, when: '12:55', reason: 'Lost a merge (Backstage won)', by: 'Backstage · Prog', kept: '30 d' },
+            { group: 'demo — yesterday' },
+            { no: 4, when: '23:01', reason: 'Shut down by signal', by: 'FOH · —', kept: '30 d' }
+          ],
+          disable: { New: 'Copies are made by the station', Cut: 'Copies are not moved', Paste: 'Nothing copied' },
+          delText: rows => `${rows.length} recovery cop${rows.length > 1 ? 'ies' : 'y'} will be deleted.`,
+          edit: { tabs: [{ key: 'r', label: 'Copy', fields: [{ f: 'kept', label: 'Kept', opts: ['pinned (never)', '7 d', '30 d'] }] }] },
+          right: [
+            { t: 'Open copy', need: 'one', line: ctx => `LoadShow "demo" /Recovery "${ctx.sel[0].when}"   (as unsaved changes)` }, { t: 'Pin', need: 'sel', line: ctx => `Set ${ctx.target} Kept Pinned` },
+            { t: 'Clean up now', line: () => 'Clean Recovery   (asks, shows what goes)' }, { t: 'Cleanup rules', line: () => 'EditSetting Station /Tab Cleanup' }
+          ] }
+      ]
+    };
+  }
+  matrix(T, list, sel, s) {
+    const K = T.matrix;
+    const heads = ['Saved', ...K];
+    const rows = list.map((d, i) => {
+      const on = sel.includes(i);
+      const cells = K.map(k => { const m = (d.m || {})[k]; const has = !!m; const pick = s.mx && s.mx.i === i && s.mx.k === k;
+        return { a: m && m[0] ? '+' + m[0] : '', c: m && m[1] ? '~' + m[1] : '', r: m && m[2] ? '−' + m[2] : '', none: has ? '' : '·',
+          bg: pick ? '#2b2716' : (has ? '#262626' : 'transparent'), border: pick ? '1px solid #9a7a08' : (has ? '1px solid #303030' : '1px solid transparent'),
+          go: () => this.setState({ mx: { i, k }, sel: [i] }) }; });
+      const kinds = K.filter(k => (d.m || {})[k]).map(k => { const m = d.m[k]; return k + ' ' + [m[0] ? '+' + m[0] : '', m[1] ? '~' + m[1] : '', m[2] ? '−' + m[2] : ''].filter(Boolean).join(' '); }).join(' · ');
+      return { when: d.when, cells, kinds: kinds || 'no object changes', noBg: on ? '#2b2716' : '#181818', mark: on ? 'inset 0 0 0 1px #9a7a08' : 'none', pick: () => this.setState({ sel: [i], mx: null }) };
+    });
+    let detail = 'Tap a cell: which objects changed in that save (+ added · ~ changed · − removed), compared by GUID with the save before.';
+    if (s.mx) { const d = list[s.mx.i]; const lines = (d.why || {})[s.mx.k]; detail = `${d.when} · ${s.mx.k}: ` + (lines || 'details from the two manifests'); }
+    return { heads, rows, detail, cols: '150px ' + K.map(() => '1fr').join(' ') };
+  }
+  renderVals() {
+    const C = this.cfg(), s = this.state;
+    const T = C.tabs.find(t => t.key === s.tab);
+    const isList = !!T.cols;
+    const list = isList ? s.data[T.key] : [];
+    const canLevel = !C.levels || !T.needs || C.levels.indexOf(s.level) <= C.levels.indexOf(T.needs);
+    const tabs = C.tabs.map(t => ({ label: t.label, sub: typeof t.sub === 'function' ? t.sub(s.data[t.key] || []) : (t.sub || ''),
+      go: () => this.setState({ tab: t.key, sel: [], echo: '', mode: 'replace' }), bg: s.tab === t.key ? '#262626' : 'transparent', fg: s.tab === t.key ? '#d1d1d1' : '#9c9c9c',
+      mark: s.tab === t.key ? 'inset 3px 0 0 #9a7a08' : 'none', pb: s.tab === t.key ? '#9a7a08' : '#424242' }));
+    const idx = list.map((d, i) => d.group !== undefined && d.no === undefined ? -1 : i);
+    const pick = i => () => {
+      let sel = s.sel.slice();
+      if (s.mode === 'add') { if (!sel.includes(i)) sel.push(i); }
+      else if (s.mode === 'remove') sel = sel.filter(k => k !== i);
+      else if (s.mode === 'thru' && sel.length) { const a = sel[sel.length - 1]; for (let k = Math.min(a, i); k <= Math.max(a, i); k++) if (idx[k] >= 0 && !sel.includes(k)) sel.push(k); }
+      else sel = [i];
+      this.setState({ sel, mode: s.mode === 'thru' ? 'replace' : s.mode, echo: '' });
+    };
+    const cellOf = (col, d, on) => {
+      const v = col.show ? col.show(d) : d[col.f];
+      const dot = col.dot ? col.dot(d) : null;
+      const ro = col.ro || !canLevel;
+      return { t: (v == null || v === '' ? '—' : v) + (col.kind === 'list' && !ro ? '  ▾' : ''), dot: dot || 'transparent', dw: dot ? 9 : 0, style: 'normal',
+        bg: on ? '#1d3a5a' : (ro ? 'transparent' : '#262626'), border: on ? '1px solid #4d8fd6' : (ro ? '1px solid transparent' : '1px solid #303030'),
+        fg: (col.color && col.color(d)) || (ro && !on ? '#9c9c9c' : '#d1d1d1') };
+    };
+    const rows = list.map((d, i) => {
+      if (idx[i] < 0) return { group: d.group, isRow: false };
+      const on = s.sel.includes(i);
+      return { group: '', isRow: true, no: d.no, pickRow: pick(i), noBg: on ? '#2b2716' : '#181818', mark: on ? 'inset 0 0 0 1px #9a7a08' : 'none',
+        cells: T.cols.map(c => ({ ...cellOf(c, d, on), pick: pick(i) })), phone: (T.phoneCols || T.cols.slice(0, 2).map(c => c.f)).map(f => cellOf(T.cols.find(c => c.f === f), d, on)),
+        title: d[T.cols[0].f], dot: T.cardDot ? T.cardDot(d) : '#5a5a5a', cardB: on ? '#9a7a08' : '#303030', cardBg: on ? '#2b2716' : '#262626',
+        kv: T.cols.slice(1).filter(c => !c.noCard).slice(0, 4).map(c => ({ k: c.label, v: (c.show ? c.show(d) : d[c.f]) || '—', c: (c.color && c.color(d)) || '#d1d1d1' })) };
+    });
+    const heads = isList ? T.cols.map(c => ({ t: c.label, bg: '#181818', go: () => {} })) : [];
+    const mk = (m, t) => { const on = s.mode === m, latched = on && m !== 'thru'; return { t, b: on ? '#9a7a08' : '#424242', bg: latched ? '#9a7a08' : on ? '#3a3214' : '#262626', fg: latched ? '#f3ecd3' : '#d1d1d1', go: () => this.setState({ mode: on ? 'replace' : m }) }; };
+    const modes = [mk('add', '+'), mk('remove', '−'), mk('thru', 'Thru')];
+    const sel = s.sel.filter(i => idx[i] >= 0);
+    const n = sel.length;
+    const names = sel.map(i => list[i][T.cols ? T.cols[0].f : 'name']);
+    const target = n ? (T.target ? T.target(sel.map(i => list[i])) : `${T.word} ` + names.map(x => `"${x}"`).join(' + ')) : '';
+    const latchWord = s.mode === 'add' ? ' · + latched: taps add' : s.mode === 'remove' ? ' · − latched: taps remove' : s.mode === 'thru' ? ' · Thru: tap the end' : '';
+    const IC = {
+      Select: ['M4 3l7 17 2.5-7.5L21 10z', '#c9a227'], New: ['M5 12h14M12 5v14', '#3fbf4a'],
+      Copy: ['M9 9h11v11H9zM5 15H4V4h11v1', '#4d8fd6'], Cut: ['M6 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12', '#e08a2c'],
+      Paste: ['M9 3h6v4H9zM16 5h2a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2', '#4d8fd6'], Delete: ['M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6', '#ff5a4a'],
+      Oops: ['M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3', '#e6b422'], Import: ['M12 3v12M7 10l5 5 5-5M5 21h14', '#3fb0a6'],
+      Export: ['M12 21V9M7 14l5-5 5 5M5 3h14', '#3fb0a6'], Edit: ['M17 3l4 4L8 20H4v-4z', '#c9a227']
+    };
+    const say = line => () => this.setState({ echo: '› ' + line });
+    const KIND = { text: ['Aa', '#8a8a8a'], int: ['123', '#8a8a8a'], bool: ['I/O', '#8a8a8a'], list: ['≡', '#8a8a8a'] };
+    const noSel = n ? '' : 'Select first';
+    const levelWhy = canLevel ? '' : `Needs ${T.needs} — you are ${s.level}`;
+    const dis = Object.assign({}, isList ? {} : { New: 'Settings, not a list', Copy: 'Settings, not a list', Cut: 'Settings, not a list', Paste: 'Settings, not a list', Delete: 'Settings, not a list', Select: 'Settings, not a list' }, T.disable || {});
+    const L = (name, col, row, run, why0) => { const why = levelWhy && name !== 'Select' && name !== 'Export' ? levelWhy : (dis[name] || why0 || ''); const [d, ic] = IC[name]; const lab = ['Copy', 'Cut', 'Delete', 'Edit'].includes(name) && n ? `${name} ${n}` : name;
+      return { t: lab, col, row, d, ic: why ? '#5a5a5a' : ic, why, run: why ? say(`(greyed: ${why})`) : run, bg: why ? '#232323' : '#2c2c2c', fg: why ? '#5a5a5a' : (name === 'Delete' ? '#ff8a7a' : '#d1d1d1') }; };
+    const openCard = () => this.setState({ editing: true, edTab: (T.edit || C.tabs[0].edit || { tabs: [{ key: 'x' }] }).tabs[0].key, edField: null, edEcho: '' });
+    const left = [
+      L('Select', 1, 1, () => this.setState({ mode: 'add' })),
+      L('New', 2, 1, T.onNew ? () => T.onNew.call(this) : say(T.newLine || `Store ${T.word}`)),
+      L('Copy', 3, 1, say(`Copy ${target} At …`), noSel), L('Cut', 4, 1, say(`Cut ${target}`), noSel), L('Paste', 5, 1, say('Paste'), 'Nothing copied'),
+      L('Delete', 1, 2, () => this.setState({ asking: 'delete' }), noSel || (T.delWhy ? T.delWhy(sel.map(i => list[i])) : '')),
+      L('Oops', 2, 2, say('Oops')), L('Import', 3, 2, say(`Import ${T.word || 'Settings'} …`)), L('Export', 4, 2, say(`Export ${target || (T.word || 'Settings') + ' *'}`)),
+      L('Edit', 5, 2, openCard, isList ? (noSel || (T.edit ? '' : 'Nothing to edit here')) : 'Tap a cell')
+    ];
+    const ctx = { n, target, sel: sel.map(i => list[i]), say, ask: k => () => this.setState({ asking: k }), tab: (k, sel) => () => this.setState({ tab: k, sel: sel || [], echo: '' }),
+      load: (show, facts) => () => this.setState({ load: { show, facts, open: null, pick: Object.fromEntries((C.loadParts || []).map(p => [p.key, p.objs.slice()])) } }) };
+    const right = (T.right || []).slice(0, 6).map((a, k) => { const why = levelWhy || (a.need === 'one' && n !== 1 ? 'Select one' : a.need === 'sel' && !n ? 'Select first' : (a.why ? a.why(ctx) : ''));
+      const AI = { load: ['M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H8l-3 8H3zM5 18l3-8h14l-3 8z', '#f3ecd3'], save: ['M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2zM17 21v-8H7v8M7 3v5h8', '#3fbf4a'],
+        saveas: ['M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v6M7 3v5h8M17 16v6M14 19h6', '#3fbf4a'], newshow: ['M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M12 12v6M9 15h6', '#b0b0b0'],
+        info: ['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01', '#4d8fd6'], history: ['M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 3', '#a98be0'] };
+      const ai = a.icon ? AI[a.icon] : null; const tint = ai && !a.primary ? ai[1] : null;
+      return { t: a.t, col: 7 + (k % 3), row: 1 + Math.floor(k / 3), why, run: why ? say(`(greyed: ${why})`) : (a.run ? a.run(ctx) : say(a.line(ctx))),
+        d: ai ? ai[0] : 'M0 0', ic: why ? '#5a5a5a' : (ai ? ai[1] : 'transparent'), iw: ai ? 20 : 0,
+        bg: why ? '#232323' : (a.primary ? '#9a7a08' : tint ? `color-mix(in srgb, ${tint} 12%, #2c2c2c)` : '#303030'),
+        bd: why ? '#424242' : (a.primary ? '#9a7a08' : tint ? `color-mix(in srgb, ${tint} 45%, #424242)` : '#424242'),
+        fg: why ? '#5a5a5a' : (a.primary ? '#f3ecd3' : '#d1d1d1') }; });
+    let power = { word: '', sub: '', icon: '#5a5a5a', subC: '#9c9c9c', bg: '#262626', border: '#424242', press: () => {} };
+    if (C.power) { const P = C.power[s.power % C.power.length]; power = { ...P, subC: P.fail ? '#ffb3a8' : '#9c9c9c', bg: P.fail ? '#4a1414' : '#262626', border: P.fail ? '#a01010' : '#424242',
+      press: () => canLevel || !C.levels ? (P.ask ? this.setState({ asking: 'power' }) : this.setState({ power: s.power + 1, echo: '› ' + P.line + '   → ok' })) : this.setState({ echo: '› (greyed: ' + levelWhy + ')' }) }; }
+    const phoneMain = right.filter((_, k) => (T.right || [])[k] && T.right[k].phone);
+    const phoneSlab = [...phoneMain, ...(phoneMain.length ? [] : [left[1]]), left[5], left[9], left[2], left[6], left[7]];
+    // settings tab cells
+    let setcells = [];
+    if (!isList && T.settings) setcells = T.settings.map((f, k) => { const ro = !canLevel || f.ro; const station = f.home === 'station';
+      const key = T.key + ':' + k; const kind = f.kind || 'text'; const v0 = (s.setv || {})[key] !== undefined ? s.setv[key] : f.value;
+      const obj = f.obj || 'Station', prop = f.label.replace(/ /g, '');
+      const put = (v, line) => this.setState({ setv: { ...(s.setv || {}), [key]: v }, echo: '› ' + line + '   → ok' });
+      const blocked = say(`(greyed: ${levelWhy || 'read only'})`);
+      const num = Number(v0);
+      const go = ro ? blocked : kind === 'bool' ? () => put(v0 === 'On' ? 'Off' : 'On', `Set ${obj} ${prop} ${v0 === 'On' ? 'Off' : 'On'}`)
+        : kind === 'list' ? () => { const o = f.opts || [v0]; const nv = o[(o.indexOf(v0) + 1) % o.length]; put(nv, `Set ${obj} ${prop} "${nv}"   (pick list)`); }
+        : kind === 'int' ? say(`Set ${obj} ${prop} …   (keypad, relative + − × ÷ allowed)`) : say(`Set ${obj} ${prop} "…"   (keyboard)`);
+      const step = f.step || 1;
+      return { label: f.label, value: v0, unit: f.unit || '', home: station ? 'This station · never in the show' : f.home === 'show' ? 'In the show · every station' : 'read only', homeShort: station ? 'this station' : f.home === 'show' ? 'in the show' : 'read only',
+        hc: station ? '#9c9c9c' : f.home === 'show' ? '#3fb0a6' : '#5a5a5a', why: ro ? (levelWhy || 'read only') : '', fg: ro ? '#5a5a5a' : '#d1d1d1', border: ro ? '#262626' : '#424242', bg: ro ? '#1c1c1c' : '#262626',
+        kb: KIND[kind][0], kc: ro ? '#4a4a4a' : KIND[kind][1], isText: kind === 'text', isInt: kind === 'int', isBool: kind === 'bool', isList: kind === 'list',
+        track: v0 === 'On' ? '#0d4a12' : '#303030', trackB: v0 === 'On' ? '#00a60a' : '#424242', knob: v0 === 'On' ? '#5fd35f' : '#787878', knobX: v0 === 'On' ? 22 : 2,
+        dec: ro ? blocked : () => put(num - step, `Set ${obj} ${prop} - ${step}`), inc: ro ? blocked : () => put(num + step, `Set ${obj} ${prop} + ${step}`), go }; });
+    // edit card
+    let card = { title: '', sub: '', tabs: [], fields: [], picking: false, pickTitle: '', choices: [], echo: '' };
+    if (s.editing && T.edit && n) {
+      const rowsSel = sel.map(i => list[i]);
+      const ET = T.edit.tabs.find(e => e.key === s.edTab) || T.edit.tabs[0];
+      const ctabs = T.edit.tabs.map(e => ({ label: e.label, b: e.key === ET.key ? '#9a7a08' : '#424242', fg: e.key === ET.key ? '#d1d1d1' : '#9c9c9c', go: () => this.setState({ edTab: e.key, edField: null }) }));
+      const fields = ET.fields.map(F => {
+        const vals = rowsSel.map(d => d[F.f]).filter(v => v != null && v !== '' && v !== '—');
+        const uniq = [...new Set(vals)];
+        let value = uniq.length > 1 ? (typeof uniq[0] === 'number' ? `‹different values› ${Math.min(...uniq)}–${Math.max(...uniq)}${F.unit || ''}` : `‹different values› ${uniq.slice(0, 3).join(' / ')}`) : (uniq.length ? uniq[0] + (F.unit || '') : '—');
+        const ro = (F.single && n > 1) || !F.opts;
+        const why = F.single && n > 1 ? 'Set one row at a time' : (!F.opts ? 'read only' : '');
+        const on = s.edField === F.f;
+        const kind = F.kind || (typeof (rowsSel[0] || {})[F.f] === 'number' ? 'int' : (F.opts && F.opts[0] === '…' ? 'text' : 'list'));
+        return { kb: KIND[kind][0], kc: ro ? '#5a5a5a' : KIND[kind][1], tail: kind === 'list' ? '▾' : (F.unit || ''), label: F.label, value, style: uniq.length > 1 ? 'italic' : 'normal', fg: ro ? '#5a5a5a' : (uniq.length > 1 ? '#e0b84a' : '#d1d1d1'), why, mark: why || F.home || '',
+          border: on ? '#9a7a08' : (ro ? '#262626' : '#424242'), bg: on ? '#2b2716' : (ro ? '#1c1c1c' : '#262626'), go: () => ro ? this.setState({ edEcho: why }) : this.setState({ edField: on ? null : F.f }) };
+      });
+      const FD = ET.fields.find(F => F.f === s.edField);
+      const choices = FD ? FD.opts.map(t => ({ t, go: () => {
+        const num = typeof (rowsSel[0] || {})[FD.f] === 'number';
+        const data = { ...s.data }; data[T.key] = list.map((d, i) => {
+          if (!sel.includes(i)) return d;
+          let v = d[FD.f]; const k = sel.indexOf(i);
+          if (t.startsWith('+ ')) v = v + Number(t.slice(2)); else if (t.startsWith('− ')) v = v - Number(t.slice(2));
+          else if (t.includes(' Thru ')) { const [a, b] = t.split(' Thru ').map(Number); v = Math.round(a + (n > 1 ? k * (b - a) / (n - 1) : 0)); }
+          else v = num ? Number(t) : t;
+          return { ...d, [FD.f]: v };
+        });
+        const msg = `› Set ${target} ${FD.label.replace(/ /g, '')} ${t}   → ok · one Oops step`;
+        this.setState({ data, edEcho: msg, echo: msg });
+      } })) : [];
+      card = { title: n === 1 ? `Edit ${names[0]}` : `Edit ${n} ${T.plural}`, sub: target, tabs: ctabs, fields, picking: !!FD, pickTitle: FD ? `${FD.label} → ${n} ${n > 1 ? T.plural : T.word.toLowerCase()} (one line, one Oops step)` : '', choices,
+        echo: s.edEcho || 'tap a field; ‹different values› shows where the selected rows differ' };
+    }
+    // asks
+    let ask = { title: '', text: '', btn: '', line: '', yes: () => {}, no: () => {}, b: '#424242', bg: '#303030', fg: '#d1d1d1' };
+    if (s.asking === 'delete') { const line = `Delete ${target} /NoConfirmation`;
+      ask = { title: n > 1 ? `Delete ${n} ${T.plural}?` : `Delete ${names[0]}?`, text: T.delText ? T.delText(sel.map(i => list[i])) : `${names.join(', ')} will be deleted. One Oops step brings them back.`, btn: n > 1 ? `Delete ${n}` : 'Delete', line,
+        b: 'color-mix(in srgb, #e10000 55%, transparent)', bg: 'color-mix(in srgb, #e10000 14%, #303030)', fg: '#ff6a5a',
+        yes: () => { const data = { ...s.data }; data[T.key] = list.filter((_, i) => !sel.includes(i)); this.setState({ data, sel: [], asking: null, echo: '› ' + line + '   → ok · one Oops step' }); }, no: () => this.setState({ asking: null }) }; }
+    else if (s.asking === 'power') { const P = C.power[s.power % C.power.length];
+      ask = { title: P.askTitle, text: P.askText, btn: P.askBtn, line: P.line + ' /NoConfirmation', b: 'color-mix(in srgb, #e10000 55%, transparent)', bg: 'color-mix(in srgb, #e10000 14%, #303030)', fg: '#ff6a5a',
+        yes: () => this.setState({ power: s.power + 1, asking: null, echo: '› ' + P.line + '   → asked → ok' }), no: () => this.setState({ asking: null }) }; }
+    else if (s.asking && C.asks && C.asks[s.asking]) { const A = C.asks[s.asking](ctx);
+      ask = { ...A, b: 'transparent', bg: '#9a7a08', fg: '#f3ecd3', yes: () => this.setState({ asking: null, echo: '› ' + A.line + '   → ok' }), no: () => this.setState({ asking: null }) }; }
+    let ld = { title: '', facts: '', parts: [], mode: '', modeC: '#9c9c9c', goT: '', goBg: '#303030', goFg: '#d1d1d1', line: '', go: () => {}, cancel: () => {}, all: () => {}, none: () => {} };
+    const loading = !!s.load && !!C.loadParts;
+    if (loading) {
+      const L0 = s.load; const parts = C.loadParts;
+      const pickedOf = p => L0.pick[p.key] || [];
+      const setPick = (key, arr) => this.setState({ load: { ...L0, pick: { ...L0.pick, [key]: arr } } });
+      const full = parts.every(p => pickedOf(p).length === p.objs.length);
+      const any = parts.some(p => pickedOf(p).length);
+      const partsV = parts.map(p => { const k = pickedOf(p).length, all = k === p.objs.length;
+        return { label: p.label, sum: p.sum, mark: all ? '✓' : k ? '–' : '', boxBg: k ? '#9a7a08' : '#1c1c1c', boxB: k ? '#9a7a08' : '#5a5a5a', border: k ? '#424242' : '#303030',
+          state: all ? 'take all' : k ? `take ${k} of ${p.objs.length}` : 'keep current', stateC: k ? '#d1d1d1' : '#787878',
+          toggle: () => setPick(p.key, all ? [] : p.objs.slice()), open: () => this.setState({ load: { ...L0, open: L0.open === p.key ? null : p.key } }), openT: L0.open === p.key ? 'Close' : 'Pick…', isOpen: L0.open === p.key,
+          objs: p.objs.map(o => { const on = pickedOf(p).includes(o); return { t: o, b: on ? '#9a7a08' : '#424242', bg: on ? '#3a3214' : '#1c1c1c', fg: on ? '#d1d1d1' : '#787878', go: () => setPick(p.key, on ? pickedOf(p).filter(x => x !== o) : [...pickedOf(p), o]) }; }) }; });
+      const takeList = parts.flatMap(p => { const k = pickedOf(p); return k.length === p.objs.length ? [p.word + ' *'] : k.map(o => o.replace(/ \(.*\)$/, '')); });
+      const line = full ? `LoadShow "${L0.show}"` : `Import Show "${L0.show}" ${takeList.join(' + ')}`;
+      ld = { title: `Load show “${L0.show}”`, facts: L0.facts, parts: partsV,
+        mode: full ? 'Everything: replaces the loaded show (asks first if there are unsaved changes).' : any ? 'Parts: taken into the current show by GUID — same objects updated, new ones added. One Oops step.' : 'Nothing ticked.',
+        modeC: full ? '#d1d1d1' : any ? '#c9a227' : '#787878', goT: full ? 'Load show' : any ? 'Take parts into current show' : 'Load', goBg: any ? '#9a7a08' : '#232323', goFg: any ? '#f3ecd3' : '#5a5a5a', line: any ? line : '—',
+        go: () => any && this.setState({ load: null, echo: '› ' + line + (full ? '   → asked (unsaved changes) → ok' : '   → ok · one Oops step') }), cancel: () => this.setState({ load: null }),
+        all: () => this.setState({ load: { ...L0, pick: Object.fromEntries(parts.map(p => [p.key, p.objs.slice()])) } }), none: () => this.setState({ load: { ...L0, pick: {} } }) };
+    }
+    const views = (T.matrix ? [['grid', 'List'], ['matrix', 'Matrix']] : [['grid', 'Grid'], ['cards', 'Cards']]).map(([k, t]) => ({ t, bg: s.view === k ? '#3a3214' : 'transparent', fg: s.view === k ? '#d1d1d1' : '#9c9c9c', go: () => this.setState({ view: k }) }));
+    const hasViews = !!(T.cards || T.matrix);
+    const showMatrix = isList && !!T.matrix && s.view === 'matrix';
+    const levels = (C.levels || []).map(l => ({ label: 'as ' + l, b: s.level === l ? '#9a7a08' : '#424242', go: () => this.setState({ level: l }) }));
+    return { caption: C.caption, levels, title: C.title, icon: C.icon, chips: (C.chips ? C.chips(s) : []).map(([t, dot]) => ({ t, dot })), home: T.home || C.home || '',
+      hasViews, views, tabs, isList, banner: T.banner || '', count: (n ? `${n} selected: ${names.join(', ')}` : 'nothing selected') + latchWord, countShort: n ? `${n} selected` : 'none',
+      modes, all: () => this.setState({ sel: list.map((_, i) => i).filter(i => idx[i] >= 0) }), none: () => this.setState({ sel: [] }),
+      showGrid: isList && !(hasViews && s.view !== 'grid'), showMatrix, mx: showMatrix ? this.matrix(T, list, sel, s) : { heads: [], rows: [], detail: '' }, showCards: isList && hasViews && s.view === 'cards', showSettings: !isList,
+      phoneGrid: isList && !(hasViews && s.view !== 'grid'), phoneMatrix: showMatrix, phoneCards: isList && hasViews && s.view === 'cards',
+      gcols: isList ? '52px ' + T.cols.map(c => (c.w || 1) + 'fr').join(' ') : '1fr', heads, rows, phoneHeads: isList ? (T.phoneCols || T.cols.slice(0, 2).map(c => c.f)).map(f => T.cols.find(c => c.f === f).label) : [],
+      newLabel: isList && T.newLabel ? T.newLabel : '', newRun: left[1].run, setcells,
+      echo: s.echo || (isList ? 'tap rows (+ / − latch), then the slab' : 'tap a cell to edit it (one Set line)'),
+      left, right, power, hasPower: !!C.power, powerW: C.power ? '200px' : '0px', phoneSlab, editing: s.editing && !!T.edit && n > 0, card, closeCard: () => this.setState({ editing: false }), asking: !!s.asking, ask, loading, ld };
+  }
+}
+</script>
+</body>
+</html>

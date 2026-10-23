@@ -1,0 +1,618 @@
+{
+  "devices": {
+    "patch": {
+      "fixture_types": {},
+      "fixtures": {},
+      "universes": {},
+      "universe_ranges": {}
+    },
+    "live_patch_name": "",
+    "fid_namespaces": {}
+  },
+  "datapools": {
+    "1": {
+      "meta": {
+        "id": 1,
+        "guid": "e39eb9d5-d2f9-44f1-87a5-3630ceec0431",
+        "name": "Default",
+        "note": null,
+        "color": null,
+        "icon": null,
+        "locked": false,
+        "hidden": false
+      },
+      "groups": {},
+      "preset_groups": {},
+      "layouts": {},
+      "filters": {},
+      "worlds": {},
+      "macros": {},
+      "distribute_presets": {},
+      "dynamic_states": {},
+      "plugins": {},
+      "timecodes": {},
+      "priorities": {}
+    }
+  },
+  "datapool_priority_orders": {},
+  "show_settings": {
+    "show_name": "testshow",
+    "description": "",
+    "created_with_version": "0.1.0",
+    "autosave_minutes": 15
+  },
+  "spatial_3d": {
+    "world": {},
+    "stages": {},
+    "layers": {},
+    "cameras": {},
+    "patch": {},
+    "tracking": {}
+  },
+  "playback": {
+    "sequences": {},
+    "masters": {},
+    "effects": {},
+    "timing_presets": {},
+    "curve_presets": {},
+    "executors": {}
+  },
+  "user_profiles": {
+    "1": {
+      "meta": {
+        "id": 1,
+        "guid": "ecc2d67a-4c34-4511-bc74-780996f7c08b",
+        "name": "Admin",
+        "note": null,
+        "color": null,
+        "icon": null,
+        "locked": false,
+        "hidden": false
+      },
+      "role": "Admin",
+      "programmer": {
+        "selected_fixtures": [],
+        "values": {},
+        "clear_state": "Fresh"
+      },
+      "prog_lang": "Lum",
+      "alias_depth": "Base",
+      "keybindings": {},
+      "views": {
+        "1": {
+          "no": 1,
+          "name": "View 1",
+          "screens": {
+            "1": {
+              "root": {
+                "type": "split",
+                "dir": "h",
+                "ratio": 0.5,
+                "children": [
+                  {
+                    "type": "leaf",
+                    "windows": [
+                      1,
+                      2,
+                      4
+                    ],
+                    "active": 0
+                  },
+                  {
+                    "type": "split",
+                    "dir": "v",
+                    "ratio": 0.5,
+                    "children": [
+                      {
+                        "type": "leaf",
+                        "windows": [
+                          5
+                        ],
+                        "active": 0
+                      },
+                      {
+                        "type": "leaf",
+                        "windows": [
+                          6
+                        ],
+                        "active": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "windows": {
+                "1": {
+                  "no": 1,
+                  "kind": "terminal",
+                  "settings": {
+                    "cursor_blink": true,
+                    "font_size": 12
+                  },
+                  "appearance": {},
+                  "scroll": {
+                    "h": 0.0,
+                    "v": 0.0
+                  }
+                },
+                "2": {
+                  "no": 2,
+                  "kind": "groups",
+                  "settings": {
+                    "columns": 12,
+                    "rows": 12,
+                    "show_empty": true,
+                    "size": 80,
+                    "slots": 0
+                  },
+                  "appearance": {},
+                  "scroll": {
+                    "h": 0.0,
+                    "v": 0.0
+                  }
+                },
+                "4": {
+                  "no": 4,
+                  "kind": "sysmon",
+                  "settings": {
+                    "auto_scroll": true,
+                    "font_size": 12,
+                    "level": "info",
+                    "search": "",
+                    "subsystems": ""
+                  },
+                  "appearance": {},
+                  "scroll": {
+                    "h": 0.0,
+                    "v": 0.0
+                  }
+                },
+                "5": {
+                  "no": 5,
+                  "kind": "sysmon",
+                  "settings": {
+                    "auto_scroll": true,
+                    "font_size": 12,
+                    "level": "info",
+                    "search": "",
+                    "subsystems": ""
+                  },
+                  "appearance": {},
+                  "scroll": {
+                    "h": 0.0,
+                    "v": 0.0
+                  }
+                },
+                "6": {
+                  "no": 6,
+                  "kind": "groups",
+                  "settings": {
+                    "columns": 12,
+                    "rows": 12,
+                    "show_empty": true,
+                    "size": 80,
+                    "slots": 0
+                  },
+                  "appearance": {},
+                  "scroll": {
+                    "h": 0.0,
+                    "v": 0.0
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "view_buttons": {
+        "1": 1
+      },
+      "screen_configs": {
+        "1": {
+          "no": 1,
+          "name": "Default",
+          "screens": {
+            "1": {
+              "root": {
+                "type": "split",
+                "dir": "h",
+                "ratio": 0.4280639431616339,
+                "children": [
+                  {
+                    "type": "leaf",
+                    "windows": [
+                      1,
+                      2,
+                      4
+                    ],
+                    "active": 0
+                  },
+                  {
+                    "type": "split",
+                    "dir": "v",
+                    "ratio": 0.658774373259053,
+                    "children": [
+                      {
+                        "type": "leaf",
+                        "windows": [
+                          5
+                        ],
+                        "active": 0
+                      },
+                      {
+                        "type": "leaf",
+                        "windows": [
+                          6
+                        ],
+                        "active": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "windows": {
+                "1": {
+                  "no": 1,
+                  "kind": "terminal",
+                  "settings": {
+                    "cursor_blink": true,
+                    "font_size": 12
+                  },
+                  "appearance": {},
+                  "scroll": {
+                    "h": 0.0,
+                    "v": 0.0
+                  }
+                },
+                "2": {
+                  "no": 2,
+                  "kind": "groups",
+                  "settings": {
+                    "columns": 12,
+                    "rows": 12,
+                    "show_empty": true,
+                    "size": 80,
+                    "slots": 0
+                  },
+                  "appearance": {},
+                  "scroll": {
+                    "h": 0.0,
+                    "v": 0.0
+                  }
+                },
+                "4": {
+                  "no": 4,
+                  "kind": "sysmon",
+                  "settings": {
+                    "auto_scroll": true,
+                    "font_size": 12,
+                    "level": "info",
+                    "search": "",
+                    "subsystems": ""
+                  },
+                  "appearance": {},
+                  "scroll": {
+                    "h": 0.0,
+                    "v": 0.0
+                  }
+                },
+                "5": {
+                  "no": 5,
+                  "kind": "sysmon",
+                  "settings": {
+                    "auto_scroll": true,
+                    "font_size": 12,
+                    "level": "info",
+                    "search": "",
+                    "subsystems": ""
+                  },
+                  "appearance": {},
+                  "scroll": {
+                    "h": 0.0,
+                    "v": 0.0
+                  }
+                },
+                "6": {
+                  "no": 6,
+                  "kind": "groups",
+                  "settings": {
+                    "columns": 12,
+                    "rows": 12,
+                    "show_empty": true,
+                    "size": 80,
+                    "slots": 0
+                  },
+                  "appearance": {},
+                  "scroll": {
+                    "h": 0.0,
+                    "v": 0.0
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ui_keys": {},
+      "preferences": {
+        "show_descriptions": true,
+        "clear_buffer": false,
+        "preferred_ui_engine": "Shell",
+        "double_click_ms": 300,
+        "hold_ms": 500,
+        "notifications": {},
+        "notification_mode": "timed"
+      },
+      "user_variables": {
+        "values": {}
+      },
+      "permissions": {
+        "can_edit_show": true,
+        "can_edit_patch": true,
+        "can_trigger_playback": true,
+        "can_configure_engines": false
+      },
+      "show_descriptions": false,
+      "clear_buffer": false,
+      "verbosity": "Summary",
+      "undo_stack": {
+        "frames": [
+          {
+            "description": "highlight",
+            "category": "Programmer",
+            "user": "Admin",
+            "sequence_id": 1,
+            "snapshots": [
+              {
+                "subtree": {
+                  "Programmer": 1
+                },
+                "data": [
+                  123,
+                  34,
+                  115,
+                  101,
+                  108,
+                  101,
+                  99,
+                  116,
+                  101,
+                  100,
+                  95,
+                  102,
+                  105,
+                  120,
+                  116,
+                  117,
+                  114,
+                  101,
+                  115,
+                  34,
+                  58,
+                  91,
+                  93,
+                  44,
+                  34,
+                  118,
+                  97,
+                  108,
+                  117,
+                  101,
+                  115,
+                  34,
+                  58,
+                  123,
+                  125,
+                  44,
+                  34,
+                  99,
+                  108,
+                  101,
+                  97,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  34,
+                  58,
+                  34,
+                  70,
+                  114,
+                  101,
+                  115,
+                  104,
+                  34,
+                  125
+                ]
+              }
+            ]
+          },
+          {
+            "description": "hig",
+            "category": "Programmer",
+            "user": "Admin",
+            "sequence_id": 2,
+            "snapshots": [
+              {
+                "subtree": {
+                  "Programmer": 1
+                },
+                "data": [
+                  123,
+                  34,
+                  115,
+                  101,
+                  108,
+                  101,
+                  99,
+                  116,
+                  101,
+                  100,
+                  95,
+                  102,
+                  105,
+                  120,
+                  116,
+                  117,
+                  114,
+                  101,
+                  115,
+                  34,
+                  58,
+                  91,
+                  93,
+                  44,
+                  34,
+                  118,
+                  97,
+                  108,
+                  117,
+                  101,
+                  115,
+                  34,
+                  58,
+                  123,
+                  125,
+                  44,
+                  34,
+                  99,
+                  108,
+                  101,
+                  97,
+                  114,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  34,
+                  58,
+                  34,
+                  70,
+                  114,
+                  101,
+                  115,
+                  104,
+                  34,
+                  125
+                ]
+              }
+            ]
+          }
+        ],
+        "redo_frames": [],
+        "total_bytes": 116,
+        "max_bytes": 10485760,
+        "max_frames": 100
+      },
+      "selected_datapool": 1,
+      "selected_preset_group": 1,
+      "attribute_overrides": {}
+    },
+    "2": {
+      "meta": {
+        "id": 2,
+        "guid": "543eefa4-e069-41e6-9a38-c193d0c5062e",
+        "name": "Debug",
+        "note": null,
+        "color": null,
+        "icon": null,
+        "locked": false,
+        "hidden": false
+      },
+      "role": "Admin",
+      "programmer": {
+        "selected_fixtures": [],
+        "values": {},
+        "clear_state": "Fresh"
+      },
+      "prog_lang": "Lum",
+      "alias_depth": "Base",
+      "keybindings": {
+        "Ctrl-D": {
+          "key": "Ctrl-D",
+          "command": "debug",
+          "description": "Toggle debug mode"
+        },
+        "Ctrl-Q": {
+          "key": "Ctrl-Q",
+          "command": "shutdown",
+          "description": "Quick quit"
+        }
+      },
+      "views": {},
+      "view_buttons": {},
+      "screen_configs": {},
+      "ui_keys": {},
+      "preferences": {
+        "show_descriptions": true,
+        "clear_buffer": false,
+        "preferred_ui_engine": "Shell",
+        "double_click_ms": 300,
+        "hold_ms": 500,
+        "notifications": {},
+        "notification_mode": "timed"
+      },
+      "user_variables": {
+        "values": {}
+      },
+      "permissions": {
+        "can_edit_show": true,
+        "can_edit_patch": true,
+        "can_trigger_playback": true,
+        "can_configure_engines": false
+      },
+      "show_descriptions": false,
+      "clear_buffer": false,
+      "verbosity": "Summary",
+      "undo_stack": {
+        "frames": [],
+        "redo_frames": [],
+        "total_bytes": 0,
+        "max_bytes": 10485760,
+        "max_frames": 100
+      },
+      "selected_datapool": 1,
+      "selected_preset_group": 1,
+      "attribute_overrides": {}
+    }
+  },
+  "users": {
+    "1": {
+      "no": 1,
+      "name": "Admin",
+      "role": "Admin",
+      "remote_login": true,
+      "profile": 1,
+      "default_screen_config": 1
+    },
+    "2": {
+      "no": 2,
+      "name": "Debug",
+      "role": "Admin",
+      "remote_login": true,
+      "profile": 2,
+      "default_screen_config": 1
+    }
+  },
+  "protocols": {
+    "outputs": {},
+    "inputs": {},
+    "bidirectional": {}
+  },
+  "effect_engines": {
+    "engines": {}
+  },
+  "variables": {
+    "values": {}
+  },
+  "icon_pool": {},
+  "attribute_defs": {},
+  "feature_groups": {},
+  "activation_groups": {},
+  "fixture_groups": {}
+}

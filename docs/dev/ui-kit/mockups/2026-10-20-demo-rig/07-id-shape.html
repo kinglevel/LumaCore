@@ -1,0 +1,57 @@
+<title>Fixture Id Shape</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#b8860b;--red:#b23a2e;--green:#2f7a4a;--code:#ecebe4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--red:#e06a5c;--green:#6fcf8f;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif;margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1000px;margin:0 auto;display:grid;gap:26px}
+h1{font-size:1.7rem;margin:0;text-wrap:balance}h2{font-size:1.15rem;margin:0 0 10px;text-wrap:balance}h3{font-size:1rem;margin:0 0 6px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+p{max-width:70ch;margin:.4em 0}.mute{color:var(--mute)}
+table{border-collapse:collapse;width:100%;font-size:.86rem}th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+pre{background:var(--code);padding:10px 12px;border-radius:6px;font:12.5px/1.45 "IBM Plex Mono",ui-monospace,monospace;overflow-x:auto;margin:.5em 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.opts{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--card);min-width:0}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{display:inline-block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+</style>
+<main>
+<header>
+<div class="kicker">Demo rig · hardening · question 7 · 2026-10-20 · discussion only</div>
+<h1>What ids a fixture carries</h1>
+<p>Decided so far: the patch's key is an internal slot (5), the tree is parent + order on every node (6), and a fixture "carries FID, CID and Custom type like media" (your words on 5). This page pins the shape of that, against the desk, the file and what LumaCore already has.</p>
+</header>
+
+<section class="card">
+<h2>Facts</h2>
+<table>
+<tr><th>A reference console</th><td>Three properties on every fixture: <code>FID</code> (enum FixtureIdEnum, <code>None</code> or a number), <code>IDTYPE</code> (Fixture · Channel · Universal/Generic · Houselights · NonDim · Media · Fog · Pyro · Marker · …; <code>None</code> on a sub-fixture), <code>CID</code> (enum CustomIdEnum, <code>None</code> or a number). One second id per fixture; the id type names which keyword reaches it. Seen: Fixture 849 = (849, Fixture, None); ACME Icarus = (None, Media, 7003); Univ = (9999, Generic, None); sub-fixture 849.1 = (None, None, None).</td></tr>
+<tr><th>MVR 1.6</th><td><code>FixtureID</code> (text) · <code>CustomIdType</code> (a number into the spec's fixed list) · <code>CustomId</code>. One second id. The export writes <code>CustomId</code> on every fixture (0 where none) and <b>no</b> <code>CustomIdType</code> at all, so the type does not survive the file.</td></tr>
+<tr><th>LumaCore today</th><td><code>Mvr.custom_id_type: CustomIdType</code> (None · Fixture · Channel · Houselights · NonDim · Media · Fog · Effect · Pyro · Marker — MVR's list) + <code>Mvr.custom_id</code>; <code>Luma.more_ids: Vec&lt;(CustomIdType, u32)&gt;</code> ("MoreIds", several second ids, asked for on 2026-10-19 and on the No-CIDs list to go); the writable properties <code>"IDType"</code> / <code>"CID"</code> / <code>"MoreIds"</code>; the grammar <code>Fixture Media 7003</code> with the Fixture object's declared kinds (lum words golden: <code>Fixture … kinds: Channel, Houselights, NonDim, Media, Fog, Effect, Pyro, Marker</code>).</td></tr>
+<tr><th>Uniqueness</th><td>The reference: FIDs unique in the show; CIDs unique per id type. The rig: numbers 1 … 9 999, Media ids 1 … 9, 99, 7001 … 7009.</td></tr>
+</table>
+</section>
+
+<section>
+<h2>The id shape on a fixture</h2>
+<div class="opts">
+<div class="opt rec"><span class="tag">A · Recommended</span><h3>The triple, exactly</h3><p><code>fid: Option&lt;u32&gt;</code> · <code>id_type: IdType</code> · <code>cid: Option&lt;u32&gt;</code> on the fixture (replacing the key-as-FID, <code>custom_id_type</code> / <code>custom_id</code> and <code>more_ids</code>). <code>Fixture 849</code> is the fixture with fid 849; <code>Fixture Media 7003</code> the one with (Media, 7003). FID unique in the show, CID unique per type; a folder is (None, Media, n); a sub-fixture is (None, None, None) under its fixture. <code>"FID"</code>, <code>"IDType"</code>, <code>"CID"</code> are the three properties, each a grid column. Import reads FixtureID → fid and CustomIdType + CustomId → (id_type, cid); export writes them back. <code>MoreIds</code> goes, its roadmap item closes.</p><ul><li>+ the desk's model one for one; the MVR round-trips</li><li>+ simplest uniqueness and completion (<code>Fixture Media &lt;Tab&gt;</code>)</li><li>− one second id only (what the file can carry anyway)</li></ul></div>
+<div class="opt"><span class="tag">B</span><h3>A typed list</h3><p><code>ids: Vec&lt;(IdType, u32)&gt;</code>, the Fixture-typed entry being the FID; several second ids as <code>MoreIds</code> wanted.</p><ul><li>+ keeps the several-ids wish</li><li>− the MVR carries one; export picks the first and the rest are LumaCore-only; the desk never sees them</li></ul></div>
+<div class="opt"><span class="tag">C</span><h3>The triple, plus MoreIds beside it</h3><p>A as the data the file knows, <code>more_ids</code> kept for extra handles.</p><ul><li>− two places where "which fixture is Media 7003" can be answered; the property set and the grid grow for a wish no file or desk shares</li></ul></div>
+</div>
+</section>
+
+<section class="card">
+<h2>The id-type list</h2>
+<p>LumaCore's list is MVR's (the file's numbering). The desk showed one more, <code>Generic</code> (the "Universal" fixture; the Univ 9999 fixture in this rig) — in the file it is a plain <code>FixtureID 9999</code>, so nothing is lost by keeping MVR's list; a type the console has and MVR lacks would come in as what the file writes. Recommended with A: MVR's list stays the list.</p>
+<h2 style="margin-top:14px">Then</h2>
+<ul>
+<li>The keyword: <code>Fixture Media 7003</code> (built, never clashes) or the bare <code>Media 7003</code> (<code>Effect</code> is already §28's object; <code>Media</code>, <code>Channel</code>, <code>Marker</code> are values today).</li>
+<li>An untyped CustomId on import (the export writes none): the preset's default id type.</li>
+<li>A folder on a line: the subtree; the sidebar; Move / Delete with children.</li>
+</ul>
+</section>
+</main>

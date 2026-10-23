@@ -1,0 +1,437 @@
+<title>Preset Pool</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* A proposal page: notes in one column, the working mock (the encoder bar's feature groups, a selection, the one Presets window, the command line) full width in the kit's dark theme; the page around it follows the viewer. */
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#9a7a08;--code:#ecebe4;
+  --font:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+  /* the kit's dark theme (tokens.css) */
+  --k-bg:#121212;--k-surface:#1c1c1c;--k-raised:#303030;--k-line:#424242;--k-gap:#0a0a0a;--k-text:#d1d1d1;--k-dim:#8a8a8a;--k-strong:#ececec;--k-accent:#d4a634;--k-sel:#3a3320;
+  --k-ok:#00a60a;--k-some:#ffd700;--k-prg:#d86a7c;--k-preset:#3fc8d8;--k-alert:#e10000;--k-pool:#008080;
+  /* feature-group colours (the encoder bar's tabs) */
+  --fg-dim:#d4a634;--fg-pos:#4d8fd6;--fg-col:#e0507a;--fg-shu:#ececec;--fg-fx:#a070e0;--fg-ctl:#e08a2c;--fg-shp:#c9a227;--fg-vid:#3fbf4a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--font);margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1240px;margin:0 auto;display:grid;gap:28px}
+.narrow{max-width:900px}
+h1{font-size:1.75rem;margin:0;text-wrap:balance;line-height:1.2}h2{font-size:1.18rem;margin:0 0 8px;text-wrap:balance}h3{font-size:1rem;margin:2px 0 4px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:600}
+p{max-width:74ch;margin:.4em 0}.mute{color:var(--mute)}
+code{font:.86em var(--mono);background:var(--code);padding:1px 5px;border-radius:4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.two{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}@media (max-width:760px){.two{grid-template-columns:1fr}}
+ul{margin:.3em 0;padding-left:1.2em}li{margin:.15em 0}
+.q{display:grid;gap:4px;padding-top:12px;border-top:1px solid var(--line)}
+.opts{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:4px}
+.opt{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--card);min-width:0;font-size:.92rem}
+.opt.rec{border-color:var(--gold);box-shadow:0 0 0 2px color-mix(in srgb,var(--gold) 30%,transparent)}
+.tag{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700}
+
+/* ---- the desk mock ---- */
+.desk{background:var(--k-gap);border-radius:8px;overflow:hidden;font:13px/1.3 var(--font);color:var(--k-text);display:grid;gap:3px;padding:3px}
+.strip{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--k-surface);padding:6px 8px;font-size:12px;color:var(--k-dim)}
+.strip b{color:var(--k-text);font-weight:600}
+.strip .lbl{text-transform:uppercase;letter-spacing:.06em;font-size:11px;margin-right:2px}
+.chipbtn{font:12px var(--font);background:var(--k-raised);color:var(--k-text);border:1px solid var(--k-line);border-radius:4px;padding:5px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chipbtn:focus-visible,.cell:focus-visible,.tagchip:focus-visible{outline:2px solid var(--k-accent);outline-offset:1px}
+.chipbtn.on{background:var(--k-sel);border-color:var(--k-accent);color:#f3ecd3}
+.chipbtn i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.fgtabs{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:3px;background:var(--k-gap)}
+.fgtab{background:var(--k-surface);border:none;border-top:3px solid var(--c);color:var(--k-dim);font:12.5px var(--font);padding:8px 6px;text-align:left;cursor:pointer;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.fgtab.on{background:color-mix(in srgb,var(--c) 18%,var(--k-surface));color:var(--k-strong)}
+.fgtab small{font-family:var(--mono);margin-right:4px}
+@media (max-width:760px){.fgtabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.win{background:var(--k-bg);display:grid;grid-template-rows:auto auto auto 1fr;min-width:0}
+.wtitle{display:flex;align-items:center;gap:8px;background:var(--k-surface);padding:6px 10px;font-size:12.5px}
+.wtitle .dot{width:8px;height:8px;border-radius:50%;background:var(--k-accent)}
+.wtitle .info{color:var(--k-dim);margin-left:auto;font-size:12px;text-align:right}
+.wbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:5px 8px;background:var(--k-surface);border-top:1px solid var(--k-gap);font-size:12px;color:var(--k-dim)}
+.wbar label{display:inline-flex;gap:5px;align-items:center}
+.wbar select{font:12px var(--font);background:var(--k-raised);color:var(--k-text);border:1px solid var(--k-line);border-radius:4px;padding:4px 6px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 8px;background:var(--k-bg);border-top:1px solid var(--k-gap)}
+.tagchip{font:12px var(--font);background:transparent;color:var(--k-dim);border:1px solid var(--k-line);border-radius:999px;padding:3px 10px;cursor:pointer}
+.tagchip.on{background:color-mix(in srgb,var(--k-preset) 22%,var(--k-bg));border-color:var(--k-preset);color:var(--k-strong)}
+.tags .fgnow{font-size:12px;color:var(--k-dim);margin-right:6px;display:inline-flex;gap:6px;align-items:center}
+.tags .fgnow i{width:10px;height:10px;border-radius:2px;background:var(--c)}
+.pool{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:4px;padding:6px;align-content:start;min-height:330px;max-height:520px;overflow:auto}
+.cell{position:relative;background:color-mix(in srgb,var(--k-pool) 22%,var(--k-raised));border:none;border-radius:4px;padding:9px 7px 16px;display:grid;grid-template-rows:auto auto 1fr;gap:4px;cursor:pointer;min-height:112px;user-select:none;text-align:left;color:var(--k-text);font:inherit;overflow:hidden}
+.cell::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--fit,var(--k-pool))}
+.cell.none{opacity:.38}
+.cell.gap{background:#151515;cursor:default;opacity:.5}
+.cell.empty{background:#161616;outline:1px dashed #333;outline-offset:-1px;color:#555}
+.cell.armed.empty{outline-color:var(--k-alert);color:#b55}
+.cell.mine{box-shadow:inset 0 0 0 2px var(--k-prg)}
+.cell .top{display:flex;gap:6px;align-items:baseline;font:600 11px var(--mono);color:var(--k-dim)}
+.cell .top .mode{margin-left:auto;font-weight:700;color:var(--k-strong)}
+.cell .use{font:600 11px var(--mono);color:#5fd3e0}
+.cell .nm{font-weight:600;font-size:13px;color:var(--k-strong);line-height:1.15;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cell .pv{display:flex;gap:4px;align-items:flex-end;min-height:26px}
+.pv .sw{width:26px;height:22px;border-radius:3px;box-shadow:inset 0 0 0 1px #0006}
+.pv .lvl{width:9px;height:24px;background:#0008;position:relative;border-radius:2px;overflow:hidden}
+.pv .lvl b{position:absolute;left:0;right:0;bottom:0;background:var(--fg-dim)}
+.pv .xy{width:30px;height:24px;background:#0008;border-radius:2px;position:relative}
+.pv .xy b{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--fg-pos);transform:translate(-50%,-50%)}
+.pv .glyph{font:700 11px var(--mono);color:var(--k-strong);background:#0008;border-radius:2px;padding:4px 5px}
+.cell .fgs{position:absolute;left:6px;right:6px;bottom:5px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
+.cell .fgs i{height:4px;border-radius:1px;background:#ffffff1a}
+.cell .fgs i.on{background:var(--c)}
+.cell .badge{position:absolute;right:6px;bottom:12px;font:600 10px var(--mono);color:var(--k-dim)}
+.cmd{display:flex;gap:8px;align-items:center;background:var(--k-surface);padding:7px 10px;font:12.5px var(--mono);color:var(--k-dim);min-width:0}
+.cmd b{color:var(--k-strong);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmd .prompt{color:var(--k-accent)}
+.prg{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--k-surface);padding:6px 8px;font-size:12px;color:var(--k-dim)}
+.prg .val{display:inline-flex;gap:5px;align-items:center;background:var(--k-prg);color:#fff;border-radius:3px;padding:2px 7px;font-size:11.5px}
+.prg .val.off{background:transparent;color:var(--k-prg);box-shadow:inset 0 0 0 1px var(--k-prg)}
+/* context menu + editor sheet */
+.menu{position:fixed;z-index:20;background:var(--k-surface);border:1px solid var(--k-line);border-radius:6px;min-width:210px;padding:4px;box-shadow:0 10px 30px #000a;font:13px var(--font);color:var(--k-text)}
+.menu .hdr{font-size:11px;color:var(--k-dim);text-transform:uppercase;letter-spacing:.06em;padding:6px 10px 4px}
+.menu button{display:flex;width:100%;justify-content:space-between;gap:12px;background:none;border:none;color:inherit;font:inherit;padding:7px 10px;border-radius:4px;cursor:pointer;text-align:left}
+.menu button:hover,.menu button:focus-visible{background:var(--k-raised);outline:none}
+.menu button small{color:var(--k-dim);font-family:var(--mono);font-size:11px}
+.menu hr{border:none;border-top:1px solid var(--k-line);margin:4px 0}
+.sheet{background:var(--k-bg);border-top:1px solid var(--k-gap);padding:8px;display:grid;gap:6px}
+.sheet .head{display:flex;gap:8px;align-items:center;font-size:12.5px}
+.sheet .head b{color:var(--k-strong)}
+.sheet .head button{margin-left:auto}
+.gridwrap{overflow-x:auto}
+.sheet table{border-collapse:collapse;font:12px var(--mono);min-width:560px;width:100%}
+.sheet th,.sheet td{padding:4px 8px;border-bottom:1px solid #222;text-align:left;white-space:nowrap}
+.sheet th{color:var(--k-dim);font-weight:500;background:var(--k-surface)}
+.sheet td.v{color:#fff;background:color-mix(in srgb,var(--k-preset) 18%,transparent)}
+.sheet td.n{color:#555}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.85rem;color:var(--mute)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+.legend i{width:16px;height:5px;border-radius:2px;display:inline-block}
+@media (prefers-reduced-motion:no-preference){.cell{transition:opacity .15s}}
+</style>
+
+<main>
+<header class="narrow">
+  <div class="kicker">LumaCore · UI kit mockup · round 1 · 2026-10-23</div>
+  <h1>One preset pool that follows the programmer</h1>
+  <p>There are no preset pool types to pick. All presets live in one numbered pool, and each Presets window shows the presets that touch the feature group selected on the encoder bar. Tags narrow it further. Store keeps everything that is active in the programmer, and the window files the new preset under every feature group it touches.</p>
+  <p class="mute">Decided with you in this round: one window type · one flat pool + tags · follows the programmer, pinnable · tag chips on top · Store keeps all active · Store + tap an empty cell, Store alone = next free · the cell shows fit, preview, feature-group squares and use · tap = a window setting · modes automatic, shown as a letter · hold = the context menu, Edit opens the editor. Still to try below: the filter rule and packed vs fixed slots.</p>
+</header>
+
+<section aria-label="Working mock">
+  <div class="desk" id="desk">
+    <div class="strip">
+      <span class="lbl">Selection</span>
+      <span id="selbtns"></span>
+      <span style="margin-left:auto" class="lbl">Store</span>
+      <button class="chipbtn" id="storeBtn" type="button">Store</button>
+    </div>
+    <div class="fgtabs" id="fgtabs" role="tablist" aria-label="Encoder bar feature groups"></div>
+    <div class="prg" id="prg"></div>
+    <div class="win">
+      <div class="wtitle"><span class="dot"></span><b>Presets</b><span class="info" id="winfo"></span></div>
+      <div class="wbar">
+        <label>Feature group <select id="pin"></select></label>
+        <label>Filter <select id="rule">
+          <option value="touch">Touches the group</option>
+          <option value="only">Only the group</option>
+          <option value="sel">Touches + fits selection</option>
+        </select></label>
+        <label>Layout <select id="layout"><option value="packed">Packed</option><option value="fixed">Fixed slots</option></select></label>
+        <label>Tap action <select id="action">
+          <option>At</option><option>SelFix/At</option><option>SelFix</option><option>Call</option><option>None</option>
+        </select></label>
+      </div>
+      <div class="tags" id="tags"></div>
+      <div class="pool" id="pool" aria-label="Preset cells"></div>
+      <div class="sheet" id="sheet" hidden></div>
+    </div>
+    <div class="cmd"><span class="prompt">[Admin@LumaCoreA]&gt;</span><b id="cmdline">Tap a preset · hold (or right-click) for its menu · Store, then tap an empty cell</b></div>
+  </div>
+  <div class="legend" style="margin-top:10px">
+    <span><i style="background:var(--k-ok)"></i>fits every selected fixture</span>
+    <span><i style="background:var(--k-some)"></i>fits some</span>
+    <span><i style="background:#666;opacity:.4"></i>fits none (dimmed)</span>
+    <span><i style="background:var(--k-pool)"></i>nothing selected</span>
+    <span><i style="background:var(--k-prg)"></i>frame: in your programmer</span>
+    <span><i style="background:#5fd3e0"></i>number under the no.: fixtures using it now</span>
+  </div>
+</section>
+
+<section class="two">
+  <div class="card">
+    <h2>What a cell shows</h2>
+    <ul>
+      <li><b>Top bar:</b> how the preset fits your selection. Green fits every selected fixture, yellow fits some, and the whole cell dims when it fits none. Teal (the pool colour) means nothing is selected.</li>
+      <li><b>Number, use count, mode letter:</b> the cyan number counts the fixtures using the preset now, from your programmer and the running cues. <b>S</b> is Selective (per fixture) and <b>U</b> is Universal (one value for every fixture that has the attribute). Global, per fixture type, comes later.</li>
+      <li><b>Live preview</b> is drawn from the stored values, so there are no images to make: a colour swatch, a pan/tilt dot, a dimmer level, a shutter or FX glyph. A mixed preset shows one preview per feature group.</li>
+      <li><b>Feature-group squares</b> along the bottom, one per encoder-bar group, lit in the group's colour when the preset holds values for it.</li>
+      <li><b>Pink frame:</b> the preset is in your programmer.</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>What the lines are</h2>
+    <ul>
+      <li>A tap runs the window's tap action: <code>At Preset 4</code>, <code>SelFix Preset 4; At Preset 4</code>, <code>SelFix Preset 4</code>, <code>Call Preset 4</code>.</li>
+      <li><code>Store Preset</code> takes the next free number. <code>Store</code> + a tap on an empty cell gives <code>Store Preset 23</code>. The tags lit on the chip row are assigned at the same time: <code>Store Preset 23; Assign Tag "Song 3" At Preset 23</code>.</li>
+      <li>The window's own state is one <code>Set</code> line each: <code>Set Self "FeatureGroup" Follow</code>, <code>Set Self "Tags" "Song 3"</code>, <code>Set Self "Layout" Packed</code>.</li>
+      <li>Edit opens the preset editor: its values per fixture and attribute, in a <code>&lt;luma-grid&gt;</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card narrow" aria-label="Questions">
+  <h2>Questions for this round</h2>
+  <div class="q">
+    <h3>1. The filter rule</h3>
+    <p class="mute">Try all three with the Filter menu: pick Color, then select Blinder.</p>
+    <div class="opts">
+      <div class="opt rec"><div class="tag">Recommended</div><b>Touches the group</b><br>Every preset with values in the group. Mixed looks show under each group they touch; presets that don't fit the selection stay visible, dimmed.</div>
+      <div class="opt"><b>Only the group</b><br>Pure presets only. Mixed looks show only on All. Tidy, but your show looks get harder to find.</div>
+      <div class="opt"><b>Touches + fits selection</b><br>Hides what can't apply to the selection, so the pool shrinks as you select. Fastest to scan, but presets seem to vanish.</div>
+    </div>
+  </div>
+  <div class="q">
+    <h3>2. Packed or fixed slots</h3>
+    <div class="opts">
+      <div class="opt rec"><div class="tag">Recommended</div><b>Packed, with fixed as a window setting</b><br>Packed by default: visible presets close up in number order, with a few empty cells at the end for storing. A window can switch to fixed slots for muscle memory.</div>
+      <div class="opt"><b>Fixed only</b><br>Each preset keeps its place in every filter; hidden ones leave dim gaps.</div>
+    </div>
+  </div>
+  <div class="q">
+    <h3>3. The encoder bar's "All" tab</h3>
+    <div class="opts">
+      <div class="opt rec"><div class="tag">Recommended</div><b>The window shows every preset</b><br>All on the encoder bar drops the feature-group filter; tags still apply.</div>
+      <div class="opt"><b>Mixed looks only</b><br>All shows only the presets that span two or more groups (the old All pool).</div>
+    </div>
+  </div>
+  <div class="q">
+    <h3>4. Numbering on the command line</h3>
+    <div class="opts">
+      <div class="opt rec"><div class="tag">Recommended</div><b><code>Preset 12</code></b><br>One number in the one pool. This changes lum.md (Preset is two-part today), so it gets its own decision record first. A two-part <code>Preset 4.1</code> from another console is read only when a show is imported.</div>
+      <div class="opt"><b>Keep <code>Preset 4.1</code></b><br>The first part becomes meaningless with one pool.</div>
+    </div>
+  </div>
+  <div class="q">
+    <h3>5. What the first build includes</h3>
+    <div class="opts">
+      <div class="opt rec"><div class="tag">Recommended</div><b>Window + Store / At / Call / SelFix + Selective &amp; Universal + tags + editor (view and delete values) + presets in the demo rig</b><br>Global, Update tracking into cues, a live link in cues, embedded presets and recipes come later.</div>
+      <div class="opt"><b>Window and Store / At only</b><br>Smaller. The editor and Call come in a second step.</div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="menu" id="menu" hidden role="menu"></div>
+
+<script>
+const FGS = [
+  { key: 'dim', name: 'Dimmer', c: '--fg-dim' }, { key: 'pos', name: 'Position', c: '--fg-pos' },
+  { key: 'col', name: 'Color', c: '--fg-col' }, { key: 'shu', name: 'Shutter', c: '--fg-shu' },
+  { key: 'fx', name: 'FX', c: '--fg-fx' }, { key: 'ctl', name: 'Control', c: '--fg-ctl' },
+  { key: 'shp', name: 'Shapers', c: '--fg-shp' }, { key: 'vid', name: 'Video', c: '--fg-vid' },
+];
+const ALL = { key: 'all', name: 'All', c: '--k-dim' };
+// The rig's groups (the demo show) and how many fixtures each has (illustrative).
+const GROUPS = { Photon: 24, Icarus: 16, Blinder: 8, LedBar: 20, TitanTubes: 32, PIXStick: 12 };
+// Example presets on the rig. fix = the groups whose fixtures hold values; fg = feature group → preview.
+let presets = [
+  { no: 1, name: 'White', mode: 'S', fix: ['Photon', 'Icarus', 'LedBar', 'TitanTubes'], fg: { col: '#f4f1e8' }, tags: ['Wash'], use: 44 },
+  { no: 2, name: 'Deep red', mode: 'S', fix: ['Photon', 'Icarus', 'LedBar', 'TitanTubes'], fg: { col: '#c8102e' }, tags: ['Song 3'], use: 0 },
+  { no: 3, name: 'Congo', mode: 'S', fix: ['Photon', 'Icarus', 'LedBar'], fg: { col: '#3b1f9a' }, tags: ['Ballad'], use: 0 },
+  { no: 4, name: 'Amber', mode: 'U', fix: ['Photon', 'Icarus', 'LedBar', 'TitanTubes', 'PIXStick'], fg: { col: '#ffa22b' }, tags: ['Wash'], use: 20 },
+  { no: 5, name: 'Full', mode: 'U', fix: Object.keys(GROUPS), fg: { dim: 100 }, tags: [], use: 0 },
+  { no: 6, name: 'Half', mode: 'U', fix: Object.keys(GROUPS), fg: { dim: 50 }, tags: [], use: 0 },
+  { no: 7, name: 'Center stage', mode: 'S', fix: ['Photon', 'Icarus'], fg: { pos: [50, 40] }, tags: ['Spots'], use: 16 },
+  { no: 8, name: 'Audience', mode: 'S', fix: ['Photon', 'Icarus'], fg: { pos: [50, 85] }, tags: ['Spots'], use: 0 },
+  { no: 9, name: 'Drum riser', mode: 'S', fix: ['Icarus'], fg: { pos: [30, 25] }, tags: ['Spots', 'Song 3'], use: 0 },
+  { no: 10, name: 'Strobe fast', mode: 'S', fix: ['Blinder', 'Icarus', 'Photon'], fg: { shu: 'STRB' }, tags: ['Busk'], use: 0 },
+  { no: 11, name: 'Open', mode: 'U', fix: ['Blinder', 'Icarus', 'Photon'], fg: { shu: 'OPEN' }, tags: [], use: 40 },
+  { no: 12, name: 'Tight beam', mode: 'S', fix: ['Icarus'], fg: { shp: 'ZOOM 6°' }, tags: ['Spots'], use: 0 },
+  { no: 13, name: 'Lamp on', mode: 'U', fix: ['Photon', 'Icarus'], fg: { ctl: 'LAMP' }, tags: [], use: 0 },
+  { no: 14, name: 'Song 3 verse', mode: 'S', fix: ['Photon', 'Icarus', 'LedBar'], fg: { dim: 70, col: '#2a6fdb', pos: [45, 55] }, tags: ['Song 3', 'Wash'], use: 0 },
+  { no: 15, name: 'Chorus hit', mode: 'S', fix: ['Blinder', 'Photon', 'Icarus'], fg: { dim: 100, col: '#ffffff', shu: 'STRB' }, tags: ['Song 3'], use: 0 },
+  { no: 16, name: 'Blue sweep', mode: 'S', fix: ['Icarus', 'LedBar'], fg: { col: '#1e4fd0', fx: 'SWEEP' }, tags: ['Busk'], use: 0 },
+  { no: 18, name: 'Ballyhoo', mode: 'S', fix: ['Icarus'], fg: { fx: 'BALLY' }, tags: ['Busk'], use: 0 },
+  { no: 19, name: 'Pixel chase', mode: 'S', fix: ['PIXStick', 'TitanTubes'], fg: { vid: 'CHASE' }, tags: ['Busk'], use: 0 },
+  { no: 21, name: 'Warm wash', mode: 'S', fix: ['LedBar', 'TitanTubes'], fg: { dim: 80, col: '#ffb46b' }, tags: ['Wash', 'Ballad'], use: 0 },
+];
+const TAGS = ['Wash', 'Spots', 'Song 3', 'Ballad', 'Busk'];
+// A pretend programmer: what is active right now (by feature group) and on which fixtures.
+const state = { fg: 'col', pin: 'follow', rule: 'touch', layout: 'packed', action: 'At', tags: new Set(), sel: new Set(), armed: false,
+  prg: { col: ['Icarus'], pos: ['Icarus'] }, mine: new Set() };
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const fgOf = k => FGS.find(f => f.key === k) || ALL;
+const shownFg = () => (state.pin === 'follow' ? state.fg : state.pin);
+const say = line => { $('cmdline').textContent = line; };
+
+function fit(p) {
+  if (!state.sel.size) return 'nosel';
+  const hits = [...state.sel].filter(g => p.fix.includes(g)).length;
+  return hits === state.sel.size ? 'all' : hits ? 'some' : 'none';
+}
+function visible(p) {
+  const fg = shownFg();
+  if (state.tags.size && ![...state.tags].every(t => p.tags.includes(t))) return false;
+  if (fg === 'all') return state.rule !== 'sel' || fit(p) !== 'none';
+  const keys = Object.keys(p.fg);
+  if (!keys.includes(fg)) return false;
+  if (state.rule === 'only' && keys.length > 1) return false;
+  if (state.rule === 'sel' && fit(p) === 'none') return false;
+  return true;
+}
+function preview(p) {
+  return Object.entries(p.fg).map(([k, v]) => {
+    if (k === 'col') return `<span class="sw" style="background:${esc(v)}" title="Color"></span>`;
+    if (k === 'dim') return `<span class="lvl" title="Dimmer ${v}%"><b style="height:${v}%"></b></span>`;
+    if (k === 'pos') return `<span class="xy" title="Position"><b style="left:${v[0]}%;top:${v[1]}%"></b></span>`;
+    return `<span class="glyph" title="${esc(fgOf(k).name)}">${esc(v)}</span>`;
+  }).join('');
+}
+function cellHtml(p) {
+  const f = fit(p);
+  const bar = { nosel: 'var(--k-pool)', all: 'var(--k-ok)', some: 'var(--k-some)', none: '#555' }[f];
+  const squares = FGS.map(g => `<i class="${p.fg[g.key] ? 'on' : ''}" style="--c:var(${g.c})" title="${g.name}"></i>`).join('');
+  const use = p.use + (state.mine.has(p.no) ? fixturesOf(p) : 0);
+  return `<button type="button" class="cell${f === 'none' ? ' none' : ''}${state.mine.has(p.no) ? ' mine' : ''}" data-no="${p.no}" style="--fit:${bar}">`
+    + `<span class="top"><span>${p.no}</span>${use ? `<span class="use" title="fixtures using it now">${use}</span>` : ''}<span class="mode" title="${p.mode === 'U' ? 'Universal' : 'Selective'}">${p.mode}</span></span>`
+    + `<span class="nm">${esc(p.name)}</span><span class="pv">${preview(p)}</span>`
+    + (p.tags.length ? `<span class="badge">#${p.tags.length}</span>` : '')
+    + `<span class="fgs">${squares}</span></button>`;
+}
+function fixturesOf(p) {
+  const g = state.sel.size ? [...state.sel].filter(x => p.fix.includes(x)) : p.fix;
+  return g.reduce((n, x) => n + GROUPS[x], 0);
+}
+function nextFree() { let n = 1; const used = new Set(presets.map(p => p.no)); while (used.has(n)) n++; return n; }
+
+function render() {
+  // feature-group tabs (the encoder bar)
+  $('fgtabs').innerHTML = [...FGS, ALL].map((g, i) => `<button type="button" role="tab" class="fgtab${state.fg === g.key ? ' on' : ''}" style="--c:var(${g.c})" data-fg="${g.key}" aria-selected="${state.fg === g.key}"><small>${g.key === 'all' ? '·' : i + 1}</small>${g.name}</button>`).join('');
+  $('selbtns').innerHTML = Object.keys(GROUPS).map(g => `<button type="button" class="chipbtn${state.sel.has(g) ? ' on' : ''}" data-sel="${esc(g)}">${esc(g)}</button>`).join(' ');
+  $('storeBtn').classList.toggle('on', state.armed);
+  // programmer strip
+  const prg = Object.entries(state.prg).filter(([, v]) => v.length);
+  $('prg').innerHTML = `<span class="lbl" style="text-transform:uppercase;letter-spacing:.06em;font-size:11px">Programmer</span>`
+    + (prg.length ? prg.map(([k, v]) => `<span class="val">${fgOf(k).name} · ${esc(v.join(', '))}</span>`).join('') : '<span>empty</span>')
+    + `<span style="margin-left:auto">Store keeps all of it (decided)</span>`;
+  // window bar
+  $('pin').innerHTML = `<option value="follow">Follow programmer (${esc(fgOf(state.fg).name)})</option>` + [...FGS, ALL].map(g => `<option value="${g.key}">${g.name}</option>`).join('');
+  $('pin').value = state.pin;
+  const fg = fgOf(shownFg());
+  $('tags').innerHTML = `<span class="fgnow" style="--c:var(${fg.c})"><i></i>${state.pin === 'follow' ? 'Following' : 'Pinned'}: <b style="color:var(--k-strong)">${fg.name}</b></span>`
+    + TAGS.map(t => `<button type="button" class="tagchip${state.tags.has(t) ? ' on' : ''}" data-tag="${esc(t)}">#${esc(t)}</button>`).join('');
+  // cells
+  const shown = presets.filter(visible).sort((a, b) => a.no - b.no);
+  let html = '';
+  if (state.layout === 'packed') {
+    html = shown.map(cellHtml).join('');
+    const free = [];
+    let n = nextFree();
+    const used = new Set(presets.map(p => p.no));
+    while (free.length < 4) { if (!used.has(n)) free.push(n); n++; }
+    html += free.map(n => `<button type="button" class="cell empty${state.armed ? ' armed' : ''}" data-empty="${n}"><span class="top"><span>${n}</span></span></button>`).join('');
+  } else {
+    const last = Math.max(...presets.map(p => p.no)) + 3;
+    for (let n = 1; n <= last; n++) {
+      const p = presets.find(x => x.no === n);
+      if (!p) html += `<button type="button" class="cell empty${state.armed ? ' armed' : ''}" data-empty="${n}"><span class="top"><span>${n}</span></span></button>`;
+      else if (shown.includes(p)) html += cellHtml(p);
+      else html += `<span class="cell gap" aria-hidden="true"><span class="top"><span>${n}</span></span></span>`;
+    }
+  }
+  $('pool').innerHTML = html;
+  $('winfo').textContent = `${shown.length} of ${presets.length} · tap: ${state.action}${state.tags.size ? ' · #' + [...state.tags].join(' #') : ''}`;
+}
+
+function lineFor(p) {
+  const o = `Preset ${p.no}`;
+  return { 'At': `At ${o}`, 'SelFix/At': `SelFix ${o}; At ${o}`, 'SelFix': `SelFix ${o}`, 'Call': `Call ${o}`, 'None': '' }[state.action];
+}
+function tap(p) {
+  const line = lineFor(p);
+  if (!line) return say('(tap action None: nothing runs)');
+  if (state.action.startsWith('SelFix')) { state.sel = new Set(p.fix); }
+  if (state.action !== 'SelFix') {
+    state.mine.add(p.no);
+    for (const k of Object.keys(p.fg)) state.prg[k] = state.sel.size ? [...state.sel].filter(g => p.fix.includes(g)) : p.fix.slice();
+  }
+  say(line);
+  render();
+}
+function store(no) {
+  const fgs = Object.fromEntries(Object.entries(state.prg).filter(([, v]) => v.length).map(([k]) => [k, sample(k)]));
+  if (!Object.keys(fgs).length) { say('Store Preset: the programmer is empty, nothing to store'); return; }
+  const fix = [...new Set(Object.values(state.prg).flat())];
+  const tags = [...state.tags];
+  presets.push({ no, name: `Preset ${no}`, mode: 'S', fix, fg: fgs, tags, use: 0 });
+  state.armed = false;
+  say(`Store Preset ${no}` + tags.map(t => `; Assign Tag "${t}" At Preset ${no}`).join(''));
+  render();
+}
+function sample(k) { return { col: '#7fd6c2', dim: 60, pos: [60, 50], shu: 'OPEN', fx: 'WAVE', ctl: 'RESET', shp: 'IRIS', vid: 'MEDIA' }[k]; }
+
+// Hold (or right-click) → the one context menu; Edit opens the editor.
+function openMenu(p, x, y) {
+  const m = $('menu');
+  const o = `Preset ${p.no}`;
+  const items = [['Edit…', `Edit ${o}`, () => openSheet(p)], ['Label…', `Label ${o}`], ['Tag…', `Assign Tag … At ${o}`], null,
+    ['Select its fixtures', `SelFix ${o}`, () => { state.sel = new Set(p.fix); render(); }], ['Update', `Update ${o}`], ['Store (merge)', `Store ${o} /Merge`], null,
+    ['Move…', `Move ${o} At …`], ['Copy…', `Copy ${o} At …`], ['Delete', `Delete ${o}`, () => { presets = presets.filter(x => x !== p); render(); }], null,
+    ['Settings…', `EditSetting ${o}`]];
+  m.innerHTML = `<div class="hdr">${esc(o)} · ${esc(p.name)}</div>` + items.map((it, i) => it ? `<button type="button" data-i="${i}">${esc(it[0])}<small>${esc(it[1])}</small></button>` : '<hr>').join('');
+  m.hidden = false;
+  const r = m.getBoundingClientRect();
+  m.style.left = `${Math.max(8, Math.min(x, innerWidth - r.width - 8))}px`;
+  m.style.top = `${Math.max(8, Math.min(y, innerHeight - r.height - 8))}px`;
+  m.onclick = e => { const b = e.target.closest('button'); if (!b) return; const it = items[b.dataset.i]; m.hidden = true; say(it[1]); it[2]?.(); };
+  m.querySelector('button')?.focus();
+}
+function openSheet(p) {
+  const s = $('sheet');
+  const attrs = { dim: ['Dimmer'], pos: ['Pan', 'Tilt'], col: ['ColorRGB_R', 'ColorRGB_G', 'ColorRGB_B'], shu: ['Shutter'], fx: ['Effect'], ctl: ['Control'], shp: ['Zoom'], vid: ['Media'] };
+  const cols = Object.keys(p.fg).flatMap(k => attrs[k]);
+  const val = (k, a, g) => {
+    const v = p.fg[k];
+    if (k === 'col') { const n = parseInt(v.slice(1), 16); return { ColorRGB_R: (n >> 16) & 255, ColorRGB_G: (n >> 8) & 255, ColorRGB_B: n & 255 }[a] / 2.55 | 0; }
+    if (k === 'pos') return a === 'Pan' ? ((v[0] - 50) * 2.7).toFixed(0) + '°' : ((v[1] - 50) * 1.35).toFixed(0) + '°';
+    if (k === 'dim') return v;
+    return v;
+  };
+  const rows = p.fix.map(g => `<tr><td>${esc(g)} 1 Thru ${GROUPS[g]}</td>` + Object.keys(p.fg).flatMap(k => attrs[k].map(a => `<td class="v">${esc(val(k, a, g))}</td>`)).join('') + '</tr>').join('');
+  s.innerHTML = `<div class="head"><b>Edit Preset ${p.no} · ${esc(p.name)}</b><span class="mute" style="color:var(--k-dim)">${p.mode === 'U' ? 'Universal' : 'Selective'} · ${p.fix.length} groups · in a &lt;luma-grid&gt; with its slab (Delete values, Select fixtures)</span><button type="button" class="chipbtn" id="closeSheet">Close</button></div>`
+    + `<div class="gridwrap"><table><thead><tr><th>Fixtures</th>${cols.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  s.hidden = false;
+  $('closeSheet').onclick = () => { s.hidden = true; };
+}
+
+// Gestures
+$('fgtabs').addEventListener('click', e => { const b = e.target.closest('[data-fg]'); if (!b) return; state.fg = b.dataset.fg; render(); });
+$('selbtns').addEventListener('click', e => { const b = e.target.closest('[data-sel]'); if (!b) return; const g = b.dataset.sel; state.sel.has(g) ? state.sel.delete(g) : state.sel.add(g); say(`${state.sel.has(g) ? '' : '- '}Group "${g}"`); render(); });
+$('tags').addEventListener('click', e => { const b = e.target.closest('[data-tag]'); if (!b) return; const t = b.dataset.tag; state.tags.has(t) ? state.tags.delete(t) : state.tags.add(t); say(`Set Self "Tags" "${[...state.tags].join(',')}"`); render(); });
+$('pin').addEventListener('change', e => { state.pin = e.target.value; say(`Set Self "FeatureGroup" ${state.pin === 'follow' ? 'Follow' : fgOf(state.pin).name}`); render(); });
+$('rule').addEventListener('change', e => { state.rule = e.target.value; render(); });
+$('layout').addEventListener('change', e => { state.layout = e.target.value; say(`Set Self "Layout" ${state.layout === 'packed' ? 'Packed' : 'Fixed'}`); render(); });
+$('action').addEventListener('change', e => { state.action = e.target.value; say(`Set Self "Action" "${state.action}"`); render(); });
+$('storeBtn').addEventListener('click', () => {
+  state.armed = !state.armed;
+  say(state.armed ? 'Store … (tap an empty cell, or Store again for the next free)' : `Store Preset → next free: Preset ${nextFree()}`);
+  if (!state.armed) store(nextFree()); else render();
+});
+let holdTimer = null;
+$('pool').addEventListener('pointerdown', e => {
+  const c = e.target.closest('.cell[data-no]'); if (!c || e.button !== 0) return;
+  holdTimer = setTimeout(() => { holdTimer = 'held'; openMenu(presets.find(p => p.no === +c.dataset.no), e.clientX, e.clientY); }, 500);
+});
+$('pool').addEventListener('pointerup', () => { if (holdTimer !== 'held') clearTimeout(holdTimer); });
+$('pool').addEventListener('pointerleave', () => { if (holdTimer !== 'held') clearTimeout(holdTimer); });
+$('pool').addEventListener('click', e => {
+  if (holdTimer === 'held') { holdTimer = null; return; }
+  const empty = e.target.closest('[data-empty]');
+  if (empty) { if (state.armed) store(+empty.dataset.empty); else say(`Preset ${empty.dataset.empty} is empty — Store, then tap it`); return; }
+  const c = e.target.closest('.cell[data-no]'); if (c) tap(presets.find(p => p.no === +c.dataset.no));
+});
+$('pool').addEventListener('contextmenu', e => { const c = e.target.closest('.cell[data-no]'); if (!c) return; e.preventDefault(); clearTimeout(holdTimer); openMenu(presets.find(p => p.no === +c.dataset.no), e.clientX, e.clientY); });
+document.addEventListener('pointerdown', e => { if (!$('menu').contains(e.target)) $('menu').hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('menu').hidden = true; $('sheet').hidden = true; } });
+render();
+</script>

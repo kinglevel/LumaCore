@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Build and start the desktop app (lumacore-app). Its connect page reaches any
+# station (discovered or by host); "local" starts the lumacore-server next to
+# it, or attaches to one already running on this machine. --bg starts it in
+# the background (output: target/<profile>/app.log) and returns.
+#
+# Usage:
+#   ./scripts/unix/app [--debug | --ship] [--no-build] [--bg]
+set -euo pipefail
+source "$(dirname "$0")/lib.sh"
+
+DEBUG=0
+BUILD=1
+BG=0
+for arg in "$@"; do
+    case "$arg" in
+        --debug) DEBUG=1 ;;
+        --ship) SHIP=1 ;;
+        --no-build) BUILD=0 ;;
+        --bg) BG=1 ;;
+        -h|--help) sed -n '2,8p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        *) die "Unknown argument: $arg" ;;
+    esac
+done
+lc_profile "$DEBUG"
+
+if ! has_display; then
+    echo "No display (DISPLAY / WAYLAND_DISPLAY unset): the app needs a desktop session." >&2
+    echo "On a headless machine run the server and use a browser or the CLI:" >&2
+    echo "  ./scripts/unix/server start --show demo" >&2
+    echo "  open http://<this-host>:$HTTP_PORT/   or   ./scripts/unix/connect.sh" >&2
+    exit 1
+fi
+
+if [ "$BUILD" -eq 1 ] && ! reuse_without_cargo "$APP_BIN"; then
+    build_app || die "Build failed!"
+fi
+[ -x "$APP_BIN" ] || die "$APP_BIN isn't built (./scripts/unix/build app)"
+[ -x "$SERVER_BIN" ] || log "Note: $SERVER_BIN isn't built — the app reaches other stations, but can't start a local one (./scripts/unix/build server)"
+if [ "$BG" -eq 1 ]; then
+    nohup "$APP_BIN" >"$TARGET_DIR/app.log" 2>&1 &
+    log_ok "Started lumacore-app (PID $!, output $TARGET_DIR/app.log)"
+    exit 0
+fi
+log "Starting $APP_BIN..."
+exec "$APP_BIN"

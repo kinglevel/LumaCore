@@ -1,0 +1,596 @@
+<title>LumaCore 12f Round 9</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Round 9: the encoder bar as concept A — four fixed encoder sections, the familiar layout but smarter,
+   after the user's Dynamic Presets v2.0 layout. LumaCore Dark preset; single dark look on purpose. */
+:root {
+  --lc-bg:#121212; --lc-surface:#1c1c1c; --lc-raised:#303030; --lc-line:#424242; --lc-hair:#262626; --lc-gap:#0a0a0a;
+  --lc-text:#d1d1d1; --lc-dim:#8a8a8a; --lc-faint:#5e5e5e; --lc-accent:#9a7a08; --lc-accent-hi:#c9a227; --lc-on-accent:#f3ecd3;
+  --lc-cap:#f9ed4f; --lc-info:#758ba0; --lc-programmer:#d86a7c; --lc-selected:#3a3218; --lc-fx:#b07be6; --lc-sel-line:#4d8fd6;
+  --lc-font:'Source Sans 3','Segoe UI',system-ui,-apple-system,sans-serif;
+  --lc-mono:'JetBrains Mono',Menlo,Consolas,monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--lc-bg); color: var(--lc-text); margin: 0; }
+body { font-family: var(--lc-font); font-size: 15px; padding: 0 16px 40px; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; }
+.noselect { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+header { position: sticky; top: 0; z-index: 50; background: var(--lc-bg); padding: 14px 16px 10px; margin: 0 -16px; border-bottom: 1px solid var(--lc-line); }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 2px; }
+.sub { color: var(--lc-dim); font-size: 13px; margin: 0; max-width: 92ch; }
+.board { padding-block: 16px; display: grid; gap: 14px; }
+.board > * { min-width: 0; }
+.intro { max-width: 84ch; line-height: 1.45; margin: 0; }
+.intro b { color: var(--lc-accent-hi); font-weight: 600; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--lc-line); border-radius: 6px; overflow: hidden; }
+.seg button { min-height: 44px; padding: 0 14px; border: 0; background: var(--lc-surface); cursor: pointer; border-right: 1px solid var(--lc-line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--lc-selected); color: var(--lc-on-accent); box-shadow: inset 0 -3px 0 var(--lc-accent-hi); }
+.ctl-label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); margin-right: 6px; }
+.decide { border-left: 3px solid var(--lc-accent); background: var(--lc-surface); padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 88ch; font-size: 14px; line-height: 1.45; }
+.decide h3 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-accent-hi); }
+.decide ul { margin: 0; padding-left: 18px; }
+code { font-family: var(--lc-mono); font-size: .92em; color: var(--lc-cap); }
+.log { border: 1px solid var(--lc-line); border-radius: 6px; background: var(--lc-gap); font-family: var(--lc-mono); font-size: 13px; }
+.log h4 { margin: 0; padding: 6px 10px; border-bottom: 1px solid var(--lc-line); font: 500 12px var(--lc-font); text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); }
+.log ol { list-style: none; margin: 0; padding: 6px 10px; height: 110px; overflow: auto; }
+.log li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 1px 0; }
+.log li .k { color: var(--lc-cap); margin-right: 8px; }
+.log li i { color: var(--lc-dim); font-style: normal; }
+
+/* ── the screen ── */
+.devwrap { display: flex; justify-content: center; }
+.screen { position: relative; display: grid; grid-template-columns: 56px 1fr; grid-template-rows: 1fr auto auto; border: 1px solid var(--lc-line); border-radius: 8px; overflow: hidden; background: var(--lc-gap); width: 100%; height: 640px; }
+.screen.tablet { width: 860px; max-width: 100%; }
+.screen.phone { width: 390px; max-width: 100%; height: 760px; grid-template-columns: 1fr; border-radius: 22px; }
+.side { grid-row: 1 / 4; background: #161616; border-right: 1px solid var(--lc-line); display: flex; flex-direction: column; gap: 4px; padding: 6px 4px; }
+.side button { height: 46px; border-radius: 4px; border: 1px solid var(--lc-hair); background: var(--lc-surface); font-size: 12px; color: var(--lc-dim); cursor: pointer; }
+.side button.on { color: var(--lc-on-accent); background: var(--lc-selected); box-shadow: inset 3px 0 0 var(--lc-accent-hi); }
+.side button.meow.on { color: var(--lc-cap); }
+.side .grow { flex: 1; }
+.phone .side { display: none; }
+.panes { display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; padding: 2px; min-height: 0; position: relative; }
+.phone .panes { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; }
+.pane { background: var(--lc-bg); border: 1px solid var(--lc-hair); border-radius: 3px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.pane .pt { font-size: 12px; color: var(--lc-dim); padding: 4px 8px; border-bottom: 1px solid var(--lc-hair); background: #171717; display: flex; justify-content: space-between; }
+.pane .pb { flex: 1; padding: 6px; display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 3px; align-content: start; }
+.fx { height: 40px; border-radius: 3px; background: var(--lc-surface); border: 1px solid var(--lc-hair); font-size: 11px; padding: 3px 5px; color: var(--lc-dim); }
+.fx.sel { border-color: var(--lc-sel-line); color: var(--lc-text); }
+.fx b { display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--lc-programmer); }
+.cbar { grid-column: 2; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 8px; background: #1a1a1a; border-top: 1px solid var(--lc-line); font-family: var(--lc-mono); font-size: 14px; }
+.phone .cbar { grid-column: 1; }
+.cbar .pr { color: var(--lc-accent-hi); }
+.cbar .ln { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cbar .tg { font-family: var(--lc-font); font-size: 12px; border: 1px solid var(--lc-line); border-radius: 4px; background: var(--lc-surface); min-height: 32px; padding: 0 10px; cursor: pointer; color: var(--lc-dim); }
+.cbar .tg.on { color: var(--lc-on-accent); background: var(--lc-selected); border-color: var(--lc-accent); }
+.screen.below .ebar { grid-row: 3; } .screen.below .cbar { grid-row: 2; }
+
+/* ── the encoder bar ── */
+.ebar { grid-column: 2; background: #141414; border-top: 1px solid var(--lc-line); }
+.phone .ebar { grid-column: 1; }
+/* feature strip: numbered like Preset 1–9, a corner mark when the selection has values */
+.fstrip { display: flex; gap: 3px; padding: 4px 4px 0 4px; overflow-x: auto; scrollbar-width: none; }
+.fstrip .fb { flex: 1 0 auto; min-width: 104px; min-height: 36px; padding: 0 10px; border: 1px solid var(--lc-line); border-bottom: 0; border-radius: 5px 5px 0 0; background: var(--lc-surface); color: var(--lc-dim); cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 7px; position: relative; }
+.fstrip .fb .no { font-family: var(--lc-mono); font-size: 11px; color: var(--lc-faint); }
+.fstrip .fb[aria-pressed="true"] { background: #262316; color: var(--lc-cap); border-color: var(--lc-accent); }
+.fstrip .fb.has::after { content: ''; position: absolute; right: 4px; top: 4px; width: 8px; height: 8px; border-radius: 1px; background: var(--lc-programmer); }
+.fstrip .fb .fxm { color: var(--lc-fx); font-size: 13px; }
+.fstrip .fb .ic { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.phone .fstrip .fb { min-width: 0; padding: 0 8px; font-size: 13px; }
+
+.ebody { display: grid; grid-template-columns: 112px 58px repeat(4, minmax(0, 1fr)) 84px; border-top: 1px solid var(--lc-accent); background: #1a1a1a; }
+.phone .ebody { grid-template-columns: 46px repeat(4, minmax(0, 1fr)); }
+.phone .lcol, .phone .tcol { display: none; }
+/* left column: feature + its picture + the layers */
+.lcol { display: grid; grid-template-rows: 1fr auto auto; gap: 4px; padding: 5px; border-right: 1px solid var(--lc-line); }
+.lcol .fn { font-size: 14px; font-weight: 600; color: var(--lc-text); display: flex; justify-content: space-between; align-items: center; }
+.lcol .pic { min-height: 0; display: grid; place-items: center; }
+.layer { min-height: 40px; border-radius: 5px; border: 1px solid var(--lc-line); background: var(--lc-surface); cursor: pointer; font-size: 12.5px; line-height: 1.15; color: var(--lc-dim); }
+.layer.val[aria-pressed="true"] { border-color: var(--lc-cap); color: var(--lc-cap); background: #2a2810; }
+.layer.efx { border-color: color-mix(in srgb, var(--lc-fx) 55%, var(--lc-line)); }
+.layer.efx[aria-pressed="true"] { border-color: var(--lc-fx); color: var(--lc-fx); background: color-mix(in srgb, var(--lc-fx) 15%, var(--lc-surface)); }
+.layer small { display: block; font-size: 11px; opacity: .8; }
+/* row labels (Delay / Fade / Value, or BPM / Hi / Lo) */
+.rlab { display: grid; grid-template-rows: var(--rows); border-right: 1px solid var(--lc-line); }
+.phone .rlab { display: grid; }
+.rlab span { display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--lc-dim); border-bottom: 1px solid var(--lc-hair); }
+.rlab span.vrow { color: var(--lc-cap); }
+.rlab.fxl span { color: var(--lc-fx); }
+.rlab span:last-child { border-bottom: 0; }
+.phone .rlab span { font-size: 10px; writing-mode: vertical-rl; transform: rotate(180deg); }
+/* one encoder section */
+.enc { display: grid; grid-template-rows: var(--rows); border-right: 1px solid var(--lc-line); min-width: 0; position: relative; }
+.enc.blank { background: repeating-linear-gradient(135deg, transparent 0 8px, #181818 8px 9px); }
+.enc .c { position: relative; border-bottom: 1px solid var(--lc-hair); display: flex; align-items: center; justify-content: center; font-family: var(--lc-mono); font-size: 14px; touch-action: none; cursor: ew-resize; min-width: 0; overflow: hidden; }
+.enc .c.t { color: var(--lc-info); }
+.enc .c.t.cue { color: var(--lc-faint); font-family: var(--lc-font); font-size: 12px; }
+.enc .c .tbar { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--lc-info); opacity: .55; }
+.enc .c.t.fade .tbar { background: linear-gradient(90deg, transparent, var(--lc-info)); opacity: .8; }
+.enc .c.v { flex-direction: column; justify-content: center; gap: 2px; padding: 4px 8px 12px; }
+.enc .c.v .num { font-size: 19px; color: var(--lc-text); white-space: nowrap; }
+.enc.prog .c.v { background: color-mix(in srgb, var(--lc-programmer) 22%, transparent); }
+.enc.prog .c.v .num { color: #f1b7c1; }
+.enc .c.v .mix { font-size: 11px; color: var(--lc-dim); font-family: var(--lc-font); }
+.enc .c.f { color: var(--lc-fx); }
+.enc .c.f.none { color: var(--lc-faint); font-family: var(--lc-font); font-size: 12px; cursor: default; }
+.enc .c.active { outline: 1px solid var(--lc-accent-hi); outline-offset: -1px; }
+/* spread: a tick per fixture, the effect's band and live output */
+.spread { position: absolute; left: 8px; right: 8px; bottom: 4px; height: 8px; }
+.spread .trk { position: absolute; left: 0; right: 0; top: 3px; height: 2px; background: #3a3a3a; }
+.spread .tk { position: absolute; top: 0; width: 2px; height: 8px; margin-left: -1px; background: var(--lc-programmer); }
+.spread .fxb { position: absolute; top: 1px; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--lc-fx) 30%, transparent); border: 1px solid color-mix(in srgb, var(--lc-fx) 60%, transparent); }
+.spread .otk { position: absolute; top: -1px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; border: 1.5px solid var(--lc-fx); background: var(--lc-gap); }
+/* wheel attributes: the current slot's image and its neighbours (a carousel); tap = all slots */
+.wheel { display: flex; align-items: center; gap: 6px; }
+.wheel .slot { width: 22px; height: 22px; border-radius: 50%; opacity: .4; flex: none; }
+.wheel .slot.cur { width: 34px; height: 34px; opacity: 1; box-shadow: 0 0 0 2px var(--lc-accent-hi); }
+.wheel .slot svg { width: 100%; height: 100%; display: block; }
+.enc .c.v .wn { font-family: var(--lc-font); font-size: 13px; color: var(--lc-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+/* attribute bar: name + channel function + resolution (per encoder, as Dynamic Presets) */
+.abar { display: grid; grid-template-columns: 1fr 58px; border-top: 1px solid var(--lc-line); min-height: 52px; }
+.abar .an { border: 0; border-right: 1px solid var(--lc-hair); background: #262626; cursor: pointer; padding: 4px 8px; text-align: left; display: grid; align-content: center; gap: 1px; min-width: 0; }
+.abar .an b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; gap: 6px; align-items: center; }
+.abar .an .cf { font-size: 11.5px; color: var(--lc-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.abar .an .cf.list::after { content: ''; display: inline-block; width: 14px; height: 2px; margin-left: 6px; vertical-align: middle; background: repeating-linear-gradient(90deg, var(--lc-accent-hi) 0 4px, transparent 4px 5px); }
+.abar .an .bdg { font-family: var(--lc-mono); font-size: 10.5px; font-weight: 400; padding: 0 4px; border-radius: 3px; line-height: 15px; }
+.abar .an .bdg.tm { color: var(--lc-info); background: color-mix(in srgb, var(--lc-info) 18%, transparent); }
+.abar .an .bdg.fx { color: var(--lc-fx); background: color-mix(in srgb, var(--lc-fx) 18%, transparent); }
+.abar .rs { border: 0; background: #1e1e1e; cursor: pointer; display: grid; grid-template-rows: repeat(3, 1fr); padding: 2px 0; font-size: 11.5px; line-height: 1.1; color: var(--lc-faint); text-align: left; padding-left: 7px; }
+.abar .rs span.on { color: var(--lc-cap); }
+.phone .abar { grid-template-columns: 1fr; }
+.phone .abar .rs { grid-template-rows: none; grid-template-columns: repeat(3, 1fr); text-align: center; padding: 0; border-top: 1px solid var(--lc-hair); min-height: 22px; }
+.phone .abar .rs span:not(.on) { display: none; } .phone .abar .rs span.on { grid-column: 1 / -1; }
+.phone .abar .an .cf { display: none; }
+.phone .enc .c.v .num { font-size: 15px; }
+.phone .wheel .slot:not(.cur) { display: none; }
+/* right: page + Program Time */
+.tcol { display: grid; grid-template-rows: auto 1fr; border-left: 0; }
+.pgb { min-height: 52px; border: 0; border-bottom: 1px solid var(--lc-line); background: var(--lc-surface); cursor: pointer; font-size: 13px; line-height: 1.15; }
+.pgb b { display: block; font-family: var(--lc-mono); font-size: 15px; color: var(--lc-cap); }
+.ptime { position: relative; display: grid; grid-template-rows: auto 1fr auto; padding: 5px; gap: 4px; text-align: center; font-size: 11.5px; color: var(--lc-dim); }
+.ptime .pf { position: relative; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-gap); touch-action: none; cursor: ns-resize; overflow: hidden; min-height: 60px; }
+.ptime .pf i { position: absolute; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, #3fbf4a 35%, transparent); }
+.ptime .pv { font-family: var(--lc-mono); font-size: 14px; color: #6fdc78; }
+.ptime.off .pv { color: var(--lc-faint); }
+.phone .pgm { display: flex; }
+.pgm { display: none; }
+
+/* pop-ups above the bar: channel sets, colour picker, shapers, slider panel */
+.pop { position: absolute; z-index: 20; left: 8px; right: 8px; bottom: 8px; background: var(--lc-surface); border: 1px solid var(--lc-accent); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.6); }
+.pop .ph { display: flex; align-items: center; gap: 10px; padding: 0 0 0 12px; border-bottom: 1px solid var(--lc-line); min-height: 44px; font-weight: 600; }
+.pop .ph span { flex: 1; }
+.pop .ph small { font-weight: 400; color: var(--lc-dim); }
+.pop .x { width: 44px; height: 44px; border: 0; background: none; color: var(--lc-dim); cursor: pointer; font-size: 20px; }
+.sets { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 6px; padding: 8px; }
+.sets button { min-height: 88px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; display: grid; place-items: center; gap: 4px; padding: 6px; font-size: 12.5px; }
+.sets button .im { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; }
+.sets button .im svg { width: 100%; height: 100%; display: block; }
+.sets button.on { border-color: var(--lc-cap); background: #2a2810; }
+.sets button.some { border-color: var(--lc-accent); border-style: dashed; }
+.sets button .cnt { font-size: 11px; color: var(--lc-dim); }
+.sets h5 { grid-column: 1 / -1; margin: 4px 0 0; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); font-weight: 500; }
+.picker { display: grid; grid-template-columns: 1fr 200px; gap: 10px; padding: 10px; }
+.phone .picker { grid-template-columns: 1fr; }
+.hs { position: relative; border-radius: 6px; border: 1px solid var(--lc-line); touch-action: none; cursor: crosshair; min-height: 150px;
+  background: linear-gradient(to bottom, transparent, #fff), linear-gradient(90deg, red, yellow, lime, cyan, blue, magenta, red); }
+.hs .dot { position: absolute; width: 16px; height: 16px; margin: -8px; border-radius: 50%; border: 2px solid #111; box-shadow: 0 0 0 1.5px #fff; }
+.pk-side { display: grid; gap: 6px; align-content: start; }
+.pk-sw { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.pk-sw i { height: 36px; border-radius: 4px; border: 1px solid var(--lc-line); display: grid; place-items: end center; font-style: normal; font-size: 10px; color: #000; padding-bottom: 2px; }
+.pk-quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.pk-quick button { min-height: 36px; border-radius: 4px; border: 1px solid var(--lc-line); cursor: pointer; font-size: 11px; color: #111; font-weight: 600; }
+.pk-note { font-size: 12px; color: var(--lc-dim); line-height: 1.35; }
+.shp { display: grid; place-items: center; }
+.beam { position: relative; border-radius: 50%; background: radial-gradient(circle, #fff8d8 0, #d9c98a 60%, #5a5030 100%); overflow: hidden; }
+.bl { position: absolute; background: #0b0b0b; touch-action: none; min-width: 6px; min-height: 6px; box-shadow: 0 0 0 1px #333; }
+.bl.p { box-shadow: 0 0 0 1px var(--lc-programmer); }
+.bl.t { left: -10%; right: -10%; top: 0; cursor: ns-resize; } .bl.b { left: -10%; right: -10%; bottom: 0; cursor: ns-resize; }
+.bl.l { top: -10%; bottom: -10%; left: 0; cursor: ew-resize; } .bl.r { top: -10%; bottom: -10%; right: 0; cursor: ew-resize; }
+.mini-xy { position: relative; width: 84px; height: 62px; border-radius: 4px; background: var(--lc-gap); border: 1px solid var(--lc-line); background-image: linear-gradient(#262626 1px, transparent 1px), linear-gradient(90deg, #262626 1px, transparent 1px); background-size: 25% 25%; touch-action: none; cursor: crosshair; }
+.mini-xy .dot { position: absolute; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: var(--lc-programmer); }
+.mini-xy .dot.o { width: 8px; height: 8px; margin: -4px; background: none; border: 1.5px solid var(--lc-fx); }
+.mini-sw { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; width: 84px; }
+.mini-sw i { height: 22px; border-radius: 3px; border: 1px solid #333; }
+.pickbtn { width: 100%; min-height: 30px; border-radius: 4px; border: 1px solid var(--lc-accent); background: var(--lc-selected); color: var(--lc-on-accent); cursor: pointer; font-size: 12px; margin-top: 4px; }
+.vpanel { position: absolute; z-index: 25; bottom: 8px; width: 160px; background: var(--lc-surface); border: 1px solid var(--lc-accent); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.6); padding: 8px; display: grid; gap: 6px; }
+.vpanel .vh { font-size: 12px; color: var(--lc-dim); display: flex; justify-content: space-between; }
+.vpanel .vv { font-family: var(--lc-mono); font-size: 22px; color: var(--lc-programmer); text-align: center; }
+.vpanel .vtr { height: 170px; position: relative; border-radius: 4px; background: var(--lc-gap); border: 1px solid var(--lc-line); touch-action: none; cursor: ns-resize; overflow: hidden; }
+.vpanel .vfill { position: absolute; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, var(--lc-programmer) 40%, transparent); }
+.vpanel .vrow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.vpanel button { min-height: 44px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; }
+.vpanel button.ok { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; font-weight: 600; }
+.ebar, .cbar, .panes { min-width: 0; }
+.screen { grid-template-columns: 56px minmax(0, 1fr); }
+.screen.phone { grid-template-columns: minmax(0, 1fr); }
+.abar .an .bdg { flex: none; height: 16px; display: inline-flex; align-items: center; align-self: center; }
+.wheel .slot { overflow: hidden; }
+.phone .enc .c.v .num { font-size: 12.5px; letter-spacing: -.02em; }
+.phone .abar .an .bdg { display: none; }
+</style>
+
+<header>
+  <h1>12f · round 9 · encoder bar</h1>
+  <p class="sub">Concept A, as you picked: <b>four fixed encoder sections</b>, the familiar layout but smarter, laid out like your Dynamic Presets v2.0.</p>
+</header>
+
+<section class="board">
+  <p class="intro">
+    <b>Layout.</b> The feature strip on top is numbered like Preset 1–9. A pink corner marks a feature with programmer values, and ∿ marks a running effect. On the left are the feature and its picture, then <b>Value Layer</b> and <b>Effect Layer n of m</b>. Next are four encoder sections; each has <b>Delay / Fade / Value</b> rows (always visible, so timing can't hide). At the bottom of each sits its attribute bar: the name, the GDTF <b>channel function</b> (tap to cycle, === to list), and its own <b>Normal / Fine / Ultra</b> (tap to cycle). On the right are the page ‹ › and Program Time.<br>
+    <b>Smarter.</b>
+    <ul>
+      <li>Every value shows a <b>tick per fixture</b>, so a mixed selection is visible.</li>
+      <li>A wheel attribute (Gobo, Color 1, Shutter) shows its <b>GDTF slots as images</b>: drag to roll the wheel, or tap for all its channel sets.</li>
+      <li>Colour: the left column shows each fixture's colour, and <b>Picker</b> opens the colour picker in one tap.</li>
+      <li>Shapers: blades 1–4 are the four encoders, and the beam on the left drags too.</li>
+      <li>Position has a small XY pad.</li>
+      <li>In the <b>Effect Layer</b> the rows become <b>BPM / Hi / Lo</b> for that effect's lines (§28), with the Form in the attribute bar. A running effect's live output moves over the value in every layer.</li>
+    </ul>
+    <b>Gestures.</b> Drag a cell to change it (relative). Hold <b>Meow</b> (Shift, or the sidebar key) to <b>fan</b> it across the selection. Tap for the slider panel. The mouse wheel steps it.
+  </p>
+  <div class="controls">
+    <span><span class="ctl-label">Device</span><span class="seg" id="e-dev"><button data-v="desk" aria-pressed="true">Desk</button><button data-v="tablet" aria-pressed="false">Tablet</button><button data-v="phone" aria-pressed="false">Phone</button></span></span>
+    <span><span class="ctl-label">Screen</span><span class="seg" id="e-scr"><button data-v="1" aria-pressed="true">Screen 1 (bar on)</button><button data-v="2" aria-pressed="false">Screen 2 (bar off)</button></span></span>
+    <span><span class="ctl-label">Order</span><span class="seg" id="e-ord"><button data-v="below" aria-pressed="true">Bar below line</button><button data-v="above" aria-pressed="false">Bar above line</button></span></span>
+  </div>
+  <div class="devwrap"><div class="screen noselect" id="scr"></div></div>
+  <div class="log"><h4>Lines sent</h4><ol id="log"></ol></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>Do four sections with Delay / Fade / Value rows always visible work, or should the timing rows fold to one slim row until you touch them?</li>
+    <li>Is the Effect Layer as <b>BPM / Hi / Lo</b> rows plus the Form in the attribute bar enough? (The call's size, Rate, Off and Stomp would sit in the left column in the Effect Layer.)</li>
+    <li>Should Program Time (from your Dynamic Presets image) stay on the right? Exec Time waits for executors.</li>
+    <li>Is a GDTF wheel as an image carousel (drag rolls it, tap opens all slots) right for Gobo, Color 1, Prism and Shutter?</li>
+    <li>Should the bar sit below the command line, or above it?</li>
+  </ul></div>
+</section>
+
+<script>
+const $ = s => document.querySelector(s);
+const log = t => { const li = document.createElement('li'); li.innerHTML = `<span class="k">›</span>${t}`; $('#log').append(li); $('#log').scrollTop = 1e6; };
+const note = t => `  <i>(${t})</i>`;
+function seg(id, fn) { const el = $(id); el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); fn(b.dataset.v); }); }
+const r1 = x => Math.round(x * 10) / 10;
+const sgn = x => `${x >= 0 ? '+' : '-'} ${Math.abs(r1(x))}`;
+
+// ── GDTF wheel slots (images drawn as small SVGs; colours as fills) ──
+const G = {
+  open: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/><circle cx="20" cy="20" r="17" fill="#f3ecd3"/></svg>',
+  dots: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/>' + [[20, 20], [11, 14], [29, 14], [11, 27], [29, 27], [20, 8], [20, 32]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="3.6" fill="#f3ecd3"/>`).join('') + '</svg>',
+  breakup: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/><path d="M6 12l9-4 4 9-8 5zM22 6l10 5-3 8-8-3zM8 26l9-2 3 9-9 2zM24 22l9 1-1 10-9-2z" fill="#f3ecd3"/></svg>',
+  cone: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/><circle cx="20" cy="20" r="16" fill="none" stroke="#f3ecd3" stroke-width="3"/><circle cx="20" cy="20" r="9" fill="none" stroke="#f3ecd3" stroke-width="3"/><circle cx="20" cy="20" r="3" fill="#f3ecd3"/></svg>',
+  star: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/><path d="M20 4l4.5 10.5L36 15l-8.6 7.6L30 34l-10-6-10 6 2.6-11.4L4 15l11.5-.5z" fill="#f3ecd3"/></svg>',
+  prism3: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/><circle cx="14" cy="15" r="7" fill="#f3ecd3"/><circle cx="26" cy="15" r="7" fill="#f3ecd3" opacity=".8"/><circle cx="20" cy="26" r="7" fill="#f3ecd3" opacity=".65"/></svg>',
+  prism5: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/>' + [0, 1, 2, 3, 4].map(i => `<circle cx="${20 + 10 * Math.sin(i * 1.2566)}" cy="${20 - 10 * Math.cos(i * 1.2566)}" r="5.5" fill="#f3ecd3" opacity=".8"/>`).join('') + '</svg>',
+  closed: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/><circle cx="20" cy="20" r="17" fill="none" stroke="#444" stroke-width="2"/></svg>',
+  strobe: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/><path d="M22 5L10 22h8l-3 13 13-18h-8z" fill="#f9ed4f"/></svg>',
+  pulse: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/><path d="M4 26h8l4-14 6 18 4-10h10" fill="none" stroke="#f9ed4f" stroke-width="3"/></svg>',
+  random: '<svg viewBox="0 0 40 40"><rect width="40" height="40" fill="#111"/><path d="M6 28l6-10 5 7 6-14 5 9 6-6" fill="none" stroke="#f9ed4f" stroke-width="3"/></svg>',
+};
+const col = c => `<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="${c}"/></svg>`;
+
+// ── attributes of the selection (Spot 1–4): one value per fixture; GDTF channel functions and sets ──
+// page = which four the encoders show; null = an empty encoder
+const A = [
+  { f: 'Dimmer', n: 'Dim', u: '%', lo: 0, hi: 100, v: [72, 72, 60, 48], p: 1, fade: 2, delay: 0.3, fns: ['Dimmer'] },
+  { f: 'Dimmer', n: 'Shutter', wheel: [['Open', G.open], ['Closed', G.closed], ['Strobe', G.strobe], ['Pulse', G.pulse], ['Random', G.random]], v: [0, 0, 0, 0], fns: ['Shutter', 'Strobe', 'Pulse Open', 'Random'] },
+  { f: 'Dimmer', n: 'Strobe Rate', u: 'Hz', lo: 0.5, hi: 25, v: [8, 8, 8, 8], fns: ['Strobe Frequency'] },
+  null,
+  { f: 'Position', n: 'Pan', u: '°', lo: -270, hi: 270, v: [-40, -12, 12, 40], p: 1, fade: 2, delay: 0, fns: ['Pan'] },
+  { f: 'Position', n: 'Tilt', u: '°', lo: -135, hi: 135, v: [-34, -34, -34, -34], p: 1, fade: 2, delay: 0, fns: ['Tilt'] },
+  { f: 'Position', n: 'Pos Speed', u: '%', lo: 0, hi: 100, v: [50, 50, 50, 50], fns: ['Speed'] },
+  null,
+  { f: 'Gobo', n: 'Gobo 1', wheel: [['Open', G.open], ['Dots', G.dots], ['Breakup', G.breakup], ['Cone', G.cone], ['Star', G.star]], v: [0, 1, 1, 0], p: 1, fns: ['Select', 'Shake', 'Spin'] },
+  { f: 'Gobo', n: 'Gobo 1 Pos', u: '°', lo: -360, hi: 360, v: [0, 0, 0, 0], fns: ['Index', 'Rotate'] },
+  { f: 'Gobo', n: 'Gobo 2', wheel: [['Open', G.open], ['Cone', G.cone], ['Star', G.star]], v: [0, 0, 0, 0], fns: ['Select', 'Spin'] },
+  { f: 'Gobo', n: 'Prism', wheel: [['Out', G.open], ['3-facet', G.prism3], ['5-facet', G.prism5]], v: [0, 0, 0, 0], fns: ['Select'] },
+  { f: 'Gobo', n: 'Prism Rot', u: '%', lo: -100, hi: 100, v: [0, 0, 0, 0], fns: ['Rotate'] },
+  null, null, null,
+  { f: 'Color', n: 'Cyan', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0], fns: ['Cyan'] },
+  { f: 'Color', n: 'Magenta', u: '%', lo: 0, hi: 100, v: [40, 40, 40, 40], p: 1, fade: 3, delay: 0, fns: ['Magenta'] },
+  { f: 'Color', n: 'Yellow', u: '%', lo: 0, hi: 100, v: [80, 80, 80, 80], p: 1, fade: 3, delay: 0, fns: ['Yellow'] },
+  { f: 'Color', n: 'CTO', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0], fns: ['CTO'] },
+  { f: 'Color', n: 'Color 1', wheel: [['White', col('#fff')], ['Red', col('#e33')], ['Blue', col('#36f')], ['Green', col('#3c4')], ['Amber', col('#fb3')], ['Magenta', col('#e3c')], ['CTO', col('#fc9')]], v: [0, 0, 0, 0], fns: ['Select', 'Spin'] },
+  null, null, null,
+  { f: 'Beam', n: 'Zoom', u: '°', lo: 5, hi: 50, v: [18, 18, 18, 18], fns: ['Zoom'] },
+  { f: 'Beam', n: 'Iris', u: '%', lo: 0, hi: 100, v: [100, 100, 100, 100], fns: ['Iris', 'Iris Pulse'] },
+  { f: 'Beam', n: 'Frost', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0], fns: ['Frost'] },
+  null,
+  { f: 'Focus', n: 'Focus', u: '%', lo: 0, hi: 100, v: [50, 50, 50, 50], fns: ['Focus'] },
+  null, null, null,
+  { f: 'Shapers', n: 'Blade 1', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0], blade: 0, fns: ['Insertion'] },
+  { f: 'Shapers', n: 'Blade 2', u: '%', lo: 0, hi: 100, v: [20, 20, 20, 20], p: 1, blade: 1, fns: ['Insertion'] },
+  { f: 'Shapers', n: 'Blade 3', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0], blade: 2, fns: ['Insertion'] },
+  { f: 'Shapers', n: 'Blade 4', u: '%', lo: 0, hi: 100, v: [35, 35, 35, 35], p: 1, blade: 3, fns: ['Insertion'] },
+  { f: 'Shapers', n: 'Blade 1 Rot', u: '°', lo: -30, hi: 30, v: [0, 0, 0, 0], fns: ['Angle'] },
+  { f: 'Shapers', n: 'Blade 2 Rot', u: '°', lo: -30, hi: 30, v: [0, 0, 0, 0], fns: ['Angle'] },
+  { f: 'Shapers', n: 'Blade 3 Rot', u: '°', lo: -30, hi: 30, v: [0, 0, 0, 0], fns: ['Angle'] },
+  { f: 'Shapers', n: 'Blade 4 Rot', u: '°', lo: -30, hi: 30, v: [0, 0, 0, 0], fns: ['Angle'] },
+  { f: 'Shapers', n: 'Shaper Rot', u: '°', lo: -45, hi: 45, v: [0, 0, 0, 0], fns: ['Rotate'] },
+  null, null, null,
+  { f: 'Control', n: 'Lamp', wheel: [['Off', G.closed], ['On', G.open]], v: [1, 1, 1, 1], fns: ['Lamp Control'] },
+  { f: 'Control', n: 'Reset', wheel: [['Idle', G.closed], ['Reset', G.strobe]], v: [0, 0, 0, 0], fns: ['Reset'] },
+  null, null,
+];
+A.forEach(a => { if (!a) return; a.fn = 0; a.res = 0; if (a.fade === undefined) { a.fade = null; a.delay = null; } });
+const FEATS = ['Dimmer', 'Position', 'Gobo', 'Color', 'Beam', 'Focus', 'Control', 'Shapers'];
+const slotsOf = f => { const out = []; let started = false; for (const a of A) { if (a && a.f === f) { started = true; out.push(a); } else if (started && a === null) out.push(null); else if (started) break; } while (out.length % 4) out.push(null); return out; };
+// effects (§28): calls in the programmer; each line: attribute, Form, BPM, Lo/Hi per fixture
+const FX = [
+  { no: 5, name: 'Ballyhoo', size: 80, rate: 1, lines: [
+    { ln: 1, attr: 'Pan', form: 'Sine', bpm: 30, lo: [-20, -20, -20, -20], hi: [20, 20, 20, 20], blend: 'Add' },
+    { ln: 2, attr: 'Tilt', form: 'Cosine', bpm: 30, lo: [-12, -12, -12, -12], hi: [12, 12, 12, 12], blend: 'Add' } ] },
+  { no: 8, name: 'Flicker', size: 100, rate: 1, lines: [
+    { ln: 1, attr: 'Dim', form: 'Random', bpm: 240, lo: [60, 60, 60, 60], hi: [100, 100, 100, 100], blend: 'Multiply' } ] },
+  { no: 11, name: 'Iris pulse', size: 60, rate: 1, lines: [
+    { ln: 1, attr: 'Iris', form: 'Triangle', bpm: 60, lo: [30, 30, 30, 30], hi: [100, 100, 100, 100], blend: 'Replace' } ] },
+];
+const FORMS = ['Sine', 'Cosine', 'Triangle', 'Ramp', 'PWM', 'Random'];
+const fxOf = a => { for (const c of FX) for (const l of c.lines) if (l.attr === a.n) return { c, l }; return null; };
+const lineIn = (c, a) => c && c.lines.find(l => l.attr === a.n);
+function formAt(form, x, i) { const f = x - Math.floor(x);
+  switch (form) { case 'Sine': return .5 - .5 * Math.cos(2 * Math.PI * x); case 'Cosine': return .5 - .5 * Math.sin(2 * Math.PI * x);
+    case 'Triangle': return f < .5 ? f * 2 : 2 - f * 2; case 'Ramp': return f; case 'PWM': return f < .5 ? 1 : 0;
+    default: { const n = Math.floor(x) * 7919 + i * 104729; return ((Math.sin(n) * 43758.5453) % 1 + 1) % 1; } } }
+const t0 = performance.now();
+const clamp = (a, x) => Math.max(a.lo, Math.min(a.hi, x));
+const pct = (a, x) => (x - a.lo) / (a.hi - a.lo) * 100;
+function outAt(a, i, now) {
+  const fx = fxOf(a); if (!fx || a.wheel) return a.v[i];
+  const { c, l } = fx; const x = (now - t0) / 1000 * l.bpm / 60 * c.rate + i / 4;
+  const w = formAt(l.form, x, i), amp = c.size / 100, e = l.lo[i] + (l.hi[i] - l.lo[i]) * w;
+  return clamp(a, l.blend === 'Multiply' ? a.v[i] * (1 - amp + amp * e / 100) : l.blend === 'Replace' ? a.v[i] + (e - a.v[i]) * amp : a.v[i] + e * amp);
+}
+
+let dev = 'desk', scr = '1', order = 'below', feat = 'Dimmer', page = 0, layer = 0, barOn = { 1: true, 2: false }, meow = false, pop = null, progTime = 0;
+const RES = ['Normal', 'Fine', 'Ultra'];
+const stepOf = a => [1, .1, (a.hi - a.lo) / 255][a.res] * (a.u === '°' && a.res === 0 ? 2 : 1);
+const mixed = v => v.some(x => x !== v[0]);
+const fmt = (a, x) => `${a.u === '°' || a.res ? r1(x).toFixed(1) : Math.round(x)}${a.u}`;
+const showV = a => a.wheel ? (mixed(a.v) ? 'mixed' : a.wheel[a.v[0]][0]) : mixed(a.v) ? `${fmt(a, Math.min(...a.v))}…${fmt(a, Math.max(...a.v))}` : fmt(a, a.v[0]);
+const featHas = f => A.some(a => a && a.f === f && a.p);
+const featFx = f => A.some(a => a && a.f === f && fxOf(a));
+const fxCalls = () => FX.filter(c => c.lines.some(l => slotsOf(feat).some(a => a && a.n === l.attr)));
+addEventListener('keydown', e => { if (e.key === 'Shift' && !meow) { meow = 'key'; markMeow(); } });
+addEventListener('keyup', e => { if (e.key === 'Shift' && meow === 'key') { meow = false; markMeow(); } });
+function markMeow() { document.querySelectorAll('.meow').forEach(b => b.classList.toggle('on', !!meow)); }
+function cmyRgb(i) { const g = n => A.find(a => a && a.n === n).v[i] / 100; return `rgb(${Math.round(255 * (1 - g('Cyan')))},${Math.round(255 * (1 - g('Magenta')))},${Math.round(255 * (1 - g('Yellow')))})`; }
+
+function spread(a) {
+  if (a.wheel) return '';
+  const fx = fxOf(a); let band = '', outs = '';
+  if (fx) {
+    const { c, l } = fx; const amp = c.size / 100;
+    const ends = a.v.flatMap((x, i) => l.blend === 'Multiply' ? [x * (1 - amp + amp * l.lo[i] / 100), x * (1 - amp + amp * l.hi[i] / 100)] : l.blend === 'Replace' ? [x + (l.lo[i] - x) * amp, x + (l.hi[i] - x) * amp] : [x + l.lo[i] * amp, x + l.hi[i] * amp]).map(x => pct(a, clamp(a, x)));
+    band = `<div class="fxb" style="left:${Math.min(...ends)}%;width:${Math.max(.5, Math.max(...ends) - Math.min(...ends))}%"></div>`;
+    outs = a.v.map((_, i) => `<div class="otk" data-o="${i}"></div>`).join('');
+  }
+  return `<div class="spread">${band}<div class="trk"></div>${a.v.map(x => `<div class="tk" style="left:${pct(a, x)}%"></div>`).join('')}${outs}</div>`;
+}
+function wheelHtml(a) {
+  const cur = a.v[0], n = a.wheel.length;
+  const at = k => a.wheel[(cur + k + n) % n];
+  return `<div class="wheel"><span class="slot">${at(-1)[1]}</span><span class="slot cur">${at(0)[1]}</span><span class="slot">${at(1)[1]}</span></div><div class="wn">${showV(a)}</div>`;
+}
+function tCell(a, k) {
+  if (!a) return `<div class="c"></div>`;
+  const v = a[k];
+  if (v == null) return `<div class="c t cue" data-t="${k}">cue</div>`;
+  return `<div class="c t ${k}" data-t="${k}">${r1(v)}s<div class="tbar" style="width:${Math.min(100, v / 5 * 100)}%"></div></div>`;
+}
+function vCell(a) {
+  if (a.wheel) return `<div class="c v" data-v>${wheelHtml(a)}</div>`;
+  return `<div class="c v" data-v><span class="num">${showV(a)}</span>${mixed(a.v) ? '<span class="mix">mixed</span>' : ''}${spread(a)}</div>`;
+}
+function fCell(a, c, k) {
+  const l = lineIn(c, a);
+  if (!l) return `<div class="c f none"${k === 'lo' ? ' data-addline' : ''}>${k === 'lo' ? '+ line' : '·'}</div>`;
+  if (k === 'bpm') return `<div class="c f" data-f="bpm">${l.bpm} BPM</div>`;
+  const v = l[k]; const s = mixed(v) ? `${r1(Math.min(...v))}…${r1(Math.max(...v))}` : r1(v[0]);
+  return `<div class="c f" data-f="${k}">${s}${l.blend === 'Multiply' ? '%' : a.u}</div>`;
+}
+function abar(a, c) {
+  if (!a) return `<div class="abar"><button class="an" type="button" disabled><b style="color:var(--lc-faint)">—</b></button><button class="rs" type="button" disabled></button></div>`;
+  const fx = fxOf(a);
+  const bd = `${a.fade != null ? `<span class="bdg tm">◢${a.delay ? r1(a.delay) + '+' : ''}${r1(a.fade)}</span>` : ''}${fx ? `<span class="bdg fx">∿${fx.c.no}.${fx.l.ln}</span>` : ''}`;
+  const l = layer && lineIn(c, a);
+  const sub = l ? `<span class="cf list" data-form>${l.form} · ${l.blend}</span>` : `<span class="cf ${a.fns.length > 1 ? 'list' : ''}" data-fn>${a.fns[a.fn]}${a.fns.length > 1 ? ` <span style="color:var(--lc-faint)">${a.fn + 1}/${a.fns.length}</span>` : ''}</span>`;
+  return `<div class="abar"><button class="an" type="button" data-an><b>${a.n}${bd}</b>${sub}</button><button class="rs" type="button" data-res>${RES.map((r, i) => `<span class="${i === a.res ? 'on' : ''}">${r}</span>`).join('')}</button></div>`;
+}
+function leftPic() {
+  if (feat === 'Color') return `<div class="mini-sw">${[0, 1, 2, 3].map(i => `<i style="background:${cmyRgb(i)}"></i>`).join('')}</div><button class="pickbtn" data-picker type="button">Picker</button>`;
+  if (feat === 'Shapers') return `<div class="shp" data-shaper>${beamHtml(76)}</div>`;
+  if (feat === 'Position') { const pan = A.find(a => a && a.n === 'Pan'), tilt = A.find(a => a && a.n === 'Tilt');
+    return `<div class="mini-xy" data-xy>${pan.v.map((x, i) => `<div class="dot" style="left:${pct(pan, x)}%;top:${100 - pct(tilt, tilt.v[i])}%"></div>`).join('')}${pan.v.map((_, i) => `<div class="dot o" data-o="${i}"></div>`).join('')}</div>`; }
+  if (feat === 'Gobo') { const g = A.find(a => a && a.n === 'Gobo 1'); return `<div class="wheel"><span class="slot cur" style="width:52px;height:52px">${g.wheel[g.v[0]][1]}</span></div>`; }
+  return '';
+}
+function beamHtml(sz) {
+  const bl = i => A.find(a => a && a.blade === i); const rot = A.find(a => a && a.n === 'Shaper Rot').v[0];
+  const pos = i => bl(i).v[0] * 0.45;
+  return `<div class="beam" style="width:${sz}px;height:${sz}px;transform:rotate(${rot}deg)">
+    <div class="bl t ${bl(0).p ? 'p' : ''}" data-bl="0" style="height:${pos(0)}%"></div><div class="bl r ${bl(1).p ? 'p' : ''}" data-bl="1" style="width:${pos(1)}%"></div>
+    <div class="bl b ${bl(2).p ? 'p' : ''}" data-bl="2" style="height:${pos(2)}%"></div><div class="bl l ${bl(3).p ? 'p' : ''}" data-bl="3" style="width:${pos(3)}%"></div></div>`;
+}
+
+function drawScreen() {
+  const el = $('#scr');
+  el.className = `screen noselect ${dev}${order === 'below' ? ' below' : ''}`;
+  const on = barOn[scr];
+  const panes = dev === 'phone' ? ['Fixtures', 'Groups', 'Sequences', 'Presets'] : ['Fixtures', 'Sequences', 'Presets'];
+  const fx = Array.from({ length: 12 }, (_, i) => `<div class="fx ${i < 4 ? 'sel' : ''}">Spot ${i + 1}${i < 4 ? '<b></b>' : ''}</div>`).join('');
+  el.innerHTML = `
+    <nav class="side"><button class="on">Scr ${scr}</button><button>Menu</button><button>Oops</button><button class="meow" data-meow>Meow</button><span class="grow"></span><button>Lock</button></nav>
+    <div class="panes">${panes.map((p, i) => `<div class="pane"><div class="pt"><span>${p}</span><span>${i + 1}</span></div><div class="pb">${i === 0 ? fx : ''}</div></div>`).join('')}</div>
+    ${on ? `<div class="ebar">${barHtml()}</div>` : ''}
+    <div class="cbar"><span class="pr">[Admin]&gt;</span><span class="ln">Fixture 1 Thru 4</span><button class="tg ${on ? 'on' : ''}" data-tg type="button">Enc</button></div>`;
+  if (pop) el.querySelector('.panes').append(popEl());
+  wire(el); markMeow();
+}
+function barHtml() {
+  const slots = slotsOf(feat); const pages = slots.length / 4; page = Math.min(page, pages - 1);
+  const four = slots.slice(page * 4, page * 4 + 4);
+  const calls = fxCalls(); if (layer > calls.length) layer = 0;
+  const c = layer ? calls[layer - 1] : null;
+  const rows = 'minmax(32px,auto) minmax(32px,auto) minmax(64px,auto) auto';
+  const strip = FEATS.map((f, i) => `<button class="fb ${featHas(f) ? 'has' : ''}" data-f="${f}" aria-pressed="${f === feat}" type="button"><span class="no">${i + 1}</span>${f === 'Color' ? `<span class="ic" style="background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red)"></span>` : ''}${f}${featFx(f) ? ' <span class="fxm">∿</span>' : ''}</button>`).join('');
+  const labs = c ? ['BPM', 'Hi', 'Lo'] : ['Delay', 'Fade', 'Value'];
+  const ph = dev === 'phone';
+  const encs = four.map((a, i) => {
+    if (!a) return `<div class="enc blank" style="--rows:${rows}"><div class="c"></div><div class="c"></div><div class="c"></div>${abar(null)}</div>`;
+    const idx = A.indexOf(a);
+    const body = c ? fCell(a, c, 'bpm') + fCell(a, c, 'hi') + fCell(a, c, 'lo') : tCell(a, 'delay') + tCell(a, 'fade') + vCell(a);
+    return `<div class="enc ${a.p ? 'prog' : ''}" data-a="${idx}" style="--rows:${rows}">${body}${abar(a, c)}</div>`;
+  }).join('');
+  const lcol = `<div class="lcol"><div class="fn">${feat}</div><div class="pic">${c ? `<div style="font-size:12px;line-height:1.4;text-align:center;width:100%"><b style="color:var(--lc-fx)">Effect ${c.no}</b><br>${c.name}<br><span data-ck="size" style="font-family:var(--lc-mono);cursor:ns-resize;touch-action:none;display:inline-block;padding:2px 6px;border:1px solid var(--lc-fx);border-radius:4px;margin-top:3px">${c.size}%</span> <span data-ck="rate" style="font-family:var(--lc-mono);cursor:ns-resize;touch-action:none;display:inline-block;padding:2px 6px;border:1px solid var(--lc-fx);border-radius:4px">×${r1(c.rate)}</span><br><button data-off type="button" style="margin-top:4px;min-height:28px;border-radius:4px;border:1px solid var(--lc-line);background:var(--lc-raised);font-size:11px;cursor:pointer;padding:0 8px">Off</button> <button data-stomp type="button" style="min-height:28px;border-radius:4px;border:1px solid var(--lc-line);background:var(--lc-raised);font-size:11px;cursor:pointer;padding:0 8px">Stomp</button></div>` : leftPic()}</div>
+    <button class="layer val" data-layer="0" aria-pressed="${!layer}" type="button">Value<small>Layer</small></button>
+    <button class="layer efx" data-layer="fx" aria-pressed="${!!layer}" type="button">Effect<small>Layer ${layer || '–'} of ${calls.length}</small></button></div>`;
+  const rlab = `<div class="rlab ${c ? 'fxl' : ''}" style="--rows:${rows}">${labs.map((l, i) => `<span class="${i === 2 && !c ? 'vrow' : ''}">${ph ? l[0] : l}</span>`).join('')}<span style="min-height:52px;border-top:1px solid var(--lc-line)">${ph ? '' : 'Attr'}</span></div>`;
+  const tcol = `<div class="tcol"><button class="pgb" data-pg type="button">Page<b>${page + 1}/${pages}</b></button><div class="ptime ${progTime ? '' : 'off'}"><span>Prog time</span><div class="pf" data-pt><i style="height:${progTime / 10 * 100}%"></i></div><span class="pv">${r1(progTime).toFixed(1)}s</span></div></div>`;
+  return `<div class="fstrip">${strip}</div><div class="ebody">${ph ? '' : lcol}${rlab}${encs}${ph ? '' : tcol}</div>${ph ? `<div style="display:flex;gap:4px;padding:4px;border-top:1px solid var(--lc-line)"><button class="layer val" data-layer="0" aria-pressed="${!layer}" type="button" style="flex:1">Value</button><button class="layer efx" data-layer="fx" aria-pressed="${!!layer}" type="button" style="flex:1">Effect ${layer || '–'}/${calls.length}</button>${feat === 'Color' ? '<button class="layer" data-picker type="button" style="flex:1">Picker</button>' : ''}<button class="layer" data-pg type="button" style="flex:1">Page ${page + 1}/${pages}</button></div>` : ''}`;
+}
+
+// ── pop-ups ──
+function popEl() {
+  const d = document.createElement('div'); d.className = 'pop';
+  if (pop.kind === 'sets') {
+    const a = A[pop.a];
+    d.innerHTML = `<div class="ph"><span>${a.n} <small>channel sets from the fixture type (GDTF) · ${a.fns[a.fn]}</small></span><button class="x" data-x>×</button></div>
+      <div class="sets">${a.wheel.map(([nm, im], i) => { const k = a.v.filter(x => x === i).length; return `<button data-set="${i}" class="${k === 4 ? 'on' : k ? 'some' : ''}" type="button"><span class="im">${im}</span>${nm}${k && k < 4 ? `<span class="cnt">${k} of 4</span>` : ''}</button>`; }).join('')}
+      ${a.fns.length > 1 ? `<h5>Channel functions</h5>${a.fns.map((f, i) => `<button data-fnp="${i}" class="${i === a.fn ? 'on' : ''}" type="button" style="min-height:48px">${f}</button>`).join('')}` : ''}</div>`;
+  } else if (pop.kind === 'picker') {
+    d.innerHTML = `<div class="ph"><span>Colour picker <small>drag: all four follow · Meow + drag: fan the hue</small></span><button class="x" data-x>×</button></div>
+      <div class="picker"><div class="hs" data-hs>${pickerDots()}</div><div class="pk-side"><div class="pk-sw">${[0, 1, 2, 3].map(i => `<i style="background:${cmyRgb(i)}">${i + 1}</i>`).join('')}</div>
+      <div class="pk-quick">${[['White', '#fff'], ['Red', '#e33'], ['Blue', '#36f'], ['Green', '#3c4'], ['Amber', '#fb3'], ['Cyan', '#3dd'], ['Magenta', '#e3c'], ['CTO', '#fc9']].map(([n, c]) => `<button data-q="${c}" style="background:${c}" type="button">${n}</button>`).join('')}</div>
+      <div class="pk-note">The picker writes the fixture's own colour system (CMY here, RGBW on LEDs). The quick colours are the Color 1 wheel's slots from the GDTF.</div></div></div>`;
+  }
+  return d;
+}
+function hsOf(i) { const m = /rgb\((\d+),(\d+),(\d+)\)/.exec(cmyRgb(i)); const [r, g, b] = [m[1] / 255, m[2] / 255, m[3] / 255]; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = 0;
+  if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [((h * 60) + 360) % 360, mx ? d / mx : 0]; }
+function setRGB(i, r, g, b) { const set = (n, v) => { const a = A.find(q => q && q.n === n); a.v[i] = Math.round((1 - v) * 1000) / 10; a.p = 1; }; set('Cyan', r); set('Magenta', g); set('Yellow', b); }
+function setHS(i, h, s) { const c = s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = 1 - c; const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x]; setRGB(i, r + m, g + m, b + m); }
+function pickerDots() { return [0, 1, 2, 3].map(i => { const [h, s] = hsOf(i); return `<div class="dot" style="left:${h / 3.6}%;top:${(1 - s) * 100}%;background:${cmyRgb(i)}"></div>`; }).join(''); }
+const cmyLine = () => ['Cyan', 'Magenta', 'Yellow'].map(n => `Attribute "${n}" At ${showV(A.find(a => a && a.n === n))}`).join('; ');
+
+// ── slider panel (approved in round 4) ──
+function openPanel(a, cellEl) {
+  const el = $('#scr'); el.querySelector('.vpanel')?.remove();
+  const p = document.createElement('div'); p.className = 'vpanel';
+  const r = cellEl.getBoundingClientRect(), sr = el.getBoundingClientRect();
+  p.style.left = Math.max(4, Math.min(sr.width - 164, r.left - sr.left + r.width / 2 - 80)) + 'px';
+  const avg = () => a.v.reduce((s, x) => s + x) / 4;
+  p.innerHTML = `<div class="vh"><span>${a.n}</span><span>${RES[a.res]}</span></div><div class="vv"></div><div class="vtr"><div class="vfill"></div></div><div class="vrow"><button data-d="-1">−</button><button data-d="1">+</button></div><div class="vrow"><button>Keypad</button><button class="ok">Done</button></div>`;
+  el.querySelector('.panes').append(p);
+  const v0 = a.v.slice(); const upd = () => { p.querySelector('.vv').textContent = showV(a); p.querySelector('.vfill').style.height = pct(a, avg()) + '%'; };
+  upd();
+  p.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { a.v = a.v.map(x => clamp(a, r1(x + +b.dataset.d * stepOf(a)))); upd(); });
+  const tr = p.querySelector('.vtr');
+  tr.onpointerdown = e => { tr.setPointerCapture(e.pointerId); const rr = tr.getBoundingClientRect(); const y0 = e.clientY, b0 = a.v.slice();
+    tr.onpointermove = ev => { const d = -(ev.clientY - y0) / rr.height * (a.hi - a.lo); a.v = b0.map(x => clamp(a, r1(x + d))); upd(); }; tr.onpointerup = () => tr.onpointermove = null; };
+  p.querySelector('.ok').onclick = () => { const d = r1(avg() - v0.reduce((s, x) => s + x) / 4); if (d) { a.p = 1; log(`Attribute "${a.n}" At ${sgn(d)}` + note('one Oops step')); } p.remove(); drawScreen(); };
+}
+
+// one drag helper: relative, 4 px dead zone, tap when it never moved
+function drag(el, { onMove, onEnd, onTap, axis = 'xy' }) {
+  el.onpointerdown = e => {
+    if (e.button > 0) return;
+    e.stopPropagation(); el.setPointerCapture(e.pointerId); el.classList.add('active');
+    const x0 = e.clientX, y0 = e.clientY, fan = !!meow || e.shiftKey; let moved = false;
+    el.onpointermove = ev => { const px = axis === 'y' ? y0 - ev.clientY : (ev.clientX - x0) - (ev.clientY - y0); if (Math.abs(px) > 4) moved = true; if (moved) onMove(px, fan); };
+    el.onpointerup = () => { el.onpointermove = el.onpointerup = null; el.classList.remove('active'); moved ? onEnd(fan) : onTap && onTap(); };
+  };
+}
+function wire(el) {
+  el.querySelectorAll('[data-meow]').forEach(b => b.onclick = () => { meow = meow ? false : 'btn'; markMeow(); });
+  el.querySelector('[data-tg]').onclick = () => { barOn[scr] = !barOn[scr]; pop = null; log(`Set Screen ${scr} EncoderBar ${barOn[scr] ? 'On' : 'Off'}`); drawScreen(); };
+  el.querySelectorAll('.fb').forEach(b => b.onclick = () => {
+    if (feat === b.dataset.f) { log(`Feature ${feat}` + note('a second tap knocks the feature into the programmer')); return; }
+    feat = b.dataset.f; page = 0; layer = 0; pop = null; drawScreen(); });
+  el.querySelectorAll('[data-pg]').forEach(b => b.onclick = () => { page = (page + 1) % (slotsOf(feat).length / 4); drawScreen(); });
+  el.querySelectorAll('[data-layer]').forEach(b => b.onclick = () => { const n = fxCalls().length; layer = b.dataset.layer === '0' ? 0 : n ? (layer % n) + 1 : 0; if (b.dataset.layer !== '0' && !n) log('No effect runs on this feature' + note('the Effect pool opens to start one')); drawScreen(); });
+  el.querySelectorAll('[data-picker]').forEach(b => b.onclick = () => { pop = pop?.kind === 'picker' ? null : { kind: 'picker' }; drawScreen(); });
+  el.querySelectorAll('[data-x]').forEach(b => b.onclick = () => { pop = null; drawScreen(); });
+  // Program Time
+  const pt = el.querySelector('[data-pt]'); if (pt) { const v0 = progTime; drag(pt, { axis: 'y', onMove: px => { progTime = Math.max(0, Math.min(10, r1(v0 + px / 12))); pt.firstChild.style.height = progTime * 10 + '%'; pt.nextElementSibling.textContent = progTime.toFixed(1) + 's'; }, onEnd: () => { log(`Master "ProgramTime" At ${progTime}` + note("a Grand master, never undone; its number is decided with the masters")); drawScreen(); }, onTap: () => { progTime = progTime ? 0 : 2; log(`Master "ProgramTime" At ${progTime}`); drawScreen(); } }); }
+  const calls = fxCalls(); const c = layer ? calls[layer - 1] : null;
+  el.querySelectorAll('.enc[data-a]').forEach(enc => {
+    const a = A[+enc.dataset.a];
+    // attribute bar
+    const an = enc.querySelector('[data-an]');
+    an.onclick = e => {
+      if (e.target.closest('[data-form]')) { const l = lineIn(c, a); l.form = FORMS[(FORMS.indexOf(l.form) + 1) % FORMS.length]; log(`Set Effect ${c.no}.${l.ln} Form ${l.form}` + note('tap steps; === lists the Form pool')); drawScreen(); return; }
+      if (a.fns.length > 1) { a.fn = (a.fn + 1) % a.fns.length; log(`Attribute "${a.n}" At "${a.fns[a.fn]}"` + note('GDTF channel function; === lists them')); drawScreen(); }
+      else if (a.wheel) { pop = { kind: 'sets', a: A.indexOf(a) }; drawScreen(); }
+    };
+    enc.querySelector('[data-res]').onclick = () => { a.res = (a.res + 1) % 3; drawScreen(); };
+    // value
+    const vc = enc.querySelector('[data-v]');
+    if (vc) {
+      const v0 = () => a.v.slice(); let b0;
+      if (a.wheel) drag(vc, { onMove: px => { b0 ??= v0(); const k = Math.round(px / 28); a.v = b0.map(x => ((x + k) % a.wheel.length + a.wheel.length) % a.wheel.length); vc.innerHTML = wheelHtml(a); }, onEnd: () => { b0 = undefined; a.p = 1; log(`Attribute "${a.n}" At "${a.wheel[a.v[0]][0]}"` + note('rolled the wheel')); drawScreen(); }, onTap: () => { pop = { kind: 'sets', a: A.indexOf(a) }; drawScreen(); } });
+      else {
+        let d = 0;
+        drag(vc, { onMove: (px, fan) => { b0 ??= v0(); d = r1(Math.round(px / 4) * stepOf(a)); a.v = b0.map((x, i) => clamp(a, r1(fan ? x + d * (i / 3 * 2 - 1) : x + d))); vc.querySelector('.num').textContent = showV(a); vc.querySelector('.spread').outerHTML = spread(a); },
+          onEnd: fan => { b0 = undefined; a.p = 1; log(fan ? `Attribute "${a.n}" At ${sgn(-d)} Thru ${sgn(d)}` + note('fan, one Oops step') : `Attribute "${a.n}" At ${sgn(d)}` + note('one Oops step')); drawScreen(); },
+          onTap: () => openPanel(a, vc) });
+        vc.onwheel = e => { e.preventDefault(); a.v = a.v.map(x => clamp(a, r1(x + (e.deltaY < 0 ? 1 : -1) * stepOf(a)))); a.p = 1; drawScreen(); };
+      }
+    }
+    // timing rows
+    enc.querySelectorAll('[data-t]').forEach(tc => { const k = tc.dataset.t; let t0v;
+      drag(tc, { onMove: px => { t0v ??= a[k] ?? 0; a[k] = Math.max(0, r1(t0v + Math.round(px / 6) * (a.res ? .1 : .5) / (a.res ? 1 : 1))); if (a.fade == null) a.fade = 0; if (a.delay == null) a.delay = 0; tc.className = `c t ${k}`; tc.innerHTML = `${a[k]}s<div class="tbar" style="width:${Math.min(100, a[k] / 5 * 100)}%"></div>`; },
+        onEnd: () => { t0v = undefined; a.p = 1; log(`Attribute "${a.n}" At ${k === 'fade' ? 'Fade' : 'Delay'} ${a[k]}` + note('programmer timing, one Oops step')); drawScreen(); },
+        onTap: () => log(`(tap: the slider panel for ${a.n} ${k}; Keypad in it)`) }); });
+    // effect rows
+    enc.querySelectorAll('[data-f]').forEach(fc => { const l = lineIn(c, a); const k = fc.dataset.f; let b0; let d = 0;
+      drag(fc, { onMove: (px, fan) => { b0 ??= k === 'bpm' ? l.bpm : l[k].slice(); if (k === 'bpm') { l.bpm = Math.max(1, Math.round(b0 + px / 3)); fc.textContent = l.bpm + ' BPM'; return; }
+          d = r1(Math.round(px / 4) * stepOf(a)); l[k] = b0.map((x, i) => r1(fan ? x + d * (i / 3 * 2 - 1) : x + d)); const v = l[k]; fc.textContent = (mixed(v) ? `${Math.min(...v)}…${Math.max(...v)}` : v[0]) + (l.blend === 'Multiply' ? '%' : a.u); },
+        onEnd: fan => { b0 = undefined; log(k === 'bpm' ? `Set Effect ${c.no}.${l.ln} BPM ${l.bpm}` : `Effect ${c.no}.${l.ln} Fixture 1 Thru 4 ${k === 'lo' ? 'Lo' : 'Hi'} ${fan ? sgn(-d) + ' Thru ' + sgn(d) : sgn(d)}` + note('into the effect, one Oops step')); drawScreen(); } }); });
+    const ad = enc.querySelector('[data-addline]'); if (ad) ad.onclick = () => log(`Store Effect ${c.no}.${c.lines.length + 1} /Attribute "${a.n}"` + note('adds a line for this attribute'));
+  });
+  // left column in the effect layer: size / rate / off / stomp
+  el.querySelectorAll('[data-ck]').forEach(f => { const k = f.dataset.ck; let b0;
+    drag(f, { axis: 'y', onMove: px => { b0 ??= c[k]; c[k] = k === 'size' ? Math.max(0, Math.min(100, Math.round(b0 + px / 2))) : Math.max(.1, r1(b0 + px / 50)); f.textContent = k === 'size' ? c.size + '%' : '×' + r1(c.rate); },
+      onEnd: () => { b0 = undefined; log(k === 'size' ? `Effect ${c.no} At ${c.size}` : `Effect ${c.no} Rate ${r1(c.rate)}`); drawScreen(); } }); });
+  const off = el.querySelector('[data-off]'); if (off) off.onclick = () => { FX.splice(FX.indexOf(c), 1); layer = 0; log(`Off Effect ${c.no}` + note('fades out by the effect timing')); drawScreen(); };
+  const st = el.querySelector('[data-stomp]'); if (st) st.onclick = () => log(`Stomp Fixture 1 Thru 4` + note('no effect runs on them until Unstomp'));
+  // pop-up: channel sets
+  el.querySelectorAll('[data-set]').forEach(b => b.onclick = () => { const a = A[pop.a]; a.v = a.v.map(() => +b.dataset.set); a.p = 1; log(`Attribute "${a.n}" At "${a.wheel[+b.dataset.set][0]}"`); pop = null; drawScreen(); });
+  el.querySelectorAll('[data-fnp]').forEach(b => b.onclick = () => { const a = A[pop.a]; a.fn = +b.dataset.fnp; log(`Attribute "${a.n}" At "${a.fns[a.fn]}"`); drawScreen(); });
+  // pop-up: picker
+  const hs = el.querySelector('[data-hs]');
+  if (hs) hs.onpointerdown = e => { hs.setPointerCapture(e.pointerId); const r = hs.getBoundingClientRect(); const fan = !!meow || e.shiftKey; const h0 = [0, 1, 2, 3].map(hsOf);
+    const mv = ev => { const h = (ev.clientX - r.left) / r.width * 360, s = 1 - (ev.clientY - r.top) / r.height;
+      [0, 1, 2, 3].forEach(i => setHS(i, (((fan ? h0[i][0] + (h - h0[1][0]) * (i / 3 * 2 - 1) : h) % 360) + 360) % 360, Math.max(0, Math.min(1, s))));
+      hs.innerHTML = pickerDots(); hs.closest('.pop').querySelectorAll('.pk-sw i').forEach((x, i) => x.style.background = cmyRgb(i)); };
+    mv(e); hs.onpointermove = mv; hs.onpointerup = () => { hs.onpointermove = hs.onpointerup = null; log(cmyLine() + note(fan ? 'hue fan, one Oops step' : 'one Oops step')); drawScreen(); }; };
+  el.querySelectorAll('[data-q]').forEach(b => b.onclick = () => { const m = /#(.)(.)(.)/.exec(b.dataset.q); [0, 1, 2, 3].forEach(i => setRGB(i, parseInt(m[1], 16) / 15, parseInt(m[2], 16) / 15, parseInt(m[3], 16) / 15)); log(`Attribute "Color 1" At "${b.textContent}"` + note('the wheel slot from the GDTF')); drawScreen(); });
+  // shaper beam
+  el.querySelectorAll('[data-shaper] .bl').forEach(b => { const a = A.find(q => q && q.blade === +b.dataset.bl); let b0, d = 0;
+    drag(b, { onMove: px => { b0 ??= a.v.slice(); const i = +b.dataset.bl; d = Math.round((i === 0 || i === 3 ? px : -px) / 1.4); a.v = b0.map(x => clamp(a, x + d)); b.style[i % 2 ? 'width' : 'height'] = a.v[0] * .45 + '%'; },
+      onEnd: () => { b0 = undefined; a.p = 1; log(`Attribute "${a.n}" At ${sgn(d)}` + note('one Oops step')); drawScreen(); } }); });
+  // mini XY
+  const xy = el.querySelector('[data-xy]'); if (xy) { const pan = A.find(a => a && a.n === 'Pan'), tilt = A.find(a => a && a.n === 'Tilt'); let p0, q0, dp = 0, dt = 0;
+    xy.onpointerdown = e => { xy.setPointerCapture(e.pointerId); const r = xy.getBoundingClientRect(), x0 = e.clientX, y0 = e.clientY; p0 = pan.v.slice(); q0 = tilt.v.slice(); const fan = !!meow || e.shiftKey;
+      xy.onpointermove = ev => { dp = r1((ev.clientX - x0) / r.width * 540); dt = r1(-(ev.clientY - y0) / r.height * 270); pan.v = p0.map((x, i) => clamp(pan, fan ? x + dp * (i / 3 * 2 - 1) : x + dp)); tilt.v = q0.map(x => clamp(tilt, x + dt));
+        xy.querySelectorAll('.dot:not(.o)').forEach((d, i) => { d.style.left = pct(pan, pan.v[i]) + '%'; d.style.top = (100 - pct(tilt, tilt.v[i])) + '%'; }); };
+      xy.onpointerup = () => { xy.onpointermove = xy.onpointerup = null; if (dp || dt) log(`Attribute "Pan" At ${sgn(dp)}; Attribute "Tilt" At ${sgn(dt)}` + note('one Oops step')); drawScreen(); }; }; }
+}
+function anim(now) {
+  const el = $('#scr');
+  el.querySelectorAll('.enc[data-a]').forEach(enc => { const a = A[+enc.dataset.a]; if (!fxOf(a)) return;
+    enc.querySelectorAll('.otk').forEach(o => o.style.left = pct(a, outAt(a, +o.dataset.o, now)) + '%'); });
+  const xy = el.querySelector('[data-xy]'); if (xy) { const pan = A.find(a => a && a.n === 'Pan'), tilt = A.find(a => a && a.n === 'Tilt');
+    xy.querySelectorAll('.dot.o').forEach(o => { const i = +o.dataset.o; o.style.left = pct(pan, outAt(pan, i, now)) + '%'; o.style.top = (100 - pct(tilt, outAt(tilt, i, now))) + '%'; }); }
+  requestAnimationFrame(anim);
+}
+requestAnimationFrame(anim);
+seg('#e-dev', v => { dev = v; pop = null; drawScreen(); });
+seg('#e-scr', v => { scr = v; pop = null; drawScreen(); });
+seg('#e-ord', v => { order = v; drawScreen(); });
+drawScreen();
+</script>

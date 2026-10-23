@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Element gallery</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+@keyframes ring{from{stroke-dashoffset:126}to{stroke-dashoffset:0}}
+.ring-run{animation:ring .5s linear forwards}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1500px; box-sizing: border-box; padding: 40px 48px; background: {{t.bg}}; color: {{t.text}}; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; gap: 26px">
+  <div style="display: flex; align-items: flex-end; justify-content: space-between">
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="margin: 0; font-size: 28px; font-weight: 500">Element gallery</h1>
+      <p style="margin: 0; color: {{t.dim}}; font-size: 14px">Each element is a <span class="mono">luma-*</span> custom element drawn from a server descriptor. Every gesture runs a command line. Try the swipe button, toggle, fader and the hold button.</p>
+    </div>
+    <div style="display: flex; gap: 6px; background: {{t.surface}}; padding: 4px; border-radius: 6px; border: 1px solid {{t.line}}">
+      <sc-for list="{{presets}}" as="p" hint-placeholder-count="3">
+        <button type="button" onClick="{{p.pick}}" style="height: 44px; padding: 0 18px; border-radius: 5px; border: none; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; background: {{p.bg}}; color: {{p.fg}}">{{p.name}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px">
+    <section style="display: flex; flex-direction: column; gap: 12px; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 6px; padding: 18px">
+      <h2 style="margin: 0; font-size: 13px; color: {{t.dim}}">luma-button</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <button type="button" style="height: 48px; border-radius: 5px; border: none; font: inherit; font-size: 15px; font-weight: 500; background: {{t.accent}}; color: {{t.onAccent}}">Primary</button>
+        <button type="button" style="height: 48px; border-radius: 5px; border: 1px solid {{t.line}}; font: inherit; font-size: 15px; background: {{t.raised}}; color: {{t.text}}">Default</button>
+        <button type="button" style="height: 48px; border-radius: 5px; border: 1px solid color-mix(in srgb, {{t.alert}} 60%, transparent); font: inherit; font-size: 15px; background: color-mix(in srgb, {{t.alert}} 16%, {{t.raised}}); color: {{t.alert}}">Delete</button>
+        <button type="button" disabled style="height: 48px; border-radius: 5px; border: 1px dashed {{t.line}}; font: inherit; font-size: 15px; background: transparent; color: {{t.dim}}; display: flex; align-items: center; justify-content: center; gap: 6px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{t.dim}}" stroke-width="2" aria-hidden="true"><path d="M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3"></path></svg>Guest</button>
+        <button type="button" style="height: 48px; border-radius: 5px; border: 1px solid {{t.accent}}; font: inherit; font-size: 15px; background: color-mix(in srgb, {{t.accent}} 18%, {{t.raised}}); color: {{t.text}}; display: flex; align-items: center; justify-content: center; gap: 8px"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{t.accent}}; box-shadow: 0 0 6px {{t.accent}}"></span>Blind ON</button>
+        <button type="button" onPointerDown="{{holdDown}}" onPointerUp="{{holdUp}}" onPointerLeave="{{holdUp}}" style="height: 48px; border-radius: 5px; border: 1px solid {{t.line}}; font: inherit; font-size: 15px; background: {{t.raised}}; color: {{t.text}}; display: flex; align-items: center; justify-content: center; gap: 8px; touch-action: none; user-select: none">
+          <svg width="22" height="22" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="20" fill="none" stroke="{{t.line}}" stroke-width="4"></circle><circle cx="22" cy="22" r="20" fill="none" stroke="{{t.accent}}" stroke-width="4" stroke-dasharray="126" stroke-dashoffset="126" transform="rotate(-90 22 22)" class="{{ringClass}}"></circle></svg>
+          {{holdLabel}}
+        </button>
+      </div>
+      <p style="margin: 0; font-size: 12px; color: {{t.dim}}">Guest sees actions disabled, not hidden. Hold shows a ring; at 500 ms it means "show me more".</p>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 6px; padding: 18px">
+      <h2 style="margin: 0; font-size: 13px; color: {{t.dim}}">luma-swipe · luma-toggle</h2>
+      <button type="button" onClick="{{cycle}}" style="height: 60px; border-radius: 5px; border: 1px solid {{t.line}}; font: inherit; background: {{t.raised}}; color: {{t.text}}; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 0 14px; gap: 2px; text-align: left">
+        <span style="font-size: 12px; color: {{t.dim}}">MergeDefault · tap cycles, hold lists</span>
+        <span style="font-size: 17px; font-weight: 500; display: flex; gap: 8px; align-items: center">{{choice}}<span style="display: flex; gap: 4px"><sc-for list="{{dots}}" as="d" hint-placeholder-count="4"><span style="width: 6px; height: 6px; border-radius: 50%; background: {{d.c}}"></span></sc-for></span></span>
+      </button>
+      <button type="button" onClick="{{toggle}}" style="height: 60px; border-radius: 5px; border: 1px solid {{t.line}}; font: inherit; background: {{t.raised}}; color: {{t.text}}; display: flex; align-items: center; justify-content: space-between; padding: 0 14px">
+        <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px"><span style="font-size: 12px; color: {{t.dim}}">Output when alone</span><span style="font-size: 17px; font-weight: 500">{{onLabel}}</span></span>
+        <span style="width: 52px; height: 30px; border-radius: 15px; background: {{trackBg}}; position: relative; display: block"><span style="position: absolute; top: 3px; left: {{knobX}}px; width: 24px; height: 24px; border-radius: 50%; background: {{knobBg}}; display: block"></span></span>
+      </button>
+      <div style="display: flex; border: 1px solid {{t.line}}; border-radius: 5px; overflow: hidden; height: 44px">
+        <sc-for list="{{segs}}" as="s" hint-placeholder-count="3">
+          <button type="button" onClick="{{s.pick}}" style="flex: 1; border: none; font: inherit; font-size: 14px; background: {{s.bg}}; color: {{s.fg}}">{{s.name}}</button>
+        </sc-for>
+      </div>
+      <p style="margin: 0; font-size: 12px; color: {{t.dim}}">Choice → swipe button (few options) or segmented row. Bool → toggle with lamp. Each tap is one <span class="mono">Set</span> line and one Oops step.</p>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 6px; padding: 18px">
+      <h2 style="margin: 0; font-size: 13px; color: {{t.dim}}">luma-cell (property cell)</h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <sc-for list="{{cells}}" as="c" hint-placeholder-count="6">
+          <div style="height: 64px; border-radius: 5px; background: {{t.raised}}; border: 1px solid {{t.line}}; padding: 8px 10px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; position: relative">
+            <span style="font-size: 12px; color: {{t.dim}}; display: flex; justify-content: space-between">{{c.label}}<span style="color: {{c.kindColor}}">{{c.kind}}</span></span>
+            <span style="font-size: 16px; font-weight: 500">{{c.value}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <p style="margin: 0; font-size: 12px; color: {{t.dim}}">The editor follows the type: number → keypad, choice → swipe / pop-up, link → pick list, text → text input + keyboard. Cells come from <span class="mono">TreeDef::write</span> and window-type settings.</p>
+    </section>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px">
+    <section style="display: flex; flex-direction: column; gap: 12px; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 6px; padding: 18px">
+      <h2 style="margin: 0; font-size: 13px; color: {{t.dim}}">luma-fader · luma-encoder</h2>
+      <div style="display: flex; gap: 22px; align-items: flex-end">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px">
+          <div class="mono" style="font-size: 15px; font-weight: 500">{{faderPct}}%</div>
+          <div onPointerDown="{{fDown}}" onPointerMove="{{fMove}}" onPointerUp="{{fUp}}" onPointerCancel="{{fUp}}" style="width: 64px; height: 260px; border-radius: 6px; background: {{t.raised}}; border: 1px solid {{t.line}}; position: relative; touch-action: none; cursor: ns-resize">
+            <div style="position: absolute; left: 0; right: 0; bottom: 0; height: {{faderPct}}%; background: color-mix(in srgb, {{t.accent}} 35%, transparent); border-radius: 0 0 9px 9px"></div>
+            <div style="position: absolute; left: 4px; right: 4px; bottom: calc({{faderPct}}% - 11px); height: 22px; border-radius: 5px; background: {{t.text}}"></div>
+          </div>
+          <div style="font-size: 12px; color: {{t.dim}}">Group 1</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; flex: 1">
+          <div style="height: 60px; border-radius: 5px; background: {{t.raised}}; border: 1px solid {{t.line}}; display: flex; align-items: center; justify-content: space-between; padding: 0 12px">
+            <span style="display: flex; flex-direction: column"><span style="font-size: 12px; color: {{t.dim}}">Dimmer</span><span style="font-size: 17px; font-weight: 500; color: {{t.prog}}">47.0 %</span></span>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{t.dim}}" stroke-width="2" aria-hidden="true"><path d="M12 4v16M8 8l4-4l4 4M8 16l4 4l4-4"></path></svg>
+          </div>
+          <div style="border-radius: 6px; background: {{t.raised}}; border: 1px solid {{t.accent}}; padding: 10px; display: flex; flex-direction: column; gap: 8px">
+            <span style="font-size: 12px; color: {{t.dim}}">Drag opens a pop-up fader</span>
+            <div style="display: flex; gap: 8px; align-items: center">
+              <button type="button" style="width: 44px; height: 44px; border-radius: 5px; border: 1px solid {{t.line}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 20px">−</button>
+              <div style="flex: 1; height: 10px; border-radius: 5px; background: {{t.line}}; position: relative"><div style="width: 47%; height: 100%; border-radius: 5px; background: {{t.prog}}"></div></div>
+              <button type="button" style="width: 44px; height: 44px; border-radius: 5px; border: 1px solid {{t.line}}; background: {{t.surface}}; color: {{t.text}}; font: inherit; font-size: 20px">+</button>
+            </div>
+            <div style="display: flex; gap: 6px"><span style="font-size: 12px; padding: 4px 8px; border-radius: 6px; background: {{t.accent}}; color: {{t.onAccent}}">Fine</span><span style="font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid {{t.line}}">Coarse</span><span style="font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid {{t.line}}">Keypad</span></div>
+          </div>
+        </div>
+      </div>
+      <p style="margin: 0; font-size: 12px; color: {{t.dim}}">Drag the fader: relative, a tap never jumps. Several fingers move several faders. Double-tap or hold → keypad. A whole drag is one Oops step.</p>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 6px; padding: 18px">
+      <h2 style="margin: 0; font-size: 13px; color: {{t.dim}}">luma-popup (pick list)</h2>
+      <div style="border-radius: 6px; background: {{t.raised}}; border: 1px solid {{t.line}}; overflow: hidden">
+        <div style="height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 14px; border-bottom: 1px solid {{t.line}}">
+          <span style="font-size: 15px; font-weight: 500">Select Network</span>
+          <button type="button" aria-label="Close" style="width: 44px; height: 44px; border: none; background: none; color: {{t.dim}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+        </div>
+        <div style="padding: 10px; border-bottom: 1px solid {{t.line}}"><label style="display: flex; align-items: center; gap: 8px; height: 44px; border-radius: 5px; background: {{t.surface}}; border: 1px solid {{t.line}}; padding: 0 10px; font-size: 15px; color: {{t.dim}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M11 4a7 7 0 1 0 0 14a7 7 0 1 0 0-14M20 20l-4-4"></path></svg>Filter</label></div>
+        <sc-for list="{{picks}}" as="p" hint-placeholder-count="5">
+          <div style="height: 48px; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; border-bottom: 1px solid {{t.line}}; background: {{p.bg}}; color: {{p.fg}}; font-size: 15px">{{p.name}}<span style="font-size: 12px; color: {{t.dim}}">{{p.note}}</span></div>
+        </sc-for>
+      </div>
+      <p style="margin: 0; font-size: 12px; color: {{t.dim}}">One layout for every link (one pop-up shared across every list): filter, None, the items, Add New.</p>
+    </section>
+
+    <section style="display: flex; flex-direction: column; gap: 12px; background: {{t.surface}}; border: 1px solid {{t.line}}; border-radius: 6px; padding: 18px">
+      <h2 style="margin: 0; font-size: 13px; color: {{t.dim}}">luma-list · toasts · progress</h2>
+      <div style="border-radius: 6px; border: 1px solid {{t.line}}; overflow: hidden">
+        <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+          <div style="height: 44px; display: grid; grid-template-columns: 40px 1fr 80px; align-items: center; padding: 0 12px; font-size: 14px; background: {{r.bg}}; border-bottom: 1px solid {{t.line}}"><span class="mono" style="color: {{t.dim}}">{{r.no}}</span><span>{{r.name}}</span><span style="text-align: right; color: {{r.stateColor}}">{{r.state}}</span></div>
+        </sc-for>
+      </div>
+      <div style="border-radius: 6px; background: {{t.raised}}; border: 1px solid {{t.line}}; padding: 12px; display: flex; gap: 10px; align-items: flex-start">
+        <span style="width: 4px; align-self: stretch; border-radius: 2px; background: {{t.ok}}"></span>
+        <span style="display: flex; flex-direction: column; gap: 2px; flex: 1"><span style="font-size: 14px; font-weight: 500">Connected</span><span style="font-size: 13px; color: {{t.dim}}">Admin from 127.0.0.1 (web)</span></span>
+        <button type="button" aria-label="Dismiss" style="width: 44px; height: 44px; margin: -10px -8px 0 0; border: none; background: none; color: {{t.dim}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 13px; display: flex; justify-content: space-between">Saving show<span class="mono" style="color: {{t.dim}}">62 %</span></span><div style="height: 8px; border-radius: 4px; background: {{t.line}}"><div style="width: 62%; height: 100%; border-radius: 4px; background: {{t.accent}}"></div></div></div>
+      <p style="margin: 0; font-size: 12px; color: {{t.dim}}">Rows ≥ 44 px, one finger scrolls. Toasts stack above the command line bar and never cover the view bar.</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["Dark","Daylight","Night"],"default":"Dark"},"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { theme: null, choice: 0, on: false, seg: 1, fader: 62, holding: false, held: false }; this.drag = null; this.timer = null; }
+  renderVals() {
+    const P = {
+      Dark:{bg:'#121212',surface:'#1c1c1c',raised:'#303030',line:'#424242',text:'#d1d1d1',dim:'#787878',accent:'#9a7a08',info:'#758ba0',ok:'#00a60a',warn:'#c27a12',alert:'#e10000',prog:'#d86a7c',blind:'#8a80c8',park:'#3f9a90',onAccent:'#f3ecd3'},
+      Daylight:{bg:'#e4e4e4',surface:'#f0f0f0',raised:'#fbfbfb',line:'#bdbdbd',text:'#161616',dim:'#5a5a5a',accent:'#7c6200',info:'#3d5a78',ok:'#007a07',warn:'#9a5600',alert:'#c00000',prog:'#a8384e',blind:'#5a4fb0',park:'#1f756c',onAccent:'#ffffff'},
+      Night:{bg:'#0b0505',surface:'#140909',raised:'#1d0d0d',line:'#2e1515',text:'#d07a68',dim:'#8a4a40',accent:'#e0862e',info:'#b0705f',ok:'#9aa040',warn:'#e0862e',alert:'#ff4a3a',prog:'#e0607a',blind:'#9a6ab0',park:'#4a9a8a',onAccent:'#0b0505'}
+    };
+    const name = this.state.theme ?? this.props.theme ?? 'Dark';
+    const t = P[name];
+    const presets = Object.keys(P).map(n => ({ name: n, pick: () => this.setState({ theme: n }), bg: n === name ? t.accent : 'transparent', fg: n === name ? t.onAccent : t.text }));
+    const choices = ['Merge', 'UseMaster', 'UseMine', 'Cancel'];
+    const s = this.state;
+    const segNames = ['Left', 'Center', 'Right'];
+    const kc = { number: t.info, choice: t.accent, link: t.park, text: t.dim, bool: t.ok };
+    const cells = [
+      { label: 'Name', kind: 'text', value: 'Front wash' },
+      { label: 'Autosave', kind: 'number', value: '15 min' },
+      { label: 'Startup show', kind: 'choice', value: 'Last' },
+      { label: 'Network', kind: 'link', value: 'Stage' },
+      { label: 'Highlight master', kind: 'number', value: '100 %' },
+      { label: 'Online', kind: 'bool', value: 'Yes' }
+    ].map(c => ({ ...c, kindColor: kc[c.kind] }));
+    const picks = [
+      { name: 'None', note: '', sel: false }, { name: 'Stage', note: 'en0', sel: true }, { name: 'FOH', note: 'en1', sel: false }, { name: 'Backup', note: 'unmapped', sel: false }, { name: '＋ Add New…', note: '', sel: false }
+    ].map(p => ({ ...p, bg: p.sel ? 'color-mix(in srgb, ' + t.accent + ' 22%, ' + t.raised + ')' : 'transparent', fg: p.sel ? t.text : t.text }));
+    const rows = [
+      { no: '1', name: 'Main Cues', state: 'Running', sc: t.ok }, { no: '2', name: 'Busking', state: 'Off', sc: t.dim }, { no: '3', name: 'Effects', state: 'Paused', sc: t.warn }, { no: '4', name: 'House', state: 'Off', sc: t.dim }, { no: '5', name: 'Walk-in', state: 'Running', sc: t.ok }
+    ].map((r, i) => ({ ...r, stateColor: r.sc, bg: i === 0 ? 'color-mix(in srgb, ' + t.accent + ' 16%, ' + t.surface + ')' : (i % 2 ? t.surface : t.raised) }));
+    return {
+      t, presets, cells, picks, rows,
+      choice: choices[s.choice],
+      dots: choices.map((_, i) => ({ c: i === s.choice ? t.accent : t.line })),
+      cycle: () => this.setState({ choice: (s.choice + 1) % choices.length }),
+      onLabel: s.on ? 'On' : 'Off',
+      trackBg: s.on ? t.ok : t.line, knobBg: s.on ? t.onAccent : t.dim, knobX: s.on ? 25 : 3,
+      toggle: () => this.setState({ on: !s.on }),
+      segs: segNames.map((n, i) => ({ name: n, pick: () => this.setState({ seg: i }), bg: i === s.seg ? t.accent : t.raised, fg: i === s.seg ? t.onAccent : t.text })),
+      faderPct: Math.round(s.fader),
+      fDown: e => { e.currentTarget.setPointerCapture(e.pointerId); this.drag = { y: e.clientY, v: s.fader }; },
+      fMove: e => { if (!this.drag) return; const v = Math.max(0, Math.min(100, this.drag.v + (this.drag.y - e.clientY) / 2.6)); this.setState({ fader: v }); },
+      fUp: () => { this.drag = null; },
+      ringClass: s.holding ? 'ring-run' : '',
+      holdLabel: s.held ? 'More ▸' : 'Hold me',
+      holdDown: () => { clearTimeout(this.timer); this.setState({ holding: true, held: false }); this.timer = setTimeout(() => this.setState({ held: true }), 500); },
+      holdUp: () => { clearTimeout(this.timer); if (this.state.holding) this.setState({ holding: false }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

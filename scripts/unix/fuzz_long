@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+# The overnight long run (decisions §25 "Step 10 hardening"): the command
+# sweep (every command × keyword × flag × property, every role), random
+# command sequences, every cargo-fuzz target, then the property tests with a
+# random seed. Never part of the per-step tests.
+#
+# Start it by hand and leave it; it can be stopped (Ctrl-C) and started
+# again: it continues where it was. A crash or hang restarts it after
+# skipping the line that caused it. Reports: target/fuzz-report/
+# (summary.md, findings.jsonl, replays/, logs/).
+#
+# Everything shows live: the build, a progress line at least every 5 s
+# (count, rate, time left, findings, the line it ran last), the property
+# tests. The same output goes to target/script-logs/fuzz_long_<time>.log
+# (also linked from target/fuzz-report/logs/); follow it from another
+# terminal with ./scripts/unix/logs fuzz.
+#
+# Usage:
+#   ./scripts/unix/fuzz_long              # 30 min random + 30 min per fuzz target
+#   ./scripts/unix/fuzz_long 60           # 60 min each
+#   ./scripts/unix/fuzz_long 30 --fresh   # start over
+#   ./scripts/unix/fuzz_long 30 --no-fuzz # skip cargo-fuzz (no nightly)
+set -uo pipefail
+source "$(dirname "$0")/lib.sh"
+
+MINUTES=30
+EXTRA=()
+for arg in "$@"; do
+    case "$arg" in
+        --fresh|--no-fuzz) EXTRA+=("$arg") ;;
+        ''|*[!0-9]*) die "usage: $0 [minutes] [--fresh] [--no-fuzz]" ;;
+        *) MINUTES="$arg" ;;
+    esac
+done
+
+REPORT="$REPO_ROOT/target/fuzz-report"
+mkdir -p "$REPORT/logs"
+ln -sfn "$SCRIPT_LOG" "$REPORT/logs/$(basename "$SCRIPT_LOG")"
+ln -sfn "$SCRIPT_LOG" "$REPORT/logs/latest.log"
+STARTED=$SECONDS
+
+log "Fuzz run: $MINUTES min random + $MINUTES min per fuzz target ${EXTRA[*]-}"
+
+# profile sweep: release + debug assertions
+BUILD_ARGS=(--profile sweep)
+cargo_build -p lumacore-station --bin lumacore-sweep || die "build failed"
+
+STOPPED=0
+trap 'STOPPED=1' INT TERM
+
+RESTARTS=0
+while :; do
+    log "${C_STEP}▶ sweep${C_OFF}  (target/sweep/lumacore-sweep long --minutes $MINUTES ${EXTRA[*]-})"
+    run_logged target/sweep/lumacore-sweep long --minutes "$MINUTES" ${EXTRA[@]+"${EXTRA[@]}"}
+    CODE=$RUN_CODE
+    rm -f "$RUN_OUT"
+    # Only the first start may be --fresh.
+    EXTRA=("${EXTRA[@]/--fresh}")
+    if [ "$CODE" -eq 0 ]; then
+        log_ok "sweep finished ($(fmt_secs "$RUN_SECONDS"))"
+        break
+    fi
+    if [ "$CODE" -eq 130 ] || [ "$STOPPED" -eq 1 ]; then
+        log "fuzz_long: stopped — run it again to continue"
+        exit 130
+    fi
+    RESTARTS=$((RESTARTS + 1))
+    if [ "$RESTARTS" -gt 100 ]; then
+        die "fuzz_long: more than 100 restarts — giving up"
+    fi
+    log_err "the sweep ended with $CODE (crash or hang) — continuing, restart $RESTARTS"
+    sleep 1
+done
+
+SEED=$(( (RANDOM << 15) | RANDOM ))
+if step "property tests (seed $SEED, incl. ignored findings)" \
+    env PROPTEST_RNG_SEED="$SEED" cargo test -p lumacore-sweep -- --include-ignored; then
+    RESULT="passed"
+else
+    RESULT="FAILED (see $SCRIPT_LOG)"
+fi
+printf '\n## Property tests (seed %s, incl. ignored)\n\n%s\n' "$SEED" "$RESULT" >> "$REPORT/summary.md"
+
+log_ok "fuzz_long: done in $(fmt_secs $((SECONDS - STARTED))) — $REPORT/summary.md"

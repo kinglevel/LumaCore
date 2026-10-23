@@ -1,0 +1,23 @@
+[package]
+name = "lumacore-cmd-showfile"
+version.workspace = true
+edition.workspace = true
+description = "The show file's words: SaveShow, LoadShow, NewShow, DeleteShow, CleanStart, Import Show; the Show, Version, Recovery and Library objects; the Backup menu; Restart / Shutdown until cmd-station (decisions §30 \"12d part 5\", §34 25.7)"
+
+[dependencies]
+lumacore-registry = { path = "../../../foundation/lumacore-registry" }
+lumacore-base = { path = "../../../foundation/lumacore-base" }
+lumacore-sysmon = { path = "../../../foundation/lumacore-sysmon" }
+lumacore-wire = { path = "../../../foundation/lumacore-wire" }
+lumacore-tree = { path = "../../../model/lumacore-tree" }
+lumacore-luma = { path = "../../../formats/lumacore-luma" }
+lumacore-objects = { path = "../../../model/lumacore-objects" }
+log = { workspace = true }
+serde_json = { workspace = true }
+nu-ansi-term = { workspace = true }
+
+[dev-dependencies]
+ctor = { workspace = true }
+
+[lints]
+workspace = true

@@ -1,0 +1,63 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "UserAsks.dc.html": {
+      "x": 0,
+      "y": 19400,
+      "w": 1440,
+      "h": 900,
+      "title": "12c2 · New user / new profile / delete — station asks, safe",
+      "is_interactive": true
+    },
+    "MenuTiles.dc.html": {
+      "x": 1520,
+      "y": 19400,
+      "w": 1440,
+      "h": 900,
+      "title": "12c2 · Menu: compact kit tile grid (desktop + phone)",
+      "is_interactive": true
+    },
+    "PhoneFixes.dc.html": {
+      "x": 3040,
+      "y": 19400,
+      "w": 1440,
+      "h": 900,
+      "title": "12c2 · Phone: command line + suggestions, settings title, Users & Profiles",
+      "is_interactive": true
+    },
+    "HoldFullscreen.dc.html": {
+      "x": 2000,
+      "y": 20420,
+      "w": 1920,
+      "h": 1100,
+      "title": "Discussion · keep the desk panes on the phone, hold a pane = full screen (try it)",
+      "is_interactive": true
+    },
+    "ResponsiveViews.dc.html": {
+      "x": 0,
+      "y": 20420,
+      "w": 1920,
+      "h": 1200,
+      "title": "Discussion · a desktop view on a tablet and a phone: options A–E",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "UserAsks.dc.html",
+    "MenuTiles.dc.html",
+    "PhoneFixes.dc.html",
+    "HoldFullscreen.dc.html",
+    "ResponsiveViews.dc.html"
+  ],
+  "notes": {
+    "row11": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "12c2 — safe users & profiles, compact menu, multiplatform (for approval)",
+      "x": 0,
+      "y": 19100
+    }
+  },
+  "title": "LumaCore UI Kit Mockups — 12c2"
+}

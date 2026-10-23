@@ -1,0 +1,766 @@
+<title>LumaCore 12f Round 8</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Two boards: the encoder bar on a whole screen (per-screen setting, desk / tablet / phone) and
+   the vertical sequence sheet's default columns. LumaCore Dark preset, single dark look on purpose
+   (the console's own theme). */
+:root {
+  --lc-bg:#121212; --lc-surface:#1c1c1c; --lc-raised:#303030; --lc-line:#424242; --lc-hair:#262626; --lc-gap:#0a0a0a;
+  --lc-text:#d1d1d1; --lc-dim:#8a8a8a; --lc-faint:#5e5e5e; --lc-accent:#9a7a08; --lc-accent-hi:#c9a227; --lc-on-accent:#f3ecd3;
+  --lc-cap:#f9ed4f; --lc-info:#758ba0; --lc-programmer:#d86a7c; --lc-selected:#3a3218; --lc-run:#3d7bd9; --lc-gold:#b8962e;
+  --lc-font:'Source Sans 3','Segoe UI',system-ui,-apple-system,sans-serif;
+  --lc-mono:'JetBrains Mono',Menlo,Consolas,monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--lc-bg); color: var(--lc-text); margin: 0; }
+body { font-family: var(--lc-font); font-size: 15px; padding: 0 16px 40px; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; }
+.noselect { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+header { position: sticky; top: 0; z-index: 50; background: var(--lc-bg); padding: 14px 16px 10px; margin: 0 -16px; border-bottom: 1px solid var(--lc-line); }
+h1 { font-size: 20px; font-weight: 600; margin: 0 0 2px; }
+.sub { color: var(--lc-dim); font-size: 13px; margin: 0 0 10px; max-width: 90ch; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.tabs button { flex: none; min-height: 44px; padding: 0 16px; border-radius: 6px; border: 1px solid var(--lc-line); background: var(--lc-surface); cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--lc-accent); border-color: transparent; color: var(--lc-on-accent); font-weight: 600; }
+.board { padding-block: 16px; display: grid; gap: 14px; }
+.board > * { min-width: 0; }
+.intro { max-width: 80ch; line-height: 1.45; margin: 0; }
+.intro b { color: var(--lc-accent-hi); font-weight: 600; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--lc-line); border-radius: 6px; overflow: hidden; flex-wrap: wrap; }
+.seg button { min-height: 44px; padding: 0 14px; border: 0; background: var(--lc-surface); cursor: pointer; border-right: 1px solid var(--lc-line); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-pressed="true"] { background: var(--lc-selected); color: var(--lc-on-accent); box-shadow: inset 0 -3px 0 var(--lc-accent-hi); }
+.ctl-label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); margin-right: 6px; }
+.decide { border-left: 3px solid var(--lc-accent); background: var(--lc-surface); padding: 10px 14px; border-radius: 0 6px 6px 0; max-width: 84ch; font-size: 14px; line-height: 1.45; }
+.decide h3 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--lc-accent-hi); }
+.decide ul { margin: 0; padding-left: 18px; }
+code { font-family: var(--lc-mono); font-size: .92em; color: var(--lc-cap); }
+.log { border: 1px solid var(--lc-line); border-radius: 6px; background: var(--lc-gap); font-family: var(--lc-mono); font-size: 13px; }
+.log h4 { margin: 0; padding: 6px 10px; border-bottom: 1px solid var(--lc-line); font: 500 12px var(--lc-font); text-transform: uppercase; letter-spacing: .06em; color: var(--lc-dim); }
+.log ol { list-style: none; margin: 0; padding: 6px 10px; height: 96px; overflow: auto; }
+.log li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 1px 0; }
+.log li .k { color: var(--lc-cap); margin-right: 8px; }
+
+/* ── the screen ── */
+.devwrap { display: flex; justify-content: center; }
+.screen { position: relative; display: grid; grid-template-columns: 56px 1fr; grid-template-rows: 1fr auto auto; border: 1px solid var(--lc-line); border-radius: 8px; overflow: hidden; background: var(--lc-gap); width: 100%; height: 560px; }
+.screen.tablet { width: 820px; max-width: 100%; height: 600px; }
+.screen.phone { width: 390px; max-width: 100%; height: 720px; grid-template-columns: 1fr; border-radius: 22px; }
+.side { grid-row: 1 / 4; background: #161616; border-right: 1px solid var(--lc-line); display: flex; flex-direction: column; gap: 4px; padding: 6px 4px; }
+.side button { height: 46px; border-radius: 4px; border: 1px solid var(--lc-hair); background: var(--lc-surface); font-size: 12px; color: var(--lc-dim); cursor: pointer; }
+.side button.on { color: var(--lc-on-accent); background: var(--lc-selected); box-shadow: inset 3px 0 0 var(--lc-accent-hi); }
+.side .grow { flex: 1; }
+.phone .side { display: none; }
+.panes { display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; padding: 2px; min-height: 0; }
+.phone .panes { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; }
+.pane { background: var(--lc-bg); border: 1px solid var(--lc-hair); border-radius: 3px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+.pane .pt { font-size: 12px; color: var(--lc-dim); padding: 4px 8px; border-bottom: 1px solid var(--lc-hair); background: #171717; display: flex; justify-content: space-between; }
+.pane .pb { flex: 1; padding: 6px; display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 3px; align-content: start; }
+.fx { height: 40px; border-radius: 3px; background: var(--lc-surface); border: 1px solid var(--lc-hair); font-size: 11px; padding: 3px 5px; color: var(--lc-dim); }
+.fx.sel { border-color: var(--lc-sel-line, #4d8fd6); color: var(--lc-text); }
+.fx b { display: block; height: 4px; margin-top: 6px; border-radius: 2px; background: var(--lc-programmer); }
+
+/* the encoder bar: the feature strip on top, then cells */
+.ebar { grid-column: 2; background: #161616; border-top: 1px solid var(--lc-line); }
+.phone .ebar { grid-column: 1; }
+.fstrip { display: flex; gap: 2px; padding: 3px 4px 0; overflow-x: auto; scrollbar-width: none; align-items: stretch; }
+.fstrip button { flex: none; min-height: 32px; padding: 0 12px; border: 0; border-radius: 4px 4px 0 0; background: transparent; color: var(--lc-dim); cursor: pointer; font-size: 13px; }
+.fstrip button[aria-pressed="true"] { background: #232323; color: var(--lc-text); box-shadow: inset 0 2px 0 var(--lc-accent-hi); }
+.fstrip button.has::after { content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--lc-programmer); margin-left: 6px; vertical-align: middle; }
+.fstrip .sp { flex: 1; }
+.fstrip .selinfo { align-self: center; font-size: 12px; color: var(--lc-faint); padding: 0 8px; white-space: nowrap; }
+.erow { display: grid; grid-template-columns: 76px repeat(var(--n, 5), minmax(0, 1fr)) 44px; background: #232323; }
+.eres { display: grid; grid-template-rows: repeat(3, 1fr); border-right: 1px solid var(--lc-line); }
+.eres button { border: 0; border-bottom: 1px solid #2c2c2c; background: transparent; font-size: 12px; cursor: pointer; color: var(--lc-dim); }
+.eres button[aria-pressed="true"] { color: var(--lc-on-accent); background: var(--lc-selected); box-shadow: inset 3px 0 0 var(--lc-accent-hi); }
+.ecell { min-height: 72px; padding: 7px 10px; border-right: 1px solid #2c2c2c; display: flex; flex-direction: column; justify-content: space-between; touch-action: none; cursor: ew-resize; position: relative; overflow: hidden; }
+.ecell .an { font-size: 13px; color: var(--lc-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ecell .ev { font-family: var(--lc-mono); font-size: 19px; color: var(--lc-text); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ecell.prog .ev { color: var(--lc-programmer); }
+.ecell .eband { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--lc-programmer); opacity: .75; }
+.ecell.empty { cursor: default; }
+.ecell.active { background: #2e2125; }
+.epage { border: 0; background: transparent; color: var(--lc-dim); cursor: pointer; font-size: 18px; border-left: 1px solid var(--lc-line); }
+.phone .erow { --n: 3 !important; grid-template-columns: 52px repeat(3, minmax(0, 1fr)) 40px; }
+.phone .ecell .ev { font-size: 17px; }
+
+/* command line bar */
+.cbar { grid-column: 2; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 8px; background: #1a1a1a; border-top: 1px solid var(--lc-line); font-family: var(--lc-mono); font-size: 14px; }
+.phone .cbar { grid-column: 1; }
+.cbar .pr { color: var(--lc-accent-hi); }
+.cbar .ln { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cbar .tg { font-family: var(--lc-font); font-size: 12px; border: 1px solid var(--lc-line); border-radius: 4px; background: var(--lc-surface); min-height: 32px; padding: 0 10px; cursor: pointer; color: var(--lc-dim); }
+.cbar .tg.on { color: var(--lc-on-accent); background: var(--lc-selected); border-color: var(--lc-accent); }
+/* order variant: bar under the command line */
+.screen.below .ebar { grid-row: 3; } .screen.below .cbar { grid-row: 2; }
+
+/* phone: folded — a handle; open = a low sheet over the panes */
+.phone.folded .ebar { display: none; }
+.phone .handle { display: none; }
+.phone.folded .handle { display: flex; }
+.handle { grid-column: 1; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border: 0; border-top: 1px solid var(--lc-line); background: #161616; color: var(--lc-dim); cursor: pointer; font-size: 13px; }
+.handle .pill { width: 36px; height: 4px; border-radius: 2px; background: var(--lc-faint); }
+.handle .vals { font-family: var(--lc-mono); color: var(--lc-programmer); font-size: 12px; }
+.phone.sheet-open .ebar { display: block; position: absolute; left: 0; right: 0; bottom: 44px; z-index: 5; box-shadow: 0 -10px 30px rgba(0,0,0,.6); border-radius: 10px 10px 0 0; }
+.phone.sheet-open .handle .pill { background: var(--lc-accent-hi); }
+.phone.below.sheet-open .ebar { bottom: 0; }
+
+/* slider panel (same as round 7, simplified) */
+.vpanel { position: absolute; z-index: 20; right: 10px; bottom: 130px; width: 150px; background: var(--lc-surface); border: 1px solid var(--lc-accent); border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.6); padding: 8px; display: grid; gap: 6px; }
+.vpanel .vh { font-size: 12px; color: var(--lc-dim); display: flex; justify-content: space-between; }
+.vpanel .vv { font-family: var(--lc-mono); font-size: 22px; color: var(--lc-programmer); text-align: center; }
+.vpanel .vtr { height: 160px; position: relative; border-radius: 4px; background: var(--lc-gap); border: 1px solid var(--lc-line); touch-action: none; cursor: ns-resize; }
+.vpanel .vfill { position: absolute; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, var(--lc-programmer) 40%, transparent); }
+.vpanel .vrow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.vpanel button { min-height: 44px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; }
+.vpanel button.ok { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; font-weight: 600; }
+
+/* ── the sheet columns ── */
+.sheets { display: grid; gap: 18px; }
+.cmp { display: grid; gap: 6px; }
+.cmp h3 { margin: 0; font-size: 15px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.cmp h3 small { color: var(--lc-dim); font-weight: 400; font-size: 13px; }
+.cmp h3 .w { font-family: var(--lc-mono); font-size: 12px; color: var(--lc-faint); }
+.gridw { border: 1px solid var(--lc-line); border-radius: 6px; overflow-x: auto; background: var(--lc-bg); }
+.sg { display: grid; min-width: max-content; font-size: 13px; }
+.sg > div { padding: 0 8px; height: 34px; display: flex; align-items: center; border-bottom: 1px solid var(--lc-hair); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sg .h { background: #1a1a1a; color: var(--lc-dim); font-size: 12px; height: 30px; position: sticky; top: 0; }
+.sg .h.fg { color: var(--lc-text); }
+.sg .h.fg i { font-style: normal; display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+.sg .n { font-family: var(--lc-mono); justify-content: flex-end; }
+.sg .t { font-family: var(--lc-mono); justify-content: flex-end; }
+.sg .t.inh { color: var(--lc-faint); }
+.sg .t.none { color: #333; }
+.sg .r-act { background: color-mix(in srgb, var(--lc-gold) 22%, transparent); }
+.sg .r-act.first { box-shadow: inset 3px 0 0 var(--lc-gold); }
+.sg .r-next.first { box-shadow: inset 3px 0 0 var(--lc-run); }
+.sg .trig { color: var(--lc-info); }
+.sg .cmd { color: var(--lc-cap); font-family: var(--lc-mono); font-size: 12px; }
+.sg .info { color: var(--lc-dim); }
+.legend { font-size: 12px; color: var(--lc-dim); display: flex; gap: 16px; flex-wrap: wrap; }
+.legend span::before { content: ''; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; background: var(--c); }
+.cmp.pick .gridw { border-color: var(--lc-accent); box-shadow: 0 0 0 1px var(--lc-accent); }
+.pickbtn { min-height: 36px; padding: 0 12px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-surface); cursor: pointer; font-size: 13px; }
+.cmp.pick .pickbtn { background: var(--lc-accent); color: var(--lc-on-accent); border-color: transparent; }
+.cnote { border: 1px solid var(--lc-line); border-radius: 6px; padding: 8px 12px; font-size: 14px; line-height: 1.45; max-width: 90ch; background: var(--lc-surface); }
+.cnote b { color: var(--lc-accent-hi); font-weight: 600; }
+.cnote .pro { color: #8fd18f; } .cnote .con { color: #e09a8a; }
+/* spread: one tick per selected fixture */
+.spread { position: absolute; left: 10px; right: 10px; bottom: 6px; height: 10px; }
+.spread .trk { position: absolute; left: 0; right: 0; top: 4px; height: 2px; background: #3a3a3a; border-radius: 1px; }
+.spread .rng { position: absolute; top: 3px; height: 4px; background: var(--lc-programmer); opacity: .45; border-radius: 2px; }
+.spread .tk { position: absolute; top: 0; width: 2px; height: 10px; margin-left: -1px; background: var(--lc-text); border-radius: 1px; }
+.ecell.prog .spread .tk { background: var(--lc-programmer); }
+.ecell.b { min-height: 84px; padding-bottom: 20px; }
+.ecell .ev small { font-size: 12px; color: var(--lc-dim); }
+.ecell.xy { grid-column: span 2; display: grid; grid-template-columns: 1fr 96px; gap: 8px; cursor: default; padding-bottom: 7px; }
+.ecell.xy .pad { position: relative; border-radius: 4px; background: var(--lc-gap); border: 1px solid var(--lc-line); touch-action: none; cursor: crosshair; background-image: linear-gradient(#262626 1px, transparent 1px), linear-gradient(90deg, #262626 1px, transparent 1px); background-size: 25% 25%; }
+.ecell.xy .dot { position: absolute; width: 8px; height: 8px; margin: -4px; border-radius: 50%; background: var(--lc-programmer); }
+.ecell.xy .dot.c { width: 12px; height: 12px; margin: -6px; background: none; border: 2px solid var(--lc-cap); }
+.ecell.sw .swatch { height: 26px; border-radius: 4px; border: 1px solid var(--lc-line); display: flex; overflow: hidden; }
+.ecell.sw .swatch i { flex: 1; }
+.ecell.lst { cursor: default; }
+.chips { display: flex; gap: 4px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.chips button { flex: none; min-height: 32px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); font-size: 12px; cursor: pointer; }
+.chips button.on { background: var(--lc-selected); border-color: var(--lc-accent); color: var(--lc-on-accent); }
+.chips button.mix { border-style: dashed; }
+.meow { border: 0; border-left: 1px solid var(--lc-line); background: transparent; color: var(--lc-dim); cursor: pointer; font-size: 12px; }
+.meow.on { background: var(--lc-selected); color: var(--lc-cap); }
+.erow.b { grid-template-columns: 76px repeat(var(--n, 5), minmax(0, 1fr)) 44px 44px; }
+.phone .erow.b { grid-template-columns: 44px repeat(3, minmax(0, 1fr)) 40px; }
+.phone .erow.b .meow { display: none; }
+/* C: chip row + bank */
+.crow { display: flex; align-items: center; gap: 4px; padding: 5px 6px; overflow-x: auto; scrollbar-width: none; min-height: 48px; }
+.crow .fc { flex: none; min-height: 38px; padding: 0 10px; border-radius: 19px; border: 1px solid var(--lc-line); background: var(--lc-surface); cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+.crow .fc .v { font-family: var(--lc-mono); color: var(--lc-programmer); font-size: 12px; }
+.crow .fc[aria-pressed="true"] { border-color: var(--lc-accent-hi); background: var(--lc-selected); color: var(--lc-on-accent); }
+.crow .fc.empty { color: var(--lc-faint); }
+.crow .sep { width: 1px; align-self: stretch; background: var(--lc-line); margin: 4px 4px; flex: none; }
+.crow .si { flex: none; font-size: 12px; color: var(--lc-faint); padding: 0 6px; }
+.bank { display: flex; gap: 2px; padding: 8px; overflow-x: auto; border-bottom: 1px solid var(--lc-line); background: #1a1a1a; }
+.bcol { flex: none; width: 86px; display: grid; grid-template-rows: 18px 22px 170px 30px; gap: 4px; justify-items: stretch; text-align: center; }
+.bcol .bn { font-size: 12px; color: var(--lc-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bcol .bv { font-family: var(--lc-mono); font-size: 15px; color: var(--lc-text); }
+.bcol.prog .bv { color: var(--lc-programmer); }
+.bcol .btr { position: relative; margin: 0 14px; border-radius: 4px; background: var(--lc-gap); border: 1px solid var(--lc-line); touch-action: none; cursor: ns-resize; overflow: hidden; }
+.bcol .bfill { position: absolute; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, var(--lc-programmer) 35%, transparent); }
+.bcol .btk { position: absolute; left: 3px; right: 3px; height: 2px; margin-top: -1px; background: var(--lc-programmer); }
+.bcol .bset { min-height: 30px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); font-size: 11px; cursor: pointer; color: var(--lc-dim); }
+.bcol.lstc { grid-template-rows: 18px 22px 1fr; }
+.bcol.lstc .chips { flex-direction: column; overflow: visible; }
+.bank .bres { flex: none; display: grid; grid-template-rows: repeat(3, 44px) 1fr 44px; gap: 4px; width: 70px; margin-left: auto; }
+.bank .bres button { border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-surface); font-size: 12px; cursor: pointer; color: var(--lc-dim); }
+.bank .bres button[aria-pressed="true"] { color: var(--lc-on-accent); background: var(--lc-selected); border-color: var(--lc-accent); }
+.bank .bres .meow { border: 1px solid var(--lc-line); border-radius: 4px; }
+.phone .bank .bres { width: 52px; }
+.phone .bcol { width: 74px; }
+.phone.c .ebar { display: block !important; }
+.fi { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.fi.sh { border-radius: 1px; background: linear-gradient(135deg, transparent 30%, var(--lc-dim) 30% 40%, transparent 40%), var(--lc-raised); border: 1px solid var(--lc-dim); }
+.erow.b2 { display: grid; grid-template-columns: 64px 1fr; background: #232323; }
+.phone .erow.b2 { grid-template-columns: 48px 1fr; }
+.eside { display: grid; grid-template-rows: 1fr 1fr; border-right: 1px solid var(--lc-line); }
+.rescyc, .timbtn { border: 0; border-bottom: 1px solid #2c2c2c; background: transparent; cursor: pointer; color: var(--lc-text); font-size: 13px; display: grid; place-items: center; line-height: 1.05; padding: 4px 0; }
+.rescyc small, .timbtn small { font-size: 10px; color: var(--lc-faint); text-transform: uppercase; letter-spacing: .05em; }
+.timbtn { font-size: 16px; }
+.timbtn.on { background: var(--lc-selected); color: var(--lc-cap); box-shadow: inset 3px 0 0 var(--lc-accent-hi); }
+.ecells { display: grid; min-width: 0; }
+.ecells .ecell.xy { grid-column: span 2; }
+.ecell.tim { padding-bottom: 44px; }
+.ecell.tim .spread { bottom: 38px; }
+.trow { position: absolute; left: 0; right: 0; bottom: 0; height: 32px; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #2c2c2c; }
+.tf { display: flex; align-items: center; justify-content: center; font-family: var(--lc-mono); font-size: 12px; color: var(--lc-info); cursor: ew-resize; touch-action: none; border-right: 1px solid #2c2c2c; }
+.tf:last-child { border-right: 0; }
+.tf i { color: var(--lc-faint); font-style: normal; }
+.tf:hover { background: #2a2a2a; }
+.bcol .trow { position: static; height: 30px; border: 1px solid var(--lc-line); border-radius: 4px; }
+.bank.tim .bcol { grid-template-rows: 18px 22px 170px 30px 30px; }
+.bres { grid-template-rows: 60px 60px !important; }
+.bres .rescyc, .bres .timbtn { border: 1px solid var(--lc-line); border-radius: 4px; }
+/* picker */
+.pick { display: grid; grid-template-rows: 1fr 14px; gap: 4px; min-height: 0; }
+.ecell.pk { grid-template-columns: 1fr; grid-template-rows: auto 1fr; gap: 4px; padding-bottom: 7px; }
+.ecell.pk .an span { color: var(--lc-faint); font-size: 11px; margin-left: 6px; }
+.hs { position: relative; border-radius: 4px; border: 1px solid var(--lc-line); touch-action: none; cursor: crosshair; min-height: 44px;
+  background: linear-gradient(to bottom, transparent, #fff), linear-gradient(90deg, red, yellow, lime, cyan, blue, magenta, red); }
+.hs .dot { position: absolute; width: 12px; height: 12px; margin: -6px; border-radius: 50%; border: 2px solid #111; box-shadow: 0 0 0 1px #fff; }
+.sws { display: flex; gap: 2px; } .sws i { flex: 1; border-radius: 2px; }
+.bcol.wide { width: 240px; grid-template-rows: 18px 1fr; }
+.bcol.wide .pick { grid-template-rows: 1fr 18px; }
+.phone .bcol.wide { width: 200px; }
+/* shaper */
+.ecell.sh { grid-template-columns: 1fr 104px; }
+.shp { display: grid; place-items: center; min-height: 0; }
+.beam { position: relative; width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle, #fff8d8 0, #d9c98a 60%, #5a5030 100%); overflow: hidden; }
+.bcol .beam { width: 150px; height: 150px; }
+.bl { position: absolute; background: #0b0b0b; touch-action: none; min-width: 10px; min-height: 10px; box-shadow: 0 0 0 1px #333; }
+.bl.p { box-shadow: 0 0 0 1px var(--lc-programmer); }
+.bl.t { left: -10%; right: -10%; top: 0; cursor: ns-resize; } .bl.b { left: -10%; right: -10%; bottom: 0; cursor: ns-resize; }
+.bl.l { top: -10%; bottom: -10%; left: 0; cursor: ew-resize; } .bl.r { top: -10%; bottom: -10%; right: 0; cursor: ew-resize; }
+.blv { display: grid; gap: 2px; align-content: center; font-size: 12px; }
+.blv .ev { font-size: 13px; }
+.side .meow.on { color: var(--lc-cap); background: var(--lc-selected); }
+:root { --lc-fx: #b07be6; }
+.fi.fxi { background: none; color: var(--lc-fx); font-size: 15px; width: auto; height: auto; vertical-align: 0; }
+.fstrip .cnt { font-size: 11px; color: var(--lc-fx); }
+.fstrip .fxg { color: var(--lc-fx); font-size: 12px; }
+.bdgs { float: right; display: inline-flex; gap: 4px; }
+.bdg { font-family: var(--lc-mono); font-size: 11px; padding: 0 5px; border-radius: 3px; line-height: 16px; }
+.bdg.tm { color: var(--lc-info); background: color-mix(in srgb, var(--lc-info) 18%, transparent); }
+.bdg.fx { color: var(--lc-fx); background: color-mix(in srgb, var(--lc-fx) 18%, transparent); }
+.ecell.c2 { display: grid; grid-template-rows: auto auto 14px; align-content: start; gap: 2px; padding-bottom: 6px; }
+.ecell.c2 .spw { position: relative; height: 14px; }
+.ecell.c2 .spread { left: 0; right: 0; bottom: 2px; }
+.fxb { position: absolute; top: 1px; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--lc-fx) 30%, transparent); border: 1px solid color-mix(in srgb, var(--lc-fx) 60%, transparent); }
+.otk { position: absolute; top: -1px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; border: 1.5px solid var(--lc-fx); background: var(--lc-gap); }
+.dot.o { background: none !important; border: 2px solid var(--lc-fx); width: 10px !important; height: 10px !important; margin: -5px !important; }
+.tg2 { position: relative; height: 34px; margin-top: 4px; border: 1px solid #2c2c2c; border-radius: 4px; background: var(--lc-gap); touch-action: none; cursor: ew-resize; }
+.tg2 svg { position: absolute; inset: 0; width: 100%; height: 24px; overflow: visible; }
+.tg2 polyline { fill: none; stroke: var(--lc-info); stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.tg2.cue polyline { stroke: var(--lc-faint); stroke-dasharray: 3 3; }
+.tg2 .hd { position: absolute; width: 10px; height: 10px; margin: -5px; border-radius: 50%; background: var(--lc-info); box-shadow: 0 0 0 2px var(--lc-gap); }
+.tg2.cue .hd { display: none; }
+.tg2 .tl { position: absolute; left: 4px; bottom: 1px; font-family: var(--lc-mono); font-size: 10px; color: var(--lc-info); }
+.tg2.cue .tl { color: var(--lc-faint); }
+.tg2 .ts { position: absolute; right: 4px; bottom: 1px; font-family: var(--lc-mono); font-size: 10px; color: var(--lc-faint); }
+.frow { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; margin-top: 4px; }
+.frow.xyf { grid-template-columns: 1fr 1fr; }
+.ff { min-height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 4px; border: 1px solid color-mix(in srgb, var(--lc-fx) 45%, var(--lc-line)); background: color-mix(in srgb, var(--lc-fx) 10%, var(--lc-surface)); font-family: var(--lc-mono); font-size: 12px; color: var(--lc-text); cursor: ew-resize; touch-action: none; white-space: nowrap; }
+.ff.form { cursor: pointer; font-family: var(--lc-font); }
+.ff.form::after { content: ''; display: block; width: 14px; height: 2px; margin-left: 6px; background: repeating-linear-gradient(90deg, var(--lc-accent-hi) 0 4px, transparent 4px 5px); }
+.ff.big { flex-direction: column; font-size: 16px; min-height: 40px; line-height: 1.1; }
+.ff small { font-size: 10px; color: var(--lc-dim); font-family: var(--lc-font); }
+.ecell.call, .ecell.line { cursor: default; display: grid; gap: 4px; align-content: start; padding-bottom: 7px; border-top: 2px solid var(--lc-fx); }
+.ecell.call .an b { color: var(--lc-text); font-weight: 600; }
+.cr { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.cr button { min-height: 32px; border-radius: 4px; border: 1px solid var(--lc-line); background: var(--lc-raised); cursor: pointer; font-size: 12px; }
+.wave { width: 100%; height: 34px; background: var(--lc-gap); border-radius: 4px; }
+.bl2 { font-size: 10px; color: var(--lc-fx); text-transform: uppercase; letter-spacing: .04em; margin-left: 4px; }
+.ecell.add { display: grid; place-items: center; align-content: center; gap: 4px; cursor: default; }
+.ecell.add button { min-height: 44px; padding: 0 16px; border-radius: 4px; border: 1px dashed var(--lc-fx); background: transparent; color: var(--lc-fx); cursor: pointer; }
+.ecell.add small { color: var(--lc-faint); font-size: 11px; }
+.eside { grid-template-rows: 1fr 1fr 1fr !important; }
+.fxbtn.on { color: var(--lc-fx) !important; box-shadow: inset 3px 0 0 var(--lc-fx) !important; }
+.ecell.c2, .ecell.call, .ecell.line { justify-content: normal; }
+.ecell .an { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.bdgs { float: none; margin-left: auto; flex: none; }
+.bdg { height: 18px; display: inline-flex; align-items: center; }
+.ecell.xy:not(.pk):not(.sh) { grid-template-columns: 1fr 156px; }
+.ecell.xy .ev { white-space: nowrap; }
+</style>
+
+<header>
+  <h1>12f · round 8</h1>
+  <p class="sub">Two boards to decide on: <b>three encoder bar concepts</b> on a whole screen (a per-screen setting, as decided) and the vertical sequence sheet's <b>default columns</b>.</p>
+  <nav class="tabs" id="tabs" role="tablist">
+    <button role="tab" data-b="enc" aria-selected="true">Encoder bar on a screen</button>
+    <button role="tab" data-b="cols" aria-selected="false">Sheet columns</button>
+  </nav>
+</header>
+
+<section class="board" id="b-enc">
+  <p class="intro">Here are <b>three concepts</b> for the encoder bar, each a per-screen bar at the bottom (as decided) and turned off for a screen with the <b>Enc</b> button (<code>Set Screen 1 EncoderBar Off</code>). The selection is Spot 1–4 with <i>different</i> values, so you can see how each concept shows a mixed selection. <b>Drag</b> a value to change it for all four (relative). Hold <b>Meow</b> (Shift, or the bar's Meow toggle) while dragging to <b>fan</b> the values out across the selection instead. A <b>tap</b> opens the approved slider panel.</p>
+  <div class="controls">
+    <span><span class="ctl-label">Concept</span><span class="seg" id="e-con"><button data-v="A" aria-pressed="false">A · Tabs + cells</button><button data-v="B" aria-pressed="true">B · Smart cells</button><button data-v="C" aria-pressed="false">C · Chips → slider bank</button></span></span>
+  </div>
+  <div class="controls">
+    <span><span class="ctl-label">Device</span><span class="seg" id="e-dev"><button data-v="desk" aria-pressed="true">Desk</button><button data-v="tablet" aria-pressed="false">Tablet</button><button data-v="phone" aria-pressed="false">Phone</button></span></span>
+    <span><span class="ctl-label">Screen</span><span class="seg" id="e-scr"><button data-v="1" aria-pressed="true">Screen 1 (bar on)</button><button data-v="2" aria-pressed="false">Screen 2 (bar off)</button></span></span>
+    <span><span class="ctl-label">Order</span><span class="seg" id="e-ord"><button data-v="above" aria-pressed="true">Bar above line</button><button data-v="below" aria-pressed="false">Bar below line</button></span></span>
+  </div>
+  <div class="cnote" id="cnote"></div>
+  <div class="devwrap"><div class="screen noselect" id="scr"></div></div>
+  <div class="log"><h4>Lines sent</h4><ol id="log"></ol></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li><b>Which concept?</b> Or mix them, e.g. B's cells in C's bank.</li>
+    <li>Is <b>Meow-drag = fan</b> right (spread across the selection, centred on the middle)? It sends a <code>Thru</code> range, so it's one Oops step.</li>
+    <li>Timing: always-visible badge + <b>⏱ = a delay → fade graph under every value</b> with draggable handles (the sequence graph's). Right?</li>
+    <li>Effects (§28): the live output on every value, <b>∿ = Lo / Hi / Form</b> under it, and an <b>Effects</b> tab for the calls (size, Rate, Off, Stomp) and lines (Form, BPM). Enough control, or do you want BPM / Width per cell too?</li>
+    <li>Colour picker and Shapers first in the strip: easy enough to reach?</li>
+    <li>Should the bar sit above the command line or below it?</li>
+  </ul></div>
+</section>
+<section class="board" id="b-cols" hidden>
+  <p class="intro">This is the same sequence (Sequence 3 "Act 1", cue 2 running, cue 3 next) with the three column sets side by side. The feature-group columns show each group's <b>Fade</b>. A dim value in brackets is inherited from the cue, and a blank means the group isn't in that cue. The default only sets what a new sequence window shows; any column can be turned on or off in the window settings. Tap <b>Pick</b> on the one you want.</p>
+  <div class="legend"><span style="--c:var(--lc-gold)">active cue</span><span style="--c:var(--lc-run)">next cue</span><span style="--c:var(--lc-faint)">(inherited)</span></div>
+  <div class="sheets" id="sheets"></div>
+  <div class="decide"><h3>Decide</h3><ul>
+    <li>Which set is the default: Compact, Full or Minimal? (Pick one, or tell me what to move between them.)</li>
+    <li>Should a feature-group column show only its <b>Fade</b>, or Fade / Delay stacked in the cell (e.g. <code>3 · 0.5</code>)?</li>
+  </ul></div>
+</section>
+
+<script>
+const $ = s => document.querySelector(s);
+const log = t => { const li = document.createElement('li'); li.innerHTML = `<span class="k">›</span>${t}`; $('#log').append(li); $('#log').scrollTop = 1e6; };
+function seg(id, fn) { const el = $(id); el.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); fn(b.dataset.v); }); }
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; $('#tabs').querySelectorAll('button').forEach(x => x.setAttribute('aria-selected', x === b)); document.querySelectorAll('.board').forEach(s => s.hidden = s.id !== 'b-' + b.dataset.b); });
+
+// ── encoder bar ──
+// Every attribute has one value per selected fixture (Spot 1–4), so the selection can be mixed.
+const A = [
+  { f: 'Color', n: 'Cyan', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0] },
+  { f: 'Color', n: 'Magenta', u: '%', lo: 0, hi: 100, v: [40, 40, 40, 40], p: 1 },
+  { f: 'Color', n: 'Yellow', u: '%', lo: 0, hi: 100, v: [80, 80, 80, 80], p: 1 },
+  { f: 'Color', n: 'CTO', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0] },
+  { f: 'Shapers', n: 'Blade 1', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0], blade: 0 },
+  { f: 'Shapers', n: 'Blade 2', u: '%', lo: 0, hi: 100, v: [20, 20, 20, 20], p: 1, blade: 1 },
+  { f: 'Shapers', n: 'Blade 3', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0], blade: 2 },
+  { f: 'Shapers', n: 'Blade 4', u: '%', lo: 0, hi: 100, v: [35, 35, 35, 35], p: 1, blade: 3 },
+  { f: 'Shapers', n: 'Shaper Rot', u: '°', lo: -45, hi: 45, v: [0, 0, 0, 0] },
+  { f: 'Dimmer', n: 'Dim', u: '%', lo: 0, hi: 100, v: [72, 72, 60, 48], p: 1 },
+  { f: 'Dimmer', n: 'Strobe', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0] },
+  { f: 'Dimmer', n: 'Shutter', sets: ['Open', 'Closed', 'Pulse', 'Random'], v: ['Open', 'Open', 'Open', 'Open'] },
+  { f: 'Position', n: 'Pan', u: '°', lo: -270, hi: 270, v: [-40, -12, 12, 40], p: 1, xy: 'Tilt' },
+  { f: 'Position', n: 'Tilt', u: '°', lo: -135, hi: 135, v: [-34, -34, -34, -34], p: 1 },
+  { f: 'Position', n: 'Pos Speed', u: '%', lo: 0, hi: 100, v: [50, 50, 50, 50] },
+  { f: 'Gobo', n: 'Gobo 1', sets: ['Open', 'Dots', 'Breakup', 'Cone', 'Star'], v: ['Open', 'Dots', 'Dots', 'Open'] },
+  { f: 'Gobo', n: 'Gobo 1 Rot', u: '%', lo: -100, hi: 100, v: [0, 0, 0, 0] },
+  { f: 'Gobo', n: 'Prism', sets: ['Out', 'In 3', 'In 5'], v: ['Out', 'Out', 'Out', 'Out'] },
+  { f: 'Beam', n: 'Zoom', u: '°', lo: 5, hi: 50, v: [18, 18, 18, 18] },
+  { f: 'Beam', n: 'Iris', u: '%', lo: 0, hi: 100, v: [100, 100, 100, 100] },
+  { f: 'Beam', n: 'Frost', u: '%', lo: 0, hi: 100, v: [0, 0, 0, 0] },
+  { f: 'Focus', n: 'Focus', u: '%', lo: 0, hi: 100, v: [50, 50, 50, 50] },
+];
+A.forEach(a => { a.fade = a.p ? 2 : null; a.delay = a.p ? 0 : null; });   // programmer timing; null = the cue's
+// programmer effect calls (§28): size + Rate per call; per line Form, BPM, Lo/Hi per fixture
+const FX = [
+  { no: 5, name: 'Ballyhoo', size: 80, rate: 1, lines: [
+    { ln: 1, attr: 'Pan', form: 'Sine', bpm: 30, lo: [-20, -20, -20, -20], hi: [20, 20, 20, 20], blend: 'Add' },
+    { ln: 2, attr: 'Tilt', form: 'Cosine', bpm: 30, lo: [-12, -12, -12, -12], hi: [12, 12, 12, 12], blend: 'Add' } ] },
+  { no: 8, name: 'Flicker', size: 100, rate: 1, lines: [
+    { ln: 1, attr: 'Dim', form: 'Random', bpm: 240, lo: [60, 60, 60, 60], hi: [100, 100, 100, 100], blend: 'Multiply' } ] },
+];
+const FORMS = ['Sine', 'Cosine', 'Triangle', 'Ramp', 'PWM', 'Random'];
+const fxOf = a => { for (const c of FX) for (const l of c.lines) if (l.attr === a.n) return { c, l }; return null; };
+function formAt(form, x, i) { const f = x - Math.floor(x);
+  switch (form) { case 'Sine': return .5 - .5 * Math.cos(2 * Math.PI * x); case 'Cosine': return .5 - .5 * Math.sin(2 * Math.PI * x);
+    case 'Triangle': return f < .5 ? f * 2 : 2 - f * 2; case 'Ramp': return f; case 'PWM': return f < .5 ? 1 : 0;
+    default: { const n = Math.floor(x) * 7919 + i * 104729; return ((Math.sin(n) * 43758.5453) % 1 + 1) % 1; } } }
+const t0 = performance.now();
+function outAt(a, i, now) {   // what the fixture outputs now: static + the effect band
+  const fx = fxOf(a); if (!fx || !num(a)) return a.v[i];
+  const { c, l } = fx; const x = (now - t0) / 1000 * l.bpm / 60 * c.rate + i / 4;
+  const w = formAt(l.form, x, i), amp = c.size / 100, e = l.lo[i] + (l.hi[i] - l.lo[i]) * w;
+  return clamp(a, l.blend === 'Multiply' ? a.v[i] * (1 - amp + amp * e / 100) : a.v[i] + e * amp);
+}
+const FEATS = ['Effects', ...new Set(A.map(a => a.f))];
+const FICON = { Effects: '<span class="fi fxi">∿</span>',  Color: '<span class="fi" style="background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red)"></span>', Shapers: '<span class="fi sh"></span>' };
+const NOTES = {
+  A: `<b>A · Tabs + cells</b> is the established idea, cleaned up (the baseline: timing only through a layer switch, colour and shapers as plain numbers): a feature strip, the resolution, one plain cell per attribute and paging. <span class="pro">+ familiar, predictable spots.</span> <span class="con">− a mixed selection shows only “60…72”, gobos and colours are just text, and Pan/Tilt are two separate drags.</span>`,
+  B: `<b>B · Smart cells</b>: the bar has <b>three controls</b> besides its cells: the feature strip (<b>Colour and Shapers first</b>), one resolution button (tap to cycle Coarse → Fine → Ultra) <b>⏱ Timing</b> and <b>∿ Effect</b>. Timing and effects are <b>always visible</b>. The badge <span class="bdg tm">◢ 2s</span> marks programmer timing, and <span class="bdg fx">∿ 5.1</span> marks an effect running on that attribute. The live output moves over the value: hollow ticks, and on Pan/Tilt hollow dots on the XY pad. The purple band is the range the effect sweeps. <b>⏱</b> adds a <b>delay → fade graph</b> under each value: drag its handles like the sequence graph, or drag on a cue-timed cell to set timing. <b>∿</b> adds <b>Lo / Hi / Form</b> under each value that has an effect. The <b>Effects</b> tab holds the running calls (size, Rate, Off, Stomp) and their lines (Form, BPM, the live wave). The fan is Meow (the sidebar's Meow key, or Shift). <b>Colour</b> is a picker in the bar: drag in the hue field and the dots (one per fixture) follow. <b>Shapers</b> is the beam itself: drag a blade in. Each cell is drawn for what it controls. <b>Pan + Tilt</b> share one cell with an <b>XY pad</b> (a dot per fixture). <b>Colour</b> shows the mixed colour as swatches, one per fixture. <b>Gobo, shutter and prism</b> show their channel sets as <b>chips</b>: tap one to set it (a dashed chip = some of the selection). Every number cell has a <b>spread line</b> with a tick per fixture, so you can see a mixed selection at a glance. <span class="pro">+ you see the selection, not just one value; fewer taps for gobos and colours.</span> <span class="con">− cells differ in size.</span>`,
+  C: `<b>C · Chips → slider bank</b>: Colour and Shapers sit first in the row, with their picker and beam in the bank. In the bank, ⏱ adds Fade / Delay fields under each slider. The bar is <b>one thin row</b>. First come the attributes in your programmer as chips with their values, then the features. Tap a chip or feature and a <b>bank of vertical sliders</b> opens above it: the same slider as the timing fields, with a tick per fixture and set buttons under each. Tap again to fold it. <span class="pro">+ takes almost no room until you need it, and the same slider is used everywhere; works the same on a phone.</span> <span class="con">− one tap more before you can turn.</span>`,
+};
+let timing = false;
+let con = 'B', dev = 'desk', scr = '1', order = 'above', feat = 'Color', page = 0, res = 'Coarse', barOn = { 1: true, 2: false }, sheetOpen = false, meow = false, bankOpen = null;
+addEventListener('keydown', e => { if (e.key === 'Shift' && !meow) { meow = 'key'; markMeow(); } });
+addEventListener('keyup', e => { if (e.key === 'Shift' && meow === 'key') { meow = false; markMeow(); } });
+function markMeow() { document.querySelectorAll('.meow').forEach(b => b.classList.toggle('on', !!meow)); }
+const step = () => res === 'Coarse' ? 1 : res === 'Fine' ? .1 : 100 / 255;
+const r1 = x => Math.round(x * 10) / 10;
+const num = a => !a.sets;
+const mixed = a => a.v.some(x => x !== a.v[0]);
+const fv = (x, a) => num(a) ? `${(a.u === '°' || res !== 'Coarse' ? r1(x).toFixed(1) : Math.round(x))}${a.u}` : x;
+const show = a => !mixed(a) ? fv(a.v[0], a) : num(a) ? `${fv(Math.min(...a.v), a)}…${fv(Math.max(...a.v), a)}` : 'mixed';
+const pct = (a, x) => (x - a.lo) / (a.hi - a.lo) * 100;
+const clamp = (a, x) => Math.max(a.lo, Math.min(a.hi, x));
+const perPage = () => dev === 'phone' ? 3 : dev === 'tablet' ? 4 : 5;
+const featHas = f => f === 'Effects' ? FX.length > 0 : A.some(a => a.f === f && a.p);
+const featFx = f => A.some(a => a.f === f && fxOf(a));
+let fxRows = false;
+function spread(a) {
+  const lo = pct(a, Math.min(...a.v)), hi = pct(a, Math.max(...a.v));
+  const fx = fxOf(a); let band = '', outs = '';
+  if (fx && con !== 'A') {
+    const { c, l } = fx; const amp = c.size / 100;
+    const ends = a.v.flatMap((x, i) => l.blend === 'Multiply' ? [x * (1 - amp + amp * l.lo[i] / 100), x * (1 - amp + amp * l.hi[i] / 100)] : [x + l.lo[i] * amp, x + l.hi[i] * amp]).map(x => pct(a, clamp(a, x)));
+    band = `<div class="fxb" style="left:${Math.min(...ends)}%;width:${Math.max(...ends) - Math.min(...ends)}%"></div>`;
+    outs = a.v.map((_, i) => `<div class="otk" data-o="${i}"></div>`).join('');
+  }
+  return `<div class="spread">${band}<div class="trk"></div><div class="rng" style="left:${lo}%;width:${Math.max(hi - lo, .6)}%"></div>${a.v.map(x => `<div class="tk" style="left:${pct(a, x)}%"></div>`).join('')}${outs}</div>`;
+}
+function cmyRgb(i) { const g = n => A.find(a => a.n === n).v[i] / 100; return `rgb(${255 * (1 - g('Cyan'))},${255 * (1 - g('Magenta'))},${255 * (1 - g('Yellow'))})`; }
+function drawScreen() {
+  const el = $('#scr');
+  $('#cnote').innerHTML = NOTES[con];
+  const fold = dev === 'phone' && con !== 'C';
+  el.className = `screen noselect ${dev} ${con.toLowerCase()}${order === 'below' ? ' below' : ''}${fold && !sheetOpen ? ' folded' : ''}${fold && sheetOpen ? ' sheet-open' : ''}`;
+  const on = barOn[scr];
+  const panes = dev === 'phone' ? ['Fixtures', 'Groups', 'Sequences', 'Presets', 'Executors', 'Values'] : ['Fixtures', 'Sequences', 'Presets'];
+  const fx = Array.from({ length: 12 }, (_, i) => `<div class="fx ${i < 4 ? 'sel' : ''}">Spot ${i + 1}${i < 4 ? '<b></b>' : ''}</div>`).join('');
+  const handleVals = A.filter(a => a.p).slice(0, 3).map(a => `${a.n} ${show(a)}`).join(' · ');
+  el.innerHTML = `
+    <nav class="side"><button class="on">Scr ${scr}</button><button>Menu</button><button>Oops</button><button data-meow class="meow side-m">Meow</button><span class="grow"></span><button>Lock</button></nav>
+    <div class="panes">${panes.map((p, i) => `<div class="pane"><div class="pt"><span>${p}</span><span>${i + 1}</span></div><div class="pb">${i === 0 ? fx : ''}</div></div>`).join('')}</div>
+    ${on ? `<div class="ebar">${con === 'C' ? barC() : barAB()}</div>` : ''}
+    ${on && fold ? `<button class="handle" type="button"><span class="pill"></span><span>Encoders</span><span class="vals">${sheetOpen ? '' : handleVals}</span></button>` : ''}
+    <div class="cbar"><span class="pr">[Admin]&gt;</span><span class="ln">Fixture 1 Thru 4</span><button class="tg ${on ? 'on' : ''}" data-tg type="button">Enc</button></div>`;
+  wire(el); markMeow();
+}
+function stripHtml() {
+  return `<div class="fstrip">${FEATS.filter(f => con !== 'A' || f !== 'Effects').map(f => `<button data-f="${f}" aria-pressed="${f === feat}" class="${featHas(f) ? 'has' : ''}">${con !== 'A' && FICON[f] ? FICON[f] : ''}${f}${f === 'Effects' ? ` <small class="cnt">${FX.length}</small>` : con !== 'A' && featFx(f) ? ' <span class="fxg">∿</span>' : ''}</button>`).join('')}<span class="sp"></span><span class="selinfo">Spot 1 Thru 4</span></div>`;
+}
+function resBtn() { return `<button class="rescyc" data-cyc type="button">${dev === 'phone' ? res[0] : res}<small>res</small></button>`; }
+function fxBtn() { return `<button class="timbtn fxbtn ${fxRows ? 'on' : ''}" data-fxr type="button" title="Effect Lo / Hi">∿<small>Effect</small></button>`; }
+function fxCells() {
+  const cells = [];
+  FX.forEach(c => {
+    cells.push(`<div class="ecell b call" data-call="${c.no}"><div class="an">Effect ${c.no} <b>${c.name}</b></div>
+      <div class="cr"><span class="ff big" data-ck="size">${c.size}%<small>size</small></span><span class="ff big" data-ck="rate">×${r1(c.rate)}<small>rate</small></span></div>
+      <div class="cr"><button data-off>Off</button><button data-stomp>Stomp</button></div></div>`);
+    c.lines.forEach(l => cells.push(`<div class="ecell b line" data-line="${c.no}.${l.ln}"><div class="an">${c.no}.${l.ln} ${l.attr} <span class="bl2">${l.blend}</span></div><canvas class="wave" data-w="${c.no}.${l.ln}"></canvas>
+      <div class="cr"><span class="ff form" data-lform>${l.form}</span><span class="ff" data-lk="bpm">${l.bpm} BPM</span></div></div>`));
+  });
+  cells.push(`<div class="ecell b add"><button data-addfx>+ Effect</button><small>from the Effect pool</small></div>`);
+  return cells;
+}
+function timBtn() { return `<button class="timbtn ${timing ? 'on' : ''}" data-tim type="button" title="Programmer timing">⏱<small>Timing</small></button>`; }
+function badges(a) {
+  const fx = fxOf(a);
+  const tm = a.fade != null || a.delay ? `<span class="bdg tm" title="programmer timing">◢ ${a.delay ? r1(a.delay) + '+' : ''}${r1(a.fade ?? 0)}s</span>` : '';
+  return `<span class="bdgs">${tm}${fx ? `<span class="bdg fx">∿ ${fx.c.no}.${fx.l.ln}</span>` : ''}</span>`;
+}
+function tGraph(a) {   // delay → fade, like the sequence graph; handles drag sideways
+  const d = a.delay ?? 0, f = a.fade ?? 0, cue = a.fade == null;
+  const T = a._T ?? Math.max(2, Math.ceil((d + f) * 1.2));
+  const X = t => Math.min(100, t / T * 100);
+  return `<div class="tg2${cue ? ' cue' : ''}" data-tg2><svg viewBox="0 0 100 24" preserveAspectRatio="none"><polyline points="0,21 ${X(d)},21 ${X(d + f)},4 100,4" /></svg>
+    <span class="hd" data-h="delay" style="left:${X(d)}%;top:21px"></span><span class="hd" data-h="fade" style="left:${X(d + f)}%;top:4px"></span>
+    <span class="tl">${cue ? 'cue timing · drag to set' : `D ${r1(d)} · F ${r1(f)}s`}</span><span class="ts">${T}s</span></div>`;
+}
+function fxRow(a) {
+  const fx = fxOf(a); if (!fxRows || !fx) return '';
+  const { l } = fx; const mm = v => mixed({ v }) ? `${r1(Math.min(...v))}…${r1(Math.max(...v))}` : r1(v[0]);
+  return `<div class="frow"><span class="ff" data-fk="lo">Lo ${mm(l.lo)}</span><span class="ff" data-fk="hi">Hi ${mm(l.hi)}</span><span class="ff form" data-form>${l.form}</span></div>`;
+}
+function timRow(a) {
+  if (!timing) return '';
+  if (con === 'B' && num(a)) return tGraph(a);
+  const f = x => x == null ? '<i>cue</i>' : r1(x) + 's';
+  return `<div class="trow"><span class="tf" data-tk="fade">F ${f(a.fade)}</span><span class="tf" data-tk="delay">D ${f(a.delay)}</span></div>`;
+}
+function resHtml() { return `<div class="eres">${['Coarse', 'Fine', 'Ultra'].map(r => `<button data-r="${r}" aria-pressed="${r === res}">${dev === 'phone' ? r[0] : r}</button>`).join('')}</div>`; }
+function barAB() {
+  const attrs = A.filter(a => a.f === feat);
+  if (con === 'A') {
+    const n = perPage(), pages = Math.ceil(attrs.length / n); page = Math.min(page, pages - 1);
+    const cells = Array.from({ length: n }, (_, i) => {
+      const a = attrs[page * n + i]; if (!a) return `<div class="ecell empty"></div>`;
+      return `<div class="ecell ${a.p ? 'prog' : ''}" data-a="${A.indexOf(a)}"><div class="an">${a.n}</div><div class="ev">${show(a)}</div>${a.p && num(a) ? `<div class="eband" style="width:${pct(a, a.v[0])}%"></div>` : ''}</div>`;
+    }).join('');
+    return `${stripHtml()}<div class="erow" style="--n:${n}">${resHtml()}${cells}<button class="epage" data-pg type="button">${pages > 1 ? `${page + 1}/${pages} ›` : '›'}</button></div>`;
+  }
+  // B: smart cells; Pan+Tilt one XY cell (two slots), colour adds a swatch cell
+  const cells = []; let slots = 0;
+  if (feat === 'Effects') { fxCells().forEach(c => { cells.push(c); slots++; }); }
+  if (feat === 'Color') { cells.push(pickerCell()); slots += 2; }
+  if (feat === 'Shapers') { cells.push(shaperCell()); slots += 2; }
+  attrs.forEach(a => {
+    if (a.n === 'Tilt' || a.blade !== undefined || (feat === 'Color' && a.n !== 'CTO' && dev === 'phone')) return;
+    if (a.xy) {
+      const t = A.find(x => x.n === a.xy);
+      const dots = a.v.map((x, i) => `<div class="dot" style="left:${pct(a, x)}%;top:${100 - pct(t, t.v[i])}%"></div>`).join('') + (fxOf(a) || fxOf(t) ? a.v.map((_, i) => `<div class="dot o" data-o="${i}"></div>`).join('') : '');
+      const cx = pct(a, a.v.reduce((s, x) => s + x) / 4), cy = 100 - pct(t, t.v.reduce((s, x) => s + x) / 4);
+      cells.push(`<div class="ecell b xy prog" data-xy="${A.indexOf(a)}"><div class="pad">${dots}<div class="dot c" style="left:${cx}%;top:${cy}%"></div></div><div style="display:grid;gap:4px;align-content:center"><div class="an">Pan${badges(a)}</div><div class="ev" style="font-size:15px">${show(a)}</div><div class="an">Tilt${badges(t)}</div><div class="ev" style="font-size:15px">${show(t)}</div>${fxRows && fxOf(a) ? `<div class="frow xyf"><span class="ff" data-fx-attr="Pan" data-fk="hi">Pan ±${fxOf(a).l.hi[0]}</span><span class="ff" data-fx-attr="Tilt" data-fk="hi">Tilt ±${fxOf(t).l.hi[0]}</span></div>` : ''}</div></div>`);
+      slots += 2; return;
+    }
+    if (!num(a)) {
+      cells.push(`<div class="ecell b lst" data-l="${A.indexOf(a)}"><div class="an">${a.n}</div><div class="chips">${a.sets.map(s => { const c = a.v.filter(x => x === s).length; return `<button data-set="${s}" class="${c === 4 ? 'on' : c ? 'on mix' : ''}">${s}</button>`; }).join('')}</div></div>`);
+      slots++; return;
+    }
+    const fx = fxOf(a);
+    cells.push(`<div class="ecell b c2 ${a.p ? 'prog' : ''}" data-a="${A.indexOf(a)}"><div class="an">${a.n}${badges(a)}</div><div class="ev">${show(a)}${mixed(a) ? ' <small>mixed</small>' : ''}</div><div class="spw">${spread(a)}</div>${fxRow(a)}${timRow(a)}</div>`);
+    slots++;
+  });
+  const n = Math.max(perPage(), slots);
+  const ph = dev === 'phone';
+  return `${stripHtml()}<div class="erow b2${timing ? ' tim' : ''}" style="--n:${ph ? 3 : n}"><div class="eside">${resBtn()}${timBtn()}${fxBtn()}</div><div class="ecells" style="grid-template-columns:${ph ? 'repeat(3,minmax(0,1fr))' : `repeat(${n},minmax(0,1fr))`}">${ph ? cells.slice(0, 2).join('') : cells.join('')}${'<div class="ecell empty"></div>'.repeat(ph ? 0 : Math.max(0, n - slots))}</div></div>`;
+}
+// colour picker: hue across, saturation down; a dot per fixture (from CMY)
+function rgbOf(i) { const g = n => A.find(a => a.n === n).v[i] / 100; return [1 - g('Cyan'), 1 - g('Magenta'), 1 - g('Yellow')]; }
+function hsOf(i) { const [r, g, b] = rgbOf(i); const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; let h = 0;
+  if (d) h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [((h * 60) + 360) % 360, mx ? d / mx : 0]; }
+function setHS(i, h, s) { const c = s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = 1 - c; const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  const set = (n, v) => { const a = A.find(q => q.n === n); a.v[i] = Math.round((1 - (v + m)) * 1000) / 10; a.p = 1; }; set('Cyan', r); set('Magenta', g); set('Yellow', b); }
+function pickerHtml() {
+  return `<div class="pick"><div class="hs">${[0, 1, 2, 3].map(i => { const [h, s] = hsOf(i); return `<div class="dot" style="left:${h / 3.6}%;top:${(1 - s) * 100}%;background:${cmyRgb(i)}"></div>`; }).join('')}</div><div class="sws">${[0, 1, 2, 3].map(i => `<i style="background:${cmyRgb(i)}"></i>`).join('')}</div></div>`;
+}
+function pickerCell() { return `<div class="ecell b xy pk" data-pick><div class="an" style="grid-column:1/-1">Colour picker <span>drag · Meow = fan the hue</span></div>${pickerHtml()}</div>`; }
+function shaperHtml() {
+  const bl = i => A.find(a => a.blade === i); const rot = A.find(a => a.n === 'Shaper Rot').v[0];
+  const pos = i => bl(i).v[0] * 0.45;   // % of the beam's size a blade comes in
+  return `<div class="shp"><div class="beam" style="transform:rotate(${rot}deg)">
+    <div class="bl t ${bl(0).p ? 'p' : ''}" data-bl="0" style="height:${pos(0)}%"></div>
+    <div class="bl r ${bl(1).p ? 'p' : ''}" data-bl="1" style="width:${pos(1)}%"></div>
+    <div class="bl b ${bl(2).p ? 'p' : ''}" data-bl="2" style="height:${pos(2)}%"></div>
+    <div class="bl l ${bl(3).p ? 'p' : ''}" data-bl="3" style="width:${pos(3)}%"></div></div></div>`;
+}
+function shaperCell() {
+  const bl = [0, 1, 2, 3].map(i => A.find(a => a.blade === i));
+  return `<div class="ecell b xy sh prog" data-shaper>${shaperHtml()}<div class="blv">${bl.map(a => `<div><span class="an">${a.n}</span> <span class="ev">${show(a)}</span></div>`).join('')}</div></div>`;
+}
+function barC() {
+  const progd = A.filter(a => a.p);
+  const chips = progd.map(a => `<button class="fc" data-open="a${A.indexOf(a)}" aria-pressed="${bankOpen === 'a' + A.indexOf(a)}">${a.n} <span class="v">${show(a)}</span></button>`).join('');
+  const feats = FEATS.map(f => `<button class="fc ${featHas(f) ? '' : 'empty'}" data-open="f${f}" aria-pressed="${bankOpen === 'f' + f}">${FICON[f] || ''}${f}</button>`).join('');
+  let bank = '';
+  if (bankOpen) {
+    const f = bankOpen[0] === 'f' ? bankOpen.slice(1) : A[+bankOpen.slice(1)].f;
+    const special = f === 'Color' ? `<div class="bcol wide" data-pick><div class="bn">Colour picker</div>${pickerHtml()}</div>` : f === 'Shapers' ? `<div class="bcol wide" data-shaper><div class="bn">Shapers</div>${shaperHtml()}</div>` : '';
+    const cols = special + A.filter(a => a.f === f && a.blade === undefined).map(a => {
+      if (!num(a)) return `<div class="bcol lstc" data-l="${A.indexOf(a)}"><div class="bn">${a.n}</div><div class="bv">${show(a)}</div><div class="chips">${a.sets.map(s => { const c = a.v.filter(x => x === s).length; return `<button data-set="${s}" class="${c === 4 ? 'on' : c ? 'on mix' : ''}">${s}</button>`; }).join('')}</div></div>`;
+      const avg = a.v.reduce((s, x) => s + x) / 4;
+      return `<div class="bcol ${a.p ? 'prog' : ''}" data-a="${A.indexOf(a)}"><div class="bn">${a.n}</div><div class="bv">${show(a)}</div><div class="btr"><div class="bfill" style="height:${pct(a, avg)}%"></div>${a.v.map(x => `<div class="btk" style="top:${100 - pct(a, x)}%"></div>`).join('')}</div><button class="bset" type="button" data-kp>Keypad</button>${timRow(a)}</div>`;
+    }).join('');
+    bank = `<div class="bank${timing ? ' tim' : ''}">${cols}<div class="bres">${resBtn()}${timBtn()}</div></div>`;
+  }
+  return `${bank}<div class="crow">${chips || '<span class="si">nothing programmed</span>'}<span class="sep"></span>${feats}<span class="sep"></span><span class="si">Spot 1 Thru 4</span></div>`;
+}
+function lineFor(a, d, fan) {
+  const s = x => `${x >= 0 ? '+' : '-'} ${Math.abs(r1(x))}`;
+  return fan ? `Attribute "${a.n}" At ${s(-d)} Thru ${s(d)}  <span style="color:#8a8a8a">(fan, one Oops step)</span>` : `Attribute "${a.n}" At ${s(d)}  <span style="color:#8a8a8a">(one Oops step)</span>`;
+}
+function dragNum(c, a, vertical) {
+  c.onpointerdown = e => {
+    if (e.target.closest('button')) return;
+    c.setPointerCapture(e.pointerId); c.classList.add('active');
+    const x0 = e.clientX, y0 = e.clientY, v0 = a.v.slice(); let moved = false, d = 0;
+    const fan = !!meow || e.shiftKey;
+    c.onpointermove = ev => {
+      const px = vertical ? (y0 - ev.clientY) : (ev.clientX - x0) - (ev.clientY - y0);
+      if (Math.abs(px) > 4) moved = true; if (!moved) return;
+      d = r1(Math.round(px / 4) * step() * (a.u === '°' ? 2 : 1));
+      a.v = v0.map((x, i) => clamp(a, fan ? x + d * (i / 3 * 2 - 1) : x + d));
+      paintLive(c, a);
+    };
+    c.onpointerup = () => {
+      c.onpointermove = c.onpointerup = null; c.classList.remove('active');
+      if (moved && d) { a.p = 1; log(lineFor(a, d, fan)); drawScreen(); } else if (!moved) openPanel(a);
+    };
+  };
+  c.onwheel = e => { e.preventDefault(); a.v = a.v.map(x => clamp(a, x + (e.deltaY < 0 ? 1 : -1) * step())); a.p = 1; drawScreen(); };
+}
+function paintLive(c, a) {
+  const v = c.querySelector('.ev, .bv'); if (v) v.innerHTML = show(a) + (c.classList.contains('b') && mixed(a) ? ' <small>mixed</small>' : '');
+  const sp = c.querySelector('.spread'); if (sp) sp.outerHTML = spread(a);
+  c.querySelectorAll('.btk').forEach((t, i) => t.style.top = (100 - pct(a, a.v[i])) + '%');
+  const bf = c.querySelector('.bfill'); if (bf) bf.style.height = pct(a, a.v.reduce((s, x) => s + x) / 4) + '%';
+  const eb = c.querySelector('.eband'); if (eb) eb.style.width = pct(a, a.v[0]) + '%';
+}
+function wire(el) {
+  el.querySelectorAll('.fstrip button').forEach(b => b.onclick = () => { feat = b.dataset.f; page = 0; drawScreen(); });
+  el.querySelectorAll('[data-r]').forEach(b => b.onclick = () => { res = b.dataset.r; drawScreen(); });
+  el.querySelectorAll('[data-meow]').forEach(b => b.onclick = () => { meow = meow ? false : 'btn'; markMeow(); });
+  el.querySelectorAll('[data-cyc]').forEach(b => b.onclick = () => { res = { Coarse: 'Fine', Fine: 'Ultra', Ultra: 'Coarse' }[res]; drawScreen(); });
+  el.querySelectorAll('[data-tim]').forEach(b => b.onclick = () => { timing = !timing; drawScreen(); });
+  el.querySelectorAll('[data-fxr]').forEach(b => b.onclick = () => { fxRows = !fxRows; drawScreen(); });
+  el.querySelectorAll('[data-tg2]').forEach(g => {
+    const c = g.closest('[data-a]'); const a = A[+c.dataset.a];
+    g.onpointerdown = e => {
+      e.stopPropagation(); g.setPointerCapture(e.pointerId); const r = g.getBoundingClientRect();
+      const T = a._T = Math.max(2, Math.ceil(((a.delay ?? 0) + (a.fade ?? 0)) * 1.2));
+      const tx = x => (x - r.left) / r.width * T;
+      const t = tx(e.clientX), d0 = a.delay ?? 0, f0 = a.fade ?? 0;
+      const k = a.fade == null ? 'fade' : Math.abs(t - d0) < Math.abs(t - d0 - f0) ? 'delay' : 'fade';
+      const off = (k === 'delay' ? d0 : d0 + f0) - t; let moved = false;
+      g.onpointermove = ev => { const nt = Math.max(0, Math.round((tx(ev.clientX) + off) * 10) / 10); if (Math.abs(ev.clientX - e.clientX) > 3) moved = true; if (!moved) return;
+        if (nt > a._T * .95) a._T = Math.min(30, Math.max(a._T, Math.ceil(nt * 1.1)));
+        if (k === 'delay') a.delay = Math.min(nt, 30); else a.fade = Math.max(0, r1(nt - (a.delay ?? 0)));
+        if (a.delay == null) a.delay = 0;
+        g.outerHTML = tGraph(a); const ng = c.querySelector('[data-tg2]'); ng.setPointerCapture?.(e.pointerId); };
+      const up = () => { delete a._T; if (moved) { a.p = 1; log(`Attribute "${a.n}" At ${k === 'fade' ? 'Fade ' + a.fade : 'Delay ' + a.delay}  <span style="color:#8a8a8a">(programmer timing, one Oops step)</span>`); } else log(`(tap: the slider panel for ${a.n} ${k})`); drawScreen(); };
+      g.onpointerup = up;
+      document.addEventListener('pointerup', function once() { document.removeEventListener('pointerup', once); if (a._T !== undefined) up(); });
+    };
+  });
+  el.querySelectorAll('.ff[data-fk]').forEach(f => {
+    const cell = f.closest('[data-a],[data-xy]'); const a = f.dataset.fxAttr ? A.find(q => q.n === f.dataset.fxAttr) : A[+(cell.dataset.a ?? cell.dataset.xy)]; const { c, l } = fxOf(a); const k = f.dataset.fk;
+    f.onpointerdown = e => { e.stopPropagation(); f.setPointerCapture(e.pointerId); const x0 = e.clientX, y0 = e.clientY, v0 = l[k].slice(), lo0 = l.lo.slice(); const fan = !!meow || e.shiftKey; let d = 0;
+      f.onpointermove = ev => { d = Math.round(((ev.clientX - x0) - (ev.clientY - y0)) / 4) * step(); l[k] = v0.map((x, i) => r1(x + (fan ? d * (i / 3 * 2 - 1) : d))); if (f.dataset.fxAttr) l.lo = l.hi.map(x => -x); f.textContent = `${f.dataset.fxAttr ? f.dataset.fxAttr + ' ±' : k === 'lo' ? 'Lo ' : 'Hi '}${mixed({ v: l[k] }) ? r1(Math.min(...l[k])) + '…' + r1(Math.max(...l[k])) : l[k][0]}`; };
+      f.onpointerup = () => { f.onpointermove = f.onpointerup = null; if (d) { const s2 = x => `${x >= 0 ? '+' : '-'} ${Math.abs(r1(x))}`; log(`Effect ${c.no}.${l.ln} Fixture 1 Thru 4 ${f.dataset.fxAttr ? 'Lo ' + s2(-d) + ' Hi ' + s2(d) : (k === 'lo' ? 'Lo' : 'Hi') + ' ' + (fan ? s2(-d) + ' Thru ' + s2(d) : s2(d))}  <span style="color:#8a8a8a">(into the effect, one Oops step)</span>`); } drawScreen(); };
+    };
+  });
+  el.querySelectorAll('[data-form]').forEach(f => f.onclick = e => { e.stopPropagation(); const a = A[+f.closest('[data-a]').dataset.a]; const { c, l } = fxOf(a); l.form = FORMS[(FORMS.indexOf(l.form) + 1) % FORMS.length]; log(`Set Effect ${c.no}.${l.ln} Form ${l.form}  <span style="color:#8a8a8a">(tap steps; the list mark opens the Form pool)</span>`); drawScreen(); });
+  el.querySelectorAll('[data-call]').forEach(cell => { const c = FX.find(q => q.no === +cell.dataset.call);
+    cell.querySelectorAll('[data-ck]').forEach(f => { const k = f.dataset.ck; f.onpointerdown = e => { f.setPointerCapture(e.pointerId); const x0 = e.clientX, y0 = e.clientY, v0 = c[k]; let moved = false;
+      f.onpointermove = ev => { const px = (ev.clientX - x0) - (ev.clientY - y0); if (Math.abs(px) > 4) moved = true; if (!moved) return; c[k] = k === 'size' ? Math.max(0, Math.min(100, Math.round(v0 + px / 3))) : Math.max(.1, r1(v0 + px / 60)); f.firstChild.textContent = k === 'size' ? c.size + '%' : '×' + r1(c.rate); };
+      f.onpointerup = () => { f.onpointermove = f.onpointerup = null; if (moved) log(k === 'size' ? `Effect ${c.no} At ${c.size}` : `Effect ${c.no} Rate ${r1(c.rate)}`); drawScreen(); }; }; });
+    cell.querySelector('[data-off]').onclick = () => { FX.splice(FX.indexOf(c), 1); log(`Off Effect ${c.no}  <span style="color:#8a8a8a">(fades by the programmer time)</span>`); drawScreen(); };
+    cell.querySelector('[data-stomp]').onclick = () => log(`Stomp Fixture 1 Thru 4  <span style="color:#8a8a8a">(no effect runs on these fixtures until Unstomp)</span>`);
+  });
+  el.querySelectorAll('[data-line]').forEach(cell => { const [cn, ln] = cell.dataset.line.split('.').map(Number); const c = FX.find(q => q.no === cn), l = c.lines.find(q => q.ln === ln);
+    cell.querySelector('[data-lform]').onclick = () => { l.form = FORMS[(FORMS.indexOf(l.form) + 1) % FORMS.length]; log(`Set Effect ${cn}.${ln} Form ${l.form}`); drawScreen(); };
+    const b = cell.querySelector('[data-lk]'); b.onpointerdown = e => { b.setPointerCapture(e.pointerId); const x0 = e.clientX, v0 = l.bpm; let moved = false;
+      b.onpointermove = ev => { if (Math.abs(ev.clientX - x0) > 4) moved = true; if (!moved) return; l.bpm = Math.max(1, Math.round(v0 + (ev.clientX - x0) / 2)); b.textContent = l.bpm + ' BPM'; };
+      b.onpointerup = () => { b.onpointermove = b.onpointerup = null; if (moved) log(`Set Effect ${cn}.${ln} BPM ${l.bpm}`); }; }; });
+  const af = el.querySelector('[data-addfx]'); if (af) af.onclick = () => log('Effect pool opens as a low sheet; a tap runs <code>Effect n</code> on the selection');
+  el.querySelectorAll('.tf').forEach(t => {
+    const c = t.closest('[data-a],[data-l]'); const a = A[+(c.dataset.a ?? c.dataset.l)]; const k = t.dataset.tk;
+    t.onpointerdown = e => { e.stopPropagation(); t.setPointerCapture(e.pointerId); const y0 = e.clientY, x0 = e.clientX, v0 = a[k] ?? 0; let moved = false;
+      t.onpointermove = ev => { const px = (ev.clientX - x0) - (ev.clientY - y0); if (Math.abs(px) > 4) moved = true; if (!moved) return; a[k] = Math.max(0, r1(v0 + Math.round(px / 6) * (res === 'Coarse' ? .5 : .1))); t.innerHTML = `${k === 'fade' ? 'F' : 'D'} ${a[k]}s`; };
+      t.onpointerup = () => { t.onpointermove = t.onpointerup = null; if (moved) log(`Attribute "${a.n}" At ${k === 'fade' ? 'Fade' : 'Delay'} ${a[k]}  <span style="color:#8a8a8a">(programmer timing, one Oops step)</span>`); else log(`(tap: the slider panel for ${a.n} ${k})`); drawScreen(); }; };
+  });
+  el.querySelectorAll('[data-pick] .hs').forEach(hs => {
+    hs.onpointerdown = e => { hs.setPointerCapture(e.pointerId); const r = hs.getBoundingClientRect(); const fan = !!meow || e.shiftKey; const h0 = [0, 1, 2, 3].map(hsOf);
+      const x0 = e.clientX, y0 = e.clientY;
+      const mv = ev => { const dh = (ev.clientX - x0) / r.width * 360, ds = -(ev.clientY - y0) / r.height;
+        [0, 1, 2, 3].forEach(i => setHS(i, ((h0[i][0] + dh * (fan ? (i / 3 * 2 - 1) : 1)) % 360 + 360) % 360, Math.max(0, Math.min(1, h0[i][1] + ds))));
+        hs.closest('[data-pick]').querySelector('.pick').outerHTML = pickerHtml(); };
+      hs.onpointermove = mv; hs.onpointerup = () => { hs.onpointermove = hs.onpointerup = null; log(`Attribute "Cyan" At ${show(A.find(a => a.n === 'Cyan'))}; Attribute "Magenta" At ${show(A.find(a => a.n === 'Magenta'))}; Attribute "Yellow" At ${show(A.find(a => a.n === 'Yellow'))}  <span style="color:#8a8a8a">(${fan ? 'hue fan, ' : ''}one Oops step)</span>`); drawScreen(); };
+    };
+  });
+  el.querySelectorAll('[data-shaper] .bl').forEach(b => {
+    b.onpointerdown = e => { b.setPointerCapture(e.pointerId); const a = A.find(q => q.blade === +b.dataset.bl); const beam = b.parentElement.getBoundingClientRect(); const v0 = a.v.slice(); const x0 = e.clientX, y0 = e.clientY; let d = 0;
+      b.onpointermove = ev => { const i = +b.dataset.bl; const px = i === 0 ? ev.clientY - y0 : i === 2 ? y0 - ev.clientY : i === 1 ? x0 - ev.clientX : ev.clientX - x0;
+        d = Math.round(px / (beam.width * .45) * 100); a.v = v0.map(x => clamp(a, x + d)); a.p = 1;
+        const st = i % 2 ? 'width' : 'height'; b.style[st] = a.v[0] * .45 + '%'; };
+      b.onpointerup = () => { b.onpointermove = b.onpointerup = null; if (d) log(`Attribute "${a.n}" At ${d >= 0 ? '+' : '-'} ${Math.abs(d)}  <span style="color:#8a8a8a">(one Oops step)</span>`); drawScreen(); };
+    };
+  });
+  const pg = el.querySelector('[data-pg]'); if (pg) pg.onclick = () => { page = (page + 1) % Math.ceil(A.filter(a => a.f === feat).length / perPage()); drawScreen(); };
+  el.querySelector('[data-tg]').onclick = () => { barOn[scr] = !barOn[scr]; sheetOpen = false; log(`Set Screen ${scr} EncoderBar ${barOn[scr] ? 'On' : 'Off'}`); drawScreen(); };
+  const h = el.querySelector('.handle'); if (h) h.onclick = () => { sheetOpen = !sheetOpen; drawScreen(); };
+  el.querySelectorAll('[data-open]').forEach(b => b.onclick = () => { bankOpen = bankOpen === b.dataset.open ? null : b.dataset.open; drawScreen(); });
+  el.querySelectorAll('[data-a]').forEach(c => { const a = A[+c.dataset.a]; dragNum(con === 'C' ? c.querySelector('.btr') || c : c, a, con === 'C'); if (con === 'C') { const k = c.querySelector('[data-kp]'); if (k) k.onclick = () => openPanel(a); } });
+  el.querySelectorAll('[data-l]').forEach(c => { const a = A[+c.dataset.l];
+    c.querySelectorAll('[data-set]').forEach(b => b.onclick = () => { a.v = a.v.map(() => b.dataset.set); a.p = 1; log(`Attribute "${a.n}" At "${b.dataset.set}"`); drawScreen(); });
+    if (con === 'A') c.onclick = () => { const i = a.sets.indexOf(a.v[0]); const s = a.sets[(i + 1) % a.sets.length]; a.v = a.v.map(() => s); a.p = 1; log(`Attribute "${a.n}" At "${s}"  <span style="color:#8a8a8a">(A: a tap steps; a list would open)</span>`); drawScreen(); };
+  });
+  el.querySelectorAll('[data-xy]').forEach(c => {
+    const pan = A[+c.dataset.xy], tilt = A.find(x => x.n === pan.xy), pad = c.querySelector('.pad');
+    pad.onpointerdown = e => {
+      pad.setPointerCapture(e.pointerId); const r = pad.getBoundingClientRect(); const x0 = e.clientX, y0 = e.clientY; const p0 = pan.v.slice(), t0 = tilt.v.slice(); let dp = 0, dt = 0;
+      const fan = !!meow || e.shiftKey;
+      pad.onpointermove = ev => {
+        dp = r1((ev.clientX - x0) / r.width * (pan.hi - pan.lo) * (res === 'Coarse' ? 1 : .1));
+        dt = r1(-(ev.clientY - y0) / r.height * (tilt.hi - tilt.lo) * (res === 'Coarse' ? 1 : .1));
+        pan.v = p0.map((x, i) => clamp(pan, fan ? x + dp * (i / 3 * 2 - 1) : x + dp)); tilt.v = t0.map(x => clamp(tilt, x + dt));
+        c.querySelectorAll('.dot:not(.c)').forEach((d, i) => { d.style.left = pct(pan, pan.v[i]) + '%'; d.style.top = (100 - pct(tilt, tilt.v[i])) + '%'; });
+        const evs = c.querySelectorAll('.ev'); evs[0].textContent = show(pan); evs[1].textContent = show(tilt);
+      };
+      pad.onpointerup = () => { pad.onpointermove = pad.onpointerup = null; if (dp || dt) { log(`Attribute "Pan" At ${dp >= 0 ? '+' : '-'} ${Math.abs(dp)}; Attribute "Tilt" At ${dt >= 0 ? '+' : '-'} ${Math.abs(dt)}  <span style="color:#8a8a8a">(one Oops step)</span>`); } drawScreen(); };
+    };
+  });
+
+}
+function openPanel(a) {
+  const el = $('#scr'); el.querySelector('.vpanel')?.remove();
+  const p = document.createElement('div'); p.className = 'vpanel';
+  const avg = () => a.v.reduce((s, x) => s + x) / 4;
+  p.innerHTML = `<div class="vh"><span>${a.n}</span><span>${res}</span></div><div class="vv"></div><div class="vtr"><div class="vfill"></div></div><div class="vrow"><button data-d="-1">−</button><button data-d="1">+</button></div><div class="vrow"><button>Keypad</button><button class="ok">Done</button></div>`;
+  el.append(p);
+  const v0 = a.v.slice(); const upd = () => { p.querySelector('.vv').textContent = show(a); p.querySelector('.vfill').style.height = pct(a, avg()) + '%'; };
+  upd();
+  p.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { a.v = a.v.map(x => clamp(a, x + +b.dataset.d * step())); upd(); });
+  const tr = p.querySelector('.vtr');
+  tr.onpointerdown = e => { tr.setPointerCapture(e.pointerId); const r = tr.getBoundingClientRect(); const s0 = avg(), y0 = e.clientY;
+    tr.onpointermove = ev => { const d = -(ev.clientY - y0) / r.height * (a.hi - a.lo); a.v = v0.map(x => clamp(a, r1(x + (s0 - avg()) + d))); upd(); }; tr.onpointerup = () => tr.onpointermove = null; };
+  p.querySelector('.ok').onclick = () => { const d = r1(avg() - v0.reduce((s, x) => s + x) / 4); if (d) { a.p = 1; log(lineFor(a, d, false)); } p.remove(); drawScreen(); };
+}
+function anim(now) {
+  const el = $('#scr');
+  el.querySelectorAll('.ecell[data-a]').forEach(c => { const a = A[+c.dataset.a]; if (!fxOf(a)) return;
+    c.querySelectorAll('.otk').forEach(o => { o.style.left = pct(a, outAt(a, +o.dataset.o, now)) + '%'; }); });
+  el.querySelectorAll('[data-xy]').forEach(c => { const pan = A[+c.dataset.xy], tilt = A.find(x => x.n === pan.xy);
+    c.querySelectorAll('.dot.o').forEach(o => { const i = +o.dataset.o; o.style.left = pct(pan, outAt(pan, i, now)) + '%'; o.style.top = (100 - pct(tilt, outAt(tilt, i, now))) + '%'; }); });
+  el.querySelectorAll('canvas.wave').forEach(cv => { const [cn, ln] = cv.dataset.w.split('.').map(Number); const c = FX.find(q => q.no === cn); if (!c) return; const l = c.lines.find(q => q.ln === ln);
+    const w = cv.clientWidth, h = cv.clientHeight; if (cv.width !== w * 2) { cv.width = w * 2; cv.height = h * 2; } const g = cv.getContext('2d'); g.setTransform(2, 0, 0, 2, 0, 0); g.clearRect(0, 0, w, h);
+    const ph = (now - t0) / 1000 * l.bpm / 60 * c.rate; g.strokeStyle = '#b07be6'; g.lineWidth = 1.5; g.beginPath();
+    for (let x = 0; x <= w; x += 2) { const y = h - 3 - formAt(l.form, ph + x / w * 2, 0) * (h - 6) * c.size / 100; x ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke();
+    g.fillStyle = '#d1d1d1'; [0, 1, 2, 3].forEach(i => { const y = h - 3 - formAt(l.form, ph + i / 4, i) * (h - 6) * c.size / 100; g.beginPath(); g.arc(4 + i * 8, y, 2.5, 0, 7); g.fill(); }); });
+  requestAnimationFrame(anim);
+}
+requestAnimationFrame(anim);
+seg('#e-con', v => { con = v; page = 0; sheetOpen = false; bankOpen = null; drawScreen(); });
+seg('#e-dev', v => { dev = v; page = 0; sheetOpen = false; drawScreen(); });
+seg('#e-scr', v => { scr = v; sheetOpen = false; drawScreen(); });
+seg('#e-ord', v => { order = v; drawScreen(); });
+drawScreen();
+// ── sheet columns ──
+const FGS = [['Dimmer', '#e6b422'], ['Position', '#4d8fd6'], ['Color', '#d86a7c'], ['Beam', '#3fbf4a']];
+const CUES = [
+  { no: '0.5', name: 'Preset house', trig: 'Go', tt: '', fade: 3, of: '', dl: 0, od: '', cmd: '', info: 'walk-in', fg: [null, null, null, null] },
+  { no: '1', name: 'Opening', trig: 'Go', tt: '', fade: 5, of: '', dl: 0, od: '', cmd: '', info: '', fg: [[5, 1], [2], [5, 1], null] },
+  { no: '2', name: 'Verse 1 warm', trig: 'Go', tt: '', fade: 3, of: 2, dl: 0, od: '', cmd: '', info: 'cue from MD', fg: [[3, 1], [1.5], [3, 1], [3, 1]], act: true },
+  { no: '3', name: 'Chorus big', trig: 'Follow', tt: '', fade: 1, of: '', dl: 0.5, od: '', cmd: 'Go Sequence 7', info: '', fg: [[1, 1], [0.5], [2], null], next: true },
+  { no: '4', name: 'Bridge cold', trig: 'Time', tt: '12.0', fade: 8, of: 4, dl: 0, od: 1, cmd: '', info: 'slow', fg: [[8, 1], [8, 1], [6], [8, 1]] },
+  { no: '5', name: 'Blackout', trig: 'Go', tt: '', fade: 0, of: 2, dl: 0, od: '', cmd: '', info: '', fg: [[0, 1], null, null, null] },
+];
+const SETS = {
+  Compact: { note: 'Cue · Name · Trigger · Fade · Delay · a column per feature group · Info', cols: ['no', 'name', 'trig', 'fade', 'dl', 'FG', 'info'] },
+  'Full': { note: 'Cue · Name · Trigger · Trig time · Fade · Out fade · Delay · Out delay · Command · feature groups · Info', cols: ['no', 'name', 'trig', 'tt', 'fade', 'of', 'dl', 'od', 'cmd', 'FG', 'info'] },
+  Minimal: { note: 'Cue · Name · Fade · Info; feature groups only where the sequence uses them', cols: ['no', 'name', 'fade', 'FGused', 'info'] },
+};
+const H = { no: ['Cue', '56px'], name: ['Name', 'minmax(140px,1fr)'], trig: ['Trigger', '72px'], tt: ['Trig time', '78px'], fade: ['Fade', '58px'], of: ['Out fade', '72px'], dl: ['Delay', '58px'], od: ['Out delay', '76px'], cmd: ['Command', '140px'], info: ['Info', 'minmax(110px,1fr)'] };
+let picked = null;
+function drawSheets() {
+  $('#sheets').innerHTML = Object.entries(SETS).map(([k, s]) => {
+    const cols = [];
+    s.cols.forEach(c => {
+      if (c === 'FG') FGS.forEach((g, i) => cols.push({ fg: i }));
+      else if (c === 'FGused') FGS.forEach((g, i) => { if (CUES.some(q => q.fg[i] && q.fg[i][1] !== 1)) cols.push({ fg: i }); });
+      else cols.push({ c });
+    });
+    const tmpl = cols.map(x => x.fg !== undefined ? '84px' : H[x.c][1]).join(' ');
+    const head = cols.map(x => x.fg !== undefined ? `<div class="h fg"><i style="background:${FGS[x.fg][1]}"></i>${FGS[x.fg][0]}</div>` : `<div class="h ${['no', 'fade', 'dl', 'of', 'od', 'tt'].includes(x.c) ? 'n' : ''}">${H[x.c][0]}</div>`).join('');
+    const rows = CUES.map(q => cols.map((x, ci) => {
+      const rc = (q.act ? ' r-act' : q.next ? ' r-next' : '') + (ci === 0 ? ' first' : '');
+      if (x.fg !== undefined) { const v = q.fg[x.fg]; return v ? `<div class="t${v[1] ? ' inh' : ''}${rc}">${v[1] ? `(${v[0]})` : v[0]}</div>` : `<div class="t none${rc}">·</div>`; }
+      const v = q[x.c];
+      if (x.c === 'no') return `<div class="n${rc}">${v}</div>`;
+      if (['fade', 'dl', 'of', 'od', 'tt'].includes(x.c)) return `<div class="t${rc}">${v === '' ? '' : v}</div>`;
+      if (x.c === 'trig') return `<div class="trig${rc}">${v}</div>`;
+      if (x.c === 'cmd') return `<div class="cmd${rc}">${v}</div>`;
+      if (x.c === 'info') return `<div class="info${rc}">${v}</div>`;
+      return `<div class="${rc.trim()}">${v}</div>`;
+    }).join('')).join('');
+    return `<div class="cmp ${picked === k ? 'pick' : ''}" data-k="${k}"><h3>${k} <small>${s.note}</small><span class="w">${cols.length} columns</span><button class="pickbtn" type="button" data-pick="${k}">${picked === k ? 'Picked' : 'Pick'}</button></h3><div class="gridw"><div class="sg" style="grid-template-columns:${tmpl}">${head}${rows}</div></div></div>`;
+  }).join('');
+  $('#sheets').querySelectorAll('[data-pick]').forEach(b => b.onclick = () => { picked = b.dataset.pick; drawSheets(); });
+}
+drawSheets();
+</script>

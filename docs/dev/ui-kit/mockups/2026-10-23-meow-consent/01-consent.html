@@ -1,0 +1,240 @@
+<title>Meow Consent</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* A proposal page: notes in one column, the working mock (the login surface → the Meow consent → the desk) in the kit's dark theme; the page around it follows the viewer. */
+:root{--bg:#f6f4ef;--fg:#1d1b17;--mute:#6b665c;--line:#d9d4c8;--card:#fffdf8;--gold:#9a7a08;--code:#ecebe4;
+  --font:"IBM Plex Sans",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,monospace;
+  /* the kit's dark theme (tokens.css) */
+  --k-bg:#121212;--k-surface:#1c1c1c;--k-raised:#303030;--k-line:#424242;--k-text:#d1d1d1;--k-dim:#8a8a8a;--k-strong:#ececec;--k-accent:#d4a634;--k-on-accent:#121212;--k-ok:#00a60a;--k-alert:#e10000;--k-scrim:rgba(0,0,0,.55)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--code:#23252c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#15161a;--fg:#e8e6e0;--mute:#9b978d;--line:#33363d;--card:#1d1f25;--gold:#e0b341;--code:#23252c;color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--font);margin:0;padding-block:28px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:1240px;margin:0 auto;display:grid;gap:28px}
+.narrow{max-width:900px}
+h1{font-size:1.75rem;margin:0;text-wrap:balance;line-height:1.2}h2{font-size:1.18rem;margin:0 0 8px;text-wrap:balance}h3{font-size:1rem;margin:2px 0 4px}
+.kicker{color:var(--mute);text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:600}
+p{max-width:74ch;margin:.4em 0}.mute{color:var(--mute)}
+code{font:.86em var(--mono);background:var(--code);padding:1px 5px;border-radius:4px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;min-width:0}
+.two{display:grid;gap:16px;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr)}@media (max-width:860px){.two{grid-template-columns:minmax(0,1fr)}}
+ol.q{margin:0;padding-left:1.3em;display:grid;gap:14px}
+.opts{display:grid;gap:6px;margin-top:6px}
+.opt{border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.opt b{color:var(--gold)}
+.rec{font-size:.75rem;font-weight:600;color:var(--gold);letter-spacing:.04em;text-transform:uppercase;margin-left:6px}
+
+/* ── the mock: the kit's surface ── */
+.stage{position:relative;border-radius:10px;overflow:hidden;min-height:520px;background:var(--k-bg);color:var(--k-text);font-family:var(--font);display:flex;flex-direction:column;border:1px solid var(--line)}
+.sf-bg{position:absolute;inset:0;background:
+  radial-gradient(60% 50% at 25% 30%,rgba(212,166,52,.30),transparent 70%),
+  radial-gradient(50% 60% at 80% 75%,rgba(63,200,216,.18),transparent 70%),
+  radial-gradient(40% 40% at 70% 20%,rgba(216,106,124,.16),transparent 70%),var(--k-bg)}
+.sf-shade{position:absolute;inset:0;background:var(--k-scrim)}
+.sf-top{position:relative;display:flex;gap:14px;align-items:baseline;padding:14px 18px;font-family:var(--mono);font-size:.82rem;color:var(--k-dim);flex-wrap:wrap}
+.sf-top .clock{color:var(--k-strong);font-size:1.4rem;font-variant-numeric:tabular-nums}
+.sf-center{position:relative;flex:1;display:grid;place-items:center;padding:18px}
+.sf-bottom{position:relative;display:flex;justify-content:space-between;padding:10px 18px;font-family:var(--mono);font-size:.78rem;color:var(--k-dim);gap:10px;flex-wrap:wrap}
+.pill{border:1px solid var(--k-line);border-radius:999px;padding:3px 12px;background:rgba(28,28,28,.6)}
+.who{display:grid;justify-items:center;gap:12px;width:min(360px,100%)}
+.avatar{width:84px;height:84px;border-radius:50%;display:grid;place-items:center;font-weight:600;font-size:1.6rem;color:var(--k-on-accent);background:var(--k-accent)}
+.avatar.sm{width:48px;height:48px;font-size:1rem;background:var(--k-raised);color:var(--k-strong);cursor:pointer;border:none}
+.avatar.sm:focus-visible,.btn:focus-visible,.pw:focus-visible{outline:2px solid var(--k-accent);outline-offset:2px}
+.name{color:var(--k-strong);font-size:1.15rem;font-weight:500}
+.pw{width:100%;box-sizing:border-box;height:44px;border-radius:6px;border:1px solid var(--k-line);background:var(--k-surface);color:var(--k-strong);padding:0 12px;font:inherit}
+.row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.err{color:var(--k-alert);font-size:.85rem;min-height:1.2em}
+.btn{min-height:44px;border-radius:6px;border:1px solid var(--k-line);background:var(--k-raised);color:var(--k-strong);font:inherit;padding:6px 14px;cursor:pointer}
+.btn.primary{background:var(--k-accent);color:var(--k-on-accent);border-color:transparent;font-weight:600}
+.btn.ghost{background:transparent}
+/* the consent card: the kit dialog look (.lc-dlg) on the surface */
+.dlg{width:min(520px,100%);border-radius:6px;background:var(--k-surface);border:1px solid var(--k-line);overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.dlg-title{height:50px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 18px;border-bottom:1px solid var(--k-line);color:var(--k-strong);font-weight:500}
+.dlg-meta{font-family:var(--mono);font-size:.78rem;color:var(--k-dim);font-weight:400}
+.dlg-body{padding:18px;display:grid;gap:14px}
+.dlg-body h3{margin:0;font-size:1.15rem;color:var(--k-strong);text-wrap:balance}
+.dlg-body p{margin:0;line-height:1.5}
+.fine{font-size:.82rem;color:var(--k-dim);font-style:italic}
+.warn{border:1px solid color-mix(in srgb,var(--k-alert) 55%,transparent);background:color-mix(in srgb,var(--k-alert) 12%,var(--k-surface));border-radius:6px;padding:8px 10px;font-size:.88rem;line-height:1.45;color:var(--k-strong)}
+.warn b{color:#ff6b6b}
+.btns{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.btns.two-b{grid-template-columns:minmax(0,1fr) minmax(0,2fr)}
+.paw{display:inline-block;margin-right:6px}
+/* the desk after the consent */
+.desk{position:relative;flex:1;display:grid;grid-template-rows:auto 1fr auto;background:var(--k-bg)}
+.desk .bar{height:34px;display:flex;align-items:center;gap:12px;padding:0 12px;border-bottom:1px solid var(--k-line);font-family:var(--mono);font-size:.78rem;color:var(--k-dim)}
+.desk .bar b{color:var(--k-accent)}
+.desk .panes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px}
+.desk .pane{background:var(--k-surface);border:1px solid var(--k-line);border-radius:4px;min-height:120px;padding:8px;font-size:.8rem;color:var(--k-dim)}
+.desk .cmd{height:40px;display:flex;align-items:center;padding:0 12px;border-top:1px solid var(--k-line);font-family:var(--mono);font-size:.82rem;color:var(--k-strong)}
+.toast{position:absolute;right:14px;bottom:52px;background:var(--k-raised);border:1px solid var(--k-line);border-radius:6px;padding:8px 12px;font-size:.82rem;color:var(--k-strong)}
+
+/* switches above the mock */
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ctl button{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:4px 12px;cursor:pointer}
+.ctl button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold);font-weight:600}
+
+/* phone + terminal */
+.phones{display:grid;gap:16px;grid-template-columns:minmax(0,300px) minmax(0,1fr);align-items:start}@media (max-width:760px){.phones{grid-template-columns:minmax(0,1fr)}}
+.phone{border-radius:28px;border:8px solid #2a2a2a;background:var(--k-bg);color:var(--k-text);overflow:hidden;max-width:300px}
+.phone .sheet{margin-top:150px;background:var(--k-surface);border-top:1px solid var(--k-line);border-radius:14px 14px 0 0;padding:16px;display:grid;gap:12px}
+.phone .grab{width:40px;height:4px;border-radius:2px;background:var(--k-line);justify-self:center}
+.phone h3{margin:0;color:var(--k-strong);font-size:1.05rem}
+.phone p{margin:0;font-size:.88rem;line-height:1.45}
+.term{background:#0d0d0d;color:#d1d1d1;border-radius:8px;padding:14px 16px;font:.82rem/1.55 var(--mono);overflow-x:auto;white-space:pre;border:1px solid var(--line)}
+.term .y{color:#d4a634}.term .d{color:#8a8a8a}.term .g{color:#00c40c}
+@media (prefers-reduced-motion:no-preference){.dlg{animation:rise .18s ease-out}@keyframes rise{from{transform:translateY(8px);opacity:.6}to{transform:none;opacity:1}}}
+</style>
+
+<main>
+  <header class="narrow" style="display:grid;gap:8px">
+    <div class="kicker">UI kit mockup · round 1 · 2026-10-23</div>
+    <h1>The Meow consent on every login</h1>
+    <p>Before the repo goes public, every login asks the user to accept the Meow License: on the station page, in the app, in the terminal and after an autologin. The station holds the question as one server dialog (the rule <code>one-server-held-dialog</code>), so every client shows the same ask and none confirms on its own. Until the user consents, the login is not finished: no screen, no feeds that need a user, no lines.</p>
+    <p class="mute">Try it below: pick a user, log in (any password, or none for Guest), and answer the consent.</p>
+  </header>
+
+  <section style="display:grid;gap:10px">
+    <div class="ctl" role="group" aria-label="Buttons variant">
+      <span class="mute" style="font-size:.85rem">Buttons:</span>
+      <button type="button" id="v-a" aria-pressed="true">A · one button + Not me</button>
+      <button type="button" id="v-b" aria-pressed="false">B · Decline + Consent</button>
+      <span class="mute" style="font-size:.85rem;margin-left:8px">Autologin:</span>
+      <button type="button" id="v-auto" aria-pressed="false">Guest, ?autologin=now</button>
+    </div>
+    <div class="stage" id="stage" aria-live="polite"></div>
+  </section>
+
+  <section class="phones">
+    <div>
+      <div class="kicker" style="margin-bottom:6px">Phone</div>
+      <div class="phone" aria-label="Phone mock">
+        <div style="padding:14px 16px;font-family:var(--mono);font-size:.78rem;color:var(--k-dim)">LumaCore A · Bob</div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <h3>Share all your good vibes and purrs with LumaCore</h3>
+          <p>By logging in you agree to share all your good vibes and purrs under the Meow License. Hisses prohibited. By proceeding you confirm you are at least three treats deep into a cosy evening.</p>
+          <p class="warn"><b>Fully vibe-coded software.</b> LumaCore was written with AI and comes with no reliability, no warranty and no promise that it works on your show. Never run anything that matters on it.</p>
+          <button class="btn primary" type="button">I consent — let the meow in</button>
+          <button class="btn ghost" type="button">Not me</button>
+          <p class="fine">(LumaCore accepts no liability for spontaneous keyboard naps.)</p>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;gap:8px;min-width:0">
+      <div class="kicker">Terminal (lumacore-cli, the shell port, the TUI)</div>
+<div class="term" role="img" aria-label="Terminal transcript"><span class="d">[Guest]&gt;</span> Login "Bob"
+Password: ••••
+<span class="y">Share all your good vibes and purrs with LumaCore</span>
+By logging in you agree to share all your good vibes and purrs under
+the Meow License. Hisses prohibited. By proceeding you confirm you are
+at least three treats deep into a cosy evening.
+
+<span style="color:#ff6b6b">! Fully vibe-coded software.</span> LumaCore was written with AI and
+  comes with no reliability, no warranty and no promise that it works
+  on your show. Never run anything that matters on it.
+<span class="d">(LumaCore accepts no liability for spontaneous keyboard naps.)</span>
+
+  <span class="y">1</span>  I consent — let the meow in
+  <span class="y">2</span>  Not me
+<span class="d">Answer 1–2 &gt;</span> 1
+<span class="g">Logged in as Bob.</span>
+<span class="d">[Bob]&gt;</span></div>
+      <p class="mute" style="margin:0">The terminal draws the same server dialog as text (the TUI as its dialog box). Answering <code>2</code>, or closing the connection, leaves you logged out where you were.</p>
+    </div>
+  </section>
+
+  <section class="two">
+    <div class="card">
+      <h2>Questions</h2>
+      <ol class="q">
+        <li><b>The text.</b> As drafted above, from your SlickFM example, with the vibe-coded warning in red above the buttons.
+          <div class="opts"><div class="opt"><b>A</b> Use the draft as is<span class="rec">recommended</span></div><div class="opt"><b>B</b> You send changes</div></div></li>
+        <li><b>The buttons</b> (the switch above the mock).
+          <div class="opts"><div class="opt"><b>A</b> One gold button, plus a quiet <i>Not me</i> that goes back to the user picker<span class="rec">recommended</span></div><div class="opt"><b>B</b> <i>Decline</i> and <i>I consent</i> side by side</div></div></li>
+        <li><b>When it asks.</b> Every login on every path: the page, the app, <code>Login</code> on any terminal, autologin and <code>?autologin=now</code>. Switching to another user also asks; unlocking DeskLock does not, because unlocking is not a login.
+          <div class="opts"><div class="opt"><b>A</b> As written<span class="rec">recommended</span></div><div class="opt"><b>B</b> DeskLock unlock asks too</div></div></li>
+        <li><b>The record.</b> Each consent writes one line to the station log: <code>Bob consented to the Meow License</code>. Nothing goes into the show file.
+          <div class="opts"><div class="opt"><b>A</b> Log line only<span class="rec">recommended</span></div><div class="opt"><b>B</b> No record</div></div></li>
+        <li><b>The license itself.</b> The repo's code license stays MIT OR Apache-2.0. The Meow License is the in-app consent only.
+          <div class="opts"><div class="opt"><b>A</b> In-app only<span class="rec">recommended</span></div><div class="opt"><b>B</b> Also add a playful <code>MEOW-LICENSE.md</code> to the repo, with the text the dialog shows</div></div></li>
+      </ol>
+    </div>
+    <div class="card" style="display:grid;gap:10px;align-content:start">
+      <h2>How it is built</h2>
+      <p>A successful <code>/api/login</code> (or <code>Login</code> line) does not hand out a working session straight away. The station marks the login as <i>pending consent</i> and returns one held dialog to that client only. Its buttons are lines: <code>Consent</code> finishes the login, <code>Logout</code> drops it.</p>
+      <p>A pending login gets only the open feeds and the station view, the same as before a login. Every other line is refused with a new error code until the user consents.</p>
+      <p>No show-format change. The wire gains one dialog kind, so <code>SESSION_PROTOCOL</code> and <code>CLIENT_PROTOCOL</code> go up by one. The decision goes in a new record.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+const stage = document.getElementById('stage');
+const st = { view: 'pick', user: null, variant: 'a', auto: false, err: '' };
+const USERS = [{ n: 'Admin', i: 'AD' }, { n: 'Bob', i: 'BO' }, { n: 'Guest', i: 'GU', open: true }];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const clock = () => new Date().toTimeString().slice(0, 5);
+
+function frame(inner, status) {
+  return `<div class="sf-bg"></div><div class="sf-shade"></div>
+    <div class="sf-top"><span>Thu 23 Oct</span><span class="clock">${clock()}</span><span>LumaCore A · station</span></div>
+    <div class="sf-center">${inner}</div>
+    <div class="sf-bottom"><span class="pill">Servers…</span><span>${esc(status)}</span><span class="pill">Meow+F9 locks</span></div>`;
+}
+
+function render() {
+  if (st.view === 'desk') {
+    stage.innerHTML = `<div class="desk"><div class="bar"><b>A1 S1</b><span>demo show</span><span>${esc(st.user.n)}</span></div>
+      <div class="panes"><div class="pane">Fixtures</div><div class="pane">Groups</div><div class="pane">Presets</div></div>
+      <div class="cmd">[${esc(st.user.n)}]&gt;</div>
+      <div class="toast">Logged in as ${esc(st.user.n)}</div></div>
+      <div style="position:absolute;top:44px;right:12px"><button type="button" class="btn" id="again">Log out and try again</button></div>`;
+    stage.querySelector('#again').onclick = () => { st.view = 'pick'; st.user = null; render(); };
+    return;
+  }
+  if (st.view === 'consent') {
+    const notMe = `<button type="button" class="btn ghost" data-a="notme">Not me</button>`;
+    const decline = `<button type="button" class="btn" data-a="notme">Decline</button>`;
+    const yes = `<button type="button" class="btn primary" data-a="yes"><span class="paw" aria-hidden="true">🐾</span>I consent — let the meow in</button>`;
+    const btns = st.variant === 'a' ? `<div class="btns">${yes}${notMe}</div>` : `<div class="btns two-b">${decline}${yes}</div>`;
+    stage.innerHTML = frame(`<div class="dlg" role="dialog" aria-labelledby="ct">
+      <div class="dlg-title"><span>Meow License</span><span class="dlg-meta">${esc(st.user.n)} · asks every login</span></div>
+      <div class="dlg-body">
+        <h3 id="ct">Share all your good vibes and purrs with LumaCore</h3>
+        <p>By logging in you agree to share all your good vibes and purrs under the Meow License. Hisses prohibited. By proceeding you confirm you are at least three treats deep into a cosy evening.</p>
+        <p class="warn"><b>Fully vibe-coded software.</b> LumaCore was written with AI and comes with no reliability, no warranty and no promise that it works on your show. Never run anything that matters on it.</p>
+        ${btns}
+        <p class="fine">(LumaCore accepts no liability for spontaneous keyboard naps.)</p>
+      </div></div>`, `${st.user.n} · waiting for consent`);
+    stage.querySelectorAll('[data-a]').forEach(b => b.onclick = () => {
+      if (b.dataset.a === 'yes') st.view = 'desk'; else { st.view = 'pick'; st.user = null; st.err = 'Not logged in: the Meow License was not accepted.'; }
+      render();
+    });
+    stage.querySelector('.btn.primary').focus();
+    return;
+  }
+  const u = st.user || USERS[1];
+  const others = USERS.filter(x => x !== u).map(x => `<button type="button" class="avatar sm" data-u="${x.n}" title="${x.n}" aria-label="${x.n}">${x.i}</button>`).join('');
+  stage.innerHTML = frame(`<form class="who" id="lf">
+      <div class="avatar" aria-hidden="true">${u.i}</div><div class="name">${u.n}</div>
+      ${u.open ? '<div class="mute" style="color:var(--k-dim)">No password</div>' : '<input class="pw" id="pw" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password">'}
+      <button class="btn primary" type="submit" style="width:100%">Log in</button>
+      <div class="err">${esc(st.err)}</div>
+      <div class="row">${others}</div></form>`, 'Station reachable');
+  st.user = u;
+  stage.querySelector('#lf').onsubmit = e => { e.preventDefault(); st.err = ''; st.view = 'consent'; render(); };
+  stage.querySelectorAll('[data-u]').forEach(b => b.onclick = () => { st.user = USERS.find(x => x.n === b.dataset.u); st.err = ''; render(); });
+}
+
+function press(id, on) { document.getElementById(id).setAttribute('aria-pressed', on ? 'true' : 'false'); }
+document.getElementById('v-a').onclick = () => { st.variant = 'a'; press('v-a', 1); press('v-b', 0); render(); };
+document.getElementById('v-b').onclick = () => { st.variant = 'b'; press('v-a', 0); press('v-b', 1); render(); };
+document.getElementById('v-auto').onclick = () => {
+  st.auto = !st.auto; press('v-auto', st.auto);
+  if (st.auto) { st.user = USERS[2]; st.view = 'consent'; st.err = ''; } else { st.view = 'pick'; }
+  render();
+};
+render();
+</script>

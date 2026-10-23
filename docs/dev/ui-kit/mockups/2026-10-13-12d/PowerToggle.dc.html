@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Power toggle</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#9a7a08}a:hover{color:#c9a227}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; color: #d1d1d1; font-family: 'Myriad Pro', 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0b0b0b; padding: 28px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px">
+  <div style="display: flex; gap: 8px; align-items: center">
+    <span style="font-size: 14px; color: #9c9c9c; margin-right: 6px">State</span>
+    <sc-for list="{{states}}" as="o" hint-placeholder-count="3"><button type="button" onClick="{{o.go}}" style="height: 44px; padding: 0 16px; border-radius: 22px; border: 1px solid {{o.b}}; background: #1c1c1c; color: #d1d1d1; font: inherit; font-size: 14px">{{o.label}}</button></sc-for>
+    <span style="font-size: 14px; color: #9c9c9c; margin-left: 16px">Each sits where the power toggle goes: the right end of the function block, 2 rows × 60 px (136 px), ~230 px wide. Tap a toggle to flip it.</span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; flex: 1">
+    <sc-for list="{{variants}}" as="v" hint-placeholder-count="4">
+      <div style="border-radius: 6px; border: 1px solid #303030; background: #141414; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+        <span style="font-size: 16px; font-weight: 500">{{v.name}}</span>
+        <span style="font-size: 13px; color: #9c9c9c; line-height: 1.4">{{v.note}}</span>
+        <div style="height: 136px; border-radius: 6px; background: #1c1c1c; border: 1px solid #303030; padding: 8px; display: grid; grid-template-columns: 1fr 1fr 230px; gap: 6px; box-sizing: border-box">
+          <span style="border-radius: 6px; border: 1px solid #424242; background: #303030"></span>
+          <span style="border-radius: 6px; border: 1px solid #424242; background: #262626"></span>
+          <sc-if value="{{v.isA}}" hint-placeholder-val="{{ true }}">
+            <button type="button" onClick="{{flip}}" style="border-radius: 6px; border: 1px solid {{a.border}}; background: {{a.bg}}; color: #d1d1d1; font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; position: relative; overflow: hidden">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="{{a.icon}}" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 2v10"></path><path d="M18.4 6.6a9 9 0 1 1-12.8 0"></path></svg>
+              <span style="font-size: 16px; font-weight: 600; letter-spacing: 0.04em">{{a.word}}</span>
+              <span style="font-size: 12px; color: {{a.subC}}">{{a.sub}}</span>
+              <span style="position: absolute; left: 0; right: 0; bottom: 0; height: 5px; background: {{a.icon}}"></span>
+            </button>
+          </sc-if>
+          <sc-if value="{{v.isB}}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{flip}}" style="border-radius: 6px; border: 1px solid {{b.border}}; background: {{b.bg}}; color: #d1d1d1; font: inherit; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 0 14px; text-align: left">
+              <span style="display: flex; align-items: center; gap: 12px"><span style="width: 92px; height: 48px; border-radius: 24px; background: {{b.track}}; position: relative; flex-shrink: 0; border: 1px solid {{b.trackB}}"><span style="position: absolute; top: 4px; left: {{b.knobX}}px; width: 38px; height: 38px; border-radius: 19px; background: {{b.knob}}"></span></span><span style="font-size: 20px; font-weight: 600">{{b.word}}</span></span>
+              <span style="font-size: 12px; color: {{b.subC}}">{{b.sub}}</span>
+            </button>
+          </sc-if>
+          <sc-if value="{{v.isC}}" hint-placeholder-val="{{ false }}">
+            <div style="border-radius: 6px; border: 1px solid {{c.border}}; background: #1c1c1c; display: flex; flex-direction: column; overflow: hidden">
+              <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr">
+                <button type="button" onClick="{{setOn}}" style="border: none; background: {{c.onBg}}; color: {{c.onFg}}; font: inherit; font-size: 18px; font-weight: 600">ON</button>
+                <button type="button" onClick="{{setOff}}" style="border: none; border-left: 1px solid #303030; background: {{c.offBg}}; color: {{c.offFg}}; font: inherit; font-size: 18px; font-weight: 600">OFF</button>
+              </div>
+              <span style="height: 34px; display: flex; align-items: center; padding: 0 10px; font-size: 12px; color: {{c.subC}}; border-top: 1px solid #303030; background: {{c.lineBg}}">{{c.sub}}</span>
+            </div>
+          </sc-if>
+          <sc-if value="{{v.isD}}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{flip}}" style="border-radius: 6px; border: 1px solid {{d.border}}; background: {{d.bg}}; color: #d1d1d1; font: inherit; display: flex; align-items: center; gap: 14px; padding: 0 14px; text-align: left">
+              <span style="width: 64px; height: 64px; border-radius: 32px; border: 3px solid {{d.ring}}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: {{d.glow}}"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="{{d.ring}}" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 2v10"></path><path d="M18.4 6.6a9 9 0 1 1-12.8 0"></path></svg></span>
+              <span style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; color: #9c9c9c">Network</span><span style="font-size: 20px; font-weight: 600">{{d.word}}</span><span style="font-size: 12px; color: {{d.subC}}">{{d.sub}}</span></span>
+            </button>
+          </sc-if>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(p){ super(p); this.state = { st: 'on' }; }
+  renderVals() {
+    const s = this.state;
+    const OK = '#00a60a', OFFC = '#7a1c1c', AL = '#e10000';
+    const states = [['on', 'On'], ['off', 'Off'], ['fail', 'On but failing']].map(([k, label]) => ({ label, b: s.st === k ? '#9a7a08' : '#424242', go: () => this.setState({ st: k }) }));
+    const on = s.st !== 'off', fail = s.st === 'fail';
+    const sub = fail ? 'No link serves LumaSession' : on ? 'Press: go offline (asks)' : 'Press: go online';
+    const subC = fail ? '#ffb3a8' : '#9c9c9c';
+    const word = fail ? 'ONLINE · FAILING' : on ? 'ONLINE' : 'OFFLINE';
+    const a = { word, sub, subC, icon: fail ? '#ff6a5a' : on ? OK : '#a03030', bg: fail ? '#4a1414' : '#262626', border: fail ? '#a01010' : '#424242' };
+    const b = { word: fail ? 'On · failing' : on ? 'Online' : 'Offline', sub, subC, track: fail ? '#7a1c1c' : on ? '#0d4a12' : '#303030', trackB: fail ? '#e10000' : on ? OK : '#424242', knob: fail ? '#ff6a5a' : on ? '#5fd35f' : '#787878', knobX: on ? 48 : 4, bg: fail ? '#3a1212' : '#262626', border: fail ? '#a01010' : '#424242' };
+    const c = { onBg: on ? (fail ? '#7a1c1c' : '#0d4a12') : '#262626', onFg: on ? '#ffffff' : '#787878', offBg: on ? '#262626' : '#4a2222', offFg: on ? '#787878' : '#ffffff', sub, subC, border: fail ? '#a01010' : '#424242', lineBg: fail ? '#3a1212' : '#1c1c1c' };
+    const d = { word: fail ? 'Online — failing' : on ? 'Online' : 'Offline', sub, subC, ring: fail ? '#ff6a5a' : on ? OK : '#a03030', glow: on && !fail ? '0 0 14px rgba(0,166,10,0.45)' : 'none', bg: fail ? '#3a1212' : '#262626', border: fail ? '#a01010' : '#424242' };
+    const variants = [
+      { name: 'A · Console tile', note: 'Big icon centred, state word, a coloured bar along the bottom. Failing fills the tile dark red. Closest to established consoles.', isA: true },
+      { name: 'B · Slide switch', note: 'A large switch you can read across the room (knob right = on), state word and what a press does under it.', isB: true },
+      { name: 'C · ON | OFF halves', note: 'Two halves like a console button pair; the active half is filled. Tap the half you want (no flip by accident).', isC: true },
+      { name: 'D · Ring + words', note: 'A ring that glows when on, the menu name, the state and what a press does.', isD: true }
+    ].map(v => ({ isA: false, isB: false, isC: false, isD: false, ...v }));
+    const flip = () => this.setState({ st: on ? 'off' : 'on' });
+    return { states, variants, a, b, c, d, flip, setOn: () => this.setState({ st: 'on' }), setOff: () => this.setState({ st: 'off' }) };
+  }
+}
+</script>
+</body>
+</html>
