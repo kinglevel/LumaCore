@@ -4,7 +4,7 @@ Built by `scripts/unix/docs_check --index` from every record's frontmatter; do n
 One file per binding decision; a reversal is a new record that supersedes the old one.
 The log these came from is frozen at `docs/archive/decisions-2026-10.md`; `source` cites its section and lines.
 
-Records: 217.
+Records: 218.
 
 ## attributes
 
@@ -64,6 +64,7 @@ Records: 217.
 | [0128](0128-relative-numbers-on-station.md) | Relative numbers are parsed on the station | built | [E-CMD-008, `relative_tests`] | [archive §30 L4161–4164 "unparseable was 0 %"] | [archive §30 L4082–4084, archive §30 L4161–4164, archive §30 L4538] |
 | [0129](0129-errors-coded.md) | Every error reply carries a code | built | [tidy `error_replies_carry_a_code`, the sweep's `uncoded-error` finding, the error catalog's format and uniqueness test] | [archive §26 L2514–2522 "handler string errors"] | [archive §26 L2514–2522, archive §29 L3112–3116, archive §29 L3262–3265] |
 | [0293](0293-presets-link-into-cues-update-recast-extract.md) | Presets link into cues; Update, Recast, Extract | built | [objects::preset::links tests, a_cue_value_from_a_preset_keeps_only_its_link, an_older_show_upgrades_step_by_step_to_today, a_linked_value_shows_its_preset_by_the_show_setting, a_linked_preset_is_used_by_its_cues, kit-update.spec.ts] | [one-preset-pool-follows-the-programmer] | [session 2026-10-23, preset links rounds 1–3 — docs/dev/ui-kit/mockups/2026-10-23-preset-links/ (03 approved: "approved"), how a reference console updates, recasts and extracts presets (session research)] |
+| [0296](0296-paint-verb-and-theme-slots.md) | Paint is a verb; a theme's colours are its Slot | built | [paint_opens_the_picker_on_the_objects_with_their_set_line, kit-paint.spec.ts "Paint Group 2 typed opens the picker", every_name_means_one_thing, lum_words.golden.txt, the_programmers_keys_are_lumacores_rows] | [0294 "Theme Paint" — the theme's colour object's name only: it is `Slot` now] | [docs/plans/active/2026-10-23-profile-and-key-editor.md, the user in session 2026-10-24 ("Paint group 1 and the color picker opens directly"; the choice "Rename slots to Slot")] |
 
 ## crates
 

@@ -168,9 +168,9 @@ test('the theme editor\'s Paint tab: 15 slots, change Position, Add a slot, Rese
   const red = pk.locator('.lc-pk-pal button[data-name="Red"]');
   const hex = (await red.getAttribute('data-hex'))!;
   await red.click();
-  await expect(pk.locator('[data-line]')).toHaveText(`Set Theme Paint "Position" "${hex}"`);
+  await expect(pk.locator('[data-line]')).toHaveText(`Set Theme Slot "Position" "${hex}"`);
   await pk.locator('[data-please]').click();
-  await server.waitSysmon(/Set Theme Paint "Position" "#[0-9a-f]{6}"/, from);
+  await server.waitSysmon(/Set Theme Slot "Position" "#[0-9a-f]{6}"/, from);
   await expect(tab.locator('[data-paint-count]')).toHaveText('15 slots · 1 changed');
   await expect(tab.locator('.lc-gc[data-k="Position"][data-col="colour"]')).toContainText(hex);
   // Add a slot: the kit dialog asks the name.
@@ -180,14 +180,14 @@ test('the theme editor\'s Paint tab: 15 slots, change Position, Add a slot, Rese
   await expect(dlg).toBeVisible();
   await dlg.locator('input[data-field="0"]').fill('Haze');
   await dlg.locator('.lc-dlg-btn[data-primary="1"]').click();
-  await server.waitSysmon(/Store Theme Paint "Haze"/, from);
+  await server.waitSysmon(/Store Theme Slot "Haze"/, from);
   await expect(rows).toHaveCount(16);
   await expect(tab.locator('.lc-gc[data-k="Haze"][data-col="kind"]')).toHaveText('yours');
   await expect(ed).toBeVisible();
   // Reset to LumaCore: Position back, Haze gone.
   from = server.mark();
   await tab.locator('[data-paint-reset]').click();
-  await server.waitSysmon(/Reset Theme Paint "(Position|Haze)"/, from);
+  await server.waitSysmon(/Reset Theme Slot "(Position|Haze)"/, from);
   await expect(rows).toHaveCount(15);
   await expect(tab.locator('[data-paint-count]')).toHaveText('15 slots');
   await expect(tab.locator('[data-paint-reset]')).toBeDisabled();
@@ -208,4 +208,24 @@ test('the Showroom opens the picker in each mode on the live feed', async ({ pag
     await page.keyboard.press('Escape');
     await expect(picker(page)).toHaveCount(0);
   }
+});
+
+// `Paint Group 2` (decisions 0296): the picker straight from a typed line; its Please is the Set line.
+test('Paint Group 2 typed opens the picker; Please paints the group; Paint Sequence 1 too', async ({ page }) => {
+  await start(page);
+  await cmd(page, 'Paint Group 2');
+  const pk = picker(page);
+  await expect(pk).toBeVisible();
+  await expect(pk.locator('.lc-pk-pal button, .lc-pk-theme button, [data-sv]').first()).toBeVisible();
+  await pk.locator('[data-mode="Palette"]').click();
+  await pk.locator('.lc-pk-pal button[data-name="Green"]').click();
+  await expect(pk.locator('[data-line]')).toHaveText('Set Group 2 "Paint" Green');
+  const from = server.mark();
+  await pk.locator('[data-please]').click();
+  await server.waitSysmon(/Set Group 2 "Paint" Green → ok/, from);
+  await expect(picker(page)).toHaveCount(0);
+  await cmd(page, 'Paint Sequence 1');
+  await expect(picker(page)).toBeVisible();
+  await expect(picker(page).locator('[data-line]')).toContainText('Set Sequence 1 "Paint"');
+  await page.keyboard.press('Escape');
 });

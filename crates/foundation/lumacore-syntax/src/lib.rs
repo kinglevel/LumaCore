@@ -31,7 +31,7 @@ pub use grammar::{GRAMMAR, KEYWORDS, grammar_listing, is_word};
 pub use highlight::{Class, highlight};
 pub use lex::{Token, TokenKind, lex};
 pub use parse::{Line, Origin, parse};
-pub use print::print;
+pub use print::{print, target_text};
 pub use vocab::{FenceDef, ObjectDef, OptionDef, VerbDef, Vocabulary, WordDef, WordId};
 
 pub use ast::Statement;

@@ -288,7 +288,7 @@ export function buildShowroom() {
   const slotBtn = document.createElement('luma-button');
   slotBtn.setAttribute('icon', 'palette');
   slotBtn.setAttribute('label', 'Paint · a theme slot');
-  slotBtn.addEventListener('click', () => openPaint({ object: 'Theme Paint', name: 'Position', slot: true, line: 'Set Theme Paint "Position" {value}', value: '' }, { run: line => toast(line) }));
+  slotBtn.addEventListener('click', () => openPaint({ object: 'Theme Slot', name: 'Position', slot: true, line: 'Set Theme Slot "Position" {value}', value: '' }, { run: line => toast(line) }));
   pkBox.append(slotBtn);
   root.append(section('luma-paint — the paint picker on the live paint feed: Palette (the station\'s hues and tones, greys, none), Free (square + hue strip), Theme (your slots), Recent, Examples, Hex, the Line', pkBox));
 

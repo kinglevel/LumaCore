@@ -52,8 +52,8 @@ pub fn view(show: &ShowData, user: &str, profile: Option<u32>) -> Value {
                 "default": s.default,
                 "changed": s.changed,
                 "added": s.default.is_none(),
-                "line": format!("Set {owner}Theme Paint \"{}\" {{value}}", s.name),
-                "reset": format!("Reset {owner}Theme Paint \"{}\"", s.name),
+                "line": format!("Set {owner}Theme Slot \"{}\" {{value}}", s.name),
+                "reset": format!("Reset {owner}Theme Slot \"{}\"", s.name),
             })
         })
         .collect();
@@ -70,14 +70,14 @@ pub fn view(show: &ShowData, user: &str, profile: Option<u32>) -> Value {
         // By number: `Theme` after a bare `UserProfile "…"` would read as its child.
         "mode_line": own.map(|n| format!("Set UserProfile {n} \"PaintMode\" {{value}}")),
         "profile": p.map(|p| p.meta.identity.name.clone().unwrap_or_default()),
-        "add": format!("Store {owner}Theme Paint {{name}} {{value}}"),
+        "add": format!("Store {owner}Theme Slot {{name}} {{value}}"),
         "reset_all": slots_reset(&owner, &theme),
     })
 }
 
 /// "Reset to LumaCore": the line putting every changed or added slot back (one Oops step each).
 fn slots_reset(owner: &str, theme: &lumacore_tree::media::Theme) -> String {
-    theme.slots.iter().map(|s| format!("Reset {owner}Theme Paint \"{}\"", s.name)).collect::<Vec<_>>().join("; ")
+    theme.slots.iter().map(|s| format!("Reset {owner}Theme Slot \"{}\"", s.name)).collect::<Vec<_>>().join("; ")
 }
 
 // ████████╗███████╗███████╗████████╗███████╗

@@ -79,9 +79,9 @@ pub const SESSION_PROTOCOL: u32 = 22;
 /// `Paint` field input and the `paint` feed, a row's `paint` / `paint_from` in the grids, pools,
 /// tree, view bar, devices and sequence feeds, the `rules` feed; 29 = keys per shortcut mode
 /// (decisions 0295): the `key_editor` UI event and the `keys` feed; 30 = a key's `base` (the
-/// letter where it sits, a Mac's Option keys).
+/// letter where it sits, a Mac's Option keys); 31 = the `paint_picker` UI event (`Paint <target>`).
 /// A client only attaches when it matches (E-WIRE-001).
-pub const CLIENT_PROTOCOL: u32 = 30;
+pub const CLIENT_PROTOCOL: u32 = 31;
 
 /// The refusal a station sends a client speaking another client protocol.
 pub fn client_mismatch(client: u32, station: u32) -> String {

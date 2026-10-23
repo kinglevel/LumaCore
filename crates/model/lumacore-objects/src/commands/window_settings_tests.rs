@@ -103,7 +103,7 @@ fn a_profiles_preferences_are_typed_settings_on_six_tabs() {
     assert_eq!(base.line, "Set UserProfile 2 Theme \"Base\" {value}");
     assert_eq!(base.section, "Look");
     let accent = f.iter().find(|f| f.name == "Accent").unwrap();
-    assert_eq!(accent.line, "Set UserProfile 2 Theme Paint \"Accent\" {value}");
+    assert_eq!(accent.line, "Set UserProfile 2 Theme Slot \"Accent\" {value}");
     assert_eq!(f.iter().find(|f| f.name == "AutoLock").unwrap().section, "Lock screen");
     let out = run(&mut state, &base.line.replace("{value}", "Night"));
     assert_eq!(state.root.show_data.user_profiles[&2].settings.theme.preset, "Night", "{out}");
@@ -120,7 +120,7 @@ fn a_theme_typed_alone_opens_its_settings() {
         _ => None,
     }).unwrap_or_else(|| panic!("{out}"));
     assert_eq!(f.iter().find(|f| f.name == "Base").unwrap().line, "Set Theme \"Base\" {value}");
-    assert!(f.iter().any(|f| f.line == "Set Theme Paint \"Accent\" {value}"));
+    assert!(f.iter().any(|f| f.line == "Set Theme Slot \"Accent\" {value}"));
     // Owner first: another profile's theme.
     state.ui_requests.clear();
     let out = run(&mut state, "EditSetting UserProfile 2 Theme");

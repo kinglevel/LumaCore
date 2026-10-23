@@ -1667,6 +1667,10 @@ function handleUiEvent(ev) {
   if (ev.action === 'attribute_board') return openAttributeBoard(ev);
   if (ev.action === 'sequence_sheet') return openSequenceSheet(ev.sequence);
   if (ev.action === 'key_editor') return openKeyEditor();
+  // `Paint <target>` (decisions 0296): the kit's picker on those objects; its Please is the line.
+  if (ev.action === 'paint_picker') {
+    return LumaKit.paint.openPaint({ object: ev.object, name: ev.name, no: /(\d+)$/.exec(ev.object)?.[1] ?? '', line: ev.line, value: ev.value }, { run: wsCommand });
+  }
   if (ev.action === 'close_menu') {
     menuEpoch++;
     document.querySelectorAll('.mo-overlay.open').forEach(o => closeMenuOverlay(o.id));
@@ -4432,7 +4436,7 @@ function openObjectSettings(ev) {
   // too and opens in the settings window, its Look tab offering the editor.
   const fields = ev.fields || [];
   const base = fields.find(f => f.name === 'Base' && /Theme "Base"/.test(f.line || ''));
-  if (base && fields.every(f => !f.line || /\bTheme (Paint )?"/.test(f.line))) { openThemeEditor(ev, base); return; }
+  if (base && fields.every(f => !f.line || /\bTheme (Slot )?"/.test(f.line))) { openThemeEditor(ev, base); return; }
   // A kit dialog waiting for an object's fields (the Import MVR dialog's Options step takes the
   // profile's "MVR import" section): it says so by preventing the event.
   if (!document.dispatchEvent(new CustomEvent('lc-fields', { detail: ev, cancelable: true }))) return;
@@ -4551,7 +4555,7 @@ const DEVICE = (() => {
   } catch(_) { return 'tab-' + Math.random().toString(36).slice(2, 12); }
 })();
 const LAST_USER_KEY = 'lumacore.lastUser';
-const QUEUED_WHILE_LOCKED = new Set(['edit_settings', 'open_menu', 'attribute_board', 'key_editor']);
+const QUEUED_WHILE_LOCKED = new Set(['edit_settings', 'open_menu', 'attribute_board', 'key_editor', 'paint_picker']);
 let loggedIn = false;
 let loginError = '';
 let station = null;

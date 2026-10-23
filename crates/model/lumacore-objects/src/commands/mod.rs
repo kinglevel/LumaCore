@@ -28,6 +28,7 @@ pub mod menus;
 pub mod meta_paint;
 pub mod oops;
 pub mod output;
+pub mod paint_object;
 pub mod paint_slots;
 pub mod patch;
 pub mod playback;

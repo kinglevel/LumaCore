@@ -68,7 +68,7 @@ class LumaPeople extends HTMLElement {
     // The window shows a profile's settings as on the board: the theme's
     // Paint colours are the theme editor's (12g).
     this.title = title;
-    this.fields = fields.filter(f => !/ Theme Paint "/.test(f.line));
+    this.fields = fields.filter(f => !/ Theme Slot "/.test(f.line));
     this.settings.update(this.settingsSpec());
   }
   /** The picked profile when it is the locked template (Default). */

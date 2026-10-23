@@ -470,7 +470,7 @@ OutputWhenAlone — property
 Overwrite — value
 Packed — value
 PacketGap — property
-Paint — object
+Paint — verb
 PaintMode — property
 Palette — value
 Parent — value
@@ -594,6 +594,7 @@ Sidebars — object
 Since — property
 Size — property
 Sky — value
+Slot — object
 Slots — property
 Small — value
 Snap — value
@@ -626,7 +627,7 @@ Teal — value
 Terminal — value
 Text — property
 TextDim — property
-Theme — object children:Paint · value
+Theme — object children:Slot · value
 ThemeOverride — property
 Time — property
 Timecode — object ids:1

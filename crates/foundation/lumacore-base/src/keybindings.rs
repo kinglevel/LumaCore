@@ -193,7 +193,7 @@ pub const PRG_KEYS: &[LayerKey] = &[
     LayerKey::prg("Alt-S", "prg.alt-s", "Sequence", &["Sequence"]),
     // Verbs
     LayerKey::prg("A", "prg.a", "At", &["At", "At 100"]),
-    LayerKey::prg("Alt-A", "prg.alt-a", "Assign", &["Assign", "Label"]).meow(&["Set"]),
+    LayerKey::prg("Alt-A", "prg.alt-a", "Assign", &["Assign", "Label", "Paint"]).meow(&["Set"]),
     LayerKey::prg("E", "prg.e", "Edit", &["Edit", "EditSetting"]),
     LayerKey::prg("S", "prg.s", "Store", &["Store"]).meow(&["Store /Merge"]),
     LayerKey::prg("U", "prg.u", "Update", &["Update"]).meow(&["Recast"]),

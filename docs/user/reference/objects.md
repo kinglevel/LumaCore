@@ -4,7 +4,7 @@
 
 Every object keyword, generated from the object registry: what you can do to it (its verbs — the command words are in [commands.md](commands.md)), where it lives in the object tree, which properties `Set` may change and the rights level each verb needs (Guest < Playback < Presets < Program < Setup < Admin).
 
-[ArtNet](#artnet) · [Asset](#asset) · [AssetRoot](#assetroot) · [Attribute](#attribute) · [AttributeRule](#attributerule) · [AttributeTemplate](#attributetemplate) · [Blind](#blind) · [Claims](#claims) · [Client](#client) · [Clock](#clock) · [Cue](#cue) · [CurvePreset](#curvepreset) · [DataPool](#datapool) · [DeskLock](#desklock) · [Device](#device) · [DMX](#dmx) · [Drive](#drive) · [Effect](#effect) · [EffectEngine](#effectengine) · [EncoderBar](#encoderbar) · [Error](#error) · [Executor](#executor) · [FeatureGroup](#featuregroup) · [Fixture](#fixture) · [FixtureType](#fixturetype) · [Freeze](#freeze) · [FullScreen](#fullscreen) · [GlobalVar](#globalvar) · [GridColumns](#gridcolumns) · [Group](#group) · [Health](#health) · [Highlight](#highlight) · [Icon](#icon) · [Identify](#identify) · [Image](#image) · [Interface](#interface) · [Journal](#journal) · [KeyBindings](#keybindings) · [Library](#library) · [LockScreen](#lockscreen) · [LumaSession](#lumasession) · [Macro](#macro) · [Master](#master) · [Menu](#menu) · [Multipatch](#multipatch) · [Mvr](#mvr) · [MvrClass](#mvrclass) · [MvrGroup](#mvrgroup) · [MvrLayer](#mvrlayer) · [MvrPosition](#mvrposition) · [Network](#network) · [NormalTheme](#normaltheme) · [Osc](#osc) · [Paint](#paint) · [PoolXml](#poolxml) · [Preset](#preset) · [Programmer](#programmer) · [Recovery](#recovery) · [Reference](#reference) · [Root](#root) · [Sacn](#sacn) · [Screen](#screen) · [ScreenConfig](#screenconfig) · [Selection](#selection) · [Self](#self) · [Sequence](#sequence) · [Server](#server) · [Settings](#settings) · [Shell](#shell) · [Show](#show) · [ShowData](#showdata) · [Sidebars](#sidebars) · [Solo](#solo) · [Station](#station) · [Tag](#tag) · [Theme](#theme) · [Timecode](#timecode) · [TimingPreset](#timingpreset) · [UIEngine](#uiengine) · [UIKey](#uikey) · [Undo](#undo) · [Universe](#universe) · [User](#user) · [UserProfile](#userprofile) · [Version](#version) · [View](#view) · [ViewBar](#viewbar) · [ViewButton](#viewbutton) · [Watch](#watch) · [Window](#window) · [WindowPreset](#windowpreset) · [WindowType](#windowtype)
+[ArtNet](#artnet) · [Asset](#asset) · [AssetRoot](#assetroot) · [Attribute](#attribute) · [AttributeRule](#attributerule) · [AttributeTemplate](#attributetemplate) · [Blind](#blind) · [Claims](#claims) · [Client](#client) · [Clock](#clock) · [Cue](#cue) · [CurvePreset](#curvepreset) · [DataPool](#datapool) · [DeskLock](#desklock) · [Device](#device) · [DMX](#dmx) · [Drive](#drive) · [Effect](#effect) · [EffectEngine](#effectengine) · [EncoderBar](#encoderbar) · [Error](#error) · [Executor](#executor) · [FeatureGroup](#featuregroup) · [Fixture](#fixture) · [FixtureType](#fixturetype) · [Freeze](#freeze) · [FullScreen](#fullscreen) · [GlobalVar](#globalvar) · [GridColumns](#gridcolumns) · [Group](#group) · [Health](#health) · [Highlight](#highlight) · [Icon](#icon) · [Identify](#identify) · [Image](#image) · [Interface](#interface) · [Journal](#journal) · [KeyBindings](#keybindings) · [Library](#library) · [LockScreen](#lockscreen) · [LumaSession](#lumasession) · [Macro](#macro) · [Master](#master) · [Menu](#menu) · [Multipatch](#multipatch) · [Mvr](#mvr) · [MvrClass](#mvrclass) · [MvrGroup](#mvrgroup) · [MvrLayer](#mvrlayer) · [MvrPosition](#mvrposition) · [Network](#network) · [NormalTheme](#normaltheme) · [Osc](#osc) · [PoolXml](#poolxml) · [Preset](#preset) · [Programmer](#programmer) · [Recovery](#recovery) · [Reference](#reference) · [Root](#root) · [Sacn](#sacn) · [Screen](#screen) · [ScreenConfig](#screenconfig) · [Selection](#selection) · [Self](#self) · [Sequence](#sequence) · [Server](#server) · [Settings](#settings) · [Shell](#shell) · [Show](#show) · [ShowData](#showdata) · [Sidebars](#sidebars) · [Slot](#slot) · [Solo](#solo) · [Station](#station) · [Tag](#tag) · [Theme](#theme) · [Timecode](#timecode) · [TimingPreset](#timingpreset) · [UIEngine](#uiengine) · [UIKey](#uikey) · [Undo](#undo) · [Universe](#universe) · [User](#user) · [UserProfile](#userprofile) · [Version](#version) · [View](#view) · [ViewBar](#viewbar) · [ViewButton](#viewbutton) · [Watch](#watch) · [Window](#window) · [WindowPreset](#windowpreset) · [WindowType](#windowtype)
 
 
 ## ArtNet
@@ -983,7 +983,7 @@ Set LockScreen "AutoLock" 10
 Reset LockScreen
 ```
 
-Related: `userprofile`, `theme`, `lockscreen`, `paint`
+Related: `userprofile`, `theme`, `lockscreen`, `slot`
 
 | Property | Value | Rights | Home | |
 |---|---|---|---|---|
@@ -1362,61 +1362,6 @@ Options:
 | "Enabled" | On/Off | Setup | show | the line runs |
 | "User" | User name or number | Admin | show | commands from this line run as this user, with their rights |
 | "Port" | 1–65535 | Setup | show | the UDP port the line listens on (Osc) |
-
-
-## Paint
-
-verbs EditSetting · default verb EditSetting (`Paint` = `EditSetting Paint`) · rights Playback: EditSetting
-
-```
-Set [UserProfile <n>] Theme Paint "<Colour|Slot>" "#rrggbb" | Store … Theme Paint "<Slot>" ["#rrggbb"] | Reset … Theme Paint ["<Colour|Slot>"]
-```
-
-A theme's screen colours, sRGB (decisions §33 62; none set = the base's), and its paint slots (decisions 0294): LumaCore's Dimmer … Special 4 and the ones it adds — what an object painted Theme "<slot>" shows each viewer in their own theme.
-
-Examples:
-
-```
-Set Theme Paint "Accent" "#9a7a08"
-Reset Theme Paint "Accent"
-Set Theme Paint "Position" "#3a62b8"
-Store Theme Paint "Haze" "#8fa3b8"
-Reset Theme Paint "Haze"
-```
-
-Related: `userprofile`, `theme`, `lockscreen`, `paint`
-
-| Property | Value | Rights | Home | |
-|---|---|---|---|---|
-| "Background" | #rrggbb | Guest | show | palette colour Background (#rrggbb; none = the preset's) |
-| "Surface" | #rrggbb | Guest | show | palette colour Surface (#rrggbb; none = the preset's) |
-| "Raised" | #rrggbb | Guest | show | palette colour Raised (#rrggbb; none = the preset's) |
-| "Line" | #rrggbb | Guest | show | palette colour Line (#rrggbb; none = the preset's) |
-| "Text" | #rrggbb | Guest | show | palette colour Text (#rrggbb; none = the preset's) |
-| "TextDim" | #rrggbb | Guest | show | palette colour TextDim (#rrggbb; none = the preset's) |
-| "Accent" | #rrggbb | Guest | show | palette colour Accent (#rrggbb; none = the preset's) |
-| "Info" | #rrggbb | Guest | show | palette colour Info (#rrggbb; none = the preset's) |
-| "Ok" | #rrggbb | Guest | show | palette colour Ok (#rrggbb; none = the preset's) |
-| "Warn" | #rrggbb | Guest | show | palette colour Warn (#rrggbb; none = the preset's) |
-| "Alert" | #rrggbb | Guest | show | palette colour Alert (#rrggbb; none = the preset's) |
-| "Programmer" | #rrggbb | Guest | show | palette colour Programmer (#rrggbb; none = the preset's) |
-| "Blind" | #rrggbb | Guest | show | palette colour Blind (#rrggbb; none = the preset's) |
-| "Park" | #rrggbb | Guest | show | palette colour Park (#rrggbb; none = the preset's) |
-| "Dimmer" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Position" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Gobo" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Color" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Beam" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Focus" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Shutter" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "FX" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Control" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Shapers" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Video" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Special 1" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Special 2" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Special 3" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
-| "Special 4" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
 
 
 ## PoolXml
@@ -1835,6 +1780,61 @@ Sidebars    -- toggle (F12)
 Related: `desklock`, `normaltheme`, `sidebars`, `viewbar`, `fullscreen`
 
 
+## Slot
+
+verbs EditSetting · default verb EditSetting (`Slot` = `EditSetting Slot`) · rights Playback: EditSetting
+
+```
+Set [UserProfile <n>] Theme Slot "<Colour|Slot>" "#rrggbb" | Store … Theme Slot "<Slot>" ["#rrggbb"] | Reset … Theme Slot ["<Colour|Slot>"]
+```
+
+A theme's screen colours, sRGB (decisions §33 62; none set = the base's), and its paint slots (decisions 0294): LumaCore's Dimmer … Special 4 and the ones it adds — what an object painted Theme "<slot>" shows each viewer in their own theme.
+
+Examples:
+
+```
+Set Theme Slot "Accent" "#9a7a08"
+Reset Theme Slot "Accent"
+Set Theme Slot "Position" "#3a62b8"
+Store Theme Slot "Haze" "#8fa3b8"
+Reset Theme Slot "Haze"
+```
+
+Related: `userprofile`, `theme`, `lockscreen`, `slot`
+
+| Property | Value | Rights | Home | |
+|---|---|---|---|---|
+| "Background" | #rrggbb | Guest | show | palette colour Background (#rrggbb; none = the preset's) |
+| "Surface" | #rrggbb | Guest | show | palette colour Surface (#rrggbb; none = the preset's) |
+| "Raised" | #rrggbb | Guest | show | palette colour Raised (#rrggbb; none = the preset's) |
+| "Line" | #rrggbb | Guest | show | palette colour Line (#rrggbb; none = the preset's) |
+| "Text" | #rrggbb | Guest | show | palette colour Text (#rrggbb; none = the preset's) |
+| "TextDim" | #rrggbb | Guest | show | palette colour TextDim (#rrggbb; none = the preset's) |
+| "Accent" | #rrggbb | Guest | show | palette colour Accent (#rrggbb; none = the preset's) |
+| "Info" | #rrggbb | Guest | show | palette colour Info (#rrggbb; none = the preset's) |
+| "Ok" | #rrggbb | Guest | show | palette colour Ok (#rrggbb; none = the preset's) |
+| "Warn" | #rrggbb | Guest | show | palette colour Warn (#rrggbb; none = the preset's) |
+| "Alert" | #rrggbb | Guest | show | palette colour Alert (#rrggbb; none = the preset's) |
+| "Programmer" | #rrggbb | Guest | show | palette colour Programmer (#rrggbb; none = the preset's) |
+| "Blind" | #rrggbb | Guest | show | palette colour Blind (#rrggbb; none = the preset's) |
+| "Park" | #rrggbb | Guest | show | palette colour Park (#rrggbb; none = the preset's) |
+| "Dimmer" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Position" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Gobo" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Color" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Beam" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Focus" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Shutter" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "FX" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Control" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Shapers" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Video" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Special 1" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Special 2" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Special 3" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+| "Special 4" | #rrggbb | Guest | show | a theme paint slot: what an object painted Theme "<slot>" shows you (#rrggbb; none = LumaCore's) |
+
+
 ## Solo
 
 verbs On, Off, Toggle, List, Info · default verb Toggle (`Solo` = `Toggle Solo`) · rights Guest: List, Info · Playback: On, Off, Toggle
@@ -1937,7 +1937,7 @@ Reset Theme
 Theme
 ```
 
-Related: `userprofile`, `theme`, `lockscreen`, `paint`
+Related: `userprofile`, `theme`, `lockscreen`, `slot`
 
 | Property | Value | Rights | Home | |
 |---|---|---|---|---|
@@ -2128,7 +2128,7 @@ Copy UserProfile "Bob" At "Stage 2"
 Delete UserProfile "Stage 2"        -- asks
 Import UserProfile "Stage" /As "Stage 2"
 Set UserProfile Theme "Base" Night
-Set UserProfile Theme Paint "Accent" "#9a7a08"
+Set UserProfile Theme Slot "Accent" "#9a7a08"
 Reset UserProfile "Bob" Theme
 Import UserProfile Image "bg.jpg"
 Set UserProfile LockScreen "Image" 1

@@ -336,7 +336,7 @@ pub static USER_PROFILE: ObjectDef = ObjectDef {
                 "Delete UserProfile \"Stage 2\"        -- asks",
                 "Import UserProfile \"Stage\" /As \"Stage 2\"",
                 "Set UserProfile Theme \"Base\" Night",
-                "Set UserProfile Theme Paint \"Accent\" \"#9a7a08\"",
+                "Set UserProfile Theme Slot \"Accent\" \"#9a7a08\"",
                 "Reset UserProfile \"Bob\" Theme",
                 "Import UserProfile Image \"bg.jpg\"",
                 "Set UserProfile LockScreen \"Image\" 1",

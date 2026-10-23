@@ -10,8 +10,8 @@
 //! one per slot, in each viewer's own theme. LumaCore's slots (`media::PAINT_SLOTS`: Dimmer …
 //! Special 4) are declared properties of the theme's `Paint`, beside its 14 screen colours; a slot
 //! the theme adds is the same property under its own name (`Props::open`). `Set [UserProfile x]
-//! Theme Paint "Position" "#3a62b8"` changes one, `Store … Theme Paint "Haze" ["#rrggbb"]` adds
-//! one, `Reset … Theme Paint "Position"` puts LumaCore's back (an added slot goes).
+//! Theme Slot "Position" "#3a62b8"` changes one, `Store … Theme Slot "Haze" ["#rrggbb"]` adds
+//! one, `Reset … Theme Slot "Position"` puts LumaCore's back (an added slot goes).
 //!
 //! Owns:          SLOT_PROPS, OPEN_SLOT, StorePaintSlot, the slots' get / set.
 //! Doesn't own:   the theme and its slots' data (lumacore_tree::media), the Paint object (media.rs),
@@ -75,7 +75,7 @@ pub static OPEN_SLOT: Property = Property {
     kind: PropKind::Colour,
     rights: crate::commands::registry::Rights::Guest,
     section: "Paint slots",
-    doc: "a paint slot the theme added (Store Theme Paint \"<name>\" adds one; Reset removes it)",
+    doc: "a paint slot the theme added (Store Theme Slot \"<name>\" adds one; Reset removes it)",
     access: Access::Named { get: slot_get, set: slot_set },
     ..Property::BASE
 };
@@ -88,7 +88,7 @@ pub static OPEN_SLOT: Property = Property {
 //  ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═════╝ ╚══════╝
 // PART: COMMANDS
 
-/// `Store [UserProfile x] Theme Paint "Haze" ["#rrggbb"]`: a paint slot of the theme's own (or a
+/// `Store [UserProfile x] Theme Slot "Haze" ["#rrggbb"]`: a paint slot of the theme's own (or a
 /// new colour for one it has).
 #[derive(lumacore_syntax_derive::Args)]
 #[lum(verb = "Store")]
@@ -116,7 +116,7 @@ pub fn store_from(word: &'static str) -> impl Fn(&mut AppState, &[&str]) -> Disp
     }
 }
 
-/// `Store UserProfile [x] Theme Paint "<slot>" …` (args after `UserProfile`): a profile's slot;
+/// `Store UserProfile [x] Theme Slot "<slot>" …` (args after `UserProfile`): a profile's slot;
 /// None when the line names no Theme.
 pub fn on_profile(state: &mut AppState, verb: crate::objects::Verb, args: &[&str]) -> Option<DispatchResult> {
     let theme = args.iter().any(|w| crate::objects::find(w).is_some_and(|o| std::ptr::eq(o, &crate::commands::media::THEME)));
@@ -152,7 +152,7 @@ fn store(state: &mut AppState, target: &Target, slot: &str, colour: Option<&Valu
             hex_rgb(&text).map(hex_of).ok_or_else(|| render_code(format!("'{text}' is not a colour #rrggbb."), "E-CMD-008"))?
         }
         None if had.is_some() => {
-            return Err(render_code(format!("The theme has Paint \"{slot}\" already: Set Theme Paint \"{slot}\" \"#rrggbb\" changes it."), "E-CMD-010"));
+            return Err(render_code(format!("The theme has Paint \"{slot}\" already: Set Theme Slot \"{slot}\" \"#rrggbb\" changes it."), "E-CMD-010"));
         }
         // A new slot without a colour takes the next palette hue.
         None => {
@@ -162,7 +162,7 @@ fn store(state: &mut AppState, target: &Target, slot: &str, colour: Option<&Valu
     };
     put(state, no, &slot, Some(&hex));
     let what = if had.is_some() { "Stored" } else { "Added" };
-    Ok(crate::text::render_success(&format!("{what} UserProfile {no} Theme Paint \"{slot}\" {hex}")))
+    Ok(crate::text::render_success(&format!("{what} UserProfile {no} Theme Slot \"{slot}\" {hex}")))
 }
 
 /// The profile a Store line names (`UserProfile x` in front), else your own.
@@ -194,7 +194,7 @@ fn slot_get(state: &AppState, key: &str, name: &str) -> String {
         .unwrap_or_default()
 }
 
-/// `Set … Theme Paint "<slot>" "#rrggbb"` (none / Reset: LumaCore's colour back; an added slot
+/// `Set … Theme Slot "<slot>" "#rrggbb"` (none / Reset: LumaCore's colour back; an added slot
 /// goes).
 fn slot_set(state: &mut AppState, key: &str, name: &str, value: &str) -> Result<String, String> {
     let no: u32 = key.parse().map_err(|_| render_code("Name a UserProfile.", "E-CMD-007"))?;
@@ -202,7 +202,7 @@ fn slot_set(state: &mut AppState, key: &str, name: &str, value: &str) -> Result<
     let builtin = is_builtin_slot(name);
     if !builtin && theme.slot(name).is_none() {
         return Err(render_code(
-            format!("The theme has no paint slot \"{name}\": Store Theme Paint \"{name}\" \"#rrggbb\" adds it."),
+            format!("The theme has no paint slot \"{name}\": Store Theme Slot \"{name}\" \"#rrggbb\" adds it."),
             "E-CMD-007",
         ));
     }

@@ -389,6 +389,10 @@ pub enum UiEvent {
     /// `Edit KeyBindings` (decisions 0295): open the key editor of your profile, fed by the
     /// `keys` feed.
     KeyEditor,
+    /// `Paint <target>` (decisions 0296): open the paint picker on those objects — `object` as the
+    /// line names them, its `name` when one, `line` the `Set … "Paint" {value}` the answer runs and
+    /// `value` the first one's Paint now.
+    PaintPicker { object: String, name: String, line: String, value: String },
     /// Close open menus / pop-ups (a UI key's double press that replaces its
     /// press: Menu twice closes the menu again and quick-saves).
     CloseMenu,

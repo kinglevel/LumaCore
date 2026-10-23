@@ -93,7 +93,7 @@ fn a_theme_link_follows_each_viewers_theme_and_a_lost_slot_falls_back() {
     let out = run(&mut s, "Store User \"Bob\"");
     assert!(!out.contains("E-"), "{out}");
     run(&mut s, "Set Group 1 \"Paint\" Theme \"Position\"");
-    run(&mut s, "Set Theme Paint \"Position\" \"#3a62b8\"");
+    run(&mut s, "Set Theme Slot \"Position\" \"#3a62b8\"");
     let dp = s.selected_datapool();
     let g1 = s.root.show_data.datapools[&dp].groups[&1].meta.clone();
     let admin = Painter::new(&s.root.show_data, "Admin").of(&g1);
@@ -101,7 +101,7 @@ fn a_theme_link_follows_each_viewers_theme_and_a_lost_slot_falls_back() {
     assert_eq!((admin.hex.as_deref(), admin.from_text()), (Some("#3a62b8"), "Theme Position".to_string()));
     assert_eq!(bob.hex.as_deref(), Some(slot("Position")), "Bob's theme keeps LumaCore's");
     // A slot only Admin's theme has: Bob's link is broken and falls back to the pool.
-    run(&mut s, "Store Theme Paint \"Haze\" \"#8fa3b8\"");
+    run(&mut s, "Store Theme Slot \"Haze\" \"#8fa3b8\"");
     run(&mut s, "Set Group 2 \"Paint\" Theme \"Haze\"");
     let g2 = s.root.show_data.datapools[&dp].groups[&2].meta.clone();
     assert_eq!(Painter::new(&s.root.show_data, "Admin").of(&g2).hex.as_deref(), Some("#8fa3b8"));
@@ -117,27 +117,27 @@ fn a_theme_link_follows_each_viewers_theme_and_a_lost_slot_falls_back() {
 fn a_themes_paint_slots_are_set_added_and_reset() {
     let mut s = crate::demo::fresh_state();
     let theme = |s: &AppState| s.root.show_data.profile_for_user("Admin").unwrap().settings.theme.clone();
-    let out = run(&mut s, "Set Theme Paint \"Position\" \"#3a62b8\"");
+    let out = run(&mut s, "Set Theme Slot \"Position\" \"#3a62b8\"");
     assert!(out.contains("Paint \"Position\" = #3a62b8"), "{out}");
     assert_eq!(theme(&s).slot("position"), Some("#3a62b8"));
     assert!(theme(&s).slot_views().iter().any(|v| v.name == "Position" && v.changed));
-    run(&mut s, "Reset Theme Paint \"Position\"");
+    run(&mut s, "Reset Theme Slot \"Position\"");
     assert_eq!(theme(&s).slot("Position"), Some(slot("Position")));
     assert!(theme(&s).slots.is_empty(), "LumaCore's colour keeps no entry");
 
-    let out = run(&mut s, "Store Theme Paint \"Haze\" \"#8fa3b8\"");
+    let out = run(&mut s, "Store Theme Slot \"Haze\" \"#8fa3b8\"");
     assert!(out.contains("Added") && out.contains("#8fa3b8"), "{out}");
-    run(&mut s, "Set Theme Paint \"Haze\" \"#000000\"");
+    run(&mut s, "Set Theme Slot \"Haze\" \"#000000\"");
     assert_eq!(theme(&s).slot("Haze"), Some("#000000"));
-    assert!(run(&mut s, "Store Theme Paint \"Haze\"").contains("E-CMD-010"), "it exists already");
-    assert!(run(&mut s, "Set Theme Paint \"Nope\" \"#000000\"").contains("E-CMD-007"));
-    let out = run(&mut s, "Store Theme Paint \"Fog\"");
+    assert!(run(&mut s, "Store Theme Slot \"Haze\"").contains("E-CMD-010"), "it exists already");
+    assert!(run(&mut s, "Set Theme Slot \"Nope\" \"#000000\"").contains("E-CMD-007"));
+    let out = run(&mut s, "Store Theme Slot \"Fog\"");
     assert!(out.contains("Added"), "{out}");
     assert!(theme(&s).slot("Fog").is_some(), "a new slot takes a palette colour");
-    run(&mut s, "Reset Theme Paint \"Haze\"");
+    run(&mut s, "Reset Theme Slot \"Haze\"");
     assert_eq!(theme(&s).slot("Haze"), None, "an added slot goes");
     assert_eq!(theme(&s).slot_views().len(), lumacore_tree::media::PAINT_SLOTS.len() + 1);
-    assert!(run(&mut s, "Set Theme Paint \"Gobo\" \"bluish\"").contains("E-SET-003"));
+    assert!(run(&mut s, "Set Theme Slot \"Gobo\" \"bluish\"").contains("E-SET-003"));
 }
 
 /// A feature group links the theme slot of its name; its own Paint wins; none is the slot again.

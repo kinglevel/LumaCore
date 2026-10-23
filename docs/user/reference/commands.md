@@ -17,7 +17,7 @@ Options are bare `/words` (a quoted `"/word"` is a value). Each word lists its o
 | Playback | [Disable](#disable) · [Enable](#enable) · [Go](#go) · [Go-](#go-) · [Goto](#goto) · [IfStomp](#ifstomp) · [Pause](#pause) · [Shuffle](#shuffle) · [Stomp](#stomp) · [Stop](#stop) · [Top](#top) · [Unstomp](#unstomp) |
 | Programmer | [At](#at) · [Default](#default) · [Deselect](#deselect) · [Flash](#flash) · [Full](#full) · [Grid](#grid) · [If](#if) · [Meow](#meow) · [Minus](#minus) · [Next](#next) · [Off](#off) · [On](#on) · [Plus](#plus) · [Previous](#previous) · [Reset](#reset) · [ResetActive](#resetactive) · [ResetAll](#resetall) · [ResetSelection](#resetselection) · [Select](#select) · [SelectFixtures](#selectfixtures) · [Shortcuts](#shortcuts) · [Toggle](#toggle) · [Zero](#zero) |
 | Programmer Navigation | [Enter](#enter) · [Exit](#exit) |
-| System | [Assign](#assign) · [banner](#banner) · [Bind](#bind) · [Call](#call) · [Claim](#claim) · [CleanStart](#cleanstart) · [Clear](#clear) · [Connect](#connect) · [Consent](#consent) · [debug](#debug) · [DeleteShow](#deleteshow) · [Disconnect](#disconnect) · [Dismiss](#dismiss) · [Echo](#echo) · [Eject](#eject) · [HissMe](#hissme) · [Import](#import) · [Invite](#invite) · [Join](#join) · [Leave](#leave) · [LoadShow](#loadshow) · [Login](#login) · [Logout](#logout) · [LumaCore-Shutoff](#lumacore-shutoff) · [NewShow](#newshow) · [quicksheet](#quicksheet) · [ReloadUI](#reloadui) · [Restart](#restart) · [SaveShow](#saveshow) · [Screenshot](#screenshot) · [Set](#set) · [Shutdown](#shutdown) · [Sort](#sort) · [Split](#split) · [Unassign](#unassign) · [Unbind](#unbind) · [Unclaim](#unclaim) · [Unwatch](#unwatch) |
+| System | [Assign](#assign) · [banner](#banner) · [Bind](#bind) · [Call](#call) · [Claim](#claim) · [CleanStart](#cleanstart) · [Clear](#clear) · [Connect](#connect) · [Consent](#consent) · [debug](#debug) · [DeleteShow](#deleteshow) · [Disconnect](#disconnect) · [Dismiss](#dismiss) · [Echo](#echo) · [Eject](#eject) · [HissMe](#hissme) · [Import](#import) · [Invite](#invite) · [Join](#join) · [Leave](#leave) · [LoadShow](#loadshow) · [Login](#login) · [Logout](#logout) · [LumaCore-Shutoff](#lumacore-shutoff) · [NewShow](#newshow) · [Paint](#paint) · [quicksheet](#quicksheet) · [ReloadUI](#reloadui) · [Restart](#restart) · [SaveShow](#saveshow) · [Screenshot](#screenshot) · [Set](#set) · [Shutdown](#shutdown) · [Sort](#sort) · [Split](#split) · [Unassign](#unassign) · [Unbind](#unbind) · [Unclaim](#unclaim) · [Unwatch](#unwatch) |
 | Undo | [Oops](#oops) · [Redo](#redo) |
 | Universe | [Park](#park) · [Unpark](#unpark) |
 | Unix-tree Navigation | [cat](#cat) · [cd](#cd) · [cp](#cp) · [diff](#diff) · [du](#du) · [find](#find) · [grep](#grep) · [head](#head) · [ls](#ls) · [mv](#mv) · [pwd](#pwd) · [rm](#rm) · [stat](#stat) · [tail](#tail) · [tree](#tree) · [wc](#wc) |
@@ -1787,6 +1787,27 @@ Options:
 - `/Drive <id>`: The drive to read or write (List Drive); absent = the local library
 - `/NoAutoClose`: Keep the show-file dialog open
 - `/Note <text>`: A note saved with this version
+
+
+### Paint
+
+rights Guest · scope Client · reach Show · undo read-only
+
+```
+Paint <object> <ids>
+```
+
+Open the paint picker on objects (decisions 0296): Palette, Free or a link to a theme slot; its answer is one Set <object> "Paint" <value> line. Any object with a Paint: groups, sequences, cues, presets, macros, views, tags, fixtures. A terminal gets the Paint now and the line to type. Alt+A in PRG: Assign › Label › Paint.
+
+Examples:
+
+```
+Paint Group 1                 -- the picker on Group 1
+Paint Sequence 1              -- on Sequence 1
+Paint Group 1 Thru 3          -- one answer paints all three
+```
+
+Related: `set`, `label`, `assign`
 
 
 ### quicksheet

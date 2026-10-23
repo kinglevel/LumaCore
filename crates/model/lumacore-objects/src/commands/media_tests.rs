@@ -74,7 +74,7 @@ fn the_look_is_set_on_the_profile_by_its_users() {
     assert!(run(&mut state, "Set UserProfile LockScreen \"Image\" 9").contains("no Image 9"));
 
     run(&mut state, "Set UserProfile Theme \"Base\" Night");
-    run(&mut state, "Set UserProfile Theme Paint \"Accent\" \"#9A7A08\"");
+    run(&mut state, "Set UserProfile Theme Slot \"Accent\" \"#9A7A08\"");
     // A negative value after an implicit owner reads as a glued list operator (E-SYN-007,
     // open — §33 3c1): the profile is named here.
     let out = run(&mut state, "Set UserProfile \"Admin\" Theme \"AccentHue\" -30");
@@ -83,11 +83,11 @@ fn the_look_is_set_on_the_profile_by_its_users() {
     assert_eq!(theme.preset, "Night");
     assert_eq!(theme.palette.accent.as_deref(), Some("#9a7a08"));
     assert_eq!(theme.adjust.accent_hue, -30);
-    assert!(run(&mut state, "Set UserProfile Theme Paint \"Accent\" \"red\"").contains("E-SET-003"));
+    assert!(run(&mut state, "Set UserProfile Theme Slot \"Accent\" \"red\"").contains("E-SET-003"));
     // Your own without the owner; one colour back, then the whole theme (decisions §33 60, 61).
-    assert!(!run(&mut state, "Set Theme Paint \"Accent\" \"#112233\"").contains("Error"));
+    assert!(!run(&mut state, "Set Theme Slot \"Accent\" \"#112233\"").contains("Error"));
     assert_eq!(state.root.show_data.profile_for_user("Admin").unwrap().settings.theme.palette.accent.as_deref(), Some("#112233"));
-    let out = run(&mut state, "Reset Theme Paint \"Accent\"");
+    let out = run(&mut state, "Reset Theme Slot \"Accent\"");
     assert!(!out.contains("Error"), "{out}");
     assert_eq!(state.root.show_data.profile_for_user("Admin").unwrap().settings.theme.palette.accent, None);
     let out = run(&mut state, "Reset UserProfile Theme");

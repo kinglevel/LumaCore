@@ -99,7 +99,7 @@ How the grammar is read. Each rule is one sentence; the decision it comes from i
   name comes from the verb's signature, never from a guess.
 - **Property names are always quoted:** `Set Fixture 3 "Name" "Spot SR"`.
 - **A property is never nested inside its quotes.** A group of settings is a child object, owner
-  first: `Set UserProfile Theme "AccentHue" -30`, `Set UserProfile Theme Paint "Accent" "#9a7a08"`
+  first: `Set UserProfile Theme "AccentHue" -30`, `Set UserProfile Theme Slot "Accent" "#9a7a08"`
   — there is no `"Theme.AccentHue"`.
 
 **Targets**
@@ -658,11 +658,11 @@ Set Group 1 "Paint" "#3c8f3c"
 Set UserProfile Theme "Base" Night
 Set UserProfile Theme "AccentHue" -30
 Set UserProfile "LD" LockScreen "AutoLock" 10
-Set UserProfile Theme Paint "Accent" "#9a7a08"
+Set UserProfile Theme Slot "Accent" "#9a7a08"
 Set Sequence 2 Cue 3 "Fade" 2
 Set Sequence 2 Cue 3 FeatureGroup "Position" "Fade" 4
 Reset UserProfile Theme
-Reset UserProfile Theme Paint "Accent"
+Reset UserProfile Theme Slot "Accent"
 Reset Sacn 1 Thru 4 "Rate"
 Reset Sequence 2 Cue 3 FeatureGroup "Position"
 Theme
@@ -697,12 +697,23 @@ Set Group 1 Thru 2 + 7 "Paint" Blue
 Set Tag "Position" "Paint" Theme "Position"
 Set Tag "Position" "Priority" 20
 Set FeatureGroup "FX" "Paint" Violet
-Set Theme Paint "Position" "#3a62b8"
-Store Theme Paint "Haze" "#8fa3b8"
-Reset Theme Paint "Haze"
+Set Theme Slot "Position" "#3a62b8"
+Store Theme Slot "Haze" "#8fa3b8"
+Reset Theme Slot "Haze"
 ```
 
-A theme's paint slots sit beside its screen colours in `Theme Paint`: LumaCore's (Dimmer,
+`Paint <object> <ids>` opens the paint picker on those objects (decisions 0296): its answer is one
+`Set <object> <ids> "Paint" <value>` line, so `Paint Group 1 Thru 3` paints all three. A terminal
+answers with the Paint now and the line to type. In PRG, Alt+A cycles Assign › Label › Paint.
+
+```lum
+Paint Group 1
+Paint Sequence 1
+Paint Group 1 Thru 3
+Paint DataPool 2 Group 4
+```
+
+A theme's paint slots sit beside its screen colours in `Theme Slot`: LumaCore's (Dimmer,
 Position, Gobo, Color, Beam, Focus, Shutter, FX, Control, Shapers, Video, Special 1–4) and the
 ones `Store` adds; `Reset` puts LumaCore's colour back and removes an added one.
 

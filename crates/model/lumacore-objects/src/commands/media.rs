@@ -959,7 +959,7 @@ macro_rules! look_props {
 }
 
 static THEME_SETTINGS: props::Props = props::Props {
-    // `Theme Paint …`: the colours of the same profile.
+    // `Theme Slot …`: the colours of the same profile.
     within: Some(|_, _| Ok(Box::new(()))),
     ..look_props!(&[&THEME_PROPS])
 };
@@ -1005,7 +1005,7 @@ macro_rules! look_edit {
 }
 
 look_edit!(EditTheme, "Theme");
-look_edit!(EditPaint, "Paint");
+look_edit!(EditSlot, "Slot");
 look_edit!(EditLockScreen, "LockScreen");
 
 macro_rules! look_object {
@@ -1024,7 +1024,7 @@ macro_rules! look_object {
                     syntax: $syntax,
                     description: $description,
                     examples: $examples,
-                    related: &["userprofile", "theme", "lockscreen", "paint"],
+                    related: &["userprofile", "theme", "lockscreen", "slot"],
                     alias_depth: crate::commands::registry::AliasDepth::Base,
                     hidden: false,
                 },
@@ -1051,11 +1051,11 @@ pub static THEME: ObjectDef = look_object!(
     "Theme",
     &[
         (Verb::EditSetting, crate::commands::typed::typed::<EditTheme>),
-        // `Store Theme Paint "Haze"`: a paint slot of your theme's own (decisions 0294; the line
+        // `Store Theme Slot "Haze"`: a paint slot of your theme's own (decisions 0294; the line
         // binds from the Paint on).
         (Verb::Store, crate::commands::typed::typed::<crate::commands::paint_slots::StorePaintSlot>),
     ],
-    &[&PAINT.decl],
+    &[&SLOT.decl],
     THEME_SETTINGS,
     "Set [UserProfile <n>] Theme \"<Property>\" <value> | Reset [UserProfile <n>] Theme",
     "A profile's look (decisions §33 60, 63): the built-in base (Dark, Daylight, Night) and its \
@@ -1063,16 +1063,16 @@ pub static THEME: ObjectDef = look_object!(
     &["Set Theme \"Base\" Night", "Set UserProfile \"Bob\" Theme \"Contrast\" 10", "Reset Theme", "Theme"]
 );
 
-pub static PAINT: ObjectDef = look_object!(
-    "Paint",
-    &[(Verb::EditSetting, crate::commands::typed::typed::<EditPaint>)],
+pub static SLOT: ObjectDef = look_object!(
+    "Slot",
+    &[(Verb::EditSetting, crate::commands::typed::typed::<EditSlot>)],
     &[],
     PAINT_SETTINGS,
-    "Set [UserProfile <n>] Theme Paint \"<Colour|Slot>\" \"#rrggbb\" | Store … Theme Paint \"<Slot>\" [\"#rrggbb\"] | Reset … Theme Paint [\"<Colour|Slot>\"]",
+    "Set [UserProfile <n>] Theme Slot \"<Colour|Slot>\" \"#rrggbb\" | Store … Theme Slot \"<Slot>\" [\"#rrggbb\"] | Reset … Theme Slot [\"<Colour|Slot>\"]",
     "A theme's screen colours, sRGB (decisions §33 62; none set = the base's), and its paint slots \
      (decisions 0294): LumaCore's Dimmer … Special 4 and the ones it adds — what an object painted \
      Theme \"<slot>\" shows each viewer in their own theme.",
-    &["Set Theme Paint \"Accent\" \"#9a7a08\"", "Reset Theme Paint \"Accent\"", "Set Theme Paint \"Position\" \"#3a62b8\"", "Store Theme Paint \"Haze\" \"#8fa3b8\"", "Reset Theme Paint \"Haze\""]
+    &["Set Theme Slot \"Accent\" \"#9a7a08\"", "Reset Theme Slot \"Accent\"", "Set Theme Slot \"Position\" \"#3a62b8\"", "Store Theme Slot \"Haze\" \"#8fa3b8\"", "Reset Theme Slot \"Haze\""]
 );
 
 pub static LOCK_SCREEN: ObjectDef = look_object!(

@@ -77,6 +77,11 @@ fn lum_text(lum: &Lum, vocab: &Vocabulary) -> String {
     out.join(" ")
 }
 
+/// A target as a line writes it (`Group 1 Thru 3`, `DataPool 2 Group "Front"`).
+pub fn target_text(t: &Target, vocab: &Vocabulary) -> String {
+    target(t, vocab)
+}
+
 fn target(t: &Target, vocab: &Vocabulary) -> String {
     let mut out = String::new();
     for (op, it) in &t.items {

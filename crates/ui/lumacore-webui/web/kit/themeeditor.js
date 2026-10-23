@@ -11,10 +11,10 @@
 //   Preview   the kit's look in the colours shown; Hold: normal theme shows the factory preset
 //   Paint     (a tab, decisions 0294) the theme's paint slots on the `paint` feed as a <luma-grid>:
 //             each row tinted with its colour, Your colour opens the paint picker (the slot's
-//             own line), Add a slot (`Store … Theme Paint "<name>"`), Reset to LumaCore
+//             own line), Add a slot (`Store … Theme Slot "<name>"`), Reset to LumaCore
 //
 // Every change is a line from the station's own fields (`Set [UserProfile n] Theme "Brightness"
-// 20`, `… Theme Paint "Accent" "#9a7a08"`, `Reset … Theme [Paint]`); the station answers with
+// 20`, `… Theme Slot "Accent" "#9a7a08"`, `Reset … Theme [Slot]`); the station answers with
 // fresh fields (`ctl.update(fields)`).
 //
 //   const ctl = openThemeEditor({ title, fields }, { run(line), preview(look | 'normal' | null) })
@@ -102,8 +102,8 @@ export function openThemeEditor(spec, cb = {}) {
   // `Set UserProfile 3 Theme "Base" {value}` → `UserProfile 3 Theme`: the owner for Reset.
   const owner = () => (field('Base')?.line.match(/^Set (.*?Theme) "Base"/)?.[1] || 'Theme');
   const run = l => { if (l) cb.run?.(l); };
-  // A field's own reset line, else the decided forms: an adjuster to 0, a colour `Reset … Theme Paint "<Colour>"`.
-  const resetLine = name => field(name)?.reset || (COLOURS.some(c => c[0] === name) ? `Reset ${owner()} Paint "${name}"` : line(name, 0));
+  // A field's own reset line, else the decided forms: an adjuster to 0, a colour `Reset … Theme Slot "<Colour>"`.
+  const resetLine = name => field(name)?.reset || (COLOURS.some(c => c[0] === name) ? `Reset ${owner()} Slot "${name}"` : line(name, 0));
   const preview = look => { shown = look; cb.preview?.(look); paintReadout(); };
   let tab = 'Look';
 
@@ -130,7 +130,7 @@ export function openThemeEditor(spec, cb = {}) {
       return `${n} slot${n === 1 ? '' : 's'}${ch ? ` · ${ch} changed` : ''}`;
     };
     const draw = () => {
-      grid?.update({ key: 'ThemePaint', object: 'Theme Paint', id: 'no', row_key: 'key', bar: false, columns: COLS, rows: rows(), level: 'Admin' });
+      grid?.update({ key: 'ThemePaint', object: 'Theme Slot', id: 'no', row_key: 'key', bar: false, columns: COLS, rows: rows(), level: 'Admin' });
       const c = box.querySelector('[data-paint-count]');
       if (c) c.textContent = data ? count() : 'waiting for the station…';
       const r = box.querySelector('[data-paint-reset]');
@@ -140,7 +140,7 @@ export function openThemeEditor(spec, cb = {}) {
       const s = slots().find(x => x.name === key);
       if (!s || picking) return;
       picking = true;
-      await openPaint({ object: 'Theme Paint', name: s.name, line: s.line, value: s.colour, slot: true, profile: profile() }, { run });
+      await openPaint({ object: 'Theme Slot', name: s.name, line: s.line, value: s.colour, slot: true, profile: profile() }, { run });
       picking = false;
       grid?.none();
     };
@@ -318,7 +318,7 @@ export function openThemeEditor(spec, cb = {}) {
     if (t.dataset.ab != null) { showA = !showA; preview(showA ? opened : null); return render(); }
     if (t.dataset.import != null) return importJson();
     if (t.dataset.export != null) return exportJson();
-    if (t.dataset.resetAll != null) { run(`Reset ${owner()}`); run(`Reset ${owner()} Paint`); return; }
+    if (t.dataset.resetAll != null) { run(`Reset ${owner()}`); run(`Reset ${owner()} Slot`); return; }
     if (t.dataset.reset) { e.stopPropagation(); return run(resetLine(t.dataset.reset)); }
     if (t.dataset.pick != null) return startPick();
     if (t.dataset.colour) return editColour(t.dataset.colour);
