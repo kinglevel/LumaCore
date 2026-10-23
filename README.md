@@ -296,24 +296,26 @@ Help
 
 ## What works today
 
-- **The command line and TreeShell:** one namespace for every verb and object, completion,
-  help and a [generated reference](docs/user/reference/commands.md).
-- **The station:** one state thread owns the show. Every write goes through one change path,
-  which gives undo, a journal and replication for free.
+Basic use of these works today:
+
+- **The web UI:** the full desk in a browser, on desktop, tablet and phone. Pools, grids, the
+  device sheet, the encoder bar and dialogs, all drawn from the station.
+- **The CLI:** `lumacore-cli` in a terminal, with TreeShell, completion, help and a
+  [generated reference](docs/user/reference/commands.md).
+- **Window navigation:** open, arrange and move between windows and screens.
+- **Show files:** new, save and load, with versions kept on every save and recovery copies.
+- **Patch setup:** GDTF fixtures, patch with conflict checks, staged edits, and MVR import.
+
+Built, but early and lightly tested:
+
 - **The render engine:** programmers, sequences, cues with fades, delays and tracking, park,
-  masters and Solo. The render tick allocates nothing.
-- **DMX:** sACN and Art-Net output per network card, DMX input with per-channel merge, and
-  OSC input.
-- **LumaSession:** stations join one session, with master election, replication, merge on
-  rejoin, claims and a shared clock.
-- **Users and rights:** logins, a rights level per user, and a programmer, selection and undo
+  masters and Solo.
+- **DMX:** sACN and Art-Net output per network card, DMX input with merge, and OSC input.
+- **LumaSession:** several stations as one console, with master election, replication and
+  merge on rejoin.
+- **Users and rights:** logins, a rights level per user, and a programmer, selection and Oops
   for each user.
-- **Fixtures:** GDTF import, patch with conflict checks, staged patch edits, MVR import and
-  the MVR tree, and pool XML group import.
-- **The touch UI kit:** pools, grids, the device sheet, the encoder bar and dialogs. Every
-  window is drawn from server descriptors, on desktop, tablet and phone.
-- **Show files:** versions kept on every save, recovery copies and drives.
-- **Health:** a System Monitor, screenshots, and Perfetto and Tracy tracing.
+- **Health:** a System Monitor, and Perfetto and Tracy tracing.
 
 **Not yet:** effects (designed, not built), the rest of presets, executors, macros, and
 timecode playback. The plan is in [docs/meta/roadmap.md](docs/meta/roadmap.md).
