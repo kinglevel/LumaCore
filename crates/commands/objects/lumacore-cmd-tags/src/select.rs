@@ -7,7 +7,8 @@
 // FILE: select
 
 //! A bare `Tag 1.1` (its default verb, decisions §12 "Tags hardened" 4): select the fixtures
-//! tagged with it — with `/R` those of every tag under it too — by the one selection rule.
+//! tagged with it — with `/R` those of every tag under it too — by the one selection rule. With
+//! no path and objects after it (`Tag Group 3`) it is the tag picker instead (picker.rs).
 //!
 //! Owns:          SelectTag.
 //! Doesn't own:   the selection rule (AppState::select_fixtures).
@@ -34,10 +35,16 @@ pub struct SelectTag {
     pub target: lumacore_syntax::ast::Target,
     #[lum(option = "R")]
     pub recursive: bool,
+    /// `Tag Group 3`: no path and objects after it opens the tag picker on them (picker.rs).
+    #[lum(value)]
+    pub on: Option<lumacore_syntax::ast::Value>,
 }
 
 impl lumacore_objects::commands::typed::Command for SelectTag {
     fn run(self, state: &mut AppState) -> DispatchResult {
+        if let Some(on) = &self.on {
+            return out(crate::picker::open(state, &self.target, on).unwrap_or_else(|e| e));
+        }
         out(select(state, self).unwrap_or_else(|e| e))
     }
 }

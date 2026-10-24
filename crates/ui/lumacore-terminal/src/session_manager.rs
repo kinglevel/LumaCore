@@ -436,16 +436,10 @@ impl SessionRegistry {
         &mut self,
         client_id: Uuid,
         state: &mut AppState,
-        object: &str,
-        no: u32,
-        hold: bool,
-        action: Option<&str>,
-        window: Option<u32>,
+        tap: crate::Tap,
     ) -> Result<Vec<UiEvent>, String> {
         let (client, session) = self.client_and_session(client_id)?;
-        Ok(session
-            .shell
-            .handle_tap(&mut client.view, state, object, no, hold, action, window))
+        Ok(session.shell.handle_tap(&mut client.view, state, tap))
     }
 
     pub fn ui_command_for_client(
@@ -503,11 +497,10 @@ impl SessionRegistry {
         end: u32,
         text: &str,
         expect: Option<&str>,
-    ) -> Result<(), String> {
+    ) -> Result<Vec<UiEvent>, String> {
         let (client, session) = self.client_and_session(client_id)?;
         client.last_seen_at = SystemTime::now();
-        session.shell.edit_line(&mut client.view, state, start, end, text, expect);
-        Ok(())
+        Ok(session.shell.edit_line(&mut client.view, state, start, end, text, expect))
     }
 
     pub fn pause_dialog_for_client(

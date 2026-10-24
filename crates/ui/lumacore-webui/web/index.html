@@ -1671,6 +1671,14 @@ function handleUiEvent(ev) {
   if (ev.action === 'paint_picker') {
     return LumaKit.paint.openPaint({ object: ev.object, name: ev.name, no: /(\d+)$/.exec(ev.object)?.[1] ?? '', line: ev.line, value: ev.value }, { run: wsCommand });
   }
+  // `Tag <objects>` (decisions 0297): the kit's tag picker on those objects; each tick is a line.
+  if (ev.action === 'tag_picker') return LumaKit.tagPicker.openTagPicker({ object: ev.object, name: ev.name, guids: ev.guids }, { run: wsCommand });
+  // The line is `Assign Tag <path> At` (decisions 0297): every pool marks what carries the tag.
+  if (ev.action === 'armed_tag') {
+    armedTag = ev.tag ? { guids: ev.carriers, colour: ev.colour } : null;
+    document.querySelectorAll('luma-pool').forEach(p => { p.marks = armedTag; });
+    return;
+  }
   if (ev.action === 'close_menu') {
     menuEpoch++;
     document.querySelectorAll('.mo-overlay.open').forEach(o => closeMenuOverlay(o.id));
@@ -2637,6 +2645,8 @@ function presetPoolsFollow() {
 
 const poolCursor = new Map(); // window no → keyboard cursor slot
 
+/** The armed tag's carriers while the line is `Assign Tag <path> At` (the `armed_tag` event). */
+let armedTag = null;
 function buildPoolPanel(win, pool) {
   const cfg = { action: '', datapool: 'selected', ...winSettings(win) };
   const wrap = document.createElement('div');
@@ -2661,6 +2671,7 @@ function buildPoolPanel(win, pool) {
   // view, cells updated in place, its scroll kept; every gesture comes back
   // here and becomes a command line.
   const el = document.createElement('luma-pool');
+  el.marks = armedTag;
   const body = document.createElement('div');
   body.className = 'pool-body';
   body.appendChild(el);
@@ -3770,6 +3781,11 @@ function buildTagsPanel(win) {
   if (!v) {
     const el = document.createElement('luma-tags-pool');
     el.addEventListener('run', e => { e.stopPropagation(); wsCommand(e.detail.line, win.no); });
+    // A tag's square is an object tap (decisions 0297): the station completes the line with it.
+    el.addEventListener('tap', e => {
+      e.stopPropagation();
+      wsSend({ type: 'tap', object: e.detail.object, no: 0, id: e.detail.id, action: e.detail.action, window: win.no });
+    });
     v = { el, sub: null, key: null, data: null };
     tagViews.set(win.no, v);
   }
@@ -4555,7 +4571,7 @@ const DEVICE = (() => {
   } catch(_) { return 'tab-' + Math.random().toString(36).slice(2, 12); }
 })();
 const LAST_USER_KEY = 'lumacore.lastUser';
-const QUEUED_WHILE_LOCKED = new Set(['edit_settings', 'open_menu', 'attribute_board', 'key_editor', 'paint_picker']);
+const QUEUED_WHILE_LOCKED = new Set(['edit_settings', 'open_menu', 'attribute_board', 'key_editor', 'paint_picker', 'tag_picker']);
 let loggedIn = false;
 let loginError = '';
 let station = null;

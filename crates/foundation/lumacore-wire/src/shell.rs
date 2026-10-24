@@ -140,6 +140,9 @@ pub enum ShellClientPacket {
         /// lit tags go on what Store makes, decisions 0288).
         #[serde(default)]
         window: Option<u32>,
+        /// A dotted id in place of `no` (a tag's path, `1.2`; decisions 0297).
+        #[serde(default)]
+        id: Option<String>,
     },
     /// The answer to one of the station's dialogs (decisions §30 "12b"):
     /// the station closes it everywhere, then runs the button's line.
@@ -393,6 +396,14 @@ pub enum UiEvent {
     /// line names them, its `name` when one, `line` the `Set … "Paint" {value}` the answer runs and
     /// `value` the first one's Paint now.
     PaintPicker { object: String, name: String, line: String, value: String },
+    /// `Tag <objects>` (decisions 0297): open the tag picker on those objects — `object` as the
+    /// line names them, its `name` when one, `guids` the objects (the `tags` feed's `on`). Each
+    /// tick runs `Assign` / `Unassign Tag <path> At <object>`.
+    TagPicker { object: String, name: String, guids: Vec<String> },
+    /// The command line is `Assign` / `Unassign Tag <path> At` (decisions 0297): `tag` the path
+    /// ("" = no longer armed), `colour` its colour, `carriers` the GUIDs of the objects that carry
+    /// it, so the pools can mark them.
+    ArmedTag { tag: String, colour: String, carriers: Vec<String> },
     /// Close open menus / pop-ups (a UI key's double press that replaces its
     /// press: Menu twice closes the menu again and quick-saves).
     CloseMenu,

@@ -6,9 +6,12 @@
 // (event `run { line }`): a tap picks the tag (`Set Self "Tag" 1.1`), Direct | Deep is
 // `Set Self "Members" Deep`, Run action the tag's select line, the ≡ menu the tag's own lines
 // (Label and New child tag ask for a name first). Folds and the search stay in the tree.
+// Each tag row has its pool square (decisions 0297): a tap is the station's object tap (event
+// `tap`), so a pending `Assign` takes it (`Assign Tag 1.2 At`, armed for the pools) and an empty
+// line runs its action — the tag's own, the window's default, or with None it only picks it.
 //
 //   el.update(feedData, { action: 'Select' | 'None', counts: true })
-//   events: run { line }
+//   events: run { line } · tap { object, id, action }
 
 import './tree.js';
 import './grid.js';
@@ -48,6 +51,10 @@ class LumaTagsPool extends HTMLElement {
       if (e.detail.path !== this.data.tag?.path) run(`Set Self "Tag" ${e.detail.path}`);
     });
     this.tree.addEventListener('menu', e => { e.stopPropagation(); this.menu(e.detail); });
+    this.tree.addEventListener('square', e => {
+      e.stopPropagation();
+      this.dispatchEvent(new CustomEvent('tap', { detail: { object: 'Tag', id: e.detail.path, action: this.tapAction(e.detail.path) }, bubbles: true }));
+    });
     for (const b of this.querySelectorAll('[data-members]')) b.addEventListener('click', () => {
       if ((this.data.deep ? 'Deep' : 'Direct') !== b.dataset.members) run(`Set Self "Members" ${b.dataset.members}`);
     });
@@ -62,6 +69,14 @@ class LumaTagsPool extends HTMLElement {
     const t = this.data.tag;
     if (!t) return null;
     return t.own_action || this.cfg.action !== 'None' ? t.lines.select : null;
+  }
+
+  /** A square's action on an empty line (`{obj}` = `Tag <path>`): select its fixtures when the
+   *  tag has its own Action or the window's default is Select, else pick it in the window. */
+  tapAction(path) {
+    const node = (this.data.nodes || []).find(n => n.path === path);
+    const own = !!node?.badge;
+    return own || this.cfg.action !== 'None' ? `{obj}${this.data.deep ? ' /R' : ''}` : `Set Self "Tag" ${path}`;
   }
 
   /** The picked tag's ≡ menu: its own lines. */
@@ -94,7 +109,7 @@ class LumaTagsPool extends HTMLElement {
     const d = this.data, t = d.tag;
     const counts = this.cfg.counts !== false;
     this.tree.update({
-      mode: 'browse', search: true, selected: t?.path || null, empty: 'No tags yet. Store Tag "name" makes one.',
+      mode: 'browse', search: true, squares: true, selected: t?.path || null, empty: 'No tags yet. Store Tag "name" makes one.',
       nodes: (d.nodes || []).map(n => ({ path: n.path, name: n.name, colour: n.colour, badge: n.badge, count: counts ? n.count : null })),
     });
     this.querySelector('.lc-tp-title').textContent = t ? `${t.name || 'no name'} · ${t.path}` : 'Pick a tag';

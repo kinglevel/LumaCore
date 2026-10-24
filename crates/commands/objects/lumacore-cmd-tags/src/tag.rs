@@ -54,20 +54,21 @@ pub static TAG: ObjectDef = ObjectDef::new(ObjectDecl {
     aliases: &["tags"],
     doc: Doc {
         category: HelpCategory::Group,
-        syntax: "Tag <path> [/R] | Store Tag [<path>] [\"name\"] | Label Tag <path> \"name\" | Delete Tag <path> [/WithChildren | /KeepChildren] | Move Tag <path> At Tag <path> | Root | <n> | Assign Tag <path> At <objects> | Unassign Tag <path> At <objects> | List Tag | Info Tag <path> [/R]",
+        syntax: "Tag <path> [/R] | Tag <objects> | Store Tag [<path>] [\"name\"] | Label Tag <path> \"name\" | Delete Tag <path> [/WithChildren | /KeepChildren] | Move Tag <path> At Tag <path> | Root | <n> | Assign Tag <path> At <objects> | Unassign Tag <path> At <objects> | List Tag | Info Tag <path> [/R]",
         examples: &[
             "Store Tag \"All\"                     -- a top tag",
             "Store Tag 1 Tag \"Lx1\"               -- a child of tag 1",
             "Assign Tag 1.1 At Fixture 1 Thru 12   -- tag twelve fixtures",
             "Tag 1.1                               -- select its fixtures",
             "Tag 1 /R                              -- and those of every tag under it",
+            "Tag Group 3                           -- the tag picker on Group 3",
             "Move Tag 1.2 At Tag 2                 -- put it under tag 2",
             "Delete Tag 1.1 /KeepChildren          -- its child tags move up",
         ],
         related: &["group", "assign", "unassign"],
         ..Doc::new(
             "Tag",
-            "A tag in the tag tree: a tag has one parent and is numbered within it, so its number is its path (Tag 1.2.1 = the first child of the second child of tag 1). Any show object carries tags. A tag reaches the objects tagged with it; /R adds those of every tag under it. Alone it selects its fixtures.",
+            "A tag in the tag tree: a tag has one parent and is numbered within it, so its number is its path (Tag 1.2.1 = the first child of the second child of tag 1). Any show object carries tags. A tag reaches the objects tagged with it; /R adds those of every tag under it. Alone it selects its fixtures. With no path and objects after it (Tag Group 3) it opens the tag picker on them (decisions 0297).",
         )
     },
     family: None,

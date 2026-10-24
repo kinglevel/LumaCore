@@ -2127,6 +2127,15 @@ luma-tree { display: block; min-height: 0; }
 .lc-tree-box[data-state="on"]::after { content: ''; position: absolute; left: 6px; top: 2px; width: 6px; height: 11px; border: solid var(--lc-on-accent);
   border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .lc-tree-box[data-state="part"]::after { content: ''; position: absolute; left: 4px; right: 4px; top: 9px; height: 2px; background: var(--lc-text); }
+/* a node's pool square (decisions 0297): its number on its colour, the pool cell's mix */
+.lc-tree-sq { flex: none; width: 56px; height: 36px; box-sizing: border-box; border: none; border-radius: var(--lc-radius-sm); position: relative; cursor: pointer;
+  background: color-mix(in srgb, var(--lc-obj, var(--lc-pool-default)) 42%, var(--lc-raised)); color: var(--lc-text);
+  display: flex; flex-direction: column; justify-content: flex-start; padding: 3px 6px; font: inherit; text-align: left; }
+.lc-tree-sq small { font-family: var(--lc-mono); font-size: var(--lc-fs-small); color: var(--lc-text-dim); line-height: 1.1; }
+.lc-tree-sq .lc-ico { position: absolute; right: 4px; bottom: 4px; width: 12px; height: 12px; opacity: .7; }
+button.lc-tree-sq:hover { filter: brightness(1.15); }
+span.lc-tree-sq { cursor: inherit; }
+@media (any-pointer: coarse) { .lc-tree-sq { width: 64px; height: var(--lc-hit); } }
 .lc-tree-no { flex: none; font-family: var(--lc-mono); font-size: var(--lc-fs-small); color: var(--lc-text-dim); min-width: 3em; }
 .lc-tree-sw { flex: none; width: 10px; height: 10px; border-radius: 2px; }
 .lc-tree-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -2853,3 +2862,27 @@ luma-keymap { display: block; min-width: 0; }
   .lc-km-bar .lc-ins-find { height: calc(var(--lc-hit) + 8px); }
   .lc-km-bar .lc-ins-find input { align-self: stretch; }
 }
+
+/* <luma-tag-picker> (decisions 0297) */
+/*
+   The tag picker (kit/tagpicker.js; the approved mockup 2026-10-24-tag-assign): a standard dialog
+   card holding the tag tree in pick mode with squares, New tag when the search names none, the
+   line that ran and Done. A phone upright gets the one sheet look from the bottom. */
+luma-tag-picker { display: flex; width: min(560px, 100%); max-height: 100%; min-height: 0; }
+.lc-tagpk { width: 100%; }
+.lc-tagpk .lc-dlg-body { gap: 12px; min-height: 0; }
+.lc-tagpk luma-tree { min-height: 0; max-height: min(52vh, 420px); display: flex; flex-direction: column; }
+.lc-tagpk .lc-tree-row { cursor: pointer; }
+.lc-tagpk-new { display: flex; align-items: center; gap: 8px; min-height: var(--lc-hit); padding: 0 12px; border: 1px dashed var(--lc-line);
+  border-radius: var(--lc-radius-sm); background: none; color: var(--lc-text); font: inherit; cursor: pointer; text-align: left; }
+.lc-tagpk-new b { color: var(--lc-accent); font-weight: 600; }
+.lc-tagpk-new:hover { background: var(--lc-hover); }
+.lc-tagpk-scrim.sheet { align-items: flex-end; padding: var(--lc-safe-top) 0 0; }
+.lc-tagpk-scrim.sheet luma-tag-picker { width: 100%; }
+.lc-tagpk-scrim.sheet .lc-tagpk { border-radius: var(--lc-radius) var(--lc-radius) 0 0; border-bottom: none; padding-bottom: var(--lc-safe-bottom); }
+/* A pool cell that carries the armed tag (the line `Assign Tag <path> At`): its colour round it
+   and a tick in the corner, so what is done shows while the line waits. */
+.lc-pool-cell.tagged { box-shadow: inset 0 0 0 2px var(--lc-tag-mark, var(--lc-accent)); }
+.lc-pool-tick { position: absolute; right: 4px; top: 3px; width: 16px; height: 16px; border-radius: 3px; display: flex;
+  align-items: center; justify-content: center; background: var(--lc-tag-mark, var(--lc-accent)); color: var(--lc-on-accent); }
+.lc-pool-tick .lc-ico { width: 12px; height: 12px; stroke-width: 3; }

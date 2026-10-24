@@ -29,6 +29,8 @@ pub fn lum_vocab() -> Vocabulary {
         "Export",
         // Presets in cues (decisions 0293) and the Meow License (0290).
         "Update", "Recast", "Extract", "Login", "Consent", "Logout",
+        // The paint picker (decisions 0296).
+        "Paint",
     ] {
         v.verb(verb, VerbDef::default());
     }
@@ -79,8 +81,8 @@ pub fn lum_vocab() -> Vocabulary {
         .object("PoolXml", counted(1, &[]))
         .object("User", counted(1, &["Programmer"]))
         .object("UserProfile", counted(1, &["Theme", "LockScreen", "Attribute", "FeatureGroup"]))
-        .object("Theme", single(&["Paint"]))
-        .object("Paint", single(&[]))
+        .object("Theme", single(&["Slot"]))
+        .object("Slot", single(&[]))
         .object("LockScreen", single(&[]))
         .object("FeatureGroup", counted(1, &[]))
         .object("Tag", counted(u8::MAX, &["Tag"]))

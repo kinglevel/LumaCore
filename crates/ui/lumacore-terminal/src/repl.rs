@@ -28,6 +28,7 @@ mod tui_draw;
 mod tui_input;
 mod tui_look;
 mod tui_nav;
+mod tui_tap;
 mod tui_types;
 
 use std::collections::HashMap;
@@ -125,6 +126,8 @@ struct TuiApp {
     ui_outbox: Vec<UiEvent>,
     /// Backspace timing for repeat / hold detection.
     backspace: tui_input::BackspaceTracker,
+    /// The armed tag last told to the page (`armed_tag`, decisions 0297).
+    armed_tag: Option<lumacore_cmd_tags::Armed>,
 }
 
 struct RemoteCommandListener {
@@ -335,6 +338,7 @@ impl TuiApp {
             focus: UiFocus::Terminal,
             ui_outbox: Vec::new(),
             backspace: tui_input::BackspaceTracker::default(),
+            armed_tag: None,
         };
 
         // Startup output

@@ -24,7 +24,6 @@ Docs-only runs write here what needs a code change or a decision. One line each,
 ## From the md upgrade (2026-10-20)
 
 - **Code header `//! Decisions:` lines** cite the archive's `§N "sub-entry"` titles; they stay valid (the archive keeps the numbering) but the records are the rules now. A later pass may add the record slug beside the `§`; code, not done here.
-- **lum.md** says `Tag` is "decided, not built" (the Tags crates exist and the words run); lum.md is the binding spec and is never edited on the side of another task — a one-line status fix, decided first.
 - **`lumacore-shutoff`** is still a binary / command while the syntax decision folds it into `Shutdown` (archive §33 52); `Watch` is both a verb and an object against one-name-per-word (§33 12 / 29, "to ask at 3e"); E-CMD-005 / 006 / 018 were to retire into E-SYN (§33 34) and have not.
 - **Tests the archive names that do not exist**: `dialogs_tests`, `menus_tests` (the records cite the tidy rules and e2e specs instead); `views' column_json test` has no exact name. If they should exist, they are code.
 - **`docs/user/reference/`** is generated: if a Planned word's status changed in code, `gen-docs` must be rerun and `the_reference_is_current` will say so; not run here (no cargo).

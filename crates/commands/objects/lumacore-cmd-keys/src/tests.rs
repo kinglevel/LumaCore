@@ -150,7 +150,7 @@ fn the_programmers_keys_are_lumacores_rows() {
     let key = |id: &str| keys.values().find(|k| k.id == id).unwrap().clone();
     let rows = |id: &str| key(id).press_rows(false).into_iter().map(|r| (r.line, r.types)).collect::<Vec<_>>();
     assert_eq!(rows("prg.e"), [("Edit".to_string(), true), ("EditSetting".to_string(), true)]);
-    assert_eq!(rows("prg.alt-a"), [("Assign".to_string(), true), ("Label".to_string(), true), ("Paint".to_string(), true)]);
+    assert_eq!(rows("prg.alt-a"), [("Assign".to_string(), true), ("Label".to_string(), true), ("Paint".to_string(), true), ("Tag".to_string(), true)]);
     assert_eq!(rows("prg.dot"), [(".".to_string(), true), ("Zero".to_string(), false)]);
     assert_eq!(rows("prg.delete").len(), 3);
     assert_eq!(key("prg.delete").hold, "ResetAll");

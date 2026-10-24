@@ -7,6 +7,7 @@
 import { PRESETS, preset, setPreset, applyLook } from './theme.js';
 import { openThemeEditor, ADJUST, COLOURS } from './themeeditor.js';
 import { openPaint } from './paint.js';
+import { openTagPicker } from './tagpicker.js';
 import { iconNames } from './icon.js';
 import { hold } from './pointer.js';
 import { openMenu } from './menu.js';
@@ -510,7 +511,7 @@ export function buildShowroom() {
   const tpFrame = div('lc-sr-tags-pool');
   tpFrame.style.cssText = 'height:420px;display:flex;flex-direction:column';
   const tp = document.createElement('luma-tags-pool');
-  const tpOut = div('lc-sr-note lc-selectable', 'Tap a tag, Direct | Deep, Run action or ≡: the line it runs shows here.');
+  const tpOut = div('lc-sr-note lc-selectable', 'Tap a tag, its square, Direct | Deep, Run action or ≡: the line it runs shows here.');
   const col = (id, label, width) => ({ id, field: id, label, kind: 'text', width, priority: 1 });
   const tpData = deep => ({
     deep, missing: false,
@@ -531,10 +532,17 @@ export function buildShowroom() {
     const m = /^Set Self "Members" (\w+)$/.exec(e.detail.line);
     if (m) { tpDeep = m[1] === 'Deep'; tp.update(tpData(tpDeep), { action: 'Select', counts: true }); }
   });
+  // A square is the station's object tap (decisions 0297): `Assign` + a square arms `Assign Tag 1.1 At`.
+  tp.addEventListener('tap', e => { tpOut.textContent = `› tap ${e.detail.object} ${e.detail.id} — empty line: ${e.detail.action.replace('{obj}', `Tag ${e.detail.id}`)} · after Assign: Assign Tag ${e.detail.id} At`; });
   tpFrame.append(tp);
+  // <luma-tag-picker> (decisions 0297): `Tag Group 1 Thru 3` — three-way boxes over the objects, each tap a line.
+  const pickBtn = document.createElement('luma-button');
+  pickBtn.textContent = 'Tag Group 1 Thru 3 — the tag picker';
+  const pickNodes = treeNodes.map(n => ({ path: n.path, name: n.name, colour: n.colour, state: n.state || 'off', carried: n.state === 'part' ? 1 : n.state === 'on' ? 3 : 0 }));
+  pickBtn.addEventListener('click', () => openTagPicker({ object: 'Group 1 Thru 3', name: '', guids: ['g1', 'g2', 'g3'], data: { nodes: pickNodes } }, { run: line => toast(line) }));
   const tpWrap = div('lc-sr-col');
-  tpWrap.append(tpFrame, tpOut);
-  root.append(section('luma-tags-pool — the Tags pool window: the tree, the picked tag\'s members Direct | Deep, Run action, the ≡ menu', tpWrap));
+  tpWrap.append(tpFrame, tpOut, pickBtn);
+  root.append(section('luma-tags-pool and luma-tag-picker — the Tags pool window (the tree with squares, the picked tag\'s members Direct | Deep, Run action, the ≡ menu) and the tag picker', tpWrap));
   requestAnimationFrame(() => tp.update(tpData(tpDeep), { action: 'Select', counts: true }));
 
   // luma-pathbar and luma-tree-window (decisions 0292): NAV's tree and inspector as a window —

@@ -158,7 +158,7 @@ Short forms are aliases from the registry (for example `f` = Fixture,
 | Ctrl+Z / Ctrl+Y | undo / redo an input edit |
 | Ctrl+C | clear the line, or cancel a question |
 | Ctrl+D | leave the shell |
-| Esc | cancel a question, close suggestions, then clear the line |
+| Esc | cancel a question, close suggestions; it never clears the line |
 | Shift+F10 | cycle the shortcut mode |
 | Backspace on an empty line | depends on the shortcut mode (below) |
 

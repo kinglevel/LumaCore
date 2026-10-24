@@ -17,8 +17,8 @@
 //!   `{"type":"live_screen", no}` — the browser's screen (view commands default to it)
 //!   `{"type":"scroll", window, row}` — a window scrolled: its first visible row,
 //!   kept quietly on the window (decisions §30 "12e hardening")
-//!   `{"type":"tap", object, no, hold?, action?}` — a UI object was tapped (view button,
-//!   pool button: `action` = the pool's tap command template)
+//!   `{"type":"tap", object, no, hold?, action?, id?}` — a UI object was tapped (view button,
+//!   pool button: `action` = the pool's tap command template; `id` = a dotted id, a tag's path)
 //!   `{"type":"gesture", id, line, phase: "move"|"end", window?, label?, from?, value?}` — a
 //!   continuous control's line (decisions §30 "12f"): quiet, newest move wins, one entry at the end
 //!   `{"type":"command", cmd, window?}` — a command from the UI (dialog OK), echoed like
@@ -369,6 +369,7 @@ fn browser_packet(v: &Value) -> Browser {
                 hold: v["hold"].as_bool().unwrap_or(false),
                 action: v["action"].as_str().map(str::to_string),
                 window: v["window"].as_u64().map(|n| n as u32),
+                id: v["id"].as_str().map(str::to_string),
             },
             _ => return Browser::Skip,
         },

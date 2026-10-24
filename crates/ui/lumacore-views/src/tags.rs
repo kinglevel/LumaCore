@@ -39,7 +39,9 @@ static COLUMNS: &[Col] = &[frozen(ro("no", "No", 64, 1)), ro("kind", "Kind", 120
 
 /// The Tags window's view. `which` = the picked tag's GUID (the window's `Tag` setting; empty =
 /// none picked), `deep` = members of the tags under it too. Colours are `user`'s (decisions 0294).
-pub fn view(show: &ShowData, user: &str, which: &Value, deep: bool) -> Value {
+/// `on` = the tag picker's objects (GUIDs, decisions 0297): each tag's `state` over them (`on`
+/// every one carries it, `part` some, `off` none) and `carried`, how many.
+pub fn view(show: &ShowData, user: &str, which: &Value, deep: bool, on: &Value) -> Value {
     let walk = show.walk_identity();
     let paint = lumacore_objects::paint::Painter::new(show, user);
     // The tags each object carries (its colour comes from the painted one with the highest Priority).
@@ -62,14 +64,22 @@ pub fn view(show: &ShowData, user: &str, which: &Value, deep: bool) -> Value {
     let all = tree::all(&show.tags);
     let reach = |t: &Tag| -> Vec<Uuid> { if deep { tree::subtree(t) } else { vec![t.meta.identity.guid] } };
     let count = |t: &Tag| -> usize { reach(t).iter().flat_map(|g| carried.get(g).into_iter().flatten()).collect::<BTreeSet<_>>().len() };
+    let on: Vec<Uuid> = on.as_array().into_iter().flatten().filter_map(|g| g.as_str().and_then(|s| Uuid::parse_str(s).ok())).collect();
     let nodes: Vec<Value> = all
         .iter()
         .map(|(path, t)| {
-            json!({
+            let mut node = json!({
                 "path": path.to_string(), "guid": t.meta.identity.guid, "name": t.name(),
                 "colour": paint.tag(t.meta.identity.guid),
                 "count": count(t), "badge": badge(t.action),
-            })
+            });
+            if !on.is_empty() {
+                let direct = carried.get(&t.meta.identity.guid);
+                let n = on.iter().filter(|g| direct.is_some_and(|d| d.contains(g))).count();
+                node["state"] = json!(if n == 0 { "off" } else if n == on.len() { "on" } else { "part" });
+                node["carried"] = json!(n);
+            }
+            node
         })
         .collect();
     let picked = which.as_str().and_then(|s| Uuid::parse_str(s).ok());

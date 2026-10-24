@@ -107,17 +107,9 @@ pub trait ShellHost: lumacore_lanes::Host + Sized {
         sessions.key_gesture_for_client(client_id, state, key, gesture)
     }
 
-    fn shell_tap(
-        &mut self,
-        client_id: uuid::Uuid,
-        object: &str,
-        no: u32,
-        hold: bool,
-        action: Option<&str>,
-        window: Option<u32>,
-    ) -> Result<Vec<UiEvent>, String> {
+    fn shell_tap(&mut self, client_id: uuid::Uuid, tap: lumacore_terminal::Tap) -> Result<Vec<UiEvent>, String> {
         let (sessions, state) = self.split();
-        sessions.tap_for_client(client_id, state, object, no, hold, action, window)
+        sessions.tap_for_client(client_id, state, tap)
     }
 
     fn set_shell_focus(&mut self, client_id: uuid::Uuid, focus: UiFocus, window: Option<u32>) -> Result<(), String> {

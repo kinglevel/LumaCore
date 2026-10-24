@@ -476,9 +476,9 @@ impl lumacore_http::ConsoleBridge for ServerConsoleBridge {
         lumacore_views::rules::view(&show, user, target, which)
     }
 
-    fn tags(&self, user: &str, tag: &Value, deep: bool) -> Value {
+    fn tags(&self, user: &str, tag: &Value, deep: bool, on: &Value) -> Value {
         let show = self.published.show.load();
-        lumacore_views::tags::view(&show, user, tag, deep)
+        lumacore_views::tags::view(&show, user, tag, deep, on)
     }
 
     fn resolve_datapool(&self, user: &str, datapool: &Value) -> Option<u32> {

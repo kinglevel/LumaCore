@@ -117,10 +117,16 @@ F10 switches the screen between three shortcut modes (decisions 0295):
   key types. `List KeyBindings` shows the whole map of your mode.
 - **NAV** — the tree's keys (press `?` there).
 
+### Esc
+
+Esc closes what is open — a dialog, a picker, the suggestions — or gives the keys back to the
+command line from a window. It never clears the line: a line you are building (`Assign Tag 1 At`
+waiting for pool taps) stays until you delete it.
+
 ### Press cycles
 
 Press a key again and its word changes in place: `E` puts `Edit` on the line, `E` again turns
-it into `EditSetting`; Alt+A gives `Assign`, then `Label`; Ctrl+C `Copy`, `Paste`, `Insert`.
+it into `EditSetting`; Alt+A gives `Assign`, then `Label`, `Paint`, `Tag`; Ctrl+C `Copy`, `Paste`, `Insert`.
 This works while the word is still the last thing on the line — type anything else and the key
 starts over; there is no timer. Some presses run instead of typing: `Fixture 1` then `.` `.`
 runs `Fixture 1 Zero`, `+` `+` runs `… At + 10`.

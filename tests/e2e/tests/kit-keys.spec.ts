@@ -107,9 +107,9 @@ test('a word typed into a new press is saved when the window closes', async ({ p
   await expect(panel.locator('.lc-km-head b')).toHaveText('Alt-A');
   await panel.locator('[data-add="press"]').click();
   const from = server.mark();
-  await panel.locator('.lc-km-row[data-which="press"][data-row="3"] [data-line]').fill('Unassign');
+  await panel.locator('.lc-km-row[data-which="press"][data-row="4"] [data-line]').fill('Unassign');
   await ed.locator('.lc-close').click();
   await expect(page.locator('[data-kit="key-editor"]')).toHaveCount(0);
-  await server.waitSysmon(/Bind "Alt-A" `Assign` `Label` `Paint` `Unassign` \/Shortcuts "PRG" → ok/, from);
+  await server.waitSysmon(/Bind "Alt-A" `Assign` `Label` `Paint` `Tag` `Unassign` \/Shortcuts "PRG" → ok/, from);
   await page.evaluate(() => (window as any).wsCommand('Unbind "Alt-A" /Shortcuts "PRG"'));
 });

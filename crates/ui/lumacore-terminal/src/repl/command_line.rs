@@ -284,10 +284,12 @@ impl RemoteCommandLine {
         end: u32,
         text: &str,
         expect: Option<&str>,
-    ) {
-        self.with_client(client, state, |app, _| {
+    ) -> Vec<UiEvent> {
+        // Its events too: a line edited into (or out of) `Assign Tag 1 At` arms the pools.
+        self.with_client(client, state, |app, state| {
             app.edit_line(start as usize, end as usize, text, expect);
-        });
+            app.take_ui_events(state)
+        })
     }
 
     /// A touch on a dialog with a countdown: it waits now.
@@ -347,18 +349,15 @@ impl RemoteCommandLine {
         &mut self,
         client: &mut ClientView,
         state: &mut AppState,
-        object: &str,
-        no: u32,
-        hold: bool,
-        action: Option<&str>,
-        window: Option<u32>,
+        tap: crate::Tap,
     ) -> Vec<UiEvent> {
         self.with_client(client, state, |app, state| {
             // The line a tap makes is its window's, like a window bar's (`Self`).
-            state.line_owner = window
+            state.line_owner = tap
+                .window
                 .zip(state.current_live_screen)
                 .map(|(no, screen)| crate::core::self_ref::LineOwner::Window { screen, no });
-            app.handle_tap(state, object, no, hold, action);
+            app.handle_tap(state, &tap);
             state.line_owner = None;
             app.take_ui_events(state)
         })

@@ -95,6 +95,7 @@ impl TuiApp {
     pub(super) fn take_ui_events(&mut self, state: &mut AppState) -> Vec<UiEvent> {
         let mut events = std::mem::take(&mut self.ui_outbox);
         events.append(&mut state.ui_requests);
+        events.extend(self.armed_event(state));
         events
     }
 
@@ -113,15 +114,12 @@ impl TuiApp {
         match key.code {
             KeyCode::Backspace => self.route_backspace(repeat, state, panel, input_empty),
             // The chain: popups first (handled before routing), then focus back
-            // to the terminal, then clear the unexecuted command line.
+            // to the terminal. Esc only closes; it never clears the command line
+            // (an armed `Assign Tag 1 At` waits until you clear it, decisions 0297).
             KeyCode::Esc => {
                 if panel {
                     self.focus = UiFocus::Terminal;
                     self.ui_outbox.push(UiEvent::FocusTerminal);
-                    true
-                } else if self.completion.is_none() && !input_empty {
-                    self.snapshot_input();
-                    self.set_input("");
                     true
                 } else {
                     false
@@ -219,97 +217,6 @@ impl TuiApp {
             }
         }
         true
-    }
-
-    /// Object tap: with a pending command on the line (`Store`, `Delete`,
-    /// `Label` …) the tapped object completes it and it executes
-    /// (`Store` + tap → `Store ViewButton 4`); on an empty line the object's
-    /// default action runs (`ViewButton 4` = call/recall). Tap-and-hold stores.
-    pub(super) fn handle_tap(
-        &mut self,
-        state: &mut AppState,
-        object: &str,
-        no: u32,
-        hold: bool,
-        action: Option<&str>,
-    ) {
-        self.completion = None;
-        let input = self.get_input();
-        let input = input.trim_end();
-
-        // A UI client (it has a screen) gets the Store View dialog — a
-        // station ask (decisions §30 "12b") — instead of an immediate store;
-        // terminal-only sessions store directly.
-        use crate::core::commands::registry::{self, Word};
-        let is_view = crate::core::objects::find(object).is_some_and(|o| {
-            std::ptr::eq(o, &crate::core::commands::views::VIEW)
-                || std::ptr::eq(o, &crate::core::commands::views::VIEW_BUTTON)
-        });
-        let pending_store = matches!(
-            registry::resolve(input),
-            Ok(Word::Command(c)) if c.object_verb == Some(crate::core::objects::Verb::Store)
-        );
-        let has_ui = state.current_live_screen.is_some();
-        if is_view && has_ui && (hold || pending_store) {
-            if !input.is_empty() {
-                self.snapshot_input();
-                self.set_input("");
-            }
-            let button =
-                crate::core::objects::find(object).is_some_and(|o| std::ptr::eq(o, &crate::core::commands::views::VIEW_BUTTON));
-            match crate::core::commands::views::store_ask(state, button, no) {
-                Ok(ask) => {
-                    crate::core::dialogs::open(state, ask);
-                }
-                Err(e) => self.add_output(&crate::core::errors::render_code(&e, "E-CMD-010")),
-            }
-            return;
-        }
-
-        // A pending Move / Copy / Assign takes the tapped object, then
-        // waits for its target (`Move Group 3` + tap 7 → `… At 7`), the usual console behaviour.
-        let first = input.split_whitespace().next().unwrap_or("");
-        let wants_target = matches!(
-            registry::resolve(first),
-            Ok(Word::Command(c)) if matches!(
-                c.object_verb,
-                Some(crate::core::objects::Verb::Move
-                    | crate::core::objects::Verb::Copy
-                    | crate::core::objects::Verb::Assign)
-            )
-        );
-        let words = input.split_whitespace().count();
-        let has_at = input.split_whitespace().any(|w| w.eq_ignore_ascii_case("at"));
-        if hold {
-            self.run_ui_command(state, &format!("store {object} {no}"));
-        } else if input.is_empty() {
-            let line = match action {
-                None => format!("{object} {no}"),
-                Some(template) => template.replace("{obj}", &format!("{object} {no}")),
-            };
-            if !line.trim().is_empty() {
-                self.run_ui_command(state, &line);
-            }
-        } else if wants_target && words == 1 {
-            self.snapshot_input();
-            self.set_input(&format!("{input} {object} {no}"));
-        } else if wants_target && !has_at {
-            // A target of another kind names itself (`Assign Sequence 3` + a view button tap →
-            // `… At ViewButton 6`, decisions 0287); the same kind is a bare number.
-            let pending = input.split_whitespace().nth(1).and_then(crate::core::objects::find);
-            let tapped = crate::core::objects::find(object);
-            let target = match (pending, tapped) {
-                (Some(p), Some(t)) if !std::ptr::eq(p, t) => format!("{} {no}", t.keyword),
-                _ => no.to_string(),
-            };
-            self.snapshot_input();
-            self.set_input(&format!("{input} At {target}"));
-            self.submit_command(state);
-        } else {
-            self.snapshot_input();
-            self.set_input(&format!("{input} {object} {no}"));
-            self.submit_command(state);
-        }
     }
 
     // ── Event handling ───────────────────────────────────────────────

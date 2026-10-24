@@ -273,3 +273,44 @@ fn the_colour_order_is_own_then_tag_priority_then_parent_then_pool() {
     let pool = p.of(&meta(&s, 6));
     assert_eq!((pool.hex.clone(), pool.from_text()), (None, "the pool".to_string()));
 }
+
+/// `Tag Group 3` (decisions 0297): the picker's event names the objects and their GUIDs; a path
+/// before the objects is the Assign line's job; nothing changes.
+#[test]
+fn tag_with_objects_opens_the_picker_on_them() {
+    let mut s = rig();
+    run(&mut s, "Assign Tag 1.1 At Group 3");
+    s.ui_requests.clear();
+    let out = run(&mut s, "Tag Group 3");
+    assert!(out.contains("Tags of Group 3: Tag 1.1 \"Lx1\""), "{out}");
+    let picker = s.ui_requests.drain(..).find_map(|e| match e {
+        lumacore_wire::UiEvent::TagPicker { object, guids, .. } => Some((object, guids.len())),
+        _ => None,
+    });
+    assert_eq!(picker, Some(("Group 3".to_string(), 1)));
+    run(&mut s, "Tag Group 1 Thru 3 + Sequence 1");
+    let n = s.ui_requests.drain(..).find_map(|e| match e {
+        lumacore_wire::UiEvent::TagPicker { guids, .. } => Some(guids.len()),
+        _ => None,
+    });
+    assert_eq!(n, Some(4));
+    let out = run(&mut s, "Tag 1 Group 3");
+    assert!(out.contains("E-CMD-006") && out.contains("Assign Tag 1 At Group 3"), "{out}");
+    assert!(!s.ui_requests.iter().any(|e| matches!(e, lumacore_wire::UiEvent::TagPicker { .. })));
+}
+
+/// A tap on a cell that already carries the armed tag answers so and files no Oops step.
+#[test]
+fn assigning_what_is_already_carried_changes_nothing() {
+    let mut s = rig();
+    run(&mut s, "Assign Tag 1.1 At Group 3");
+    let steps = s.root.show_data.walk_identity().links.len();
+    let out = run(&mut s, "Assign Tag 1.1 At Group 3");
+    assert!(out.contains("1 group already carries Tag 1.1 \"Lx1\""), "{out}");
+    let out = run(&mut s, "Unassign Tag 1.2 At Group 3");
+    assert!(out.contains("1 group doesn't carry Tag 1.2"), "{out}");
+    assert_eq!(s.root.show_data.walk_identity().links.len(), steps);
+    let out = run(&mut s, "Assign Tag 1.1 At Group 3 + Group 4");
+    assert!(out.contains("Tagged 2 groups"), "{out}");
+}
+

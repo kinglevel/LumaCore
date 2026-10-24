@@ -34,6 +34,17 @@ pub struct Gesture {
     pub value: Option<String>,
 }
 
+/// A UI object's tap as the shell receives it (`lumacore_wire::ShellClientPacket::Tap`): `id` a
+/// dotted id in place of `no` (a tag's path, decisions 0297).
+pub struct Tap {
+    pub object: String,
+    pub no: u32,
+    pub id: Option<String>,
+    pub hold: bool,
+    pub action: Option<String>,
+    pub window: Option<u32>,
+}
+
 // ██████╗ ███████╗ ██████╗ ██╗███████╗████████╗██████╗ ██╗   ██╗
 // ██╔══██╗██╔════╝██╔════╝ ██║██╔════╝╚══██╔══╝██╔══██╗╚██╗ ██╔╝
 // ██████╔╝█████╗  ██║  ███╗██║███████╗   ██║   ██████╔╝ ╚████╔╝

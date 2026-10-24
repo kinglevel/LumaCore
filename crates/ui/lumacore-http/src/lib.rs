@@ -246,8 +246,9 @@ pub trait ConsoleBridge: Send + Sync {
         serde_json::json!({ "mode": "live", "fixtures": [], "tree": [] })
     }
 
-    /// The Tags pool window (the `tags` feed, decisions §12 "Tags hardened").
-    fn tags(&self, _user: &str, _tag: &serde_json::Value, _deep: bool) -> serde_json::Value {
+    /// The Tags pool window (the `tags` feed, decisions §12 "Tags hardened"); `on` = the tag
+    /// picker's objects (decisions 0297).
+    fn tags(&self, _user: &str, _tag: &serde_json::Value, _deep: bool, _on: &serde_json::Value) -> serde_json::Value {
         serde_json::json!({ "nodes": [], "members": [] })
     }
 

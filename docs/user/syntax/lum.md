@@ -227,11 +227,11 @@ points at a real place in the [object tree](../object-tree/object-tree.md):
 - `Network`, `Sacn`, `ArtNet`, `Osc` — data networks and protocol lines (each protocol of the build is
   an object; a numbered one is a line, one DMX protocols row: `Sacn 1`)
 - `User`, `UserProfile`, `Programmer`, `Selection` — who works and with what; a profile's
-  `Theme` (its `Paint`) and `LockScreen`
+  `Theme` (its `Slot`) and `LockScreen`
 - `Attribute`, `FeatureGroup`, `AttributeTemplate` — how attributes are grouped
 - `LumaSession`, `Station`, `Client`, `Shell`, `Interface`, `Drive` — stations, their connections
   and their drives (decisions §38)
-- `Tag` — a tree of tags (decided, not built: decisions §12 "Tags hardened"), see below
+- `Tag` — a tree of tags (decisions §12 "Tags hardened", 0297), see below
 
 What `Object` means in Lum is in [objects.md](objects.md). "Session" alone is not a noun:
 server-to-server sessions are `LumaSession`, a user's terminal is a `Shell`.
@@ -281,9 +281,13 @@ Delete, Copy, Move, Assign / Unassign, EditSetting, List, Info. Every other verb
 **expands to the tag's members** and runs on each kind that takes it, skipping the rest with a
 summary. It reaches the tag's own objects (the current level) unless `/R` adds every tag under it.
 `Assign Tag … At <object>` always adds a tag, a tag included (it tags that tag); nesting a tag
-under another is `Move`, asked first (the one nesting rule, under Move below).
+under another is `Move`, asked first (the one nesting rule, under Move below). A Tag with no path
+and objects after it opens the tag picker on them (decisions 0297): `Tag Group 3`; each tick there
+is one `Assign` / `Unassign Tag … At Group 3` line. In PRG, Alt+A's fourth press types `Tag`.
 
 ```lum
+Tag Group 3
+Tag Group 1 Thru 3 + Sequence 1
 Assign Tag "Right" At Fixture 1 Thru 12
 Unassign Tag "Right" At Fixture 3
 Assign Tag 2 At Tag 1
@@ -704,7 +708,7 @@ Reset Theme Slot "Haze"
 
 `Paint <object> <ids>` opens the paint picker on those objects (decisions 0296): its answer is one
 `Set <object> <ids> "Paint" <value>` line, so `Paint Group 1 Thru 3` paints all three. A terminal
-answers with the Paint now and the line to type. In PRG, Alt+A cycles Assign › Label › Paint.
+answers with the Paint now and the line to type. In PRG, Alt+A cycles Assign › Label › Paint › Tag.
 
 ```lum
 Paint Group 1

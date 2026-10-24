@@ -10,7 +10,12 @@
 //     selected, search: true, newHere: true, empty, numbers: false (no path numbers: the Patch
 //     dialog's MVR tree), menu: false (no ≡ on the selected row), unit: 'fixtures' (after each
 //     count), guides: true (a guide line for every level) })
-//   events: select { path } · toggle { path, on } · menu { path, x, y } · new { parent }
+//   events: select { path } · toggle { path, on } · menu { path, x, y } · new { parent } ·
+//     query { query } (the search box's text, typed)
+//   `squares: true` (decisions 0297) draws a pool square — the number on the node's colour — in
+//   place of the number and swatch; in browse mode a tap on it is `square { path }` (the Tags
+//   window: it types the tag on the command line), in pick mode it only shows. `placeholder` is
+//   the search box's hint.
 //   A node may carry its own shown number (`no`), `tickable: false` (pick mode: no box — a
 //   heading, a circular reference) and a `tone` for its name (`alert`): the station's Update ask
 //   (decisions 0293) draws its tree of presets and cues this way.
@@ -84,14 +89,21 @@ class LumaTree extends HTMLElement {
     const no = s.host ? (n.no ?? '') : (n.no ?? n.path);
     return `<div class="lc-tree-row${sel ? ' sel' : ''}${n.hit ? ' hit' : ''}${n.dir ? ' dir' : ''}" role="treeitem" aria-level="${depth + 1}" ${hasKids ? `aria-expanded="${!!open}"` : ''} ${sel ? 'aria-selected="true"' : ''} data-path="${esc(n.path)}" style="--lc-tree-depth:${depth}">
       ${fold}${box}
-      ${s.numbers === false ? '' : `<span class="lc-tree-no">${esc(no)}</span>`}
-      ${n.colour ? `<i class="lc-tree-sw" style="--lc-tree-sw:${esc(n.colour)}"${n.paint_from ? ` title="Colour from ${esc(n.paint_from)}"` : ''}></i>` : s.host ? '<i class="lc-tree-sw none"></i>' : ''}
+      ${s.squares ? this.square(n, pick) : s.numbers === false ? '' : `<span class="lc-tree-no">${esc(no)}</span>`}
+      ${s.squares ? '' : n.colour ? `<i class="lc-tree-sw" style="--lc-tree-sw:${esc(n.colour)}"${n.paint_from ? ` title="Colour from ${esc(n.paint_from)}"` : ''}></i>` : s.host ? '<i class="lc-tree-sw none"></i>' : ''}
       <span class="lc-tree-name${n.tone ? ` tone-${esc(n.tone)}` : ''}">${esc(n.name) || '<i>no name</i>'}</span>
       ${n.id ? `<span class="lc-tree-id">${esc(n.id)}</span>` : ''}
       ${n.badge ? `<span class="lc-tree-badge"${s.host ? ` title="Bookmark ${esc(n.badge)}"` : ''}>${esc(n.badge)}</span>` : ''}
       ${n.count != null ? `<small class="lc-tree-count${n.tone ? ` tone-${esc(n.tone)}` : ''}">${esc(n.count)}${s.unit ? ` ${esc(s.unit)}` : ''}</small>` : ''}
       ${!pick && sel && s.menu !== false && !s.host ? `<button type="button" class="lc-tree-menu" data-menu="${esc(n.path)}" aria-label="Menu of ${esc(n.name)}"><luma-icon name="menu"></luma-icon></button>` : ''}
     </div>`;
+  }
+  /** A node's pool square (decisions 0297): its number on its colour; a button in browse mode. */
+  square(n, pick) {
+    const look = `style="--lc-obj:${esc(n.colour || 'var(--lc-pool-default)')}"`;
+    const inner = `<small>${esc(n.no ?? n.path)}</small><luma-icon name="tag"></luma-icon>`;
+    return pick ? `<span class="lc-tree-sq" ${look} aria-hidden="true">${inner}</span>`
+      : `<button type="button" class="lc-tree-sq" data-sq="${esc(n.path)}" ${look} aria-label="Tag ${esc(n.path)} ${esc(n.name)}">${inner}</button>`;
   }
 
   render() {
@@ -101,14 +113,18 @@ class LumaTree extends HTMLElement {
     const rows = this.shown();
     const had = this.querySelector('.lc-tree-search input') === document.activeElement;
     this.innerHTML = `<div class="lc-tree${s.mode === 'pick' ? ' pick' : ''}${s.guides ? ' guides' : ''}">
-      ${s.search ? `<div class="lc-tree-head"><label class="lc-tree-search"><luma-icon name="search"></luma-icon><input type="search" placeholder="Search tags…" value="${esc(this.query)}" aria-label="Search"></label>
+      ${s.search ? `<div class="lc-tree-head"><label class="lc-tree-search"><luma-icon name="search"></luma-icon><input type="search" placeholder="${esc(s.placeholder || 'Search tags…')}" value="${esc(this.query)}" aria-label="Search"></label>
         ${/* tidy: slab-ok (the picker's own New tag here, in its head as the locked tags mockup draws it; not a list of objects) */ ''}
         ${s.newHere ? `<button type="button" class="lc-tree-new" data-new="1"><luma-icon name="plus"></luma-icon>New tag here</button>` : ''}</div>` : ''}
       <div class="lc-tree-rows" role="tree">${rows.map(n => this.row(n, kids.has(n.path))).join('') || `<div class="lc-tree-empty">${esc(s.empty || 'No tags yet.')}</div>`}</div>
     </div>`;
     const input = this.querySelector('.lc-tree-search input');
     if (input) {
-      input.addEventListener('input', () => { this.query = input.value; const at = input.selectionStart; this.render(); const again = this.querySelector('.lc-tree-search input'); again.focus(); again.setSelectionRange(at, at); });
+      input.addEventListener('input', () => {
+        this.query = input.value; const at = input.selectionStart; this.render();
+        const again = this.querySelector('.lc-tree-search input'); again.focus(); again.setSelectionRange(at, at);
+        this.dispatchEvent(new CustomEvent('query', { detail: { query: this.query }, bubbles: true }));
+      });
       if (had) input.focus();
     }
     const emit = (name, detail) => this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true }));
@@ -121,6 +137,10 @@ class LumaTree extends HTMLElement {
     for (const b of this.querySelectorAll('[data-box]')) b.addEventListener('click', ev => {
       ev.stopPropagation();
       emit('toggle', { path: b.dataset.box, on: b.dataset.state !== 'on' });
+    });
+    for (const b of this.querySelectorAll('[data-sq]')) b.addEventListener('click', ev => {
+      ev.stopPropagation();
+      emit('square', { path: b.dataset.sq });
     });
     for (const b of this.querySelectorAll('[data-menu]')) b.addEventListener('click', ev => {
       ev.stopPropagation();

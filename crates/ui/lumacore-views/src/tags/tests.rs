@@ -45,13 +45,13 @@ fn rig() -> (ShowData, [Uuid; 4]) {
 fn the_pane_lists_a_tags_members_direct_or_deep() {
     let (show, [all, _, _, _]) = rig();
     let pools = usize::from(!show.datapools.is_empty());
-    let direct = view(&show, "Admin", &json!(all.to_string()), false);
+    let direct = view(&show, "Admin", &json!(all.to_string()), false, &Value::Null);
     let paths: Vec<&str> = direct["nodes"].as_array().unwrap().iter().map(|n| n["path"].as_str().unwrap()).collect();
     assert_eq!(paths, ["1", "1.1", "1.1.1", "2"]);
     assert_eq!(direct["members"].as_array().unwrap().len(), 0, "{direct}");
     assert_eq!(direct["tag"]["lines"]["select"], "Tag 1");
 
-    let deep = view(&show, "Admin", &json!(all.to_string()), true);
+    let deep = view(&show, "Admin", &json!(all.to_string()), true, &Value::Null);
     let members = deep["members"].as_array().unwrap();
     assert_eq!(members.len(), 1 + pools, "{deep}");
     let busking = members.iter().find(|m| m["kind"] == "Tag").expect("the tag Busking carries Right");
@@ -65,8 +65,24 @@ fn the_pane_lists_a_tags_members_direct_or_deep() {
 #[test]
 fn a_tag_that_is_gone_is_missing() {
     let (show, _) = rig();
-    assert_eq!(view(&show, "Admin", &json!(""), true)["missing"], false);
-    let gone = view(&show, "Admin", &json!(Uuid::new_v4().to_string()), true);
+    assert_eq!(view(&show, "Admin", &json!(""), true, &Value::Null)["missing"], false);
+    let gone = view(&show, "Admin", &json!(Uuid::new_v4().to_string()), true, &Value::Null);
     assert_eq!((gone["missing"].as_bool(), gone["tag"].is_null()), (Some(true), true));
     assert_eq!(gone["nodes"].as_array().unwrap().len(), 4);
 }
+
+/// The tag picker's `on` (decisions 0297): each tag's state over those objects — on when every one
+/// carries it, part when some do, off when none; without `on` no state at all.
+#[test]
+fn on_gives_each_tag_its_state_over_the_objects() {
+    let (show, [_, _, _, busking]) = rig();
+    let other = Uuid::new_v4();
+    let v = view(&show, "Admin", &json!(""), false, &json!([busking.to_string(), other.to_string()]));
+    let state = |path: &str| v["nodes"].as_array().unwrap().iter().find(|n| n["path"] == path).map(|n| (n["state"].clone(), n["carried"].clone())).unwrap();
+    assert_eq!(state("1.1.1"), (json!("part"), json!(1)));
+    assert_eq!(state("1"), (json!("off"), json!(0)));
+    let one = view(&show, "Admin", &json!(""), false, &json!([busking.to_string()]));
+    assert_eq!(one["nodes"][2]["state"], "on");
+    assert!(view(&show, "Admin", &json!(""), false, &Value::Null)["nodes"][2].get("state").is_none());
+}
+

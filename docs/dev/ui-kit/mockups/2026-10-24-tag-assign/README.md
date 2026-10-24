@@ -11,6 +11,10 @@ opens, as `Paint Group 3` opens the colour picker. Every mock is drawn with the 
 |---|---|
 | `01-tag-assign.html` | Round 1: a live desk (the Tags window with squares, Groups and Sequences pools, keys, the command line). The square tap with an empty line runs the tag's action; with `Assign` it arms `Assign Tag n At`. Armed, the cells that carry the tag show it, and a cell tap tags it ("Stays after a tap"). The tag picker on one object and on several (half boxes, New tag from the search). The line `Tag <objects>`. Four questions. |
 
+Round 1 approved and built ([0297](../../../../decisions/0297-tag-squares-and-picker.md)) with
+the recommended answers: the armed line stays (now until you clear it — Esc never clears the line),
+a tap on a carrier changes nothing, New tag goes to the top level, no drop on a tag row yet.
+
 Decided before round 1 (by the user):
 
 - `Tag <objects>` (a Tag with no number, objects following) opens the picker; `Tag 1.1` still

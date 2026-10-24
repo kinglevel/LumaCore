@@ -58,7 +58,7 @@ pub enum BuildSpec {
     ViewBar { user: String, screen: u32 },
     Oops { user: String },
     Sequence { user: String, sequence: Value },
-    Tags { user: String, tag: Value, deep: bool },
+    Tags { user: String, tag: Value, deep: bool, on: Value },
     Patch { user: String },
     Attributes { user: String, profile: Value },
     Detail { kind: String, no: u32 },
@@ -93,7 +93,7 @@ impl BuildSpec {
             Self::ViewBar { user, screen } => format!("viewbar|{}|{screen}", user.to_lowercase()),
             Self::Oops { user } => format!("oops|{}", user.to_lowercase()),
             Self::Sequence { user, sequence } => format!("sequence|{}|{sequence}", user.to_lowercase()),
-            Self::Tags { user, tag, deep } => format!("tags|{user}|{tag}|{deep}"),
+            Self::Tags { user, tag, deep, on } => format!("tags|{user}|{tag}|{deep}|{on}"),
             Self::Patch { user } => format!("patch|{}", user.to_lowercase()),
             Self::Attributes { user, profile } => format!("attributes|{}|{profile}", user.to_lowercase()),
             Self::Detail { kind, no } => format!("detail|{kind}|{no}"),
@@ -185,7 +185,7 @@ impl BuildSpec {
             Self::ViewBar { user, screen } => super::feeds::viewbar_data(state, user, *screen),
             Self::Oops { user } => state.console.oops(user),
             Self::Sequence { user, sequence } => console.sequence_sheet(user, sequence),
-            Self::Tags { user, tag, deep } => console.tags(user, tag, *deep),
+            Self::Tags { user, tag, deep, on } => console.tags(user, tag, *deep, on),
             Self::Patch { user } => console.patch(user),
             Self::Attributes { user, profile } => {
                 console.attribute_board(user, profile).unwrap_or_else(|| json!({ "missing": profile }))

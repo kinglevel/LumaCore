@@ -37,7 +37,7 @@ pub(crate) static ROWS: &[CommandDef] = &[CommandDef {
                       a theme slot; its answer is one Set <object> \"Paint\" <value> line. Any object \
                       with a Paint: groups, sequences, cues, presets, macros, views, tags, fixtures. A \
                       terminal gets the Paint now and the line to type. Alt+A in PRG: Assign › Label › \
-                      Paint.",
+                      Paint › Tag.",
             examples: &[
                 "Paint Group 1                 -- the picker on Group 1",
                 "Paint Sequence 1              -- on Sequence 1",

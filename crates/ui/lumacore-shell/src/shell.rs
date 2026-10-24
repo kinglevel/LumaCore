@@ -605,8 +605,8 @@ pub fn handle_shell_client<C: ShellHost>(stream: TcpStream, addr: SocketAddr, st
                             .gesture_for_client(client_id, state, lumacore_terminal::Gesture { id, line, phase, window, label, from, value })
                             .unwrap_or_default())
                     }
-                    ShellClientPacket::Tap { object, no, hold, action, window } => {
-                        Ok(ctx.shell_tap(client_id, &object, no, hold, action.as_deref(), window).unwrap_or_default())
+                    ShellClientPacket::Tap { object, no, hold, action, window, id } => {
+                        Ok(ctx.shell_tap(client_id, lumacore_terminal::Tap { object, no, id, hold, action, window }).unwrap_or_default())
                     }
                     ShellClientPacket::DialogAnswer { answer } => {
                         let (sessions, state) = ctx.split();
@@ -614,8 +614,7 @@ pub fn handle_shell_client<C: ShellHost>(stream: TcpStream, addr: SocketAddr, st
                     }
                     ShellClientPacket::LineEdit { start, end, text, expect } => {
                         let (sessions, state) = ctx.split();
-                        let _ = sessions.edit_line_for_client(client_id, state, start, end, &text, expect.as_deref());
-                        Ok(Vec::new())
+                        Ok(sessions.edit_line_for_client(client_id, state, start, end, &text, expect.as_deref()).unwrap_or_default())
                     }
                     _ => Ok(Vec::new()),
                 };

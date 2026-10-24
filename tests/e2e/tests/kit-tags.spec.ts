@@ -11,9 +11,10 @@ const server = new Server();
 test.describe.configure({ mode: 'serial' });
 test.beforeAll(async () => {
   await server.start(['--show', path.join(REPO, 'library/shows/demo.luma')]);
-  for (const line of ['Store Tag "All"', 'Store Tag 1 Tag "Lx1"', 'Store Tag 1.1 Tag "Right"', 'Store Tag "Busking"', 'Assign Tag 1.1 At Fixture 101']) {
+  // Numbered: the rig has its own tag 901 "Wash", so a bare Store Tag would go to 902 and up.
+  for (const line of ['Store Tag 1 "All"', 'Store Tag 1 Tag "Lx1"', 'Store Tag 1.1 Tag "Right"', 'Store Tag 2 "Busking"', 'Assign Tag 1.1 At Fixture 101']) {
     const r = await server.command(line);
-    expect(r.ok, `${line}: ${r.message}`).toBe(true);
+    expect(r.ok && !/E-[A-Z]+-\d{3}/.test(r.message ?? ''), `${line}: ${r.message}`).toBe(true);
   }
 });
 test.afterAll(async () => { await server.cleanup(); });
@@ -36,7 +37,7 @@ test('EditSetting of a fixture has Meta and Tags tabs', async ({ page }) => {
   await shot(page, 'meta');
   await sw(page).locator('.lc-set-tabs button', { hasText: 'Tags' }).click();
   const tree = sw(page).locator('luma-tree');
-  await expect(tree.locator('.lc-tree-row')).toHaveCount(4);
+  await expect(tree.locator('.lc-tree-row')).toHaveCount(5);
   await expect(tree.locator('.lc-tree-row[data-path="1.1"] .lc-tree-box')).toHaveAttribute('data-state', 'on');
   await shot(page, 'picker');
 });
@@ -102,7 +103,7 @@ test('the Tags pool window: a tap picks, Direct | Deep, Run action selects', asy
   if (!(await tab.evaluate(t => t.classList.contains('on')))) await tab.click();
   const pool = page.locator('luma-tags-pool');
   const tree = pool.locator('luma-tree');
-  await expect(tree.locator('.lc-tree-row')).toHaveCount(5);
+  await expect(tree.locator('.lc-tree-row')).toHaveCount(6);
   await expect(pool.locator('.lc-tp-empty')).toHaveText(/Tap a tag/);
   // A tap picks the tag: one Set Self line (logged as its window), the members pane follows.
   let from = server.mark();

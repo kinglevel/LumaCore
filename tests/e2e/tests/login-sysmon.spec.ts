@@ -219,8 +219,8 @@ test('command suggestions offer each command once', async ({ page }) => {
   expect(lower, 'an alias next to its own command').not.toContain('logoff');
   expect(new Set(lower).size, `duplicates: ${rows.join(', ')}`).toBe(lower.length);
   await page.keyboard.press('Escape');
-  // The second Escape clears the line: Admin's session (and its typed text) outlives this page.
-  await page.keyboard.press('Escape');
+  // Esc only closes (decisions 0297): clear the line, Admin's session (and its typed text) outlives this page.
+  await page.evaluate(() => (window as any).wsSend({ type: 'line_edit', start: 0, end: 9999, text: '' }));
   await expect.poll(async () => (await page.locator('#cb-line .xterm-rows').innerText()).trim()).toMatch(/>$/);
 });
 

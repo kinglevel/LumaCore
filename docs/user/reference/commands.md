@@ -1797,7 +1797,7 @@ rights Guest · scope Client · reach Show · undo read-only
 Paint <object> <ids>
 ```
 
-Open the paint picker on objects (decisions 0296): Palette, Free or a link to a theme slot; its answer is one Set <object> "Paint" <value> line. Any object with a Paint: groups, sequences, cues, presets, macros, views, tags, fixtures. A terminal gets the Paint now and the line to type. Alt+A in PRG: Assign › Label › Paint.
+Open the paint picker on objects (decisions 0296): Palette, Free or a link to a theme slot; its answer is one Set <object> "Paint" <value> line. Any object with a Paint: groups, sequences, cues, presets, macros, views, tags, fixtures. A terminal gets the Paint now and the line to type. Alt+A in PRG: Assign › Label › Paint › Tag.
 
 Examples:
 

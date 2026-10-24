@@ -43,6 +43,7 @@ import './devicegrid.js';
 import * as statusStrip from './statusstrip.js';
 import * as themeEditor from './themeeditor.js';
 import * as paint from './paint.js';
+import * as tagPicker from './tagpicker.js';
 import * as context from './context.js';
 import * as value from './value.js';
 import * as insert from './insert.js';
@@ -69,5 +70,5 @@ const ready = Promise.all([
   document.fonts?.ready?.catch(() => {}) ?? Promise.resolve(),
 ]);
 
-window.LumaKit = { theme, pointer, icon, marks, statusStrip, themeEditor, paint, menu, dialog, keyboard, keypad, popup, settings, windowBar, suggest, toast, clipboard, mini, split, context, value, insert, mvrimport, editPatch, tools, groupEditor, presetEditor, keymap, attrBoard, oops, cueSheet, grid, slab, setup, editCard, feeds: { FeedClient, SampleRing, drawLoop, applyDiff }, showroom: buildShowroom, ready };
+window.LumaKit = { theme, pointer, icon, marks, statusStrip, themeEditor, paint, tagPicker, menu, dialog, keyboard, keypad, popup, settings, windowBar, suggest, toast, clipboard, mini, split, context, value, insert, mvrimport, editPatch, tools, groupEditor, presetEditor, keymap, attrBoard, oops, cueSheet, grid, slab, setup, editCard, feeds: { FeedClient, SampleRing, drawLoop, applyDiff }, showroom: buildShowroom, ready };
 ready.then(() => window.dispatchEvent(new Event('lumakit')));

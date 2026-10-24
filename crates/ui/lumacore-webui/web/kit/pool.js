@@ -120,6 +120,12 @@ class LumaPool extends HTMLElement {
     this.hiddenNos = new Set(h?.hidden || []);
   }
   get cells() { return [...this.byNo.values()]; }
+  /** The armed tag's carriers (decisions 0297: the line `Assign Tag <path> At`): `{ guids, colour }`
+   *  marks each cell that carries it; null clears. */
+  set marks(m) {
+    this._marks = m?.guids?.length ? { guids: new Set(m.guids), colour: m.colour || '' } : null;
+    for (const [no, el] of this.els) this.mark(el, no);
+  }
 
   set cursor(no) {
     this._cursor = no;
@@ -235,8 +241,20 @@ class LumaPool extends HTMLElement {
       const row = Math.floor(i / g.cols), col = i % g.cols;
       el.style.transform = `translate(${g.pad + col * (g.cellW + g.gap)}px, ${g.pad + row * g.pitch}px)`;
       this.paint(el, no);
+      this.mark(el, no);
     }
     for (const [no, el] of this.els) if (!want.has(no)) { el.remove(); this.els.delete(no); }
+  }
+
+  /** A cell that carries the armed tag: its colour round it and a tick (kept over a repaint). */
+  mark(el, no) {
+    const guid = this.byNo.get(no)?.guid;
+    const on = !!(guid && this._marks?.guids.has(guid));
+    el.classList.toggle('tagged', on);
+    if (on && this._marks.colour) el.style.setProperty('--lc-tag-mark', this._marks.colour); else el.style.removeProperty('--lc-tag-mark');
+    const tick = el.querySelector(':scope > .lc-pool-tick');
+    if (on && !tick) el.insertAdjacentHTML('beforeend', '<i class="lc-pool-tick"><luma-icon name="check"></luma-icon></i>');
+    else if (!on) tick?.remove();
   }
 
   /** One cell's look; rewritten only when what it shows changed. */

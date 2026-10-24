@@ -289,9 +289,9 @@ pub const FEEDS: &[FeedDecl] = &[
         name: "tags",
         kind: FeedKind::State,
         open: false,
-        params: &["tag", "deep"],
+        params: &["tag", "deep", "on"],
         period_ms: 100,
-        doc: "The Tags pool window (decisions §12 \"Tags hardened\"): the tag tree (path, name, colour, count, Action badge) and the picked `tag`'s (a GUID) members, `deep` = through the tags under it too, with the lines its pane runs.",
+        doc: "The Tags pool window (decisions §12 \"Tags hardened\"): the tag tree (path, name, colour, count, Action badge) and the picked `tag`'s (a GUID) members, `deep` = through the tags under it too, with the lines its pane runs. `on` (GUIDs, decisions 0297: the tag picker) gives each tag a `state` (on / part / off) and `carried` (how many of them carry it).",
     },
     FeedDecl {
         name: "patch",
@@ -1000,7 +1000,7 @@ impl Conn {
             }),
             Feed::Oops => Some(BuildSpec::Oops { user: user.clone() }),
             Feed::Sequence => Some(BuildSpec::Sequence { user: user.clone(), sequence: v["sequence"].clone() }),
-            Feed::Tags => Some(BuildSpec::Tags { user: user.clone(), tag: v["tag"].clone(), deep: v["deep"].as_bool().unwrap_or(false) }),
+            Feed::Tags => Some(BuildSpec::Tags { user: user.clone(), tag: v["tag"].clone(), deep: v["deep"].as_bool().unwrap_or(false), on: v["on"].clone() }),
             Feed::Patch => Some(BuildSpec::Patch { user: user.clone() }),
             Feed::Tree => Some(BuildSpec::Tree {
                 user: user.clone(),
